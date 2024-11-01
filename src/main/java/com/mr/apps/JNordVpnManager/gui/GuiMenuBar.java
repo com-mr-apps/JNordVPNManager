@@ -370,11 +370,11 @@ public class GuiMenuBar
             m_menuItemRecentServer.add(m_menuItemRecentServerMenuList[i]);
 
             // String for user preferences
-            if (!recentServerIds.isEmpty()) recentServerIds.append(Location.SERVERID_LIST_SEPARATOR);
+            if (recentServerIds.length() > 0) recentServerIds.append(Location.SERVERID_LIST_SEPARATOR);
             recentServerIds.append(loc.getServerId());
          }
       }
-      if (!recentServerIds.isEmpty())
+      if (recentServerIds.length() > 0)
       {
          // Update the user preferences with the current serverId list
          UtilPrefs.setRecentServerList(recentServerIds.toString());
