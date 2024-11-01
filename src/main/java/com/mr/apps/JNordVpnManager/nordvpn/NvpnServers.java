@@ -52,7 +52,7 @@ public class NvpnServers
             String[] saCountries = countries.split("\n");
             for (String country : saCountries)
             {
-               if (!sbListOfServers.isEmpty()) sbListOfServers.append(":"); // delimiter between countries
+               if (sbListOfServers > 0) sbListOfServers.append(":"); // delimiter between countries
                sbListOfServers.append(country);
                String cities = NvpnCommands.getListOfCities(country);
                String delimiter="@"; // first delimiter between country and first city
