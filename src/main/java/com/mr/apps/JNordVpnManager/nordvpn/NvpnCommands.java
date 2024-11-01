@@ -12,44 +12,44 @@ import com.mr.apps.JNordVpnManager.utils.UtilSystem;
 
 public class NvpnCommands {
 
-	private static final String CMD_WHICH = "which";
-	private static final String CMD_NORDVPN = "nordvpn"; 
+   private static final String CMD_WHICH = "which";
+   private static final String CMD_NORDVPN = "nordvpn"; 
    private static final String ARG_ACCOUNT = "account";
    private static final String ARG_CONNECT = "connect"; 
-	private static final String ARG_COUNTRIES = "countries"; 
+   private static final String ARG_COUNTRIES = "countries"; 
    private static final String ARG_DISCONNECT = "disconnect"; 
    private static final String ARG_GROUPS = "groups";
    private static final String ARG_LOGIN = "login";
    private static final String ARG_LOGOUT = "logout";
-	private static final String ARG_SETTINGS = "settings";
+   private static final String ARG_SETTINGS = "settings";
    private static final String ARG_STATUS = "status";
    private static final String ARG_VERSION = "--version";
    private static final String ARG_DAEMON_VERSION = "version";
    private static final String ARG_CITIES = "cities";
 	
-	/**
-	 * Check, if nordvpn is installed
-	 * @return 
-	 * @return true, if nordvpn is installed, else false
-	 */
-	public static boolean isInstalled()
-	{
-		String retVal = UtilSystem.runCommand(CMD_WHICH, CMD_NORDVPN);
-		return !retVal.isEmpty();
-	}
+   /**
+    * Check, if nordvpn is installed
+    * @return 
+    * @return true, if nordvpn is installed, else false
+    */
+   public static boolean isInstalled()
+   {
+      String retVal = UtilSystem.runCommand(CMD_WHICH, CMD_NORDVPN);
+      return !retVal.isEmpty();
+   }
 
-	/**
-	 * Get nordvpn status information
-	 * @return the current status of nordvpn
-	 */
-	public static String getStatus()
-	{
-		String status = null;
+   /**
+    * Get nordvpn status information
+    * @return the current status of nordvpn
+    */
+   public static String getStatus()
+   {
+      String status = null;
 		
-		status = UtilSystem.runCommand(CMD_NORDVPN, ARG_STATUS);
+      status = UtilSystem.runCommand(CMD_NORDVPN, ARG_STATUS);
 		
-		return status;
-	}
+      return status;
+   }
 
    /**
     * Get nordvpn current settings
