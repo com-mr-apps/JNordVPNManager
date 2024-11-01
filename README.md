@@ -27,7 +27,7 @@ JNordVPNManager  is a java program that is all bundled into a single jar file.  
   
  Please note that java must be in your path and this assumes cal.jar is in your current directory.  Basic command line topics and I won't go into detail here.
 
-## SNAP
+## SNAP (!Not available yet!)
 
 [![JNordVPNManager](https://snapcraft.io/JNordVPNManager/badge.svg)](https://snapcraft.io/JNordVPNManager)
 
