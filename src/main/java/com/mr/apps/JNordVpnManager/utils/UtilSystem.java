@@ -103,14 +103,14 @@ public class UtilSystem
          String line = null;
          while ((line = reader.readLine()) != null)
          {
-            if (!result.isEmpty()) result.append("\n");
+            if (result.length() > 0) result.append("\n");
             result.append(line);
          }
 
          String line_err = null;
          while ((line_err = reader_err.readLine()) != null)
          {
-            if (!result_err.isEmpty()) result_err.append("\n");
+            if (result_err.length() > 0) result_err.append("\n");
             result_err.append(line_err);
          }
 
@@ -127,9 +127,9 @@ public class UtilSystem
                                  exitCode + ".";
          }
          Starter._m_logError.TraceCmd("Returncode=" + exitCode);
-         if (null != result && !result.isEmpty()) Starter._m_logError.TraceCmd("[stdout]\n" + result + "\n");
-         if (null != result_err && !result_err.isEmpty()) Starter._m_logError.TraceCmd("[stderr]\n" + result_err + "\n");
-         if (!result_err.isEmpty())
+         if (null != result && result.length() > 0) Starter._m_logError.TraceCmd("[stdout]\n" + result + "\n");
+         if (null != result_err && result_err.length() > 0) Starter._m_logError.TraceCmd("[stderr]\n" + result_err + "\n");
+         if (result_err.length() > 0)
          {
             m_lastErrorMessage += result_err.toString();
          }
@@ -163,7 +163,7 @@ public class UtilSystem
       StringBuffer fullCommand = new StringBuffer();
       for (String s : command)
       {
-         if (!fullCommand.isEmpty()) fullCommand.append(" ");
+         if (fullCommand.length() > 0) fullCommand.append(" ");
          fullCommand.append(s);
       }
       return fullCommand.toString();
