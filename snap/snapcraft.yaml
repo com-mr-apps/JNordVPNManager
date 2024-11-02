@@ -20,7 +20,7 @@ compression: lzo
 
 apps:
   j-nordvpn-manager:
-    command: JNordVPNManager-wrapper
+    command: JNordVPNManager-starter
     plugs:
        - network
 
