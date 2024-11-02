@@ -11,7 +11,7 @@ base: core22
 title: JNordVPNManager
 website: https://github.com/com-mr-apps/JNordVPNManager
 issues: https://github.com/frossm/com-mr-apps/JNordVPNManager/issues
-license: CDDL
+license: CDDL-1.1
 donation: https://buymeacoffee.com/3dprototyping
 icon: snap/gui/JNordVPNManager.svg
 
