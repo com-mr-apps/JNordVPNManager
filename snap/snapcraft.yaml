@@ -33,7 +33,7 @@ parts:
   j-nordvpn-manager:
     plugin: maven
     source: https://github.com/com-mr-apps/JNordVPNManager.git
-    source-branch: master
+    source-branch: main
 #    source-tag: JNordVPNManager_2024_1_0
 #    source_tag: trunk
     source-type: git
