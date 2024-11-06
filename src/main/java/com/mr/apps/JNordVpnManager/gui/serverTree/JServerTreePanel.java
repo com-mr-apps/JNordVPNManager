@@ -37,6 +37,7 @@ import com.mr.apps.JNordVpnManager.Starter;
 import com.mr.apps.JNordVpnManager.geotools.CurrentLocation;
 import com.mr.apps.JNordVpnManager.geotools.Location;
 import com.mr.apps.JNordVpnManager.geotools.UtilMapGeneration;
+import com.mr.apps.JNordVpnManager.gui.dialog.JModalDialog;
 import com.mr.apps.JNordVpnManager.nordvpn.NvpnCallbacks;
 import com.mr.apps.JNordVpnManager.nordvpn.NvpnServers;
 import com.mr.apps.JNordVpnManager.utils.UtilPrefs;
@@ -121,8 +122,7 @@ public class JServerTreePanel extends JPanel implements TreeSelectionListener
       {
          public void actionPerformed(ActionEvent e)
          {
-            if (true == m_statusInitServerList || JOptionPane.showConfirmDialog(null, "Update of the server list takes some time.\nDo you want to continue?", "Please confirm",
-                  JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION)
+            if (true == m_statusInitServerList || JModalDialog.showConfirm("Update of the server list takes some time.\nDo you want to continue?") == JOptionPane.YES_OPTION)
             {
                DefaultMutableTreeNode root = createServerTree(true);
                m_tree.setModel(new MyModel(root));
@@ -431,7 +431,7 @@ public class JServerTreePanel extends JPanel implements TreeSelectionListener
             Location loc = ((JServerNode) node).getLocation();
             String msg = NvpnCallbacks.executeConnect(loc);
             if (NvpnCallbacks.isLastError()) msg = NvpnCallbacks.getLastError();
-            JOptionPane.showMessageDialog(null, msg, "NordVPN Connect", JOptionPane.INFORMATION_MESSAGE);
+            JModalDialog.showError("NordVPN Connect", msg);
          }
       }
       catch (Exception e1)

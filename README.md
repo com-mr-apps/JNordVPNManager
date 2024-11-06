@@ -12,7 +12,7 @@ Key Features:
 * **World Map View**: Visualize all available VPN servers on a world map and focus on the active server, providing an intuitive way to navigate through NordVPN's vast network.
 * **Security**: The application does not store any login information (Account, Password). It is just an interface for the the native nordvpn commands.
 
-The application is released under the Common Development and Distribution License ([CDDL](https://opensource.org/license/cddl-1-0)) with a Commons Clause License, ensuring that it remains free for private use only. This means that while you can download and enjoy NordVPN Manager without any costs, commercial exploitation of the software requires my explicit permission.
+The application is released under the Common Development and Distribution License 1.1 ([CDDL-1.1](https://spdx.org/licenses/CDDL-1.1.html)) with a Commons Clause License, ensuring that it remains free for private use only. This means that while you can download and enjoy NordVPN Manager without any costs, commercial exploitation of the software requires my explicit permission.
 
 The newest version and the source code can be found on GitHub: [https://github.com/com.mr.apps/JNordVpnManager](https://github.com/com.mr.apps/JNordVpnManager).
 Requirements, Bugs, etc. can be posted and will be administrated there.
@@ -23,25 +23,25 @@ Thank you for considering JNordVPN Manager as your go-to GUI for managing NordVP
 
 JNordVPNManager  is a java program that is all bundled into a single jar file.  To run a jar file on the command line, simply type:
 
-    java -jar JNordVPNManager.jar
+    java -jar JNordVPNManager_[version].jar
   
  Please note that java must be in your path and this assumes cal.jar is in your current directory.  Basic command line topics and I won't go into detail here.
 
-## SNAP (!Not available yet!)
+## SNAP
 
-[![JNordVPNManager](https://snapcraft.io/JNordVPNManager/badge.svg)](https://snapcraft.io/JNordVPNManager)
+[![JNordVPNManager](https://snapcraft.io/j-nordvpn-manager/badge.svg)](https://snapcraft.io/j-nordvpn-manager)
 
 I would encourage anyone with a supported Linux platform to use snap.  See [Snapcraft Homepage](https://snapcraft.io) for more information. You can download, install, and keep JNordVPNManager up to date automatically by installing the snap via:
 
-`sudo snap install JNordVPNManager`  (Assuming snap is installed)
+`sudo snap install j-nordvpn-manager`  (Assuming snap is installed)
 
 This will install the application into a sandbox where it is separate from other applications.
 
 To deinstall type:
 
-`sudo snap remove JNordVPNManager`
+`sudo snap remove j-nordvpn-manager`
 
-[![Get it from the Snap Store](https://snapcraft.io/static/images/badges/en/snap-store-black.svg)](https://snapcraft.io/JNordVPNManager)
+[![Get it from the Snap Store](https://snapcraft.io/static/images/badges/en/snap-store-black.svg)](https://snapcraft.io/j-nordvpn-manager)
 
 ## References
 
@@ -77,6 +77,6 @@ For purposes of the foregoing, "Sell" means practicing any or all of the rights 
 
 Software: JNordVPNManager
 
-License: [The Common Development and Distribution License 1.0 ](https://opensource.org/license/cddl-1-0)
+License: [The Common Development and Distribution License 1.1 ](https://spdx.org/licenses/CDDL-1.1.html)
 
 Licensor: com.mr.apps

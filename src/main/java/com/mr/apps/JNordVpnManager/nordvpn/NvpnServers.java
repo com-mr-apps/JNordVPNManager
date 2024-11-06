@@ -11,6 +11,7 @@ package com.mr.apps.JNordVpnManager.nordvpn;
 import javax.swing.JOptionPane;
 
 import com.mr.apps.JNordVpnManager.Starter;
+import com.mr.apps.JNordVpnManager.gui.dialog.JModalDialog;
 import com.mr.apps.JNordVpnManager.utils.UtilPrefs;
 import com.mr.apps.JNordVpnManager.utils.UtilSystem;
 import com.mr.apps.JNordVpnManager.utils.String.StringFormat;
@@ -45,7 +46,7 @@ public class NvpnServers
          if (UtilSystem.isLastError())
          {
             String msg = UtilSystem.getLastError();
-            JOptionPane.showMessageDialog(null, msg, "NordVPN get Countries", JOptionPane.ERROR_MESSAGE);
+            JModalDialog.showError("NordVPN get Countries", msg);
          }
          else
          {
@@ -59,7 +60,7 @@ public class NvpnServers
                if (UtilSystem.isLastError())
                {
                   String msg = UtilSystem.getLastError();
-                  JOptionPane.showMessageDialog(null, msg, "NordVPN get Cities", JOptionPane.ERROR_MESSAGE);
+                  JModalDialog.showError("NordVPN get Cities", msg);
                }
                else
                {

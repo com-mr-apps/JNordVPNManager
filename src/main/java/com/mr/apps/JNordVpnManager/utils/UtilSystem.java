@@ -26,6 +26,7 @@ import java.util.concurrent.TimeUnit;
 import javax.swing.JOptionPane;
 
 import com.mr.apps.JNordVpnManager.Starter;
+import com.mr.apps.JNordVpnManager.gui.dialog.JModalDialog;
 
 /**
  * Some common utilities
@@ -116,7 +117,7 @@ public class UtilSystem
 
          if (!process.waitFor(COMMAND_TIMEOUT, TimeUnit.SECONDS))
          {
-            JOptionPane.showMessageDialog(null, "The Command needed too long for execution. The command was cancelled.", "Process Command Timeout", JOptionPane.ERROR_MESSAGE);
+            JModalDialog.showError("Process Command Timeout", "The Command needed too long for execution. The command was cancelled.");
             process.destroy();
          }
          int exitCode = process.exitValue();

@@ -59,6 +59,7 @@ public class GuiCustomConsole extends WindowAdapter implements WindowListener, A
    private Thread                 m_readerThread;
    private Thread                 m_readerThread2;
    private boolean                m_quitFlag;
+   private static boolean         m_isVisible         = false;
    private final PipedInputStream m_pipedInputStream  = new PipedInputStream();
    private final PipedInputStream m_pipedInputStream2 = new PipedInputStream();
 
@@ -161,9 +162,12 @@ public class GuiCustomConsole extends WindowAdapter implements WindowListener, A
 
       m_consoleOutputEditorPane = new JEditorPane();
       m_consoleOutputEditorPane.setEditable(false);
-      m_consoleOutputEditorPane.setCaretColor(Color.WHITE); // hide caret
+      m_consoleOutputEditorPane.setCaretColor(new Color(255, 235, 205)); // hide caret
       m_consoleOutputEditorPane.setContentType( "text/html" );
-      m_consoleOutputEditorPane.setText("<html><body style=\"background-color:#F5DEB3\" id='body'>Console output start...</body></html>");
+      m_consoleOutputEditorPane.setText("<html><head><style>"
+            + "p {font-family: Monospaced; font-size:14;}"
+            + "</style></head>"
+            + "<body style=\"background-color:#FFEBCD\" id='body'>Console output start...</body></html>");
 
       m_consoleOutputPanel = new JScrollPane(m_consoleOutputEditorPane, 
             ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED,
@@ -250,12 +254,12 @@ public class GuiCustomConsole extends WindowAdapter implements WindowListener, A
 
    public synchronized void windowClosed(WindowEvent evt)
    {
-      setConsolevisible(false);
+      setVisible(false);
    }
 
    public synchronized void windowClosing(WindowEvent evt)
    {
-      setConsolevisible(false); // default behavior of JFrame
+      setVisible(false); // default behavior of JFrame
       m_consoleMainFrame.dispose();
    }
 
@@ -315,7 +319,7 @@ public class GuiCustomConsole extends WindowAdapter implements WindowListener, A
 
    public synchronized void btnExitExecute()
    {
-      int ret = JModalDialog.YesNoDialog(m_consoleMainFrame, "All unsaved Data will be lost, do you really want to exit");
+      int ret = JModalDialog.YesNoDialog("Do you really want to exit JNordVPNManager?");
       if (ret == 0)
       {
          m_quitFlag = true;
@@ -345,14 +349,14 @@ public class GuiCustomConsole extends WindowAdapter implements WindowListener, A
       JFileChooser filedia = new JFileChooser();
       filedia.setDialogType(JFileChooser.SAVE_DIALOG);
       filedia.setCurrentDirectory(new File(System.getProperty("user.home")));
-      filedia.setFileFilter(new FileNameExtensionFilter("Log File", "htm"));
+      filedia.setFileFilter(new FileNameExtensionFilter("Log File [html]", "html"));
       int ret = filedia.showSaveDialog(m_consoleMainFrame);
       if (ret == 0)
       {
          String file = filedia.getSelectedFile().getAbsolutePath();
          if (file.lastIndexOf(".") == -1)
          {
-            file = file + ".htm";
+            file = file + ".html";
          }
          if (file != null && !(file.equals("")))
          {
@@ -373,8 +377,8 @@ public class GuiCustomConsole extends WindowAdapter implements WindowListener, A
       }
       catch (Exception e)
       {
-         System.out.println("Could not write log file");
-         e.printStackTrace();
+         Starter._m_logError.TranslatorExceptionMessage(4, 10901, e);
+         JModalDialog.showError("Save Logfile Error", "Could not write log file.\n" + e.getMessage());
       }
    }
 
@@ -419,15 +423,14 @@ public class GuiCustomConsole extends WindowAdapter implements WindowListener, A
       }
    }
 
-   private static boolean m_isVisible = false;
    public synchronized boolean switchConsoleVisible()
    {
       m_isVisible = !m_isVisible;
-      setConsolevisible(m_isVisible);
+      setVisible(m_isVisible);
       return m_isVisible;
    }
 
-   public synchronized void setConsolevisible(boolean value)
+   public synchronized void setVisible(boolean value)
    {
       m_isVisible = value;
       m_consoleMainFrame.setVisible(value);

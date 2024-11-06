@@ -5,7 +5,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.mr.apps.JNordVpnManager</groupId>
 	<artifactId>JNordVpnManager</artifactId>
-	<version>2024.1.0</version>
+	<version>2024.1.1</version>
 	<name>JNordVpnManager</name>
 	<url>http://maven.apache.org</url>
 	<properties>
@@ -126,8 +126,8 @@
                                   </excludes>
                               </filter>
                           </filters>
-                          <shadedArtifactAttached>true</shadedArtifactAttached>
-                          <shadedClassifierName>shaded</shadedClassifierName>
+                          <shadedArtifactAttached>false</shadedArtifactAttached>
+                          <shadedClassifierName></shadedClassifierName>
                           <transformers>
 								<transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
 								<manifestEntries>
@@ -135,14 +135,12 @@
 									<Implementation-Version>${project.version}</Implementation-Version>
 								</manifestEntries>
                               </transformer>
-                              <!-- This bit merges the various GeoTools META-INF/services files  (e.g. referencing plugins) -->
-								<transformer
-									implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer" />
                           </transformers>
                       </configuration>
                   </execution>
               </executions>
 			</plugin>
+			<!-- create lib directory with dependencies and the jar with classpath
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-dependency-plugin</artifactId>
@@ -177,6 +175,7 @@
 					</archive>
 				</configuration>
 			</plugin>
+			-->
 		</plugins>
 		<resources>
 			<resource>

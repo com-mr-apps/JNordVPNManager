@@ -24,6 +24,7 @@ import com.mr.apps.JNordVpnManager.geotools.Location;
 import com.mr.apps.JNordVpnManager.gui.GuiMenuBar;
 import com.mr.apps.JNordVpnManager.gui.connectLine.GuiConnectLine;
 import com.mr.apps.JNordVpnManager.gui.dialog.JAutoCloseLoginDialog;
+import com.mr.apps.JNordVpnManager.gui.dialog.JModalDialog;
 import com.mr.apps.JNordVpnManager.utils.UtilPrefs;
 import com.mr.apps.JNordVpnManager.utils.UtilSystem;
 
@@ -144,7 +145,7 @@ public class NvpnCallbacks
                }
                catch (URISyntaxException e)
                {
-                  Starter._m_logError.TranslatorException(10903, e);
+                  Starter._m_logError.TranslatorExceptionAbend(10903, e);
                   m_lastErrorMessage = "Could not launch web page URL=" + matcher.group(1);
                }
             }
@@ -177,9 +178,7 @@ public class NvpnCallbacks
       if (true == currentStatus)
       {
          // Login -> Logout
-         if (JOptionPane.showConfirmDialog(Starter.getMainFrame(), 
-               "Are you sure you want to logout?", "Please confirm",
-               JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION)
+         if (JModalDialog.showConfirm("Are you sure you want to logout?") == JOptionPane.YES_OPTION)
          {
             msg = NvpnCommands.logout();
             if (UtilSystem.isLastError()) m_lastErrorMessage = UtilSystem.getLastError();
@@ -198,12 +197,12 @@ public class NvpnCallbacks
          if (true == currentStatus)
          {
             // Logout KO
-            JOptionPane.showMessageDialog(null, m_lastErrorMessage, "NordVPN Logout", JOptionPane.ERROR_MESSAGE);
+            JModalDialog.showError("NordVPN Logout", m_lastErrorMessage);
          }
          else
          {
             // Login LO
-            JOptionPane.showMessageDialog(null, m_lastErrorMessage, "NordVPN Login", JOptionPane.ERROR_MESSAGE);
+            JModalDialog.showError("NordVPN Login", m_lastErrorMessage);
          }         
       }
       else if (null != msg) // msg is null in case of cancel Logout
@@ -212,7 +211,7 @@ public class NvpnCallbacks
          if (true == currentStatus)
          {
             // Logout OK
-            JOptionPane.showMessageDialog(null, msg, "NordVPN Logout", JOptionPane.ERROR_MESSAGE);
+            JModalDialog.showMessage("NordVPN Logout", msg);
          }
          else
          {

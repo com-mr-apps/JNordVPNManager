@@ -15,12 +15,12 @@ import java.util.Vector;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
-import javax.swing.JOptionPane;
-
 import com.mr.apps.JNordVpnManager.Starter;
 import com.mr.apps.JNordVpnManager.geotools.CurrentLocation;
 import com.mr.apps.JNordVpnManager.geotools.Location;
 import com.mr.apps.JNordVpnManager.geotools.UtilLocations;
+import com.mr.apps.JNordVpnManager.gui.dialog.JModalDialog;
+import com.mr.apps.JNordVpnManager.gui.dialog.JSystemInfoDialog;
 import com.mr.apps.JNordVpnManager.gui.settings.JSettingsDialog;
 import com.mr.apps.JNordVpnManager.nordvpn.NvpnAccountData;
 import com.mr.apps.JNordVpnManager.nordvpn.NvpnCallbacks;
@@ -116,7 +116,7 @@ public class GuiMenuBar
             {
                msg = saVersions[0] + "\n" + saVersions[1];
             }
-            JOptionPane.showMessageDialog(Starter.getMainFrame(), msg, "NordVPN Version", JOptionPane.INFORMATION_MESSAGE);
+            JModalDialog.showMessage("NordVPN Version", msg);
          }
       });
       nordvpnMenu.add(menuItemVersion);
@@ -128,7 +128,7 @@ public class GuiMenuBar
          {
             String msg = NvpnCommands.getAccountInfo();
             if (UtilSystem.isLastError()) msg = UtilSystem.getLastError();
-            JOptionPane.showMessageDialog(Starter.getMainFrame(), msg, "NordVPN Account", JOptionPane.INFORMATION_MESSAGE);
+            JModalDialog.showMessage("NordVPN Account", msg);
          }
       });
       nordvpnMenu.add(menuItemAccount);
@@ -140,7 +140,7 @@ public class GuiMenuBar
          {
             String msg = NvpnCommands.getStatus();
             if (UtilSystem.isLastError()) msg = UtilSystem.getLastError();
-            JOptionPane.showMessageDialog(Starter.getMainFrame(), msg, "NordVPN Status", JOptionPane.INFORMATION_MESSAGE);
+            JModalDialog.showMessage("NordVPN Status", msg);
          }
       });
       nordvpnMenu.add(menuItemStatus);
@@ -152,7 +152,7 @@ public class GuiMenuBar
          {
             String msg = NvpnCommands.getSettings();
             if (UtilSystem.isLastError()) msg = UtilSystem.getLastError();
-            JOptionPane.showMessageDialog(Starter.getMainFrame(), msg, "NordVPN Settings", JOptionPane.INFORMATION_MESSAGE);
+            JModalDialog.showMessage("NordVPN Settings", msg);
          }
       });
       nordvpnMenu.add(menuItemSettings);
@@ -193,13 +193,13 @@ public class GuiMenuBar
             {
                // KO
                msg = UtilSystem.getLastError();
-               JOptionPane.showMessageDialog(Starter.getMainFrame(), msg, "NordVPN Connect", JOptionPane.ERROR_MESSAGE);
+               JModalDialog.showError("NordVPN Connect", msg);
             }
             else
             {
                // OK
                Starter.updateServer();
-               JOptionPane.showMessageDialog(Starter.getMainFrame(), msg, "NordVPN Connect", JOptionPane.INFORMATION_MESSAGE);
+               JModalDialog.showMessage("NordVPN Connect", msg);
             }
          }
       });
@@ -215,12 +215,12 @@ public class GuiMenuBar
             {
                // KO
                msg = UtilSystem.getLastError();
-               JOptionPane.showMessageDialog(Starter.getMainFrame(), msg, "NordVPN Disconnect", JOptionPane.ERROR_MESSAGE);
+               JModalDialog.showError("NordVPN Disconnect", msg);
             }
             else
             {
                // OK
-               JOptionPane.showMessageDialog(Starter.getMainFrame(), msg, "NordVPN Disconnect", JOptionPane.INFORMATION_MESSAGE);
+               JModalDialog.showMessage("NordVPN Disconnect", msg);
             }
          }
       });
@@ -268,6 +268,18 @@ public class GuiMenuBar
          }
       });
       infoMenu.add(aboutMenu);
+
+      // MenuItem --- Welcome ---
+      JMenuItem infoMenuItem = new JMenuItem("System Info");
+      infoMenuItem.addActionListener(new ActionListener()
+      {
+         public void actionPerformed(ActionEvent e)
+         {
+        	 JSystemInfoDialog systemInfoDialog = new JSystemInfoDialog(Starter.getMainFrame(), "System Info");
+        	 systemInfoDialog.setVisible(true);
+         }
+      });
+      infoMenu.add(infoMenuItem);
 
       return menuBar;
    }
@@ -402,7 +414,7 @@ public class GuiMenuBar
       String msg = NvpnCallbacks.executeConnect(loc);
       if (NvpnCallbacks.isLastError()) msg = NvpnCallbacks.getLastError();
 
-      JOptionPane.showMessageDialog(Starter.getMainFrame(), msg, "NordVPN Connect", JOptionPane.INFORMATION_MESSAGE);
+      JModalDialog.showMessage("NordVPN Connect", msg);
    }
 
    /**

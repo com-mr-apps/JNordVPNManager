@@ -11,9 +11,8 @@ package com.mr.apps.JNordVpnManager.nordvpn;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import javax.swing.JOptionPane;
-
 import com.mr.apps.JNordVpnManager.Starter;
+import com.mr.apps.JNordVpnManager.gui.dialog.JModalDialog;
 import com.mr.apps.JNordVpnManager.utils.UtilSystem;
 
 public class NvpnAccountData
@@ -36,7 +35,7 @@ public class NvpnAccountData
          else
          {
             msg = UtilSystem.getLastError();
-            JOptionPane.showMessageDialog(null, msg, "NordVPN Account", JOptionPane.ERROR_MESSAGE);
+            JModalDialog.showError("NordVPN Account", msg);
          }
        }
       else
@@ -45,7 +44,7 @@ public class NvpnAccountData
          int rc = parseData(msg);
          if (1 == rc)
          {
-            JOptionPane.showMessageDialog(null, "'nordvpn account' information cannot be parsed.", "NordVPN Account", JOptionPane.ERROR_MESSAGE);
+            JModalDialog.showError("NordVPN Account", "'nordvpn account' information cannot be parsed.");
          }
       }
    }
