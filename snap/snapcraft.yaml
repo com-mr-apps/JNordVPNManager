@@ -46,7 +46,7 @@ parts:
       - openjdk-11-jdk-headless
 
     stage-packages:
-      - openjdk-11-jre-headless
+	    [default-jre]
         
     override-prime: |
       snapcraftctl prime
