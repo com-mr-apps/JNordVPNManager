@@ -2,9 +2,9 @@
 Version=1.0
 Name=JNordVPN Manager
 GenericName=JNordVpnManager
-Comment=Java Application Manager GUI for Nord VPN backend
-Exec=$SNAP/JNordVPNManager-wrapper
-Icon=${SNAP}/meta/gui/JNordVPNManager.Starter.svg
+Comment=Java Application Manager GUI for NordVPN backend
+Exec=${SNAP}/JNordVPNManager-wrapper
+Icon=${SNAP}/meta/gui/JNordVPNManager.svg
 Terminal=false
 Type=Application
 Categories=Utility;Application;
