@@ -23,8 +23,6 @@ import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.concurrent.TimeUnit;
 
-import javax.swing.JOptionPane;
-
 import com.mr.apps.JNordVpnManager.Starter;
 import com.mr.apps.JNordVpnManager.gui.dialog.JModalDialog;
 
@@ -214,6 +212,15 @@ public class UtilSystem
       else
       {
          Starter._m_logError.TranslatorError(10903, "The Desktop does not support to open URL's in WebBrowers!", "URL: " + uri.toString() + " cannot be opened.");
+         String status = runCommand("xdg-open", uri.toString());
+         if (UtilSystem.isLastError())
+         {
+            Starter._m_logError.TranslatorError(10903, "Command 'xdg-open [url]' returned with error", status);
+         }
+         else
+         {
+            return true;
+         }
       }
       return false;
    }
