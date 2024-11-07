@@ -14,8 +14,6 @@ issues: https://github.com/frossm/com-mr-apps/JNordVPNManager/issues
 license: CDDL-1.1
 donation: https://buymeacoffee.com/3dprototyping
 icon: snap/gui/JNordVPNManager.svg
-
-# Enable faster LZO compression
 compression: lzo
 
 apps:
@@ -23,6 +21,9 @@ apps:
     command: JNordVPNManager-starter
     plugs:
        - network
+       - network-bind
+    environment:
+       _JAVA_OPTIONS: -Duser.home="$SNAP_USER_DATA" -Djava.util.prefs.userRoot="$SNAP_USER_DATA" 
 
 parts:
   wrapper:
@@ -38,8 +39,8 @@ parts:
 #    source_tag: trunk
     source-type: git
     
-#    maven-parameters:
-#      [-DskipTests=true, -Dsomarg=false]
+    maven-parameters:
+      [-DskipTests=true, -Dsomarg=false]
        
     build-packages:
       - maven
