@@ -634,7 +634,7 @@ public class UtilLogErr
       }
 
       // reserved for simple message text
-      headerLine += sShortMsg;
+      if (0 == iMsgNb) headerLine += sShortMsg;
  
       // write header line to log file or console
       writeLog (headerLine);

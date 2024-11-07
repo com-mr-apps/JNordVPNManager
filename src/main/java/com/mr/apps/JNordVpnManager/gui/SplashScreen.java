@@ -96,32 +96,32 @@ public class SplashScreen
       });
       this.m_splashImageIcon.add(mrLogo);
 
-      ImageIcon imageBmc = new ImageIcon(Starter.class.getResource(BUYMEACOFFEE_IMAGE));
-      myImage = imageBmc.getImage();
-      resizedImage = myImage.getScaledInstance(80, 80, java.awt.Image.SCALE_SMOOTH);
-      JLabel buymeacoffee =  new JLabel(new ImageIcon(resizedImage));
-      buymeacoffee.setToolTipText("<html><font face=\"sansserif\" color=\"black\">If you like to support my work,<br>you can press the Mouse Button and buy me a coffee here:<br>https://buymeacoffee.com/3dprototyping</font></html>");
-      buymeacoffee.setSize(new Dimension(80,80));
-      buymeacoffee.setLocation(500, 20);
-      buymeacoffee.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-      buymeacoffee.addMouseListener(new java.awt.event.MouseAdapter() {
-         public void mousePressed(java.awt.event.MouseEvent evt)
-         {
-            try
-            {
-               UtilSystem.openWebpage(new URI("https://buymeacoffee.com/3dprototyping"));
-            }
-            catch (URISyntaxException e)
-            {
-               Starter._m_logError.TranslatorExceptionAbend(10903, e);
-            }
-         }
-      });
-      this.m_splashImageIcon.add(buymeacoffee);
-
       if (null == status)
       {
          // Welcome screen
+         ImageIcon imageBmc = new ImageIcon(Starter.class.getResource(BUYMEACOFFEE_IMAGE));
+         myImage = imageBmc.getImage();
+         resizedImage = myImage.getScaledInstance(80, 80, java.awt.Image.SCALE_SMOOTH);
+         JLabel buymeacoffee =  new JLabel(new ImageIcon(resizedImage));
+         buymeacoffee.setToolTipText("<html><font face=\"sansserif\" color=\"black\">If you like to support my work,<br>you can press the Mouse Button and buy me a coffee here:<br>https://buymeacoffee.com/3dprototyping</font></html>");
+         buymeacoffee.setSize(new Dimension(80,80));
+         buymeacoffee.setLocation(500, 20);
+         buymeacoffee.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+         buymeacoffee.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mousePressed(java.awt.event.MouseEvent evt)
+            {
+               try
+               {
+                  UtilSystem.openWebpage(new URI("https://buymeacoffee.com/3dprototyping"));
+               }
+               catch (URISyntaxException e)
+               {
+                  Starter._m_logError.TranslatorExceptionAbend(10903, e);
+               }
+            }
+         });
+         this.m_splashImageIcon.add(buymeacoffee);
+
          m_splashFrame.setPreferredSize(new Dimension(imageIcon.getIconWidth(), imageIcon.getIconHeight()));
          m_splashImageIcon.setToolTipText("Press Mouse Button to close.");
          m_splashImageIcon.addMouseListener(new java.awt.event.MouseAdapter() {

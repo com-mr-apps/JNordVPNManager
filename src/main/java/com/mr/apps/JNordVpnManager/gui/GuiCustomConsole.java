@@ -18,7 +18,6 @@ import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -41,6 +40,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollBar;
 import javax.swing.JScrollPane;
 import javax.swing.ScrollPaneConstants;
+import javax.swing.WindowConstants;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Element;
@@ -67,6 +67,19 @@ public class GuiCustomConsole extends WindowAdapter implements WindowListener, A
    {
       // create all components and add them
       m_consoleMainFrame = new JFrame("JNordVPN Manager Console");
+      m_consoleMainFrame.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
+      
+      // Close Window with "X"
+      m_consoleMainFrame.addWindowListener(new WindowAdapter()
+      {
+         @Override public void windowClosing(java.awt.event.WindowEvent event)
+         {
+            Starter.setSkipWindowGainedFocus();
+            setConsoleVisible(false);
+         }
+      });
+
+      // Position
       Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
       Dimension frameSize = new Dimension((int) (screenSize.width / 2), (int) (screenSize.height / 2));
       int x = (int) (frameSize.width / 3);
@@ -252,17 +265,6 @@ public class GuiCustomConsole extends WindowAdapter implements WindowListener, A
       m_readerThread2.start();
    }
 
-   public synchronized void windowClosed(WindowEvent evt)
-   {
-      setVisible(false);
-   }
-
-   public synchronized void windowClosing(WindowEvent evt)
-   {
-      setVisible(false); // default behavior of JFrame
-      m_consoleMainFrame.dispose();
-   }
-
    public synchronized void actionPerformed(ActionEvent evt)
    {
       // Clear log button
@@ -426,11 +428,11 @@ public class GuiCustomConsole extends WindowAdapter implements WindowListener, A
    public synchronized boolean switchConsoleVisible()
    {
       m_isVisible = !m_isVisible;
-      setVisible(m_isVisible);
+      setConsoleVisible(m_isVisible);
       return m_isVisible;
    }
 
-   public synchronized void setVisible(boolean value)
+   public synchronized void setConsoleVisible(boolean value)
    {
       m_isVisible = value;
       m_consoleMainFrame.setVisible(value);

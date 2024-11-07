@@ -8,8 +8,6 @@
  */
 package com.mr.apps.JNordVpnManager.nordvpn;
 
-import javax.swing.JOptionPane;
-
 import com.mr.apps.JNordVpnManager.Starter;
 import com.mr.apps.JNordVpnManager.gui.dialog.JModalDialog;
 import com.mr.apps.JNordVpnManager.utils.UtilPrefs;

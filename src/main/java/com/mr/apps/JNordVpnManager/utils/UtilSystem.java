@@ -211,11 +211,16 @@ public class UtilSystem
       }
       else
       {
-         Starter._m_logError.TranslatorError(10903, "The Desktop does not support to open URL's in WebBrowers!", "URL: " + uri.toString() + " cannot be opened.");
+         Starter._m_logError.TranslatorError(10903,
+               "The Desktop does not support to open URL's in WebBrowers!",
+               "URL: " + uri.toString() + " cannot be opened.\n" +
+               "Try Fallback with xdg-open [url] command...");
          String status = runCommand("xdg-open", uri.toString());
          if (UtilSystem.isLastError())
          {
-            Starter._m_logError.TranslatorError(10903, "Command 'xdg-open [url]' returned with error", status);
+            Starter._m_logError.TranslatorError(10903,
+                  "Command 'xdg-open [url]' returned with error",
+                  status);
          }
          else
          {
