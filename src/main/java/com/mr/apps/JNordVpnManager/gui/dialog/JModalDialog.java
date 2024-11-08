@@ -10,263 +10,233 @@ package com.mr.apps.JNordVpnManager.gui.dialog;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.Dialog;
+import java.awt.Dimension;
 import java.awt.FlowLayout;
+import java.awt.Font;
 import java.awt.Frame;
-import java.awt.GridLayout;
-import java.awt.Label;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.StringTokenizer;
+
+import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JDialog;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JTextArea;
+import javax.swing.border.BevelBorder;
+import javax.swing.border.LineBorder;
+import javax.swing.border.TitledBorder;
 
+import com.mr.apps.JNordVpnManager.Starter;
 
- public class JModalDialog extends JDialog implements ActionListener
- {
-    /**
+/**
+ * Utility class for modal dialog panels.<p>
+ * It contains a pre-defined set of common dialog panels [which have all the application frame as parent] like:
+ * <ul>
+ * <li>Simple Message dialog with Ok Button</li>
+ * <li>Ok dialog with Ok Button or free configurable</li>
+ * <li>Yes-No dialog with Yes and No Buttons</li>
+ * <li>Info, Warning and Error Message dialogs</li>
+ * <li>...and many more...</li>
+ * </ul>
+ * On close, the Starter.setSkipWindowGainedFocus() method is called to avoid the execution of the windowGainedFocus event.
+ */
+@SuppressWarnings("serial")
+public class JModalDialog extends JDialog implements ActionListener
+{
+   private String m_result;
+   private String m_buttons;
+   private JPanel m_messagePanel;
+   private JPanel m_buttonsPanel;
+
+   /**
+    * Constructor for any modal dialog
+    * <p>
+    * This method creates a modal dialog panel with a title, a (single - or multi-line) message and buttons.
     * 
+    * @param owner
+    *           is the dialog owner (application main frame)
+    * @param title
+    *           is the dialog message title
+    * @param msg
+    *           is the dialog message
+    * @param buttons
+    *           is a comma separated list with the available button names e.g. "Ok,Cancel"
     */
-   private static final long serialVersionUID = -6232586465653751587L;
-   String result;
-    String m_buttons;
+   public JModalDialog(Frame owner, String title, String msg, String buttons)
+   {
+      super(owner, title, true);
+//      Starter._m_logError.TraceDebug("(JModalDialog) " + title + " / Buttons=" + buttons + " / Message=\n" + msg);
 
-/*
-    public static void htmlDialog(Frame owner, String headline, String msg, String button_text, String url)
-    {
-       ModalDialog dlg;
-       dlg = new ModalDialog(owner,headline,"nix",button_text,url);
-       dlg.setVisible(true);
-       //return dlg.getResult();
-    }
-*/
+      m_buttons = new String(buttons);
 
-    public static int OKDialog(Dialog owner,String headline, String msg, String button_text)
-    {
-       JModalDialog dlg;
-       dlg = new JModalDialog(owner,headline,msg,button_text);
-       dlg.setVisible(true);
-       dlg.repaint();
-       return dlg.getResult();
-    }
+      // Dialog Main Window
+      getContentPane().setLayout(new BorderLayout());
+      setUndecorated(true);
+      setResizable(false);
+      Point parloc = owner.getLocation();
+      setLocation(parloc.x + 30, parloc.y + 30);
+      setMinimumSize(new Dimension(120, 20));
 
-    public static int OKDialog(Frame owner, String headline, String msg, String button_text)
-    {
-       JModalDialog dlg;
-       dlg = new JModalDialog(owner,headline,msg,button_text);
-       dlg.setVisible(true);
-       dlg.repaint();
-       return dlg.getResult();
-    }
+      // Dialog Panel
+      JPanel dialogPanel = new JPanel(new BorderLayout());
+      dialogPanel.setBackground(Color.darkGray);
+      dialogPanel.setBorder(BorderFactory.createCompoundBorder(BorderFactory.
+            createBevelBorder(BevelBorder.RAISED),BorderFactory.createBevelBorder(BevelBorder.LOWERED)));
+      getContentPane().add(dialogPanel, BorderLayout.CENTER);
 
-    public static int OKDialog(Frame owner, String headline, String[] msg, String button_text)
-    {
-       JModalDialog dlg;
-       dlg = new JModalDialog(owner,headline,msg,button_text);
-       dlg.setVisible(true);
-       dlg.repaint();
-       return dlg.getResult();
-    }
-    public static int OKDialog(String headline, String msg, String button_text)
-    {
-       System.out.println("Anlegen des Dialog 4+ "+ msg);
-       JModalDialog dlg;
-       dlg = new JModalDialog(headline,msg,button_text);
-       dlg.setVisible(true);
-       dlg.repaint();
-       return dlg.getResult();
-    }
+      // Messages Panel
+      m_messagePanel = new JPanel(new BorderLayout());
+      m_messagePanel.setBorder(BorderFactory.createEmptyBorder(5,5,5,5));
+      dialogPanel.add(m_messagePanel, BorderLayout.CENTER);
+      
+      // Title + Message(s)
+      JTextArea messageText = new JTextArea();
+      messageText.setBorder(new TitledBorder(new LineBorder(Color.gray,2, true), title,
+            TitledBorder.CENTER, TitledBorder.TOP,
+            new Font("SansSerif",Font.BOLD, 12),
+            Color.BLACK));
+      messageText.setFont(messageText.getFont().deriveFont(Font.ITALIC));
+//      messageText.setBackground(Color.lightGray);
+//      messageText.setCaretColor(Color.lightGray);
+      messageText.setText(msg);
+      messageText.setEditable(false);
+      m_messagePanel.add(messageText, BorderLayout.CENTER);
 
-    public int OKDialog(Frame owner, String msg)
-    {
-       System.out.println("Anlegen des Dialog 5+ "+ msg);
-       JModalDialog dlg;
-       dlg = new JModalDialog(owner,"Message",msg,"OK");
-       dlg.setVisible(true);
-       dlg.repaint();
-       return dlg.getResult();
-    }
-    
-    public static int YesNoDialog(Dialog owner, String msg)
-    {
-       JModalDialog dlg;
-       dlg = new JModalDialog(owner,"Question",msg,"Yes,No");
-       dlg.setVisible(true);
-       dlg.repaint();
-       return dlg.getResult();
-    }
-    
-    public static int YesNoDialog(Frame owner, String msg)
-    {
-       JModalDialog dlg;
-       dlg = new JModalDialog(owner,"Question",msg,"Yes,No");
-       dlg.setVisible(true);
-       dlg.repaint();
-       return dlg.getResult();
-    }
+      // Buttons
+      m_buttonsPanel = new JPanel();
+      m_buttonsPanel.setLayout(new FlowLayout(FlowLayout.CENTER));
+      StringTokenizer strtok = new StringTokenizer(m_buttons, ",");
+      while (strtok.hasMoreTokens())
+      {
+         JButton button = new JButton(strtok.nextToken());
+         button.addActionListener(this);
+         m_buttonsPanel.add(button);
+      }
+      dialogPanel.add(m_buttonsPanel, BorderLayout.PAGE_END);
 
+      pack();
+   }
 
-/*
-    public static int YesNoDialog(Frame owner, String headline, String[] msg, String button_text)
-    {
-       ModalDialog dlg;
-       dlg = new ModalDialog(owner, headline ,msg, button_text);
-       dlg.setVisible(true);
-       return dlg.getResult();
-    }
-*/
+   /**
+    * Action, when a button is pressed.
+    */
+   public void actionPerformed(ActionEvent event)
+   {
+      Starter.setSkipWindowGainedFocus();
 
-    public int YesNoCancelDialog(Frame owner,String msg)
-    {
-       JModalDialog dlg;
-       dlg = new JModalDialog(owner,"Question",msg,"Yes,No,Cancel");
-       dlg.setVisible(true);
-       dlg.repaint();
-       return dlg.getResult();
-    }
+      m_result = event.getActionCommand();
+      setVisible(false);
+      dispose();
+   }
 
+   /**
+    * Get the result of which button was pressed
+    * 
+    * @return the index of the button in the creation list (starting at 0)
+    */
+   public int getResult()
+   {
+      int iCnt = 0;
 
+      StringTokenizer strtok = new StringTokenizer(m_buttons, ",");
+      while (strtok.hasMoreTokens())
+      {
+         if (strtok.nextToken().equals(m_result))
+         {
+            return (iCnt);
+         }
+         iCnt++;
+      }
+      return -1;
+   }
+   
+   public static int OKDialog(String title, String msg, String button_text)
+   {
+      JModalDialog dlg = new JModalDialog(Starter.getMainFrame(), title, msg, button_text);
+      dlg.repaint();
+      dlg.setVisible(true);
+      return dlg.getResult();
+   }
 
-    public JModalDialog(Frame owner, String title, String msg, String buttons)
-    {
-       super(owner, title, true);
-       //System.out.println("Mouse pos ="+owner.getMousePosition().toString());
-       m_buttons = new String(buttons);
-       //Fenster
-       setBackground(Color.lightGray);
-       getContentPane().setLayout(new BorderLayout());
-       setResizable(false);
-       Point parloc = owner.getLocation();
-       setLocation(parloc.x + 30, parloc.y + 30);
-       //Message
-       getContentPane().add("Center", new Label(msg));
-       //Buttons
-       JPanel panel = new JPanel();
-       panel.setLayout(new FlowLayout(FlowLayout.CENTER));
-       StringTokenizer strtok = new StringTokenizer(buttons,",");
-       while (strtok.hasMoreTokens())
-       {
-          JButton button = new JButton(strtok.nextToken());
-          button.addActionListener(this);
-          panel.add(button);
-       }
-       getContentPane().add("South", panel);
-       pack();
-    }
+   public int OKDialog(String title, String msg)
+   {
+      JModalDialog dlg;
+      dlg = new JModalDialog(Starter.getMainFrame(), title , msg, "OK");
+      dlg.repaint();
+      dlg.setVisible(true);
+      return dlg.getResult();
+   }
 
-    public JModalDialog(Dialog owner,String title, String msg, String buttons)
-    {
-       super(owner, title, true);
-       //System.out.println("Mouse pos ="+owner.getMousePosition().toString());
-       m_buttons = new String(buttons);
+   public static int YesNoDialog(String msg)
+   {
+      JModalDialog dlg = new JModalDialog(Starter.getMainFrame(), "Question", msg, "Yes,No");
+      dlg.repaint();
+      dlg.setVisible(true);
+      return dlg.getResult();
+   }
 
-       //Fenster
-       setBackground(Color.lightGray);
-       getContentPane().setLayout(new BorderLayout());
-       setResizable(false);
-       Point parloc = owner.getLocation();
-       setLocation(parloc.x + 40, parloc.y + 60);
-       //Message
-       getContentPane().add("Center", new Label(msg));
-       //Buttons
-       JPanel panel = new JPanel();
-       panel.setLayout(new FlowLayout(FlowLayout.CENTER));
-       StringTokenizer strtok = new StringTokenizer(buttons, ",");
-       while (strtok.hasMoreTokens())
-       {
-          JButton button = new JButton(strtok.nextToken());
-          button.addActionListener(this);
-          panel.add(button);
-       }
-       getContentPane().add("South", panel);
-       pack();
-    }
+   public int YesNoCancelDialog(String msg)
+   {
+      JModalDialog dlg = new JModalDialog(Starter.getMainFrame(), "Question", msg, "Yes,No,Cancel");
+      dlg.repaint();
+      dlg.setVisible(true);
+      return dlg.getResult();
+   }
 
-    public JModalDialog( String Title , String msg , String Button )
-    {
-       super( );
-       m_buttons = new String(Button);
-       
-       //Fenster
-       setBackground(Color.lightGray);
-       getContentPane().setLayout(new BorderLayout());
-       setResizable(false);
-       //Messages
-       JPanel msg_lines=new JPanel();
-       msg_lines.add(new Label(msg));
-       getContentPane().add("Center", msg_lines);
-       //Buttons
-       JPanel panel = new JPanel();
-       panel.setLayout(new FlowLayout(FlowLayout.CENTER));
-       JButton button = new JButton(Button);
-       button.addActionListener(this);
-       panel.add(button);
-       getContentPane().add("South", panel);
-       pack();
-       
-    }
-
-    public JModalDialog(Frame owner, String title, String[] msg, String buttons)
-    {
-       super(owner, title, true);
-       m_buttons = new String(buttons);
-       //System.out.println("Mouse pos ="+owner.getMousePosition().toString());
-       //Fenster
-       setBackground(Color.lightGray);
-       getContentPane().setLayout(new BorderLayout());
-       setResizable(false);
-       Point parloc = owner.getLocation();
-       setLocation(parloc.x + 40, parloc.y + 60);
-       //Messages
-       JPanel msg_lines=new JPanel();
-       msg_lines.setLayout(new GridLayout(msg.length,1));
-       for (int i=0;i<msg.length;i++)
-       {
-         msg_lines.add(new Label(msg[i]));
-       }
-       getContentPane().add("Center", msg_lines);
-       //Buttons
-       JPanel panel = new JPanel();
-       panel.setLayout(new FlowLayout(FlowLayout.CENTER));
-       StringTokenizer strtok = new StringTokenizer(buttons, ",");
-       while (strtok.hasMoreTokens())
-       {
-          JButton button = new JButton(strtok.nextToken());
-          button.addActionListener(this);
-          panel.add(button);
-       }
-       getContentPane().add("South", panel);
-       pack();
-    }
-
-    public void actionPerformed(ActionEvent event)
-    {
-       result = event.getActionCommand();
-       setVisible(false);
-       dispose();
-    }
-
-    public int getResult()
-    {
-       int iCnt = 0;
-
-       StringTokenizer strtok = new StringTokenizer(m_buttons, ",");
-       while (strtok.hasMoreTokens())
-       {
-          if (strtok.nextToken().equals(result))
-          {
-             return (iCnt);
-          }
-          iCnt++;
-       }
-       return 0;
-    }
-/*
-    public String getResult()
-    {
-       return result;
-    }
-*/
- }
+   public static int showYesNoDialog(String title, String msg)
+   {
+      JModalDialog dlg = new JModalDialog(Starter.getMainFrame(), title, msg, "Yes,No");
+      dlg.m_messagePanel.setBackground(new Color(51,153,255));
+      dlg.m_buttonsPanel.setBackground(new Color(51,153,255));
+      dlg.repaint();
+      dlg.setVisible(true);
+      return (dlg.getResult() == 0) ? JOptionPane.YES_OPTION : JOptionPane.NO_OPTION;
+   }
+   
+   public static int showConfirm(String msg)
+   {
+      JModalDialog dlg = new JModalDialog(Starter.getMainFrame(), "Please Confirm", msg, "Yes,No");
+      dlg.repaint();
+      dlg.setVisible(true);
+      return (dlg.getResult() == 0) ? JOptionPane.YES_OPTION : JOptionPane.NO_OPTION;
+   }
+   
+   public static int showMessage(String title, String msg)
+   {
+      JModalDialog dlg = new JModalDialog(Starter.getMainFrame(), title, msg, "Ok");
+      dlg.repaint();
+      dlg.setVisible(true);
+      return JOptionPane.CLOSED_OPTION;
+   }
+   
+   public static int showInfo(String msg)
+   {
+      JModalDialog dlg = new JModalDialog(Starter.getMainFrame(), "Information", msg, "Close");
+      dlg.repaint();
+      dlg.setVisible(true);
+      return JOptionPane.CLOSED_OPTION;
+   }
+   
+   public static int showWarning(String msg)
+   {
+      JModalDialog dlg = new JModalDialog(Starter.getMainFrame(), "Warning", msg, "Close");
+      dlg.m_messagePanel.setBackground(new Color(255,255,153));
+      dlg.m_buttonsPanel.setBackground(new Color(255,255,153));
+      dlg.repaint();
+      dlg.setVisible(true);
+      return JOptionPane.CLOSED_OPTION;
+   }
+   
+   public static int showError(String sShortMsg, String sLongMsg)
+   {
+      JModalDialog jmd = new JModalDialog(Starter.getMainFrame(), sShortMsg, sLongMsg, "Close");
+      jmd.m_messagePanel.setBackground(new Color(255,102,102));
+      jmd.m_buttonsPanel.setBackground(new Color(255,102,102));
+      jmd.repaint();
+      jmd.setVisible(true);
+      return JOptionPane.CLOSED_OPTION;
+   }
+}

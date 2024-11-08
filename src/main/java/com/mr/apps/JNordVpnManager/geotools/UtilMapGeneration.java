@@ -89,23 +89,38 @@ public class UtilMapGeneration
     */
    public static JMapFrame createMap()
    {
-      // Create a map content...
-      m_map = new MapContent();
-      m_map.setTitle("JNordVPN Manager");
-
-      // ...add our shape file to it..
-      m_baseWorldMapLayer = createWorldMapLayer();
-      if (null != m_baseWorldMapLayer) m_map.addLayer(m_baseWorldMapLayer);
+      JMapFrame mapFrame = null;
       
-      // Create a JMapFrame with custom tool bar buttons
-      JMapFrame mapFrame = new JMapFrame(m_map);
-      mapFrame.enableToolBar(true);
-      mapFrame.enableStatusBar(false);
-      //mapFrame.enableLayerTable(true);
-      //mapFrame.setSize(800, 400);
+      try
+      {
+         // Create a map content...
+         Starter._m_logError.TraceDebug("Create new Map Content...");
 
-      m_mapPane = mapFrame.getMapPane();
-      m_fullMapEnvelope = m_mapPane.getMapContent().getViewport().getBounds();
+         m_map = new MapContent();
+         m_map.setTitle("JNordVPN Manager");
+
+         // ...add our shape file to it..
+         Starter._m_logError.TraceDebug("Add World Map Layer...");
+
+         m_baseWorldMapLayer = createWorldMapLayer();
+         if (null != m_baseWorldMapLayer) m_map.addLayer(m_baseWorldMapLayer);
+         
+         // Create a JMapFrame with custom tool bar buttons
+         Starter._m_logError.TraceDebug("Create World Map Frame...");
+         mapFrame = new JMapFrame(m_map);
+         mapFrame.enableToolBar(true);
+         mapFrame.enableStatusBar(false);
+         //mapFrame.enableLayerTable(true);
+         //mapFrame.setSize(800, 400);
+
+         m_mapPane = mapFrame.getMapPane();
+         m_fullMapEnvelope = m_mapPane.getMapContent().getViewport().getBounds();
+         
+      }
+      catch (Exception e)
+      {
+         Starter._m_logError.TranslatorExceptionMessage(4, 10996, e);
+      }
  
       return mapFrame;
    }

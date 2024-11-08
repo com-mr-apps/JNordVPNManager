@@ -1,11 +1,11 @@
 name: j-nordvpn-manager
-version: '2024.1.0'
+version: '2024.1.1'
 summary: Frontend for NordVPN Service
 description: |
   Introducing JNordVPN Manager - a user-friendly, open-source graphical interface for managing NordVPN connections on Linux. This application simplifies VPN administration with features like a server/city list grouped by countries with filter functionality, connection management (login, logout, connect, disconnect, pause), and a world map showing all servers and the active one. Recent connections are also stored for easy reconnection by a single click.
 
 grade: stable
-confinement: devmode
+confinement: strict
 base: core22
 
 title: JNordVPNManager
@@ -14,8 +14,6 @@ issues: https://github.com/frossm/com-mr-apps/JNordVPNManager/issues
 license: CDDL-1.1
 donation: https://buymeacoffee.com/3dprototyping
 icon: snap/gui/JNordVPNManager.svg
-
-# Enable faster LZO compression
 compression: lzo
 
 apps:
@@ -23,6 +21,12 @@ apps:
     command: JNordVPNManager-starter
     plugs:
        - network
+       - network-bind
+       - desktop
+       - desktop-legacy
+       - browser-support
+    environment:
+       _JAVA_OPTIONS: -Duser.home="$SNAP_USER_DATA" -Djava.util.prefs.userRoot="$SNAP_USER_DATA" 
 
 parts:
   wrapper:
@@ -34,19 +38,18 @@ parts:
     plugin: maven
     source: https://github.com/com-mr-apps/JNordVPNManager.git
     source-branch: main
-#    source-tag: JNordVPNManager_2024_1_0
-#    source_tag: trunk
+    source-tag: Release_2024_1_1
     source-type: git
     
-#    maven-parameters:
-#      [-DskipTests=true, -Dsomarg=false]
+    maven-parameters:
+      [-DskipTests=true, -Dsomarg=false]
        
     build-packages:
       - maven
       - openjdk-11-jdk-headless
 
     stage-packages:
-      - openjdk-11-jre-headless
+      [default-jre]
         
     override-prime: |
       snapcraftctl prime

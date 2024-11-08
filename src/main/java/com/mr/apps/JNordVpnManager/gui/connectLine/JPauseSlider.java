@@ -275,6 +275,8 @@ public class JPauseSlider extends JPanel
     */
    public static String syncStatusForPause(int iStatus)
    {
+      if (null == m_timer) return null;
+
       if (true == m_timer.isRunning())
       {
          if (iStatus == Starter.STATUS_CONNECTED)

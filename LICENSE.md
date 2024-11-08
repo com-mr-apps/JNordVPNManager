@@ -16,7 +16,7 @@ Condition notice.
 
 Software: JNordVPNManager
 
-License: [The Common Development and Distribution License 1.0 ](https://spdx.org/licenses/CDDL-1.1.html)
+License: [The Common Development and Distribution License 1.1 ](https://spdx.org/licenses/CDDL-1.1.html)
 
 Licensor: com.mr.apps
 

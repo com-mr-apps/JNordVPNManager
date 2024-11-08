@@ -19,6 +19,7 @@ import java.awt.geom.Point2D;
 
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JOptionPane;
 import javax.swing.JToolBar;
 
 import org.geotools.swing.JMapFrame;
@@ -28,6 +29,7 @@ import org.geotools.swing.tool.CursorTool;
 import com.mr.apps.JNordVpnManager.Starter;
 import com.mr.apps.JNordVpnManager.geotools.Location;
 import com.mr.apps.JNordVpnManager.geotools.UtilMapGeneration;
+import com.mr.apps.JNordVpnManager.gui.dialog.JModalDialog;
 import com.mr.apps.JNordVpnManager.nordvpn.NvpnCallbacks;
 
 public class GuiMapArea
@@ -73,7 +75,7 @@ public class GuiMapArea
 
       ImageIcon imageConnectMap = new ImageIcon(Starter.class.getResource("resources/icons/connectMap_32.png"));
       JButton pickServer = new JButton(imageConnectMap);
-      pickServer.setToolTipText("Select a VPN Server [city or country]");
+      pickServer.setToolTipText("Select a VPN Server [city or country]. LMB-direct/RMB-confirm");
       pickServer.addActionListener(e -> m_mapFrame.getMapPane().setCursorTool(
          new CursorTool() {
             @Override
@@ -88,10 +90,17 @@ public class GuiMapArea
                      NvpnCallbacks.executeConnect(loc);
                   }
                }
+               else if (e.getButton() == MouseEvent.BUTTON3)
+               {
+                  if (JModalDialog.showYesNoDialog("Connect to", loc.getCountry() + " " + loc.getCity()) == JOptionPane.YES_OPTION)
+                 {
+                     NvpnCallbacks.executeConnect(loc);
+                 }                  
+               }
             }
 /*
             @Override public void onMouseMoved(MapMouseEvent event) {
-               //TODO
+               //TODO end of move detection
                Point2D actPos = ((MapMouseEvent) event).getWorldPos();
                System.out.println("Mouse movement detected! Actual mouse position is: " + event.getX()+ "," + event.getY() + ".");
              }

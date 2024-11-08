@@ -40,6 +40,7 @@ import com.mr.apps.JNordVpnManager.gui.GuiStatusLine;
 import com.mr.apps.JNordVpnManager.gui.SplashScreen;
 import com.mr.apps.JNordVpnManager.gui.connectLine.GuiConnectLine;
 import com.mr.apps.JNordVpnManager.gui.connectLine.JPauseSlider;
+import com.mr.apps.JNordVpnManager.gui.dialog.JModalDialog;
 import com.mr.apps.JNordVpnManager.gui.serverTree.JServerTreePanel;
 import com.mr.apps.JNordVpnManager.nordvpn.NvpnAccountData;
 import com.mr.apps.JNordVpnManager.nordvpn.NvpnCallbacks;
@@ -78,6 +79,7 @@ public class Starter
    private static String           m_nordvpnVersion;
    private static Cursor           m_applicationDefaultCursor = null;
    private static boolean          m_cursorChangeAllowed      = true;
+   private static boolean          m_skipWindowGainedFocus    = false;
 
    private static CurrentLocation  m_currentServer            = null;
 
@@ -111,6 +113,15 @@ public class Starter
    {
       m_splashScreen = new SplashScreen("JNordVPN Manager loading...");
       m_splashScreen.show();
+   }
+
+   /**
+    * Method to set the flag to skip "WindowGainedFocus" event for main application<p>
+    * The Event is even fired, if a message window closes. It is only required, if we re-enter from another application.
+    */
+   public static void setSkipWindowGainedFocus()
+   {
+      m_skipWindowGainedFocus = true;
    }
 
    /**
@@ -166,8 +177,7 @@ public class Starter
       if ((0 == iAutoDisConnect) && (null != pauseMsg))
       {
          // paused
-         if (JOptionPane.showConfirmDialog(m_mainFrame, "Your VPN connection is paused. If you quit the application, it will not be reconnected automatically.\nAre you sure you want to quit?", "Please confirm",
-               JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION)
+         if (JModalDialog.showConfirm("Your VPN connection is paused. If you quit the application, it will not be reconnected automatically.\nAre you sure you want to quit?") == JOptionPane.YES_OPTION)
          {
             // exit confirmed
             cleanUp();
@@ -178,8 +188,7 @@ public class Starter
       else
       {
          // not paused
-         if (quiet || JOptionPane.showConfirmDialog(m_mainFrame, "Are you sure you want to quit?", "Please confirm",
-               JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION)
+         if (quiet || JModalDialog.showConfirm("Are you sure you want to quit?") == JOptionPane.YES_OPTION)
          {
             if (1 == iAutoDisConnect)
             {
@@ -192,8 +201,10 @@ public class Starter
 
             cleanUp();
             _m_logError.TranslatorInfo("... exit JNordVPN Manager.");
-            System.exit(0);
-         }         
+
+            // exit program with last error code (or 0)
+            System.exit(_m_logError.getLastErrCode());
+         }
       }
    }
 
@@ -210,12 +221,14 @@ public class Starter
       // delete temporary map files
       UtilMapGeneration.cleanUp();
       
-      // TODO: save current settings, current server etc.
-      updateServer();
-      if (null != m_currentServer)
+      // TODO: save current UtilPrefs settings
+
+      updateServer(); // update recent server settings
+      
+      if (m_splashScreen.getProgress() < 100)
       {
-         UtilPrefs.setRecentCountry(m_currentServer.getCountry());
-         UtilPrefs.setRecentCity(m_currentServer.getCity());
+         // close an open [in case of initialization error] splash screen
+         m_splashScreen.setProgress(100);
       }
    }
 
@@ -247,10 +260,18 @@ public class Starter
             {
                // gain focus -> update GUI with current data
                _m_logError.TraceDebug("windowGainedFocus");
-               updateServer();
-               NvpnAccountData accountData = new NvpnAccountData();
-               GuiMenuBar.updateLoginOut(accountData);
-               GuiConnectLine.updateLoginOut(accountData);            
+               if (m_skipWindowGainedFocus)
+               {
+                  // Flag is set from the internal message dialogs. On close [re-enter in main application] I don't need an update
+                  m_skipWindowGainedFocus = false;
+               }
+               else
+               {
+                  updateServer();
+                  NvpnAccountData accountData = new NvpnAccountData();
+                  GuiMenuBar.updateLoginOut(accountData);
+                  GuiConnectLine.updateLoginOut(accountData);            
+               }
             }
          }
 
@@ -283,9 +304,10 @@ public class Starter
        */
       if (!NvpnCommands.isInstalled())
       {
-         JOptionPane.showMessageDialog(null, "'nordvpn' command not found. Check installation of NordVPN!", "Error", JOptionPane.ERROR_MESSAGE);
-         _m_logError.TranslatorError(10998, "'nordvpn' command not found.", "Check installation of NordVPN! Exit program.");
-         cleanupAndExit(true);
+         // TranslatorAbend() calls cleanupAndExit()
+         _m_logError.TranslatorAbend(10998,
+               "Backend NordVPN not installed.",
+               "'nordvpn' command not found.\nCheck installation of NordVPN!\n\nExit program.");
       }
 
       m_splashScreen.setProgress(10);
@@ -315,7 +337,9 @@ public class Starter
       }
       if (null != errMsg)
       {
-         _m_logError.TranslatorError(10000, "NordVPN Version error", errMsg);
+         _m_logError.TranslatorError(10000,
+               "NordVPN Version error",
+               errMsg);
          m_nordvpnVersion = "";
       }
       _m_logError.TraceIni("NordVPN version=" + m_nordvpnVersion + "<.");
@@ -442,6 +466,8 @@ public class Starter
     */
    public static boolean updateServer()
    {
+      if (null == m_statusLine) return false;
+
       // get the current connected server from the "nordvpn status" command
       CurrentLocation loc = m_statusLine.update();
       m_currentServer = loc;

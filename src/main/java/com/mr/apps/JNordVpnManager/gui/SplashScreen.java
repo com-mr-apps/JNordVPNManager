@@ -13,6 +13,7 @@ import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Image;
+import java.awt.Toolkit;
 import java.net.URI;
 import java.net.URISyntaxException;
 import javax.swing.*;
@@ -89,43 +90,45 @@ public class SplashScreen
             }
             catch (URISyntaxException e)
             {
-               Starter._m_logError.TranslatorException(10903, e);
+               Starter._m_logError.TranslatorExceptionAbend(10903, e);
             }
          }
       });
       this.m_splashImageIcon.add(mrLogo);
 
-      ImageIcon imageBmc = new ImageIcon(Starter.class.getResource(BUYMEACOFFEE_IMAGE));
-      myImage = imageBmc.getImage();
-      resizedImage = myImage.getScaledInstance(80, 80, java.awt.Image.SCALE_SMOOTH);
-      JLabel buymeacoffee =  new JLabel(new ImageIcon(resizedImage));
-      buymeacoffee.setToolTipText("<html><font face=\"sansserif\" color=\"black\">If you like to support my work,<br>you can press the Mouse Button and buy me a coffee here:<br>https://buymeacoffee.com/3dprototyping</font></html>");
-      buymeacoffee.setSize(new Dimension(80,80));
-      buymeacoffee.setLocation(500, 20);
-      buymeacoffee.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-      buymeacoffee.addMouseListener(new java.awt.event.MouseAdapter() {
-         public void mousePressed(java.awt.event.MouseEvent evt)
-         {
-            try
-            {
-               UtilSystem.openWebpage(new URI("https://buymeacoffee.com/3dprototyping"));
-            }
-            catch (URISyntaxException e)
-            {
-               Starter._m_logError.TranslatorException(10903, e);
-            }
-         }
-      });
-      this.m_splashImageIcon.add(buymeacoffee);
-
       if (null == status)
       {
          // Welcome screen
+         ImageIcon imageBmc = new ImageIcon(Starter.class.getResource(BUYMEACOFFEE_IMAGE));
+         myImage = imageBmc.getImage();
+         resizedImage = myImage.getScaledInstance(80, 80, java.awt.Image.SCALE_SMOOTH);
+         JLabel buymeacoffee =  new JLabel(new ImageIcon(resizedImage));
+         buymeacoffee.setToolTipText("<html><font face=\"sansserif\" color=\"black\">If you like to support my work,<br>you can press the Mouse Button and buy me a coffee here:<br>https://buymeacoffee.com/3dprototyping</font></html>");
+         buymeacoffee.setSize(new Dimension(80,80));
+         buymeacoffee.setLocation(500, 20);
+         buymeacoffee.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+         buymeacoffee.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mousePressed(java.awt.event.MouseEvent evt)
+            {
+               try
+               {
+                  UtilSystem.openWebpage(new URI("https://buymeacoffee.com/3dprototyping"));
+               }
+               catch (URISyntaxException e)
+               {
+                  Starter._m_logError.TranslatorExceptionAbend(10903, e);
+               }
+            }
+         });
+         this.m_splashImageIcon.add(buymeacoffee);
+
          m_splashFrame.setPreferredSize(new Dimension(imageIcon.getIconWidth(), imageIcon.getIconHeight()));
          m_splashImageIcon.setToolTipText("Press Mouse Button to close.");
          m_splashImageIcon.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mousePressed(java.awt.event.MouseEvent evt)
             {
+               Starter.setSkipWindowGainedFocus();
+               m_splashFrame.setVisible(false);
                m_splashFrame.dispose();
             }
          });
@@ -143,16 +146,20 @@ public class SplashScreen
       }
 
       m_splashFrame.setUndecorated(true);
+      m_splashFrame.pack();
+
+      // Centers the Splash Screen
+      Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+      Dimension panelSize = m_splashFrame.getSize();
+      m_splashFrame.setLocation((screenSize.width / 2) - (panelSize.width / 2), (screenSize.height / 2) - (panelSize.height / 2));
    }
 
    /**
-    * Centers the Splash Screen and then shows it.
+    * Show the Splash/Welcome Screen
     */
    public void show()
    {
-      m_splashFrame.setLocationRelativeTo(null);
       m_splashFrame.setVisible(true);
-      m_splashFrame.pack();
    }
 
    /**
@@ -170,6 +177,8 @@ public class SplashScreen
          try
          {
             Thread.sleep(1000L);
+            Starter.setSkipWindowGainedFocus();
+            m_splashFrame.setVisible(false);
             m_splashFrame.dispose();
          }
          catch (InterruptedException e)
@@ -253,27 +262,6 @@ public class SplashScreen
    }
 
    /**
-    * Gets the actual icon of the Splash Screen
-    * 
-    * @return the icon
-    */
-   public Icon getIcon()
-   {
-      return m_splashImageIcon.getIcon();
-   }
-
-   /**
-    * Sets a new icon to the Splash Screen
-    * 
-    * @param icon
-    *           the new icon
-    */
-   public void setIcon(Icon icon)
-   {
-      this.m_splashImageIcon.setIcon(icon);
-   }
-
-   /**
     * Set the program version string
     * 
     * @param version
@@ -285,6 +273,5 @@ public class SplashScreen
       this.m_version.setText("Version " + _m_versionText);
       m_version.setSize(m_version.getPreferredSize());
    }
-
 
 }

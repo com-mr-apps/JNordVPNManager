@@ -23,9 +23,8 @@ import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.concurrent.TimeUnit;
 
-import javax.swing.JOptionPane;
-
 import com.mr.apps.JNordVpnManager.Starter;
+import com.mr.apps.JNordVpnManager.gui.dialog.JModalDialog;
 
 /**
  * Some common utilities
@@ -116,7 +115,7 @@ public class UtilSystem
 
          if (!process.waitFor(COMMAND_TIMEOUT, TimeUnit.SECONDS))
          {
-            JOptionPane.showMessageDialog(null, "The Command needed too long for execution. The command was cancelled.", "Process Command Timeout", JOptionPane.ERROR_MESSAGE);
+            JModalDialog.showError("Process Command Timeout", "The Command needed too long for execution. The command was cancelled.");
             process.destroy();
          }
          int exitCode = process.exitValue();
@@ -212,7 +211,21 @@ public class UtilSystem
       }
       else
       {
-         Starter._m_logError.TranslatorError(10903, "The Desktop does not support to open URL's in WebBrowers!", "URL: " + uri.toString() + " cannot be opened.");
+         Starter._m_logError.TranslatorError(10903,
+               "The Desktop does not support to open URL's in WebBrowers!",
+               "URL: " + uri.toString() + " cannot be opened.\n" +
+               "Try Fallback with xdg-open [url] command...");
+         String status = runCommand("xdg-open", uri.toString());
+         if (UtilSystem.isLastError())
+         {
+            Starter._m_logError.TranslatorError(10903,
+                  "Command 'xdg-open [url]' returned with error",
+                  status);
+         }
+         else
+         {
+            return true;
+         }
       }
       return false;
    }

@@ -77,7 +77,7 @@ public class AboutScreen
    + "<p>Without limiting other conditions in the License, the grant of rights under the License will not include, and the License does not grant to you, the right to Sell the Software.</p>"
    + "<p>For purposes of the foregoing, \"Sell\" means practicing any or all of the rights granted to you under the License to provide to third parties, for a fee or other consideration (including without limitation fees for hosting or consulting/ support services related to the Software), a product or service whose value derives, entirely or substantially, from the functionality of the Software. Any license notice or attribution required by the License must also include this Commons Clause License Condition notice.</p>"
    + "<p>Software: JNordVPNManager</p>"
-   + "<p>License: <a href=\"https://opensource.org/license/cddl-1-0\">The Common Development and Distribution License 1.0 </a></p>"
+   + "<p>License: <a href=\"https://spdx.org/licenses/CDDL-1.1.html\">The Common Development and Distribution License 1.1</a></p>"
    + "<p>Licensor: com.mr.apps</p>";
 
    private JFrame       m_aboutFrame = null;
@@ -131,7 +131,7 @@ public class AboutScreen
             }
             catch (URISyntaxException e)
             {
-               Starter._m_logError.TranslatorException(10903, e);
+               Starter._m_logError.TranslatorExceptionAbend(10903, e);
             }
          }
       });
@@ -154,7 +154,7 @@ public class AboutScreen
             }
             catch (URISyntaxException e)
             {
-               Starter._m_logError.TranslatorException(10903, e);
+               Starter._m_logError.TranslatorExceptionAbend(10903, e);
             }
          }
       });
@@ -177,7 +177,7 @@ public class AboutScreen
             }
             catch (URISyntaxException e)
             {
-               Starter._m_logError.TranslatorException(10903, e);
+               Starter._m_logError.TranslatorExceptionAbend(10903, e);
             }
          }
       });
@@ -200,7 +200,7 @@ public class AboutScreen
             }
             catch (URISyntaxException e)
             {
-               Starter._m_logError.TranslatorException(10903, e);
+               Starter._m_logError.TranslatorExceptionAbend(10903, e);
             }
          }
       });
@@ -223,7 +223,7 @@ public class AboutScreen
             }
             catch (URISyntaxException e)
             {
-               Starter._m_logError.TranslatorException(10903, e);
+               Starter._m_logError.TranslatorExceptionAbend(10903, e);
             }
          }
       });
@@ -256,6 +256,8 @@ public class AboutScreen
       aboutBaseImageLabel.addMouseListener(new java.awt.event.MouseAdapter() {
          public void mousePressed(java.awt.event.MouseEvent evt)
          {
+            Starter.setSkipWindowGainedFocus();
+            m_aboutFrame.setVisible(false);
             m_aboutFrame.dispose();
          }
       });

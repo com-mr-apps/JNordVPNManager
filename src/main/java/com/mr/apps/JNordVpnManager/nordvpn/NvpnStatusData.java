@@ -11,9 +11,8 @@ package com.mr.apps.JNordVpnManager.nordvpn;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import javax.swing.JOptionPane;
-
 import com.mr.apps.JNordVpnManager.Starter;
+import com.mr.apps.JNordVpnManager.gui.dialog.JModalDialog;
 import com.mr.apps.JNordVpnManager.utils.UtilSystem;
 
 public class NvpnStatusData
@@ -47,7 +46,7 @@ public class NvpnStatusData
          int rc = parseData(m_statusText);
          if (1 == rc)
          {
-            JOptionPane.showMessageDialog(null, "'nordvpn status' information cannot be parsed.", "NordVPN Status", JOptionPane.ERROR_MESSAGE);
+            JModalDialog.showError("NordVPN Status", "'nordvpn status' information cannot be parsed.");
          }
       }
    }

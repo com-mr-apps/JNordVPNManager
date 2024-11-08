@@ -11,36 +11,40 @@ package com.mr.apps.JNordVpnManager.utils;
 import java.io.*;
 import java.nio.charset.Charset;
 
+import com.mr.apps.JNordVpnManager.Starter;
+import com.mr.apps.JNordVpnManager.gui.dialog.JModalDialog;
+
 /**
- * This class is a common error and message logging utility for com.mr.apps.
- * The constructor gets an file handler to the log file and the trace settings flags.
+ * This class is a common error and message logging utility for com.mr.apps applications. The constructor gets an file
+ * handler to the log file and the [optional] trace settings flags.
  * <P>
- * We differ between [Debug]Trace output and messages. The messages have the format:<P>
+ * We differ between [Debug]Trace output and messages. The messages have the format:
+ * <P>
+ * 
  * <PRE>
  * [&lt;type&gt;] &lt;classification&gt; (rc=&lt;msgNb&gt;): &lt;short message&gt;
  * + &lt;long messages
  * + ...&gt;
  * </PRE>
+ * 
  * where:
  * <ul>
- * <li>
- * type - is one of the types: Info, Warning, Error, Fatal Error.
- * </li>
- * <li>
- * classification - is a fix classification text only for common messages upwards 10000.
- * </li>
- * <li>
- * msgNb - is the message number. Common messages starts with 10000.
- * </li>
- * <li>
- * short message - is a one line short message.
- * </li>
- * <li>
- * long message - is the multiple line message text (prefixed by a + sign).
- * </li>
+ * <li>type - is one of the [severity] types: Info, Warning, Error, Fatal Error.</li>
+ * <li>classification - is a fix classification text only for common messages upwards 10000.</li>
+ * <li>msgNb - is the message number. Common messages starts with 10000.</li>
+ * <li>short message - is a one line short message.</li>
+ * <li>long message - is the multiple line message text (prefixed by a + sign).</li>
  * </ul>
  * <P>
- * For the Fatal Error, a RuntimeException is thrown, that must be caught in the main application, to force an program termination.
+ * In case of Fatal Error [a not recoverable error], the main application method Starter.cleanupAndExit() is called, to
+ * force the program termination.<br>
+ * Logging information is written to the specified log file on disk, parallel [if activated] the output is also written
+ * to the console [stdout or console window].<br>
+ * Environment variables (possibly overwritten by GUI settings):
+ * <ul>
+ * <it>COM_MR_APPS_TRACE - Trace settings [off|dbg,cmd,ini]</it> <it>MRAPPSOUTPUT - defines an additional console output
+ * or the fallback file name for the logging file</it>
+ * </ul>
  */
 
 public class UtilLogErr
@@ -51,7 +55,7 @@ public class UtilLogErr
    public static final String  TRACE_Init             = "ini";
    private static final String FULL_TRACE_SETTINGS    = "ini;dbg;cmd";         // full list of possible tracing settings
    private static final String DEFAULT_TRACE_SETTINGS = TRACE_Off;             // default for trace settings
-   private static final String DEFAULT_FILE_ENCODING  = "US-ASCII";
+   private static final String DEFAULT_FILE_ENCODING  = "UTF-8";
 
    private BufferedWriter      m_bwLogfile            = null;
    private String              m_sErrorLogFileName    = null;
@@ -66,9 +70,6 @@ public class UtilLogErr
 
    /**
     * Constructor for the Common Logging+Error Class
-    * <P>
-    * The optional environment variable <CODE>MRAPPSOUTPUT</CODE> is used to define an additional console output or defines the
-    * fallback file name for the logging file.
     * 
     * @param sErrorLogFileName
     *           is the name of the error log file name. If <CODE>null</CODE>, the environment variable
@@ -130,7 +131,7 @@ public class UtilLogErr
          {
             if ((sErrorLogFileName == null) || (sErrorLogFileName.length() <= 0))
             {
-               // Fallback: use MRAPPSOUTPUT as output filename (e.g. if -EDUMP parameter is missing for Download)
+               // Fallback: use MRAPPSOUTPUT as output filename
                sErrorLogFileName = envVar;
             }
          }
@@ -199,7 +200,7 @@ public class UtilLogErr
    }
 
    /** 
-    * Set the trace flag.
+    * Set the trace flags.
     * @param sTraceSettings the current set trace flags.
     */
    public void setTraceFlags (String sTraceSettings)
@@ -214,12 +215,20 @@ public class UtilLogErr
       }
    }
 
+   /**
+    * Enable one specific trace flag.
+    * @param flag is the trace flag to activate
+    */
    public void enableTraceFlag(String flag)
    {
       if (isTraceFlagSet(flag)) return;
       m_traceSettings += flag + ";";
    }
 
+   /**
+    * Disable one specific trace flag.
+    * @param flag is the trace flag to deactivate
+    */
    public void disableTraceFlag(String flag)
    {
       if (!isTraceFlagSet(flag)) return;
@@ -227,7 +236,7 @@ public class UtilLogErr
    }
 
    /** 
-    * Get the trace flag.
+    * Get the trace flags.
     * @return the current set trace flags.
     */
    public String getTraceFlags ()
@@ -455,7 +464,7 @@ public class UtilLogErr
     * @param ex is the exception.
     * @see UtilLogErr#TranslatorWriteMessage(int, int, String, String [])
     */
-   public void TranslatorException (int iMsgNb, Exception ex)
+   public void TranslatorExceptionAbend (int iMsgNb, Exception ex)
    {
       int iSev = 5;
       TranslatorExceptionMessage (iSev, iMsgNb, ex);
@@ -543,13 +552,6 @@ public class UtilLogErr
     */
    public void TranslatorWriteMessage (int iSev, int iMsgNb, String sShortMsg, String[] sLongMsgArr)
    {
-
-      if (m_fatalError == true)
-      {
-         // first check, if we caught in a parent level the fatal exception... -> throw it back!
-         throw new RuntimeException("[Fatal Error] Translator is terminating...\nLast Error: >"+ m_lastErrorMsg + "<");
-      }
-
       if (sShortMsg == null) sShortMsg = "";
       boolean forcedAbend = false;
 
@@ -582,7 +584,7 @@ public class UtilLogErr
       if (iMsgNb > 9999)
       {
          switch (iMsgNb) {
-            // ### Parsing messages
+            // ### common messages
             case 10100:
                headerLine += "Parsing error";
                break;
@@ -631,18 +633,9 @@ public class UtilLogErr
          headerLine += ": " + sShortMsg;
       }
 
-      if (iMsgNb < 0)
-      {
-         // reserved for internal [Fatal Error]
-         headerLine = sShortMsg;
-         forcedAbend = false; // we already come from this exception thrown below...!
-      }
-      else
-      {
-         // reserved for simple message text
-         headerLine += sShortMsg;
-      }
-
+      // reserved for simple message text
+      if (0 == iMsgNb) headerLine += sShortMsg;
+ 
       // write header line to log file or console
       writeLog (headerLine);
       if (sLongMsgArr != null)
@@ -660,10 +653,20 @@ public class UtilLogErr
       {
          if (m_fatalError == false)
          {
+            StringBuffer sLongMsg = new StringBuffer();
+            for (String msg : sLongMsgArr)
+            {
+               sLongMsg.append(msg);
+               sLongMsg.append("\n");
+            }
+            JModalDialog.showError(headerLine, sLongMsg.toString());
             m_fatalError = true;
-            m_lastErrorMsg = headerLine; 
+            m_lastErrorMsg = headerLine;
+            /*=====================================
+             * Program exit
+             *=====================================*/
+            Starter.cleanupAndExit(true);
          }
-         throw new RuntimeException("[Fatal Error] Translator is terminating...\nLast Error: >"+ m_lastErrorMsg + "<");
       }
    }
    
@@ -793,43 +796,43 @@ public class UtilLogErr
       if (sText.startsWith("[Info]"))
       {
          iStartMsg = 7;
-         sPrefix = "<font face=\"serif\" color=\"black\">";
+         sPrefix = "<font color=\"black\">";
          sPostfix = "</font>";
       }
       else if (sText.startsWith("[Warning]"))
       {
          iStartMsg = 10;
-         sPrefix = "<font face=\"serif\" color=\"orange\">";
+         sPrefix = "<font color=\"orange\">";
          sPostfix = "</font>";
       }
       else if (sText.startsWith("[Error]"))
       {
          iStartMsg = 8;
-         sPrefix = "<font face=\"serif\" color=\"red\">";
+         sPrefix = "<font color=\"red\">";
          sPostfix = "</font>";         
       }
       else if (sText.startsWith("[Fatal Error]"))
       {
          iStartMsg = 14;
-         sPrefix = "<font face=\"serif\" color=\"red\"><b>";
+         sPrefix = "<font color=\"red\"><b>";
          sPostfix = "</b></font>";
       }
       else if (sText.startsWith("[Trace::ini]"))
       {
          iStartMsg = 13;
-         sPrefix = "<font face=\"serif\" color=\"green\">";
+         sPrefix = "<font color=\"green\">";
          sPostfix = "</font>";         
       }
       else if (sText.startsWith("[Trace::cmd]"))
       {
          iStartMsg = 13;
-         sPrefix = "<font face=\"serif\" color=\"blue\"><b>";
+         sPrefix = "<font color=\"blue\"><b>";
          sPostfix = "</b></font>";
       }
       else if (sText.startsWith("[Trace::dbg]"))
       {
          iStartMsg = 13;
-         sPrefix = "<font face=\"serif\" color=\"grey\"><em>";
+         sPrefix = "<font color=\"grey\"><em>";
          sPostfix = "</em></font>";
       }
 

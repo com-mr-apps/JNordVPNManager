@@ -23,6 +23,7 @@ import javax.swing.JEditorPane;
 import javax.swing.Timer;
 import javax.swing.WindowConstants;
 
+import com.mr.apps.JNordVpnManager.Starter;
 import com.mr.apps.JNordVpnManager.nordvpn.NvpnAccountData;
 
 @SuppressWarnings("serial")
@@ -66,7 +67,7 @@ public class JAutoCloseLoginDialog extends JDialog implements ActionListener
       // ---------------------------------------------------------------------------
       // define and start the timer
       // check every second, if login was successful.
-      m_timer = new Timer(2000, new ActionListener() {
+      m_timer = new Timer(3000, new ActionListener() {
          @Override
          public void actionPerformed(ActionEvent e)
          {
@@ -93,6 +94,8 @@ public class JAutoCloseLoginDialog extends JDialog implements ActionListener
    public void actionPerformed(ActionEvent e)
    {
       m_timer.stop();
+      Starter.setSkipWindowGainedFocus();
+
       // result = e.getActionCommand();
       setVisible(false);
       dispose();
