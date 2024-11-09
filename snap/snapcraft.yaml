@@ -28,6 +28,7 @@ apps:
        - x11
        - wayland
        - home
+       - process-control
     environment:
        _JAVA_OPTIONS: -Duser.home="$SNAP_USER_DATA" -Djava.util.prefs.userRoot="$SNAP_USER_DATA"
 
