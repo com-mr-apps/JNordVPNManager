@@ -41,7 +41,7 @@ To deinstall type:
 
 `sudo snap remove j-nordvpn-manager`
 
-[![Get it from the Snap Store](https://snapcraft.io/static/images/badges/en/snap-store-black.svg)](https://snapcraft.io/j-nordvpn-manager)
+[![Get it from the Snap Store](https://snapcraft.io/en/dark/install.svg)](https://snapcraft.io/j-nordvpn-manager)
 
 ## References
 
