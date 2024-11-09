@@ -46,10 +46,10 @@ parts:
        
     build-packages:
       - maven
-      - [default-jre]
+      - openjdk-11-jdk
 
     stage-packages:
-      [default-jre]
+      - openjdk-11-jdk
         
     override-prime: |
       snapcraftctl prime
