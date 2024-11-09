@@ -26,6 +26,7 @@ apps:
        - desktop-legacy
        - browser-support
        - x11
+       - wayland
        - home
     environment:
        _JAVA_OPTIONS: -Duser.home="$SNAP_USER_DATA" -Djava.util.prefs.userRoot="$SNAP_USER_DATA"
