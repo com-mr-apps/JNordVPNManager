@@ -15,6 +15,7 @@ import java.awt.Frame;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.WindowAdapter;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.Vector;
@@ -23,6 +24,7 @@ import javax.swing.JDialog;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 import javax.swing.JTable;
+import javax.swing.WindowConstants;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumn;
 
@@ -40,6 +42,14 @@ public class JSystemInfoDialog extends JDialog implements ActionListener
       JTabbedPane jTabbedInfoPane1 = new JTabbedPane();
       setBackground(Color.lightGray);
 //      setResizable(false);
+      setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
+      addWindowListener(new WindowAdapter()
+      {
+         @Override public void windowClosing(java.awt.event.WindowEvent event)
+         {
+            close();
+         }
+      });
 
       /*
        *  Tab System
@@ -180,10 +190,16 @@ public class JSystemInfoDialog extends JDialog implements ActionListener
       setLocation((screenSize.width / 2) - (panelSize.width / 2), (screenSize.height / 2) - (panelSize.height / 2));
    }
 
-   public void actionPerformed(ActionEvent event)
+   private void close()
    {
       Starter.setSkipWindowGainedFocus();
       setVisible(false);
       dispose();
+   }
+
+   @Override
+   public void actionPerformed(ActionEvent arg0)
+   {
+      close();
    }
 }

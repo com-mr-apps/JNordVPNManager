@@ -48,7 +48,7 @@ public class JSettingsPanel extends JPanel
          JLabel label = new JLabel(fieldTitle.getTitle() + ":", JLabel.LEFT);
          JTextField textField = new JTextField(fieldTitle.getLength());
          textField.setText(m_values.get(fieldTitle));
-         label.setDisplayedMnemonic(fieldTitle.getMnemonic());
+         if (fieldTitle.getMnemonic() > 0) label.setDisplayedMnemonic(fieldTitle.getMnemonic());
          label.setLabelFor(textField);
          gbc = createGbc(0, i);
          add(label, gbc);
