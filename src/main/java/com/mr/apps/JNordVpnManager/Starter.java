@@ -58,7 +58,7 @@ import com.mr.apps.JNordVpnManager.utils.String.StringFormat;
  */
 public class Starter
 {
-   public static final UtilLogErr  _m_logError                = new UtilLogErr("~/.local/share/JNordVpnManager/JNordVpnManager.log", null, null);
+   public static final UtilLogErr  _m_logError                = new UtilLogErr(UtilPrefs.getLogfileName(), null, null);
 
    public static final int         STATUS_UNKNOWN             = -1;
    public static final int         STATUS_CONNECTED           = 0;
@@ -285,11 +285,6 @@ public class Starter
          }
       });
 
-      // activate console
-      _m_logError.setConsoleOutput(true);
-      m_consoleWindow = new GuiCustomConsole();
-      _m_logError.TranslatorInfo("GUI Version: " + version);
-
       // set application icon in Task bar
       ImageIcon imageIcon = new ImageIcon(Starter.class.getResource(APPLICATION_ICON_IMAGE));
       Image myImage = imageIcon.getImage();
@@ -310,6 +305,9 @@ public class Starter
                "'nordvpn' command not found.\nCheck installation of NordVPN!\n\nExit program.");
       }
 
+      // activate console
+      m_consoleWindow = new GuiCustomConsole();
+      _m_logError.TranslatorInfo("GUI Version: " + version);
       m_splashScreen.setProgress(10);
 
       /* 

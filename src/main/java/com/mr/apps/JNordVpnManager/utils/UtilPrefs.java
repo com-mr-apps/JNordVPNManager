@@ -33,6 +33,9 @@ public class UtilPrefs
    private static int    DEFAULT_PREF_SETTINGS_TRACEDEBUG         = 0;
    private static int    DEFAULT_PREF_SETTINGS_TRACECMD           = 0;
    private static int    DEFAULT_PREF_SETTINGS_TRACEINIT          = 0;
+   private static String DEFAULT_PREF_SETTINGS_LOGFILE_NAME       = "~/JNordVpnManager.log";
+   private static int    DEFAULT_PREF_SETTINGS_LOGFILE_ACTIVE     = 0;
+   private static int    DEFAULT_PREF_SETTINGS_COMMAMD_TIMEOUT    = 30;
 
    public enum FieldTitle
    {
@@ -47,7 +50,10 @@ public class UtilPrefs
       AUTODISCONNECTMODE("Auto Disconnect on Program Exit", KeyEvent.VK_E, 1),
       TRACEDEBUG("Trace Debug", KeyEvent.VK_B, 1),
       TRACECMD("Trace Command", KeyEvent.VK_A, 1),
-      TRACEINIT("Trace Init", KeyEvent.VK_I, 1);
+      TRACEINIT("Trace Init", KeyEvent.VK_I, 1),
+      LOGFILE_NAME("Logfile", KeyEvent.VK_F, 20),
+      LOGFILE_ACTIVE("Write to Logfile", KeyEvent.VK_W, 1),
+      COMMAND_TIMEOUT("Command Timeout (in seconds)", -1, 3);
 
       private String title;
       private int    mnemonic;
@@ -81,6 +87,7 @@ public class UtilPrefs
     */
    public static void resetPreferences()
    {
+      /*
       setServerList(DEFAULT_PREF_SERVERLIST_DATA);
       setServerListTimestamp(DEFAULT_PREF_SERVERLIST_TIMESTAMP);
       setRecentCity(DEFAULT_PREF_RECENTSERVER_CITY);
@@ -88,19 +95,25 @@ public class UtilPrefs
       setCompactMode(DEFAULT_PREF_SETTINGS_COMPACTMODE);
       setAutoConnectMode(DEFAULT_PREF_SETTINGS_AUTOCONNECTMODE);
       setAutoDisConnectMode(DEFAULT_PREF_SETTINGS_AUTODISCONNECTMODE);
+      */
       setRecentServerList(DEFAULT_PREF_RECENTSERVER_LIST);
       setRecentServerListLength(DEFAULT_PREF_RECENTSERVER_LIST_LENGTH);
+/*
       setTraceDebug(DEFAULT_PREF_SETTINGS_TRACEDEBUG);
       setTraceInit(DEFAULT_PREF_SETTINGS_TRACEINIT);
       setTraceCmd(DEFAULT_PREF_SETTINGS_TRACECMD);
+      setLogfileActive(DEFAULT_PREF_SETTINGS_LOGFILE_ACTIVE);
+      setLogfileName(DEFAULT_PREF_SETTINGS_LOGFILE_NAME);
+      setCommandTimeout(DEFAULT_PREF_SETTINGS_COMMAMD_TIMEOUT);
+*/
    }
 
-   public static void exportPreferences()
+   public static void exportPreferences(String fileName)
    {
       // TODO: exportPreferences to file
    }
 
-   public static void importPreferences()
+   public static void importPreferences(String fileName)
    {
       // TODO: importPreferences from file
    }
@@ -297,6 +310,54 @@ public class UtilPrefs
       return;
    }
 
+   public static String getLogfileName()
+   {
+      Preferences settingsLogfileName = Preferences.userRoot().node("com/mr/apps/JNordVpnManager/Settings");
+      String logfileName = settingsLogfileName.get("Logfile.Name", DEFAULT_PREF_SETTINGS_LOGFILE_NAME);
+
+      return logfileName;
+   }
+
+   public static void setLogfileName(String logfileName)
+   {
+      Preferences settingsLogfileName = Preferences.userRoot().node("com/mr/apps/JNordVpnManager/Settings");
+      settingsLogfileName.put("Logfile.Name", logfileName);
+
+      return;
+   }
+
+   public static int isLogfileActive()
+   {
+      Preferences settingsWriteLogfile = Preferences.userRoot().node("com/mr/apps/JNordVpnManager/Settings");
+      int writeLogfile = settingsWriteLogfile.getInt("Logfile.Active", DEFAULT_PREF_SETTINGS_LOGFILE_ACTIVE);
+
+      return writeLogfile;
+   }
+
+   public static void setLogfileActive(int logfileActive)
+   {
+      Preferences settingsLogfileActive = Preferences.userRoot().node("com/mr/apps/JNordVpnManager/Settings");
+      settingsLogfileActive.putInt("Logfile.Active", logfileActive);
+
+      return;
+   }
+
+   public static int getCommandTimeout()
+   {
+      Preferences settingsCommandTimeout = Preferences.userRoot().node("com/mr/apps/JNordVpnManager/Settings");
+      int commandTimeout = settingsCommandTimeout.getInt("Command.Timeout", DEFAULT_PREF_SETTINGS_COMMAMD_TIMEOUT);
+
+      return commandTimeout;
+   }
+
+   public static void setCommandTimeout(int commandTimeout)
+   {
+      Preferences settingsCommandTimeout = Preferences.userRoot().node("com/mr/apps/JNordVpnManager/Settings");
+      settingsCommandTimeout.putInt("Command.Timeout", commandTimeout);
+
+      return;
+   }
+
    public static HashMap <FieldTitle,String> getAllValues()
    {
       HashMap <FieldTitle,String> hm = new HashMap <FieldTitle,String>();
@@ -325,14 +386,23 @@ public class UtilPrefs
       hm.put(FieldTitle.TRACECMD, value);
       value = StringFormat.int2String(getTraceInit(), "#");
       hm.put(FieldTitle.TRACEINIT, value);
+      value = getLogfileName();
+      hm.put(FieldTitle.LOGFILE_NAME, value);
+      value = StringFormat.int2String(isLogfileActive(), "#");
+      hm.put(FieldTitle.LOGFILE_ACTIVE, value);
+      value = StringFormat.int2String(getCommandTimeout(), "#");
+      hm.put(FieldTitle.COMMAND_TIMEOUT, value);
+
       
       return hm;
    }
+
    public static void setAllValues(HashMap <FieldTitle,String> hm)
    {
       for (FieldTitle fieldTitle : FieldTitle.values())
       {
          String value = hm.get(fieldTitle);
+         // TODO...
          System.out.printf("%s: %s%n", fieldTitle.getTitle(), value);
       }
 
