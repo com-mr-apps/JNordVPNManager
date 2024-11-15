@@ -14,17 +14,24 @@ import java.awt.Frame;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.WindowAdapter;
 import java.util.StringTokenizer;
 
 import javax.swing.JButton;
 import javax.swing.JDialog;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.WindowConstants;
+
+import com.mr.apps.JNordVpnManager.Starter;
+import com.mr.apps.JNordVpnManager.gui.dialog.JModalDialog;
+import com.mr.apps.JNordVpnManager.utils.UtilPrefs;
 
 @SuppressWarnings("serial")
 public class JSettingsDialog extends JDialog implements ActionListener
 {
    private String m_result;
-   private String m_buttons = new String("OK,Cancel");
+   private String m_buttons = new String("Cancel"); // TODO: new String("OK,Cancel");
    private JSettingsPanel m_settingsPanel = null;
 
    /**
@@ -38,7 +45,16 @@ public class JSettingsDialog extends JDialog implements ActionListener
       setResizable(false);
       Point parloc = owner.getLocation();
       setLocation(parloc.x + 30, parloc.y + 30);
-      
+
+      setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
+      addWindowListener(new WindowAdapter()
+      {
+         @Override public void windowClosing(java.awt.event.WindowEvent event)
+         {
+            close();
+         }
+      });
+
       // ---------------------------------------------------------------------------------------------
       // Header
       // ---------------------------------------------------------------------------------------------
@@ -50,9 +66,10 @@ public class JSettingsDialog extends JDialog implements ActionListener
          public void actionPerformed(ActionEvent e)
          {
             // TODO: import a settings file
+            UtilPrefs.importPreferences("filename");
          }
       });
-      headerPanel.add(jbImport);
+//      headerPanel.add(jbImport);
 
       JButton jbExport = new JButton("Export");
       jbExport.addActionListener(new ActionListener()
@@ -60,19 +77,28 @@ public class JSettingsDialog extends JDialog implements ActionListener
          public void actionPerformed(ActionEvent e)
          {
             // TODO: export a settings file
+            UtilPrefs.exportPreferences("filename");
          }
       });
-      headerPanel.add(jbExport);
+//      headerPanel.add(jbExport);
 
       JButton jbReset = new JButton("Reset");
-      jbExport.addActionListener(new ActionListener()
+      jbReset.addActionListener(new ActionListener()
       {
          public void actionPerformed(ActionEvent e)
          {
-            // TODO: reset settings
+            if (JModalDialog.showConfirm("This will reset all settings to their default values.") == JOptionPane.YES_OPTION)
+            {
+               // TODO: reset settings
+               UtilPrefs.resetPreferences();
+               getContentPane().remove(m_settingsPanel);
+               m_settingsPanel = new JSettingsPanel();
+               getContentPane().add(m_settingsPanel,BorderLayout.CENTER);
+               repaint();
+            }
          }
       });
-      headerPanel.add(jbReset);
+//      headerPanel.add(jbReset);
 
       getContentPane().add(headerPanel,BorderLayout.PAGE_START);
 
@@ -100,10 +126,16 @@ public class JSettingsDialog extends JDialog implements ActionListener
    public void actionPerformed(ActionEvent e)
    {
       m_result = e.getActionCommand();
+      close();
+   }
+
+   private void close()
+   {
+      Starter.setSkipWindowGainedFocus();
       setVisible(false);
       dispose();
    }
-   
+
    public int getResult()
    {
       int iCnt = 0;

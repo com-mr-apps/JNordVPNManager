@@ -13,6 +13,7 @@ import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Image;
+import java.awt.event.WindowAdapter;
 import java.net.URI;
 import java.net.URISyntaxException;
 
@@ -22,6 +23,7 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JScrollPane;
 import javax.swing.ScrollPaneConstants;
+import javax.swing.WindowConstants;
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
 
@@ -92,7 +94,15 @@ public class AboutScreen
       m_aboutFrame.setLayout(null);
       m_aboutFrame.setResizable(false);
 //    m_aboutFrame.setUndecorated(true);
-
+      // Close Window with "X"
+      m_aboutFrame.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
+      m_aboutFrame.addWindowListener(new WindowAdapter()
+      {
+         @Override public void windowClosing(java.awt.event.WindowEvent event)
+         {
+            close();
+         }
+      });
 
       ImageIcon imageIcon = new ImageIcon(Starter.class.getResource(ABOUT_IMAGE));
       JLabel aboutBaseImageLabel = new JLabel(imageIcon);
@@ -256,11 +266,20 @@ public class AboutScreen
       aboutBaseImageLabel.addMouseListener(new java.awt.event.MouseAdapter() {
          public void mousePressed(java.awt.event.MouseEvent evt)
          {
-            Starter.setSkipWindowGainedFocus();
-            m_aboutFrame.setVisible(false);
-            m_aboutFrame.dispose();
+            close();
          }
       });
+   }
+
+   /**
+    * Close the Window.<p>
+    * Return to main frame and suppress gained focus event.
+    */
+   private void close()
+   {
+      Starter.setSkipWindowGainedFocus();
+      m_aboutFrame.setVisible(false);
+      m_aboutFrame.dispose();
    }
 
    /**

@@ -12,6 +12,7 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
+import java.awt.Font;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.Toolkit;
@@ -39,6 +40,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollBar;
 import javax.swing.JScrollPane;
+import javax.swing.JViewport;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.WindowConstants;
 import javax.swing.filechooser.FileNameExtensionFilter;
@@ -53,28 +55,30 @@ import com.mr.apps.JNordVpnManager.utils.UtilPrefs;
 
 public class GuiCustomConsole extends WindowAdapter implements WindowListener, ActionListener, Runnable
 {
+   private static final Color     COLOR_wheat         = new Color(255, 235, 205);
+   private static final Color     COLOR_darkGreen     = new Color(40, 180, 99);
+
+   private boolean                m_isVisible         = false;
    private JFrame                 m_consoleMainFrame;
-   private JEditorPane            m_consoleOutputEditorPane;
-   private JScrollPane            m_consoleOutputPanel;
-   private Thread                 m_readerThread;
-   private Thread                 m_readerThread2;
+//   private JEditorPane            m_consoleOutputEditorPane;
+   private JScrollPane            m_consoleOutputScrollPane;
+   private Thread                 m_readerThreadOut;
+   private Thread                 m_readerThreadErr;
    private boolean                m_quitFlag;
-   private static boolean         m_isVisible         = false;
-   private final PipedInputStream m_pipedInputStream  = new PipedInputStream();
-   private final PipedInputStream m_pipedInputStream2 = new PipedInputStream();
+   private final PipedInputStream m_pipedInputStreamOut  = new PipedInputStream();
+   private final PipedInputStream m_pipedInputStreamErr = new PipedInputStream();
 
    public GuiCustomConsole()
    {
       // create all components and add them
       m_consoleMainFrame = new JFrame("JNordVPN Manager Console");
-      m_consoleMainFrame.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
       
       // Close Window with "X"
+      m_consoleMainFrame.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
       m_consoleMainFrame.addWindowListener(new WindowAdapter()
       {
          @Override public void windowClosing(java.awt.event.WindowEvent event)
          {
-            Starter.setSkipWindowGainedFocus();
             setConsoleVisible(false);
          }
       });
@@ -90,37 +94,13 @@ public class GuiCustomConsole extends WindowAdapter implements WindowListener, A
       tracesRow.setLayout(new BoxLayout(tracesRow, BoxLayout.X_AXIS));
       JLabel lblTrace = new JLabel("Trace Settings: ");
       tracesRow.add(lblTrace);
-      JCheckBox cbxTraceCommand = new JCheckBox("Command");
-      cbxTraceCommand.setToolTipText("Flag for Trace Command output.");
-      int iTraceCommand = UtilPrefs.getTraceCmd();
-      if (1 == iTraceCommand)
-      {
-         cbxTraceCommand.setSelected(true);
-         Starter._m_logError.enableTraceFlag(UtilLogErr.TRACE_Cmd);
-      }
-      else
-      {
-         cbxTraceCommand.setSelected(false);
-         Starter._m_logError.disableTraceFlag(UtilLogErr.TRACE_Cmd);
-      }
-      cbxTraceCommand.addActionListener(new ActionListener() {
-         @Override
-         public void actionPerformed(ActionEvent e) {
-             JCheckBox cb = (JCheckBox) e.getSource();
-             if (cb.isSelected()) {
-                 UtilPrefs.setTraceCmd(1);
-                 Starter._m_logError.enableTraceFlag(UtilLogErr.TRACE_Cmd);
-             } else {
-                UtilPrefs.setTraceCmd(0);
-                Starter._m_logError.disableTraceFlag(UtilLogErr.TRACE_Cmd);
-             }
-         }
-      });
-      tracesRow.add(cbxTraceCommand);
+
       JCheckBox cbxTraceInit = new JCheckBox("Init");
       cbxTraceInit.setToolTipText("Flag for Trace Init output.");
+      cbxTraceInit.setForeground(COLOR_darkGreen);
+      cbxTraceInit.setBackground(COLOR_wheat);
       int iTraceInit = UtilPrefs.getTraceInit();
-      if (1 == iTraceInit)
+      if (1 == iTraceInit || Starter._m_logError.isTraceFlagSet(UtilLogErr.TRACE_Init))
       {
          cbxTraceInit.setSelected(true);
          Starter._m_logError.enableTraceFlag(UtilLogErr.TRACE_Init);
@@ -132,22 +112,65 @@ public class GuiCustomConsole extends WindowAdapter implements WindowListener, A
       }
       cbxTraceInit.addActionListener(new ActionListener() {
          @Override
-         public void actionPerformed(ActionEvent e) {
-             JCheckBox cb = (JCheckBox) e.getSource();
-             if (cb.isSelected()) {
-                 UtilPrefs.setTraceInit(1);
-                 Starter._m_logError.enableTraceFlag(UtilLogErr.TRACE_Init);
-             } else {
-                UtilPrefs.setTraceInit(0);
-                Starter._m_logError.disableTraceFlag(UtilLogErr.TRACE_Init);
-             }
+         public void actionPerformed(ActionEvent e)
+         {
+            JCheckBox cb = (JCheckBox) e.getSource();
+            if (cb.isSelected())
+            {
+               UtilPrefs.setTraceInit(1);
+               Starter._m_logError.enableTraceFlag(UtilLogErr.TRACE_Init);
+            }
+            else
+            {
+               UtilPrefs.setTraceInit(0);
+               Starter._m_logError.disableTraceFlag(UtilLogErr.TRACE_Init);
+            }
          }
       });
       tracesRow.add(cbxTraceInit);
+
+      JCheckBox cbxTraceCommand = new JCheckBox("Command");
+      cbxTraceCommand.setToolTipText("Flag for Trace Command output.");
+      cbxTraceCommand.setForeground(Color.blue);
+      cbxTraceCommand.setBackground(COLOR_wheat);
+      cbxTraceCommand.setFont(new Font(cbxTraceCommand.getFont().getName(),Font.BOLD,cbxTraceCommand.getFont().getSize()));
+      int iTraceCommand = UtilPrefs.getTraceCmd();
+      if (1 == iTraceCommand || Starter._m_logError.isTraceFlagSet(UtilLogErr.TRACE_Cmd))
+      {
+         cbxTraceCommand.setSelected(true);
+         Starter._m_logError.enableTraceFlag(UtilLogErr.TRACE_Cmd);
+      }
+      else
+      {
+         cbxTraceCommand.setSelected(false);
+         Starter._m_logError.disableTraceFlag(UtilLogErr.TRACE_Cmd);
+      }
+      cbxTraceCommand.addActionListener(new ActionListener() {
+         @Override
+         public void actionPerformed(ActionEvent e)
+         {
+            JCheckBox cb = (JCheckBox) e.getSource();
+            if (cb.isSelected())
+            {
+               UtilPrefs.setTraceCmd(1);
+               Starter._m_logError.enableTraceFlag(UtilLogErr.TRACE_Cmd);
+            }
+            else
+            {
+               UtilPrefs.setTraceCmd(0);
+               Starter._m_logError.disableTraceFlag(UtilLogErr.TRACE_Cmd);
+            }
+         }
+      });
+      tracesRow.add(cbxTraceCommand);
+
       JCheckBox cbxTraceDebug = new JCheckBox("Debug");
       cbxTraceDebug.setToolTipText("Flag for Trace Debug output.");
+      cbxTraceDebug.setForeground(Color.gray);
+      cbxTraceDebug.setBackground(COLOR_wheat);
+      cbxTraceDebug.setFont(new Font(cbxTraceDebug.getFont().getName(),Font.ITALIC,cbxTraceDebug.getFont().getSize()));
       int iTraceDebug = UtilPrefs.getTraceDebug();
-      if (1 == iTraceDebug)
+      if (1 == iTraceDebug || Starter._m_logError.isTraceFlagSet(UtilLogErr.TRACE_Debug))
       {
          cbxTraceDebug.setSelected(true);
          Starter._m_logError.enableTraceFlag(UtilLogErr.TRACE_Debug);
@@ -159,47 +182,90 @@ public class GuiCustomConsole extends WindowAdapter implements WindowListener, A
       }
       cbxTraceDebug.addActionListener(new ActionListener() {
          @Override
-         public void actionPerformed(ActionEvent e) {
-             JCheckBox cb = (JCheckBox) e.getSource();
-             if (cb.isSelected()) {
-                 UtilPrefs.setTraceDebug(1);
-                 Starter._m_logError.enableTraceFlag(UtilLogErr.TRACE_Debug);
-             } else {
-                UtilPrefs.setTraceDebug(0);
-                Starter._m_logError.disableTraceFlag(UtilLogErr.TRACE_Debug);
-             }
+         public void actionPerformed(ActionEvent e)
+         {
+            JCheckBox cb = (JCheckBox) e.getSource();
+            if (cb.isSelected())
+            {
+               UtilPrefs.setTraceDebug(1);
+               Starter._m_logError.enableTraceFlag(UtilLogErr.TRACE_Debug);
+            }
+            else
+            {
+               UtilPrefs.setTraceDebug(0);
+               Starter._m_logError.disableTraceFlag(UtilLogErr.TRACE_Debug);
+            }
          }
       });
       tracesRow.add(cbxTraceDebug);
 
+      JCheckBox cbxWriteToLogfile = new JCheckBox("Log File");
+      cbxWriteToLogfile.setToolTipText("Flag for output in the log file.");
+      int isLogFileActive = UtilPrefs.isLogfileActive();
+      if (1 == isLogFileActive || Starter._m_logError.isLogFileActive())
+      {
+         cbxWriteToLogfile.setSelected(true);
+      }
+      else
+      {
+         cbxWriteToLogfile.setSelected(false);
+      }
+      cbxWriteToLogfile.addActionListener(new ActionListener() {
+         @Override
+         public void actionPerformed(ActionEvent e)
+         {
+            JCheckBox cb = (JCheckBox) e.getSource();
+            boolean logFileActive;
+            if (cb.isSelected())
+            {
+               logFileActive = Starter._m_logError.setLogFileActive(true);
+            }
+            else
+            {
+               logFileActive = Starter._m_logError.setLogFileActive(false);
+            }
+            if (logFileActive)
+            {
+               UtilPrefs.setLogfileActive(1);
+            }
+            else
+            {
+               UtilPrefs.setLogfileActive(0);
+            }
+         }
+      });
+      tracesRow.add(cbxWriteToLogfile);
 
-      m_consoleOutputEditorPane = new JEditorPane();
-      m_consoleOutputEditorPane.setEditable(false);
-      m_consoleOutputEditorPane.setCaretColor(new Color(255, 235, 205)); // hide caret
-      m_consoleOutputEditorPane.setContentType( "text/html" );
-      m_consoleOutputEditorPane.setText("<html><head><style>"
+      JEditorPane editorPane = new JEditorPane();
+      editorPane.setEditable(false);
+      editorPane.setCaretColor(new Color(255, 235, 205)); // hide caret
+      editorPane.setContentType( "text/html" );
+      editorPane.setText("<html><head><style>"
             + "p {font-family: Monospaced; font-size:14;}"
             + "</style></head>"
             + "<body style=\"background-color:#FFEBCD\" id='body'>Console output start...</body></html>");
 
-      m_consoleOutputPanel = new JScrollPane(m_consoleOutputEditorPane, 
+      m_consoleOutputScrollPane = new JScrollPane(editorPane, 
             ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED,
             ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 
       JPanel buttonRow = new JPanel();
       JButton btnClear = new JButton("Clear Log");
       JButton btnSave = new JButton("Save Log");
+      JButton btnClose = new JButton("Close Log");
       JButton btnExit = new JButton("Exit JNordVPN Manager");
       buttonRow.setLayout(new FlowLayout(FlowLayout.CENTER));
       buttonRow.add(btnSave);
-      buttonRow.add(btnExit);
+//      buttonRow.add(btnExit);
       buttonRow.add(btnClear);
+      buttonRow.add(btnClose);
 
       m_consoleMainFrame.getContentPane().setLayout(new BorderLayout());
       m_consoleMainFrame.getContentPane().add(tracesRow, BorderLayout.PAGE_START);
-      m_consoleMainFrame.getContentPane().add(m_consoleOutputPanel, BorderLayout.CENTER);
+      m_consoleMainFrame.getContentPane().add(m_consoleOutputScrollPane, BorderLayout.CENTER);
       m_consoleMainFrame.getContentPane().add(buttonRow, BorderLayout.PAGE_END);
       m_consoleMainFrame.setVisible(false);
+      Starter._m_logError.setConsoleOutput(true);
 
       m_consoleMainFrame.addWindowListener(this);
       btnSave.addActionListener(new ActionListener() {
@@ -214,11 +280,18 @@ public class GuiCustomConsole extends WindowAdapter implements WindowListener, A
             btnExitExecute();
          }
       });
-      btnClear.addActionListener(this);
+      btnClear.addActionListener(new ActionListener() {
+         public void actionPerformed(ActionEvent arg0)
+         {
+            btnClearExecute();
+         }
+      });
+
+      btnClose.addActionListener(this);
 
       try
       {
-         PipedOutputStream pout = new PipedOutputStream(this.m_pipedInputStream);
+         PipedOutputStream pout = new PipedOutputStream(this.m_pipedInputStreamOut);
          System.setOut(new PrintStream(pout, true));
       }
       catch (java.io.IOException io)
@@ -236,7 +309,7 @@ public class GuiCustomConsole extends WindowAdapter implements WindowListener, A
 
       try
       {
-         PipedOutputStream pout2 = new PipedOutputStream(this.m_pipedInputStream2);
+         PipedOutputStream pout2 = new PipedOutputStream(this.m_pipedInputStreamErr);
          System.setErr(new PrintStream(pout2, true));
       }
       catch (java.io.IOException io)
@@ -255,27 +328,24 @@ public class GuiCustomConsole extends WindowAdapter implements WindowListener, A
       m_quitFlag = false; // signals the Threads that they should exit
 
       // Starting two separate threads to read from the PipedInputStreams
+      m_readerThreadOut = new Thread(this);
+      m_readerThreadOut.setDaemon(true);
+      m_readerThreadOut.start();
       //
-      m_readerThread = new Thread(this);
-      m_readerThread.setDaemon(true);
-      m_readerThread.start();
-      //
-      m_readerThread2 = new Thread(this);
-      m_readerThread2.setDaemon(true);
-      m_readerThread2.start();
+      m_readerThreadErr = new Thread(this);
+      m_readerThreadErr.setDaemon(true);
+      m_readerThreadErr.start();
+
    }
 
-   public synchronized void actionPerformed(ActionEvent evt)
-   {
-      // Clear log button
-      m_consoleOutputEditorPane.setText("");
-   }
-
+   /**
+    * Runnable thread(s) - read stdOut and stdErr
+    */
    public synchronized void run()
    {
       try
       {
-         while (Thread.currentThread() == m_readerThread)
+         while (Thread.currentThread() == m_readerThreadOut)
          {
             try
             {
@@ -284,16 +354,16 @@ public class GuiCustomConsole extends WindowAdapter implements WindowListener, A
             catch (InterruptedException ie)
             {
             }
-            if (m_pipedInputStream.available() != 0)
+            if (m_pipedInputStreamOut.available() != 0)
             {
-               String input = this.readLine(m_pipedInputStream);
+               String input = this.readLine(m_pipedInputStreamOut);
                appendText(input);
             }
             if (m_quitFlag)
                return;
          }
 
-         while (Thread.currentThread() == m_readerThread2)
+         while (Thread.currentThread() == m_readerThreadErr)
          {
             try
             {
@@ -302,9 +372,9 @@ public class GuiCustomConsole extends WindowAdapter implements WindowListener, A
             catch (InterruptedException ie)
             {
             }
-            if (m_pipedInputStream2.available() != 0)
+            if (m_pipedInputStreamErr.available() != 0)
             {
-               String input = this.readLine(m_pipedInputStream2);
+               String input = this.readLine(m_pipedInputStreamErr);
                appendText(input);
             }
             if (m_quitFlag)
@@ -319,7 +389,19 @@ public class GuiCustomConsole extends WindowAdapter implements WindowListener, A
       }
    }
 
-   public synchronized void btnExitExecute()
+   /**
+    * Action Close Button pressed
+    */
+   public synchronized void actionPerformed(ActionEvent evt)
+   {
+      // Close button
+      setConsoleVisible(false);
+   }
+
+   /**
+    * Action Exit Button pressed
+    */
+   private synchronized void btnExitExecute()
    {
       int ret = JModalDialog.YesNoDialog("Do you really want to exit JNordVPNManager?");
       if (ret == 0)
@@ -328,16 +410,16 @@ public class GuiCustomConsole extends WindowAdapter implements WindowListener, A
          this.notifyAll(); // stop all threads
          try
          {
-            m_readerThread.join(1000);
-            m_pipedInputStream.close();
+            m_readerThreadOut.join(1000);
+            m_pipedInputStreamOut.close();
          }
          catch (Exception e)
          {
          }
          try
          {
-            m_readerThread2.join(1000);
-            m_pipedInputStream2.close();
+            m_readerThreadErr.join(1000);
+            m_pipedInputStreamErr.close();
          }
          catch (Exception e)
          {
@@ -346,6 +428,9 @@ public class GuiCustomConsole extends WindowAdapter implements WindowListener, A
       }
    }
 
+   /**
+    * Action Save Button pressed
+    */
    private synchronized void btnSaveExecute()
    {
       JFileChooser filedia = new JFileChooser();
@@ -362,18 +447,36 @@ public class GuiCustomConsole extends WindowAdapter implements WindowListener, A
          }
          if (file != null && !(file.equals("")))
          {
-            save_log_file(file);
+            saveLogFileToDisk(file);
          }
       }
    }
 
-   private synchronized void save_log_file(String file)
+   /**
+    * Action Clear Button pressed
+    */
+   private synchronized void btnClearExecute()
+   {
+      JViewport viewport = m_consoleOutputScrollPane.getViewport(); 
+      JEditorPane editorPane = (JEditorPane)viewport.getView(); 
+      editorPane.setText("");
+   }
+
+
+   /**
+    * Save the log file (html) to disk.
+    * @param file is the log file name
+    */
+   private synchronized void saveLogFileToDisk(String file)
    {
       try
       {
+         JViewport viewport = m_consoleOutputScrollPane.getViewport(); 
+         JEditorPane editorPane = (JEditorPane)viewport.getView(); 
+
          FileOutputStream fos = new FileOutputStream(file);
          Writer w = new BufferedWriter(new OutputStreamWriter(fos));
-         w.write(m_consoleOutputEditorPane.getText() + "\n");
+         w.write(editorPane.getText() + "\n");
          w.flush();
          w.close();
       }
@@ -384,7 +487,15 @@ public class GuiCustomConsole extends WindowAdapter implements WindowListener, A
       }
    }
 
-   public synchronized String readLine(PipedInputStream in) throws IOException
+   /**
+    * Read from the stream byte by byte until 'EndOfLine'
+    * 
+    * @param in
+    *           is the input stream
+    * @return a complete line
+    * @throws IOException
+    */
+   private synchronized String readLine(PipedInputStream in) throws IOException
    {
       StringBuffer line = new StringBuffer();
       
@@ -404,11 +515,20 @@ public class GuiCustomConsole extends WindowAdapter implements WindowListener, A
       return line.toString();
    }
 
+   /**
+    * Append a message to the end of the console text.
+    * 
+    * @param msg
+    *           is the message to add
+    */
    private void appendText(String msg)
    {
       try
       {
-         HTMLDocument doc = (HTMLDocument) m_consoleOutputEditorPane.getDocument();
+         JViewport viewport = m_consoleOutputScrollPane.getViewport(); 
+         JEditorPane editorPane = (JEditorPane)viewport.getView(); 
+
+         HTMLDocument doc = (HTMLDocument) editorPane.getDocument();
          Element elem = doc.getElement("body");
          doc.insertBeforeEnd(elem, msg);
       }
@@ -420,28 +540,44 @@ public class GuiCustomConsole extends WindowAdapter implements WindowListener, A
       }
       finally
       {
-         JScrollBar vertical = m_consoleOutputPanel.getVerticalScrollBar();
+         JScrollBar vertical = m_consoleOutputScrollPane.getVerticalScrollBar();
          vertical.setValue( vertical.getMaximum() );
       }
    }
 
-   public synchronized boolean switchConsoleVisible()
-   {
-      m_isVisible = !m_isVisible;
-      setConsoleVisible(m_isVisible);
-      return m_isVisible;
-   }
-
-   public synchronized void setConsoleVisible(boolean value)
+   /**
+    * Show/Hide the console.
+    */
+   private synchronized void setConsoleVisible(boolean value)
    {
       m_isVisible = value;
       m_consoleMainFrame.setVisible(value);
       if (value)
       {
-         int max = m_consoleOutputPanel.getVerticalScrollBar().getMaximum();
+         JViewport viewport = m_consoleOutputScrollPane.getViewport(); 
+         JEditorPane editorPane = (JEditorPane)viewport.getView(); 
+
+         int max = m_consoleOutputScrollPane.getVerticalScrollBar().getMaximum();
          Point keypoint = new Point(0, max);
          Rectangle keyview = new Rectangle(keypoint);
-         m_consoleOutputEditorPane.scrollRectToVisible(keyview);
+         editorPane.scrollRectToVisible(keyview);
       }
+      else
+      {
+         // close window -> return focus to main frame
+         Starter.setSkipWindowGainedFocus();
+      }
+   }
+
+   /**
+    * Switch the visibility status of the console between on and off.<p>
+    * From outside, com.mr.apps.JNordVpnManager.Starter.switchConsoleWindow() should be called.
+    * @return the current visibility status of the console
+    */
+   public synchronized boolean switchConsoleVisible()
+   {
+      m_isVisible = !m_isVisible;
+      setConsoleVisible(m_isVisible);
+      return m_isVisible;
    }
 }

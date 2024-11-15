@@ -42,7 +42,8 @@ import com.mr.apps.JNordVpnManager.gui.dialog.JModalDialog;
  * to the console [stdout or console window].<br>
  * Environment variables (possibly overwritten by GUI settings):
  * <ul>
- * <it>COM_MR_APPS_TRACE - Trace settings [off|dbg,cmd,ini]</it> <it>MRAPPSOUTPUT - defines an additional console output
+ * <it>COM_MR_APPS_TRACE - Trace settings [off|dbg,cmd,ini]</it>
+ * <it>COM_MR_APPS_LOGGING - if set to a file name, activates an additional log-file output
  * or the fallback file name for the logging file</it>
  * </ul>
  */
@@ -57,6 +58,7 @@ public class UtilLogErr
    private static final String DEFAULT_TRACE_SETTINGS = TRACE_Off;             // default for trace settings
    private static final String DEFAULT_FILE_ENCODING  = "UTF-8";
 
+   private boolean             m_bwLogfileIsActive    = false;
    private BufferedWriter      m_bwLogfile            = null;
    private String              m_sErrorLogFileName    = null;
    private String              m_sFileEncoding        = null;
@@ -73,7 +75,7 @@ public class UtilLogErr
     * 
     * @param sErrorLogFileName
     *           is the name of the error log file name. If <CODE>null</CODE>, the environment variable
-    *           <CODE>MRAPPSOUTPUT</CODE> is checked to set the logging target(s).
+    *           <CODE>COM_MR_APPS_LOGGING</CODE> is checked to set the logging target(s).
     * @param sFileEncoding
     *           is the file encoding. If <CODE>null</CODE>, the default is taken.
     * @param sTraceSettings
@@ -82,6 +84,7 @@ public class UtilLogErr
     */
    public UtilLogErr(String sErrorLogFileName, String sFileEncoding, String sTraceSettings)
    {
+      m_bwLogfileIsActive = false;
       m_bwLogfile = null;
       m_sErrorLogFileName = null;
 
@@ -117,7 +120,7 @@ public class UtilLogErr
       }
       m_traceSettings += ";";
 
-      String envVar = System.getenv("MRAPPSOUTPUT");
+      String envVar = System.getenv("COM_MR_APPS_LOGFILE");
       if (envVar != null)
       {
          if ((envVar.equalsIgnoreCase("console")) ||
@@ -129,11 +132,8 @@ public class UtilLogErr
          }
          else
          {
-            if ((sErrorLogFileName == null) || (sErrorLogFileName.length() <= 0))
-            {
-               // Fallback: use MRAPPSOUTPUT as output filename
-               sErrorLogFileName = envVar;
-            }
+            // use COM_MR_APPS_LOGFILE as output filename
+            sErrorLogFileName = envVar;
          }
       }
       if ((sErrorLogFileName != null) && (sErrorLogFileName.length() > 0))
@@ -174,6 +174,7 @@ public class UtilLogErr
                OutputStreamWriter osw = new OutputStreamWriter(FOStream, sFileEncoding);
                m_bwLogfile = new BufferedWriter(osw);
                m_sErrorLogFileName = sErrorLogFileName;
+               m_bwLogfileIsActive = true;
             }
          }
          catch (IOException e)
@@ -313,7 +314,49 @@ public class UtilLogErr
     */
    public String getLogFileName ()
    {
-         return m_sErrorLogFileName;
+      return m_sErrorLogFileName;
+   }
+
+   /** 
+    * Set the log file activity.
+    * @param isActive - true to activate the file logging
+    */
+   public boolean setLogFileActive (boolean isActive)
+   {
+      if (true == isActive && m_bwLogfile == null)
+      {
+         TranslatorWarning(10902,
+               "No log file defined.",
+               "Output to log file cannot be activated!");
+         return false;
+      }
+
+      if (m_bwLogfile != null)
+      {
+         if (false == isActive)
+         {
+            TranslatorInfo("Deactivate output in log file!");
+            m_bwLogfileIsActive = isActive;
+         }
+      }
+      if (m_bwLogfile != null)
+      {
+         if (true == isActive)
+         {
+            TranslatorInfo("Activate output in log file!");
+            m_bwLogfileIsActive = isActive;
+         }
+      }
+      return m_bwLogfileIsActive;
+   }
+
+   /** 
+    * Check, if logging in log file is active.
+    * @return true, if active, else false.
+    */
+   public boolean isLogFileActive ()
+   {
+      return m_bwLogfileIsActive;
    }
 
    /** 
@@ -501,7 +544,7 @@ public class UtilLogErr
          // Runtime exception thrown in case of iSev=5
          TranslatorWriteMessage(iSev, -1, msgText, "");
          // additional output to console
-         if ((m_bwLogfile != null) && (m_bConsoleOutput == false)) System.out.println(msgText + "\n");
+         if ((m_bwLogfileIsActive  && m_bwLogfile != null) && (m_bConsoleOutput == false)) System.out.println(msgText + "\n");
       }
       else
       {
@@ -741,6 +784,7 @@ public class UtilLogErr
             m_bwLogfile.close();
             m_bwLogfile = null;
             m_sErrorLogFileName = null;
+            m_bwLogfileIsActive = false;
          }
          catch (IOException e)
          {
@@ -756,8 +800,9 @@ public class UtilLogErr
       {
          try
          {
-            if (m_bwLogfile != null)
+            if (m_bwLogfileIsActive && m_bwLogfile != null)
             {
+               // output to log file
                m_bwLogfile.write(sText + "\n");
                m_bwLogfile.flush();
                if (m_bConsoleOutput == true)
@@ -768,7 +813,16 @@ public class UtilLogErr
             }
             else
             {
-               System.out.println(sText);
+               if (m_bConsoleOutput == true)
+               {
+                  // output to the console
+                  System.out.println(formatToHtml(sText));
+               }
+               else
+               {
+                  // output to stdout
+                  System.out.println(sText);
+               }
             }
          } // try
          catch (IOException e)
@@ -814,13 +868,13 @@ public class UtilLogErr
       else if (sText.startsWith("[Fatal Error]"))
       {
          iStartMsg = 14;
-         sPrefix = "<font color=\"red\"><b>";
+         sPrefix = "<font color=\"#ff334f\"><b>";
          sPostfix = "</b></font>";
       }
       else if (sText.startsWith("[Trace::ini]"))
       {
          iStartMsg = 13;
-         sPrefix = "<font color=\"green\">";
+         sPrefix = "<font color=\"#28b463\">";
          sPostfix = "</font>";         
       }
       else if (sText.startsWith("[Trace::cmd]"))
@@ -832,7 +886,7 @@ public class UtilLogErr
       else if (sText.startsWith("[Trace::dbg]"))
       {
          iStartMsg = 13;
-         sPrefix = "<font color=\"grey\"><em>";
+         sPrefix = "<font color=\"#7b7d7d\"><em>";
          sPostfix = "</em></font>";
       }
 
@@ -844,6 +898,7 @@ public class UtilLogErr
 //         sText = sText.replace(">", "&gt;");
 //         sText = sText.replace("\"", "&quot;");
 //         sText = sText.replace("&", "&amp;");
+         sText = sText.replace("\n$", "");
          sText = sText.replace("\n", "<br>");
          sPostfix = sPostfix + "</p>";
       }

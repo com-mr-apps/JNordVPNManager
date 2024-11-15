@@ -16,6 +16,9 @@ import java.awt.Taskbar;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowFocusListener;
+import java.io.File;
+import java.io.IOException;
+import java.net.URL;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -58,7 +61,7 @@ import com.mr.apps.JNordVpnManager.utils.String.StringFormat;
  */
 public class Starter
 {
-   public static final UtilLogErr  _m_logError                = new UtilLogErr("~/.local/share/JNordVpnManager/JNordVpnManager.log", null, null);
+   public static final UtilLogErr  _m_logError                = new UtilLogErr(UtilPrefs.getLogfileName(), null, null);
 
    public static final int         STATUS_UNKNOWN             = -1;
    public static final int         STATUS_CONNECTED           = 0;
@@ -80,6 +83,7 @@ public class Starter
    private static Cursor           m_applicationDefaultCursor = null;
    private static boolean          m_cursorChangeAllowed      = true;
    private static boolean          m_skipWindowGainedFocus    = false;
+   private static boolean          m_installMode              = false;
 
    private static CurrentLocation  m_currentServer            = null;
 
@@ -265,7 +269,7 @@ public class Starter
                   // Flag is set from the internal message dialogs. On close [re-enter in main application] I don't need an update
                   m_skipWindowGainedFocus = false;
                }
-               else
+               else if (false == m_installMode)
                {
                   updateServer();
                   NvpnAccountData accountData = new NvpnAccountData();
@@ -285,19 +289,15 @@ public class Starter
          }
       });
 
-      // activate console
-      _m_logError.setConsoleOutput(true);
-      m_consoleWindow = new GuiCustomConsole();
-      _m_logError.TranslatorInfo("GUI Version: " + version);
-
       // set application icon in Task bar
-      ImageIcon imageIcon = new ImageIcon(Starter.class.getResource(APPLICATION_ICON_IMAGE));
-      Image myImage = imageIcon.getImage();
+      URL appIconUrl = Starter.class.getResource(APPLICATION_ICON_IMAGE);
+      ImageIcon imageIcon = new ImageIcon(appIconUrl);
+      Image appImage = imageIcon.getImage();
       if (true == Taskbar.isTaskbarSupported())
       {
-         Taskbar.getTaskbar().setIconImage(myImage);
+         Taskbar.getTaskbar().setIconImage(appImage);
       }
-      m_mainFrame.setIconImage(myImage); // TODO: don't work...
+      m_mainFrame.setIconImage(appImage); // TODO: don't work...
 
       /*
        * Check, if Nordvpn is installed
@@ -310,6 +310,9 @@ public class Starter
                "'nordvpn' command not found.\nCheck installation of NordVPN!\n\nExit program.");
       }
 
+      // activate console
+      m_consoleWindow = new GuiCustomConsole();
+      _m_logError.TranslatorInfo("GUI Version: " + version);
       m_splashScreen.setProgress(10);
 
       /* 
@@ -319,7 +322,64 @@ public class Starter
       String[] saVersions = NvpnCommands.getVersion();
       if (saVersions[0] == null /* && UtilSystem.isLastError() */)
       {
+         // could not get the version
          errMsg = UtilSystem.getLastError();
+
+         // If we are called from snap...: 'strict' doesn't let us execute the 'nordvpn' command outside the snap
+         // -> 'Installer mode' to install a local desktop file that runs the jar directly (outside of the snap container)
+         if (true == System.getProperty("user.home").contains("/snap/j-nordvpn-manager/"))
+         {
+            // we run the jar from the snap installation
+            m_installMode = true;
+            boolean copyDesktopFile = false;
+
+            // check if the local desktop file already exists
+            File fdir = new File(System.getProperty("user.home") + "/Desktop/JNordVpnManager_Java.desktop");
+            if (!fdir.canRead())
+            {
+               // desktop file does not exist - ask, if we can copy the desktop file to the local desktop...
+               if (JModalDialog.showConfirm("JNordVPN Manager (install) called.\n" +
+                     "To run the application you can to install the 'JNordVPNManager_Java.desktop' file in your local '~/Desktop directory'.\n" +
+                     "Do you want to install the JNordVPNManager_Java.desktop file in your ~/Desktop directory to launch the application?") == JOptionPane.YES_OPTION)
+               {
+                  copyDesktopFile = true;
+               }
+            }
+            else
+            {
+               // desktop file does exist - ask, if we can update the desktop file to the local desktop...
+               if (JModalDialog.showConfirm("JNordVPN Manager (install) called. A desktop file already exist.\n" +
+                     "If you updated the snap application, you need to install the newest 'JNordVPNManager_Java.desktop' file in your local '~/Desktop directory'.\n" +
+                     "Do you want to update the application?") == JOptionPane.YES_OPTION)
+               {
+                  copyDesktopFile = true;
+               }
+            }
+            if (true == copyDesktopFile)
+            {
+               // copy the desktop file
+               try
+               {
+                  UtilSystem.CopyTextFile("/snap/j-nordvpn-manager/current/Desktop/JNordVpnManager_Java.desktop",
+                                          System.getProperty("user.home") + "/Desktop",
+                                          "UTF-8",
+                                          true);
+               }
+               catch (IOException e1)
+               {
+                  // we don't exit to give the user the chance to access the console
+                  _m_logError.TranslatorExceptionMessage(4, 10901, e1);
+               }
+            }
+
+            if (JModalDialog.showConfirm("JNordVPNManager (install).\n" +
+                  "To use JNordVPN Manager full functionality, please restart the application by selecting the 'JNordVPNManager_Java.desktop' icon.\n" +
+                  "If you continue, you cannot execute any 'nordvpn' command. But you have access to the console to check messages and errors.\n" +
+                  "Please confirm to exit the program.") == JOptionPane.YES_OPTION)
+            {
+               cleanupAndExit(true);
+            }
+         }
       }
       else
       {
@@ -419,13 +479,13 @@ public class Starter
          }
       }
 
-      m_splashScreen.setProgress(100); // ..and close it
-
       //-------------------------------------------------------------------------------
       // display main frame
       int compactMode = UtilPrefs.getCompactMode();
       switchCompactMode(compactMode); // calls pack() and sets minimum size
       m_mainFrame.setVisible(true);
+
+      m_splashScreen.setProgress(100); // ..and close it
 
       _m_logError.TraceIni("**********************************************************************************\n"
                          + "Finished Initialization.\n"
@@ -466,7 +526,7 @@ public class Starter
     */
    public static boolean updateServer()
    {
-      if (null == m_statusLine) return false;
+      if ((true == m_installMode) || (null == m_statusLine)) return false;
 
       // get the current connected server from the "nordvpn status" command
       CurrentLocation loc = m_statusLine.update();

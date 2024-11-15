@@ -167,12 +167,13 @@ public class NvpnCallbacks
     * Execute Login/Logout Callback
     * <p>
     * This Callback gets the real status from the command 'nordvpn account'. The current real status may not be the same as the panel status -
-    * e.g. in case of manual login/logout during the GUI is open. I ignore this possible mismatch for now...<br>
+    * e.g. in case of manual login/logout during the GUI is open. Remark: should be fixed with WindowGained Event...<br>
     */
    public static void executeLogInOut()
    {
       m_lastErrorMessage = null;
       String msg = null;
+      Starter._m_logError.TraceDebug("(execute Logout): Check, if we are still logged in...");
       NvpnAccountData accountData = new NvpnAccountData();
       boolean currentStatus = accountData.isLoggedIn();
       if (true == currentStatus)

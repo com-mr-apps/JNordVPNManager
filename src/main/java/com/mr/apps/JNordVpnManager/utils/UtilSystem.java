@@ -9,10 +9,14 @@
 package com.mr.apps.JNordVpnManager.utils;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.awt.Desktop;
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -21,6 +25,8 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 import com.mr.apps.JNordVpnManager.Starter;
@@ -31,9 +37,13 @@ import com.mr.apps.JNordVpnManager.gui.dialog.JModalDialog;
  */
 public class UtilSystem
 {
-   private static final int COMMAND_TIMEOUT = 10;
-   
-   private static String m_lastErrorMessage = null;
+   private static final int    COMMAND_TIMEOUT    = UtilPrefs.getCommandTimeout();
+
+   private static String       m_lastErrorMessage = null;
+   private static int          m_lastExitCode   = 0;
+   private static Process      m_process          = null;
+   private static StringBuffer m_stdOut           = null;
+   private static StringBuffer m_stdErr           = null;
 
    /**
     * Check error condition of last executed command
@@ -55,6 +65,15 @@ public class UtilSystem
       String message = m_lastErrorMessage;
       m_lastErrorMessage = null;
       return message;
+   }
+
+   /**
+    * Get the last command exit code
+    * @return the last command exit
+    */
+   public static int getLastExitCode()
+   {
+      return m_lastExitCode;
    }
 
    /**
@@ -83,54 +102,49 @@ public class UtilSystem
     */
    public static String runCommand(String... command)
    {
-      StringBuffer result = new StringBuffer();
-      StringBuffer result_err = new StringBuffer();
-      ProcessBuilder processBuilder = new ProcessBuilder();
-
-      Starter.setWaitCursor();
-
       Starter._m_logError.TraceCmd("Execute command=" + joinCommand(command));
       m_lastErrorMessage = null;
+
+      Starter.setWaitCursor();
+      ProcessBuilder processBuilder = new ProcessBuilder();
       processBuilder.command(command);
       try
       {
-         Process process = processBuilder.start();
+         m_stdOut = new StringBuffer();
+         m_stdErr = new StringBuffer();
+         ExecutorService streamHandlers = Executors.newFixedThreadPool(2);
 
-         BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
-         BufferedReader reader_err = new BufferedReader(new InputStreamReader(process.getErrorStream()));
+         m_process = processBuilder.start();
 
-         String line = null;
-         while ((line = reader.readLine()) != null)
+         BufferedReader stdOut = new BufferedReader(new InputStreamReader(m_process.getInputStream()));
+         BufferedReader stdErr = new BufferedReader(new InputStreamReader(m_process.getErrorStream()));
+
+         streamHandlers.execute(() -> handleStream(stdOut, 1));
+         streamHandlers.execute(() -> handleStream(stdErr, 2));
+
+         if (!m_process.waitFor(COMMAND_TIMEOUT, TimeUnit.SECONDS))
          {
-            if (result.length() > 0) result.append("\n");
-            result.append(line);
+            JModalDialog.showError("Process Command Timeout", 
+                  "The Command needed too long for execution. The command was cancelled.");
+            m_process.destroyForcibly();
+            m_process.waitFor();
          }
 
-         String line_err = null;
-         while ((line_err = reader_err.readLine()) != null)
-         {
-            if (result_err.length() > 0) result_err.append("\n");
-            result_err.append(line_err);
-         }
-
-         if (!process.waitFor(COMMAND_TIMEOUT, TimeUnit.SECONDS))
-         {
-            JModalDialog.showError("Process Command Timeout", "The Command needed too long for execution. The command was cancelled.");
-            process.destroy();
-         }
-         int exitCode = process.exitValue();
-         if (0 != exitCode)
+         m_lastExitCode = m_process.exitValue();
+         Starter._m_logError.TraceCmd("Returncode=" + m_lastExitCode);
+         if (0 != m_lastExitCode)
          {
             // return error
-            m_lastErrorMessage = "Command '" + joinCommand(command) + "' returned with error code: " + 
-                                 exitCode + ".";
+            m_lastErrorMessage = "Command '" + joinCommand(command) + "' returned with error code: " + m_lastExitCode + ".";
          }
-         Starter._m_logError.TraceCmd("Returncode=" + exitCode);
-         if (null != result && result.length() > 0) Starter._m_logError.TraceCmd("[stdout]\n" + result + "\n");
-         if (null != result_err && result_err.length() > 0) Starter._m_logError.TraceCmd("[stderr]\n" + result_err + "\n");
-         if (result_err.length() > 0)
+
+         if (null != m_stdOut && m_stdOut.length() > 0) Starter._m_logError.TraceCmd("[stdout]\n" + m_stdOut + "\n");
+         if (null != m_stdErr && m_stdErr.length() > 0) Starter._m_logError.TraceCmd("[stderr]\n" + m_stdErr + "\n");
+
+         if (m_stdErr.length() > 0)
          {
-            m_lastErrorMessage += result_err.toString();
+            // add stderr to error message
+            m_lastErrorMessage += m_stdErr.toString();
          }
       }
       catch (IOException e)
@@ -143,18 +157,58 @@ public class UtilSystem
          m_lastErrorMessage = "Command '" + joinCommand(command) + "' returned with: InterruptedException.";
          Starter._m_logError.TranslatorExceptionMessage(4, 10900, e);
       }
+      catch (SecurityException e)
+      {
+         m_lastErrorMessage = "Command '" + joinCommand(command) + "' returned with: SecurityException.";
+         Starter._m_logError.TranslatorExceptionMessage(4, 10900, e);
+      }
       finally
       {
          Starter.resetWaitCursor();
       }
 
       if (null != m_lastErrorMessage) Starter._m_logError.TranslatorError(10900, "Command Error Message:", m_lastErrorMessage);
-      return result.toString();
+      return m_stdOut.toString();
+   }
+
+   /**
+    * Read the command streams.
+    * 
+    * @param inputStream
+    *           is the stream
+    * @param which
+    *           is 1 for stdout and 2 for stderr
+    */
+   private static void handleStream(BufferedReader inputStream, int which)
+   {
+      try (BufferedReader stdOutReader = inputStream)
+      {
+         String line;
+         while ((line = stdOutReader.readLine()) != null)
+         {
+            if (1 == which)
+            {
+               if (m_stdOut.length() > 0) m_stdOut.append("\n");
+               m_stdOut.append(line);
+            }
+            else
+            {
+               if (m_stdErr.length() > 0)  m_stdErr.append("\n");
+               m_stdErr.append(line);
+            }
+         }
+      }
+      catch (IOException e)
+      {
+         throw new RuntimeException(e);
+      }
    }
 
    /**
     * Utility to join the VARARG command
-    * @param command is the VARARG command
+    * 
+    * @param command
+    *           is the VARARG command
     * @return the joined command
     */
    private static String joinCommand(String... command)
@@ -170,8 +224,9 @@ public class UtilSystem
 
    /**
     * Get number of days from a time stamp until now
+    * 
     * @param timestamp
-    * @return
+    * @return the days between
     */
    public static long getDaysUntilNow(long timestamp)
    {
@@ -188,7 +243,7 @@ public class UtilSystem
 
       LocalDateTime date1 = LocalDate.parse(formattedTimestamp, dtf).atStartOfDay();
       LocalDateTime date2 = LocalDate.parse(formattedNow, dtf).atStartOfDay();
-      long daysBetween = ChronoUnit.DAYS.between(date1, date2) ;
+      long daysBetween = ChronoUnit.DAYS.between(date1, date2);
 
       return daysBetween;
    }
@@ -243,4 +298,71 @@ public class UtilSystem
       return false;
    }
 
+
+   public static void CopyTextFile(String fromFileName, String toFileName, String sFileEncoding, boolean force) throws IOException
+   {
+      File fromFile = new File(fromFileName);
+      File toFile = new File(toFileName);
+      Starter._m_logError.TraceDebug("Copy file '" + fromFileName + "' to '" + toFileName + "'.");
+
+      if (!fromFile.exists()) throw new IOException("CopyTextFile: " + "no such source file: " + fromFileName);
+      if (!fromFile.isFile()) throw new IOException("CopyTextFile: " + "can't copy directory: " + fromFileName);
+      if (!fromFile.canRead()) throw new IOException("CopyTextFile: " + "source file is unreadable: " + fromFileName);
+
+      if (toFile.isDirectory()) toFile = new File(toFile, fromFile.getName());
+
+      if (toFile.exists())
+      {
+         if (!toFile.canWrite()) throw new IOException("CopyTextFile: " + "destination file is unwriteable: " + toFileName);
+         if (force == false) throw new IOException( "CopyTextFile: " + "existing file was not overwritten.");
+      }
+      else
+      {
+         String parent = toFile.getParent();
+         if (parent == null) parent = System.getProperty("user.dir");
+         File dir = new File(parent);
+         if (!dir.exists()) throw new IOException("CopyTextFile: " + "destination directory doesn't exist: " + parent);
+         if (dir.isFile()) throw new IOException("CopyTextFile: " + "destination is not a directory: " + parent);
+         if (!dir.canWrite()) throw new IOException("CopyTextFile: " + "destination directory is unwriteable: " + parent);
+      }
+
+      BufferedReader fbr = null;
+      BufferedWriter fbw = null;
+      try
+      {
+         FileInputStream fIn = new FileInputStream(fromFile);
+         InputStreamReader isr = new InputStreamReader(fIn, "UTF-8");
+         fbr = new BufferedReader(isr);
+
+         FileOutputStream FOStream = new FileOutputStream(toFile);
+         OutputStreamWriter osw = new OutputStreamWriter(FOStream, sFileEncoding);
+         fbw = new BufferedWriter(osw);
+
+         String buffer = "";
+
+         while ((buffer = fbr.readLine()) != null)
+         {
+            fbw.write(buffer + "\n");
+         }
+      }
+      finally
+      {
+         if (fbr != null) try
+         {
+            fbr.close();
+         }
+         catch (IOException e)
+         {
+            ;
+         }
+         if (fbw != null) try
+         {
+            fbw.close();
+         }
+         catch (IOException e)
+         {
+            ;
+         }
+      }
+   }
 }

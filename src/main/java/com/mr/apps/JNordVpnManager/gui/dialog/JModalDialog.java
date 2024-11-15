@@ -125,9 +125,16 @@ public class JModalDialog extends JDialog implements ActionListener
     */
    public void actionPerformed(ActionEvent event)
    {
-      Starter.setSkipWindowGainedFocus();
-
       m_result = event.getActionCommand();
+      closeDialog();
+   }
+
+   /**
+    * Close the dialog.
+    */
+   public void closeDialog()
+   {
+      Starter.setSkipWindowGainedFocus();
       setVisible(false);
       dispose();
    }
@@ -152,7 +159,15 @@ public class JModalDialog extends JDialog implements ActionListener
       }
       return -1;
    }
-   
+
+   public static JModalDialog JOptionDialog(String title, String msg, String button_text)
+   {
+      JModalDialog dlg = new JModalDialog(Starter.getMainFrame(), title, msg, button_text);
+      dlg.repaint();
+      dlg.setVisible(true);
+      return dlg;
+   }
+
    public static int OKDialog(String title, String msg, String button_text)
    {
       JModalDialog dlg = new JModalDialog(Starter.getMainFrame(), title, msg, button_text);
@@ -161,10 +176,9 @@ public class JModalDialog extends JDialog implements ActionListener
       return dlg.getResult();
    }
 
-   public int OKDialog(String title, String msg)
+   public static int OKDialog(String title, String msg)
    {
-      JModalDialog dlg;
-      dlg = new JModalDialog(Starter.getMainFrame(), title , msg, "OK");
+      JModalDialog dlg = new JModalDialog(Starter.getMainFrame(), title , msg, "OK");
       dlg.repaint();
       dlg.setVisible(true);
       return dlg.getResult();
@@ -178,7 +192,7 @@ public class JModalDialog extends JDialog implements ActionListener
       return dlg.getResult();
    }
 
-   public int YesNoCancelDialog(String msg)
+   public static int YesNoCancelDialog(String msg)
    {
       JModalDialog dlg = new JModalDialog(Starter.getMainFrame(), "Question", msg, "Yes,No,Cancel");
       dlg.repaint();
