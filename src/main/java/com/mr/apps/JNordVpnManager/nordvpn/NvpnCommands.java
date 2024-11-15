@@ -86,7 +86,7 @@ public class NvpnCommands {
       String status[] = new String[] {null, null};
 
       status[0] = UtilSystem.runCommand(CMD_NORDVPN, ARG_VERSION);
-      if (UtilSystem.isLastError()) return null;
+      if (UtilSystem.isLastError()) return status;
 
       status[1] = UtilSystem.runCommand(CMD_NORDVPN, ARG_DAEMON_VERSION);
 

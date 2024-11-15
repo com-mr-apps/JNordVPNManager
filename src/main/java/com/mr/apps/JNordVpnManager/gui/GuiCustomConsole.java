@@ -256,9 +256,9 @@ public class GuiCustomConsole extends WindowAdapter implements WindowListener, A
       JButton btnExit = new JButton("Exit JNordVPN Manager");
       buttonRow.setLayout(new FlowLayout(FlowLayout.CENTER));
       buttonRow.add(btnSave);
-//      buttonRow.add(btnExit);
       buttonRow.add(btnClear);
       buttonRow.add(btnClose);
+      if (Starter.isInstallMode()) buttonRow.add(btnExit);
 
       m_consoleMainFrame.getContentPane().setLayout(new BorderLayout());
       m_consoleMainFrame.getContentPane().add(tracesRow, BorderLayout.PAGE_START);
