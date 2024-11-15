@@ -29,15 +29,19 @@ JNordVPNManager  is a java program that is all bundled into a single jar file.  
   
  Please note that java must be in your path and this assumes cal.jar is in your current directory.  Basic command line topics and I won't go into detail here.
 
-## SNAP (! in preparation!)
+## SNAP
 
 [![JNordVPNManager](https://snapcraft.io/j-nordvpn-manager/badge.svg)](https://snapcraft.io/j-nordvpn-manager)
 
-I would encourage anyone with a supported Linux platform to use snap.  See [Snapcraft Homepage](https://snapcraft.io) for more information. You can download, install, and keep JNordVPNManager up to date automatically by installing the snap via:
+See [Snapcraft Homepage](https://snapcraft.io) for more information. You can download, install, and keep JNordVPNManager up to date automatically by installing the snap via:
 
 `sudo snap install j-nordvpn-manager`  (Assuming snap is installed)
 
-This will install the application into a sandbox where it is separate from other applications.
+This will install the application into a sandbox where it is separated from other applications.
+
+### Important:
+Because snaps restrict the execution of commands outside of their own sandbox, JNordVPN Manager will run in "Installation" mode: The created Desktop Icon has the extension '(install)'.
+The application should be run after each snap installation/update from the snap in 'Install mode' to create a new desktop file that runs JNordVPN Manager from the snap installation with the Java command outside of the sandbox.
 
 To deinstall type:
 
