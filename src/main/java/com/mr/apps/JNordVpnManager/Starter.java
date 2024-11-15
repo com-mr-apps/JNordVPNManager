@@ -325,13 +325,13 @@ public class Starter
          boolean copyDesktopFile = false;
 
          // check if the local desktop file already exists
-         File fdir = new File(System.getProperty("user.home") + "/Desktop/JNordVpnManager_Java.desktop");
+         File fdir = new File(System.getProperty("user.home") + "../../../Desktop/JNordVpnManager_Java.desktop");
          if (!fdir.canRead())
          {
             // desktop file does not exist - ask, if we can copy the desktop file to the local desktop...
             _m_logError.TraceDebug("...'JNordVPNManager_Java.desktop' file not found in '~/Desktop directory'.");
             if (JModalDialog.showConfirm("JNordVPN Manager (install) called.\n" +
-                  "To run the application you can to install the 'JNordVPNManager_Java.desktop' file in your local '~/Desktop directory'.\n" +
+                  "To run the application you can install the 'JNordVPNManager_Java.desktop' file in your local '~/Desktop directory'.\n" +
                   "Do you want to install the JNordVPNManager_Java.desktop file in your ~/Desktop directory to launch the application?") == JOptionPane.YES_OPTION)
             {
                copyDesktopFile = true;
@@ -340,9 +340,9 @@ public class Starter
          else
          {
             // desktop file does exist - ask, if we can update the desktop file to the local desktop...
-            _m_logError.TraceDebug("...'JNordVPNManager_Java.desktop' file found in '~/Desktop directory'.");
+            _m_logError.TraceDebug("...'JNordVpnManager_Java.desktop' file found in '~/Desktop directory'.");
             if (JModalDialog.showConfirm("JNordVPN Manager (install) called. A desktop file already exist.\n" +
-                  "If you updated the snap application, you need to install the newest 'JNordVPNManager_Java.desktop' file in your local '~/Desktop directory'.\n" +
+                  "If you updated the snap application, you need to install the newest 'JNordVpnManager_Java.desktop' file in your local '~/Desktop directory'.\n" +
                   "Do you want to update the application?") == JOptionPane.YES_OPTION)
             {
                copyDesktopFile = true;
@@ -354,7 +354,7 @@ public class Starter
             try
             {
                UtilSystem.CopyTextFile("/snap/j-nordvpn-manager/current/Desktop/JNordVpnManager_Java.desktop",
-                                       System.getProperty("user.home") + "/Desktop",
+                                       System.getProperty("user.home") + "../../../Desktop/JNordVpnManager_Java.desktop",
                                        "UTF-8",
                                        true);
             }
@@ -366,7 +366,7 @@ public class Starter
          }
 
          if (JModalDialog.showConfirm("JNordVPNManager (install).\n" +
-               "To use JNordVPN Manager full functionality, please restart the application by selecting the 'JNordVPNManager_Java.desktop' icon.\n" +
+               "To use JNordVPN Managers full functionality, please restart the application by selecting the 'JNordVpnManager_Java.desktop' icon.\n" +
                "If you continue, you cannot execute any 'nordvpn' command. But you have access to the console to check messages and errors.\n" +
                "Please confirm to exit the program.") == JOptionPane.YES_OPTION)
          {
