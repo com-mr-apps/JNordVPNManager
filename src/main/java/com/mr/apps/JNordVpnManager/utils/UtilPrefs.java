@@ -39,36 +39,43 @@ public class UtilPrefs
 
    public enum FieldTitle
    {
-      RECENTSERVER_CITY("Recent City", KeyEvent.VK_C, 20),
-      RECENTSERVER_COUNTRY("Recent Country", KeyEvent.VK_O, 20),
-      RECENTSERVER_LIST("Recent Servers", KeyEvent.VK_S, 20),
-      RECENTSERVER_LIST_LENGTH("Recent List Size", KeyEvent.VK_L, 2),
-      SERVERLIST_DATA("Server Data", KeyEvent.VK_D, 20),
-      SERVERLIST_TIMESTAMP("Timestamp", KeyEvent.VK_T, 10),
-      COMPACTMODE("Compact Mode", KeyEvent.VK_M, 5),
-      AUTOCONNECTMODE("Auto Connect on Program Start", KeyEvent.VK_S, 1),
-      AUTODISCONNECTMODE("Auto Disconnect on Program Exit", KeyEvent.VK_E, 1),
-      TRACEDEBUG("Trace Debug", KeyEvent.VK_B, 1),
-      TRACECMD("Trace Command", KeyEvent.VK_A, 1),
-      TRACEINIT("Trace Init", KeyEvent.VK_I, 1),
-      LOGFILE_NAME("Logfile", KeyEvent.VK_F, 20),
-      LOGFILE_ACTIVE("Write to Logfile", KeyEvent.VK_W, 1),
-      COMMAND_TIMEOUT("Command Timeout (in seconds)", -1, 3);
+      RECENTSERVER_CITY("Recent Server", "T", KeyEvent.VK_S, 20),
+      RECENTSERVER_COUNTRY("Recent Country", "T", KeyEvent.VK_C, 20),
+      RECENTSERVER_LIST("Recent Servers", "T", -1, 20),
+      RECENTSERVER_LIST_LENGTH("Recent List Size", "N[1,10]", -1, 2),
+      SERVERLIST_DATA("Server Data", "T", KeyEvent.VK_D, 20),
+      SERVERLIST_TIMESTAMP("Timestamp", "T", KeyEvent.VK_T, 10),
+      COMPACTMODE("Compact Mode", "B", KeyEvent.VK_M, 5),
+      AUTOCONNECTMODE("Auto Connect on Program Start", "B", KeyEvent.VK_S, 1),
+      AUTODISCONNECTMODE("Auto Disconnect on Program Exit", "B", KeyEvent.VK_E, 1),
+      TRACEDEBUG("Trace Debug", "B", KeyEvent.VK_B, 1),
+      TRACECMD("Trace Command", "B", KeyEvent.VK_A, 1),
+      TRACEINIT("Trace Init", "B", KeyEvent.VK_I, 1),
+      LOGFILE_NAME("Logfile", "T", KeyEvent.VK_F, 20),
+      LOGFILE_ACTIVE("Write to Logfile", "B", KeyEvent.VK_W, 1),
+      COMMAND_TIMEOUT("Command Timeout (in seconds)", "N", -1, 3);
 
-      private String title;
+      private String label;
+      private String elementType;
       private int    mnemonic;
       private int    length;
 
-      private FieldTitle(String title, int mnemonic, int length)
+      private FieldTitle(String label, String elementType, int mnemonic, int length)
       {
-         this.title = title;
+         this.label = label;
+         this.elementType = elementType;
          this.mnemonic = mnemonic;
          this.length = length;
       }
 
-      public String getTitle()
+      public String getLabel()
       {
-         return title;
+         return label;
+      }
+
+      public String getElementType()
+      {
+         return elementType;
       }
 
       public int getMnemonic()
@@ -403,7 +410,7 @@ public class UtilPrefs
       {
          String value = hm.get(fieldTitle);
          // TODO...
-         System.out.printf("%s: %s%n", fieldTitle.getTitle(), value);
+         System.out.printf("%s: %s%n", fieldTitle.getLabel(), value);
       }
 
    }
