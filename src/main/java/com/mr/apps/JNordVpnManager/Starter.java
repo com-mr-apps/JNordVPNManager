@@ -397,7 +397,7 @@ public class Starter
       m_nordvpnVersion = "n/a";
       String errMsg = null;
       String[] saVersions = NvpnCommands.getVersion();
-      if (saVersions[0] == null /* && UtilSystem.isLastError() */)
+      if (UtilSystem.isLastError())
       {
          // could not get the version
          errMsg = UtilSystem.getLastError();
@@ -416,18 +416,13 @@ public class Starter
             errMsg = "Invalid formatted version string=" + saVersions[0] + "<.";
          }
       }
-      if (null != errMsg)
+      if ((null != errMsg) && (false == m_installMode))
       {
          _m_logError.TranslatorError(10000,
                "NordVPN Version error",
                errMsg);
       }
       _m_logError.TraceIni("NordVPN version=" + m_nordvpnVersion + ".");
-
-      /*
-       * get NordVPN account information
-       */
-      new NvpnAccountData();
 
       //-------------------------------------------------------------------------------
       // Initialize Server Locations

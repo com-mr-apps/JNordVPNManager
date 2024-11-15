@@ -31,11 +31,19 @@ public class NvpnAccountData
       {
          if (msg.contains("You are not logged in."))
          {
+            Starter._m_logError.TraceCmd(msg);
          }
          else
          {
             msg = UtilSystem.getLastError();
-            JModalDialog.showError("NordVPN Account", msg);
+            if (Starter.isInstallMode())
+            {
+               Starter._m_logError.TraceCmd(msg);
+            }
+            else
+            {
+               JModalDialog.showError("NordVPN Account", msg);
+            }
          }
        }
       else
