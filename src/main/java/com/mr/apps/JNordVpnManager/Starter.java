@@ -325,7 +325,8 @@ public class Starter
          boolean copyDesktopFile = false;
 
          // check if the local desktop file already exists
-         File fdir = new File(System.getProperty("user.home") + "../../../Desktop/JNordVpnManager_Java.desktop");
+         String targetFile = System.getProperty("user.home") + "/../../../Desktop/JNordVpnManager_Java.desktop";
+         File fdir = new File(targetFile);
          if (!fdir.canRead())
          {
             // desktop file does not exist - ask, if we can copy the desktop file to the local desktop...
@@ -354,7 +355,7 @@ public class Starter
             try
             {
                UtilSystem.CopyTextFile("/snap/j-nordvpn-manager/current/Desktop/JNordVpnManager_Java.desktop",
-                                       System.getProperty("user.home") + "../../../Desktop/JNordVpnManager_Java.desktop",
+                                       targetFile,
                                        "UTF-8",
                                        true);
             }
