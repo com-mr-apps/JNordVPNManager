@@ -13,7 +13,6 @@ import javax.swing.SwingConstants;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 
-
 /**
  * Title:        JDoubleTextField
  * Description:  Textfield that only allows decimal number input

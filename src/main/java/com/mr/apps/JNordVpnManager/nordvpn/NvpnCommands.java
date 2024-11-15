@@ -8,7 +8,6 @@
  */
 package com.mr.apps.JNordVpnManager.nordvpn;
 
-import com.mr.apps.JNordVpnManager.Starter;
 import com.mr.apps.JNordVpnManager.utils.UtilSystem;
 
 public class NvpnCommands {
@@ -47,7 +46,6 @@ public class NvpnCommands {
    {
       String status = null;
 
-      if (Starter.isInstallMode()) return status;
       status = UtilSystem.runCommand(CMD_NORDVPN, ARG_STATUS);
 		
       return status;
@@ -61,7 +59,6 @@ public class NvpnCommands {
    {
       String status = null;
       
-      if (Starter.isInstallMode()) return status;
       status = UtilSystem.runCommand(CMD_NORDVPN, ARG_SETTINGS);
       
       return status;
@@ -75,7 +72,6 @@ public class NvpnCommands {
    {
       String status = null;
       
-      if (Starter.isInstallMode()) return "n/a";
       status = UtilSystem.runCommand(CMD_NORDVPN, ARG_ACCOUNT);
       
       return status;
@@ -89,7 +85,6 @@ public class NvpnCommands {
    {
       String status[] = new String[] {null, null};
 
-      if (Starter.isInstallMode()) return status;
       status[0] = UtilSystem.runCommand(CMD_NORDVPN, ARG_VERSION);
       if (UtilSystem.isLastError()) return null;
 
@@ -106,7 +101,6 @@ public class NvpnCommands {
    {
       String status = null;
       
-      if (Starter.isInstallMode()) return "";
       status = UtilSystem.runCommand(CMD_NORDVPN, ARG_GROUPS);
       
       return status;
@@ -120,7 +114,6 @@ public class NvpnCommands {
    {
       String countries = null;
       
-      if (Starter.isInstallMode()) return "";
       countries = UtilSystem.runCommand(CMD_NORDVPN, ARG_COUNTRIES);
       
       return countries;
@@ -135,7 +128,6 @@ public class NvpnCommands {
    {
       String cities = null;
       
-      if (Starter.isInstallMode()) return "";
       cities = UtilSystem.runCommand(CMD_NORDVPN, ARG_CITIES, country);
       
       return cities;
@@ -151,7 +143,6 @@ public class NvpnCommands {
    {
       String status = null;
       
-      if (Starter.isInstallMode()) return "";
       if (null == city || city.isBlank())
       {
          if (null == country || country.isBlank())
@@ -185,7 +176,6 @@ public class NvpnCommands {
    {
       String status = null;
       
-      if (Starter.isInstallMode()) return "";
       status = UtilSystem.runCommand(CMD_NORDVPN, ARG_DISCONNECT);
       
       return status;
@@ -199,7 +189,6 @@ public class NvpnCommands {
    {
       String status = null;
 
-      if (Starter.isInstallMode()) return "";
       status = UtilSystem.runCommand(CMD_NORDVPN, ARG_LOGIN);
 
       return status;
@@ -213,7 +202,6 @@ public class NvpnCommands {
    {
       String status = null;
 
-      if (Starter.isInstallMode()) return "";
       status = UtilSystem.runCommand(CMD_NORDVPN, ARG_LOGOUT);
 
       return status;

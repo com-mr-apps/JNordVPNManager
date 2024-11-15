@@ -6,7 +6,7 @@
  * You should have received a copy of the “Commons Clause” license with
  * this file. If not, please visit: https://github.com/com.mr.apps/JNordVpnManager
  */
-package com.mr.apps.JNordVpnManager.gui;
+package com.mr.apps.JNordVpnManager.gui.components;
 
 import javax.swing.JTextField;
 import javax.swing.JLabel;
@@ -16,7 +16,6 @@ import javax.swing.JComponent;
 import javax.swing.SwingConstants;
 
 import com.mr.apps.JNordVpnManager.Starter;
-import com.mr.apps.JNordVpnManager.gui.components.JIntegerTextField;
 
 import java.awt.FlowLayout;
 import java.awt.event.AdjustmentEvent;
@@ -40,11 +39,11 @@ import java.awt.Dimension;
 @SuppressWarnings("serial")
 public class JIntegerStepValField extends JComponent
 {
-   private JIntegerTextField m_JTextField       = null;
-   private JPanel            m_JPanel           = null;
-   private JScrollBar        m_JScrollBar       = null;
-   private JLabel            m_JLabel_pre       = null;
-   private JLabel            m_JLabel_post      = null;
+   private JIntegerTextField m_jTextField  = null;
+   private JPanel            m_jPanel      = null;
+   private JScrollBar        m_jScrollBar  = null;
+   private JLabel            m_jLabelPre   = null;
+   private JLabel            m_jLabelPost  = null;
 
    private String            m_textPre;
    private String            m_textPost;
@@ -55,7 +54,7 @@ public class JIntegerStepValField extends JComponent
    private int               m_value;
    private boolean           m_valueIsBlank;
 
-   boolean                   m_forceEvents      = false;
+   private boolean           m_forceEvents = false;
 
    public JIntegerStepValField()
    {
@@ -66,7 +65,7 @@ public class JIntegerStepValField extends JComponent
       }
       catch (Exception e)
       {
-         Starter._m_logError.TranslatorExceptionMessage(5, 10997, e);
+         Starter._m_logError.TranslatorExceptionMessage(5, 10998, e);
       }
    }
 
@@ -79,27 +78,18 @@ public class JIntegerStepValField extends JComponent
       }
       catch (Exception e)
       {
-         Starter._m_logError.TranslatorExceptionMessage(5, 10997, e);
+         Starter._m_logError.TranslatorExceptionMessage(5, 10998, e);
       }
    }
 
-   /*
-    * public static CIntegerStepValField CreateField(String in_textPre, String in_textPost, int in_min, int in_max, int
-    * in_step) { CIntegerStepValField integerStepValField;
-    * 
-    * integerStepValField = new CIntegerStepValField(in_textPre, in_textPost, in_min, in_max, in_step);
-    * 
-    * return integerStepValField; }
-    */
-
    public JTextField getJTextField()
    {
-      return m_JTextField;
+      return m_jTextField;
    }
 
    public JPanel getJPanel()
    {
-      return m_JPanel;
+      return m_jPanel;
    }
 
    public String getText()
@@ -119,7 +109,7 @@ public class JIntegerStepValField extends JComponent
       if (in_String.equals("") == false)
       {
          m_valueIsBlank = false;
-         set_value(Integer.valueOf(in_String).intValue()); // no "" as entry possible
+         set_value(Integer.valueOf(in_String).intValue()); // no "" as entry posible
       }
       else
       {
@@ -130,38 +120,46 @@ public class JIntegerStepValField extends JComponent
 
    public void selectAll()
    {
-      m_JTextField.selectAll();
+      m_jTextField.selectAll();
    }
 
    public void requestFocus()
    {
-      m_JTextField.requestFocus();
+      m_jTextField.requestFocus();
    }
 
    public void setVisible(boolean fVisible)
    {
-      if (m_JLabel_pre != null) m_JLabel_pre.setVisible(fVisible);
-      if (m_JLabel_post != null) m_JLabel_post.setVisible(fVisible);
-      m_JTextField.setVisible(fVisible);
-      if (m_JScrollBar != null) m_JScrollBar.setVisible(fVisible);
+      if (m_jLabelPre != null) m_jLabelPre.setVisible(fVisible);
+      if (m_jLabelPost != null) m_jLabelPost.setVisible(fVisible);
+      m_jTextField.setVisible(fVisible);
+      if (m_jScrollBar != null) m_jScrollBar.setVisible(fVisible);
+   }
+
+   public void setEditable(boolean isEditable)
+   {
+      m_jTextField.setEditable(isEditable);
+      return;
+   }
+
+   public boolean isEditable()
+   {
+      return m_jTextField.isEditable();
    }
 
    public void setEnabled(boolean fEnable)
    {
-      m_JTextField.setEnabled(fEnable);
-      m_JTextField.setEditable(fEnable);
-      if (m_JScrollBar != null) m_JScrollBar.setEnabled(fEnable);
+      m_jTextField.setEnabled(fEnable);
+      m_jTextField.setEditable(fEnable);
+      if (m_jScrollBar != null) m_jScrollBar.setEnabled(fEnable);
+      return;
    }
 
    public boolean isEnabled()
    {
-      return m_JTextField.isEnabled();
+      return m_jTextField.isEnabled();
    }
 
-   /*
-    * public void updateUI(boolean fEnable) { if (jLabel_pre != null) jLabel_pre.updateUI(); if (jLabel_post != null)
-    * jLabel_post.updateUI(); jTextField.updateUI(); if (jScrollBar != null) jScrollBar.updateUI(); }
-    */
    private void set_initValues(String in_textPre, String in_textPost, int in_min, int in_max, int in_step)
    {
       m_textPre = in_textPre;
@@ -191,23 +189,23 @@ public class JIntegerStepValField extends JComponent
          m_nbCol = String.valueOf(m_min).length();
       }
 
-      // System.out.println("m_min="+m_min+", m_max="+m_max+", m_step="+m_step+", m_nbCol="+m_nbCol);
+      return;
    }
 
    private void create() throws Exception
    {
       FlowLayout flowLayout;
 
-      m_JPanel = new JPanel();
+      m_jPanel = new JPanel();
       flowLayout = new FlowLayout();
-      m_JPanel.setLayout(flowLayout);
+      m_jPanel.setLayout(flowLayout);
       flowLayout.setHgap(0);
       flowLayout.setVgap(0);
 
-      m_JTextField = new JIntegerTextField();
-      m_JTextField.setColumns(m_nbCol);
-      m_JTextField.setHorizontalAlignment(SwingConstants.RIGHT);
-      m_JTextField.addFocusListener(new java.awt.event.FocusAdapter() {
+      m_jTextField = new JIntegerTextField();
+      m_jTextField.setColumns(m_nbCol);
+      m_jTextField.setHorizontalAlignment(SwingConstants.RIGHT);
+      m_jTextField.addFocusListener(new java.awt.event.FocusAdapter() {
          public void focusLost(FocusEvent e)
          {
             jTextField_focusLost(e);
@@ -216,12 +214,12 @@ public class JIntegerStepValField extends JComponent
 
       if (m_step != 0)
       {
-         m_JScrollBar = new JScrollBar();
-         m_JScrollBar.setUnitIncrement(-m_step);
-         m_JScrollBar.setPreferredSize(new Dimension(16, 21));
-         m_JScrollBar.setMinimum(m_min);
-         m_JScrollBar.setMaximum(m_max + 10);
-         m_JScrollBar.addAdjustmentListener(new java.awt.event.AdjustmentListener() {
+         m_jScrollBar = new JScrollBar();
+         m_jScrollBar.setUnitIncrement(-m_step);
+         m_jScrollBar.setPreferredSize(new Dimension(16, 21));
+         m_jScrollBar.setMinimum(m_min);
+         m_jScrollBar.setMaximum(m_max + 10);
+         m_jScrollBar.addAdjustmentListener(new java.awt.event.AdjustmentListener() {
             public void adjustmentValueChanged(AdjustmentEvent e)
             {
                jScrollBar_adjustmentValueChanged(e);
@@ -230,30 +228,29 @@ public class JIntegerStepValField extends JComponent
       }
       else
       {
-         m_JScrollBar = null;
+         m_jScrollBar = null;
       }
 
-      this.add(m_JPanel, null);
+      this.add(m_jPanel, null);
       if (m_textPre != null)
       {
-         m_JLabel_pre = new JLabel();
-         m_JLabel_pre.setText(m_textPre);
-         m_JPanel.add(m_JLabel_pre, null);
+         m_jLabelPre = new JLabel();
+         m_jLabelPre.setText(m_textPre);
+         m_jPanel.add(m_jLabelPre, null);
       }
-      m_JPanel.add(m_JTextField, null);
-      if (m_JScrollBar != null)
+      m_jPanel.add(m_jTextField, null);
+      if (m_jScrollBar != null)
       {
-         m_JPanel.add(m_JScrollBar, null);
+         m_jPanel.add(m_jScrollBar, null);
       }
       if (m_textPost != null)
       {
-         m_JLabel_post = new JLabel();
-         m_JLabel_post.setText(m_textPost);
-         m_JPanel.add(m_JLabel_post, null);
+         m_jLabelPost = new JLabel();
+         m_jLabelPost.setText(m_textPost);
+         m_jPanel.add(m_jLabelPost, null);
       }
 
       set_value(m_value);
-      setVisible(true);
    }
 
    private void set_value(int in_value)
@@ -272,36 +269,36 @@ public class JIntegerStepValField extends JComponent
 
       if (m_valueIsBlank == false)
       {
-         m_JTextField.setText(String.valueOf(m_value));
-         if (m_JScrollBar != null) m_JScrollBar.setValue(m_value);
+         m_jTextField.setText(String.valueOf(m_value));
+         if (m_jScrollBar != null) m_jScrollBar.setValue(m_value);
       }
       else
       {
-         m_JTextField.setText("");
+         m_jTextField.setText("");
       }
 
       m_forceEvents = actualForceEventsState;
    }
 
-   void jScrollBar_adjustmentValueChanged(AdjustmentEvent e)
+   private void jScrollBar_adjustmentValueChanged(AdjustmentEvent e)
    {
       if (m_forceEvents) return;
 
       m_forceEvents = true;
       if (m_valueIsBlank == false)
       {
-         set_value(m_JScrollBar.getValue());
+         set_value(m_jScrollBar.getValue());
       }
       else
       {
          m_valueIsBlank = false;
          set_value(m_min);
       }
-      m_JTextField.requestFocus(); // important! set cursor to textfield
+      m_jTextField.requestFocus(); // important! set cursor to textfield
       m_forceEvents = false;
    }
 
-   void jTextField_focusLost(FocusEvent e)
+   private void jTextField_focusLost(FocusEvent e)
    {
       int iVal;
       String strVal;
@@ -309,7 +306,7 @@ public class JIntegerStepValField extends JComponent
       if (m_forceEvents) return;
 
       m_forceEvents = true;
-      strVal = m_JTextField.getText();
+      strVal = m_jTextField.getText();
       if (strVal.length() == 0)
       {
          if (m_min == m_max)
@@ -336,15 +333,15 @@ public class JIntegerStepValField extends JComponent
 
    public JTextField getTextField()
    {
-      return m_JTextField;
+      return m_jTextField;
    }
 
    // add ons for changing language
-   public void set_jLabel_pre(String in_text)
+   public void setJLabelPre(String in_text)
    {
-      if (m_JLabel_pre != null)
+      if (m_jLabelPre != null)
       {
-         m_JLabel_pre.setText(in_text);
+         m_jLabelPre.setText(in_text);
       }
    }
 }

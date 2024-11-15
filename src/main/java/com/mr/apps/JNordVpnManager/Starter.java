@@ -317,17 +317,20 @@ public class Starter
 
       // If we are called from snap...: 'strict' doesn't let us execute the 'nordvpn' command outside the snap
       // -> 'Installer mode' to install a local desktop file that runs the jar directly (outside of the snap container)
-      if (true == System.getProperty("user.home").contains("/snap/j-nordvpn-manager/"))
+      String myHome = System.getenv("SNAP_REAL_HOME");
+      if (null != myHome)
       {
          // we run the jar from the snap installation
          m_installMode = true;
+         // open the console window
+         switchConsoleWindow();
          _m_logError.TraceDebug("JNordVPN Manager called in installation mode (in the snap environment)");
-         boolean copyDesktopFile = false;
 
-         // check if the local desktop file already exists
-         String targetFile = System.getProperty("user.home") + "/../../../Desktop/JNordVpnManager_Java.desktop";
-         File fdir = new File(targetFile);
-         if (!fdir.canRead())
+         // check if the local desktop file already exists (in the real home directory!)
+         boolean copyDesktopFile = false;
+         String targetFile = myHome + "/Desktop/JNordVpnManager_Java.desktop";
+         File fTargetFile = new File(targetFile);
+         if (!fTargetFile.canRead())
          {
             // desktop file does not exist - ask, if we can copy the desktop file to the local desktop...
             _m_logError.TraceDebug("...'JNordVPNManager_Java.desktop' file not found in '~/Desktop directory'.");
@@ -343,8 +346,8 @@ public class Starter
             // desktop file does exist - ask, if we can update the desktop file to the local desktop...
             _m_logError.TraceDebug("...'JNordVpnManager_Java.desktop' file found in '~/Desktop directory'.");
             if (JModalDialog.showConfirm("JNordVPN Manager (install) called. A desktop file already exist.\n" +
-                  "If you updated the snap application, you need to install the newest 'JNordVpnManager_Java.desktop' file in your local '~/Desktop directory'.\n" +
-                  "Do you want to update the application?") == JOptionPane.YES_OPTION)
+                  "If you updated the snap application, you need also to update the 'JNordVpnManager_Java.desktop' file in your local '~/Desktop directory'.\n" +
+                  "Do you want to update the desktop file?") == JOptionPane.YES_OPTION)
             {
                copyDesktopFile = true;
             }
@@ -366,12 +369,16 @@ public class Starter
             }
          }
 
-         if (JModalDialog.showConfirm("JNordVPNManager (install).\n" +
-               "To use JNordVPN Managers full functionality, please restart the application by selecting the 'JNordVpnManager_Java.desktop' icon.\n" +
-               "If you continue, you cannot execute any 'nordvpn' command. But you have access to the console to check messages and errors.\n" +
-               "Please confirm to exit the program.") == JOptionPane.YES_OPTION)
+         if (fTargetFile.canRead())
          {
-            cleanupAndExit(true);
+            // desktop file exists
+            if (JModalDialog.showConfirm("JNordVPNManager (install).\n" +
+                  "To use JNordVPN Managers full functionality, please use the newest 'JNordVpnManager_Java.desktop' file.\n" +
+                  "If you continue, you cannot execute any 'nordvpn' command. But you have access to the console to check messages and errors.\n" +
+                  "Please confirm to exit the program.") == JOptionPane.YES_OPTION)
+            {
+               cleanupAndExit(true);
+            }
          }
          _m_logError.TraceDebug("...continue execution in 'installer mode'...");
       }
@@ -486,11 +493,11 @@ public class Starter
 
       //-------------------------------------------------------------------------------
       // display main frame
-      int compactMode = UtilPrefs.getCompactMode();
+      int compactMode = (m_installMode) ? 1 : UtilPrefs.getCompactMode();
       switchCompactMode(compactMode); // calls pack() and sets minimum size
       m_mainFrame.setVisible(true);
 
-      m_splashScreen.setProgress(100); // ..and close it
+      m_splashScreen.setProgress(100); // ..and close the splash screen (Important: AFTER setVisible of main frame, else the application icon disappears!)
 
       _m_logError.TraceIni("**********************************************************************************\n"
                          + "Finished Initialization.\n"

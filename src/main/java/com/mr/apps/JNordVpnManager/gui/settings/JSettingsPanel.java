@@ -23,7 +23,7 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 
 import com.mr.apps.JNordVpnManager.Starter;
-import com.mr.apps.JNordVpnManager.gui.JIntegerStepValField;
+import com.mr.apps.JNordVpnManager.gui.components.JIntegerStepValField;
 import com.mr.apps.JNordVpnManager.utils.UtilPrefs;
 import com.mr.apps.JNordVpnManager.utils.UtilPrefs.FieldTitle;
 
@@ -77,6 +77,7 @@ public class JSettingsPanel extends JPanel
             int minMax[] = getMinMax(fieldTitle.getElementType());
             JIntegerStepValField textField = new JIntegerStepValField(null, null, minMax[0], minMax[1], 1);
             textField.setText(m_values.get(fieldTitle));
+            textField.setEditable(false);
             if (fieldTitle.getMnemonic() > 0) label.setDisplayedMnemonic(fieldTitle.getMnemonic());
             label.setLabelFor(textField);
             add(textField.getJPanel(), gbc);
