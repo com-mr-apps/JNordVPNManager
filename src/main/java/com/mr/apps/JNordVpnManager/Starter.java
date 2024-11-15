@@ -310,11 +310,6 @@ public class Starter
                "'nordvpn' command not found.\nCheck installation of NordVPN!\n\nExit program.");
       }
 
-      // activate console
-      m_consoleWindow = new GuiCustomConsole();
-      _m_logError.TranslatorInfo("GUI Version: " + version);
-      m_splashScreen.setProgress(10);
-
       // If we are called from snap...: 'strict' doesn't let us execute the 'nordvpn' command outside the snap
       // -> 'Installer mode' to install a local desktop file that runs the jar directly (outside of the snap container)
       String myHome = System.getenv("SNAP_REAL_HOME");
@@ -322,6 +317,19 @@ public class Starter
       {
          // we run the jar from the snap installation
          m_installMode = true;
+         _m_logError.enableTraceFlag(UtilLogErr.TRACE_Init);
+         _m_logError.enableTraceFlag(UtilLogErr.TRACE_Cmd);
+      }
+
+      // activate console
+      m_consoleWindow = new GuiCustomConsole();
+      _m_logError.TranslatorInfo("GUI Version: " + version);
+      m_splashScreen.setProgress(10);
+
+      // If we are called from snap...: 'strict' doesn't let us execute the 'nordvpn' command outside the snap
+      // -> 'Installer mode' to install a local desktop file that runs the jar directly (outside of the snap container)
+      if (m_installMode)
+      {
          // open the console window
          switchConsoleWindow();
          _m_logError.TraceDebug("JNordVPN Manager called in installation mode (in the snap environment)");
