@@ -149,18 +149,21 @@ public class UtilSystem
       }
       catch (IOException e)
       {
-         m_lastErrorMessage = "Command '" + joinCommand(command) + "' returned with: IOException.";
          Starter._m_logError.TranslatorExceptionMessage(4, 10900, e);
+         m_lastExitCode = m_process.exitValue();
+         m_lastErrorMessage = "Command '" + joinCommand(command) + "' returned with: IOException.";
       }
       catch (InterruptedException e)
       {
-         m_lastErrorMessage = "Command '" + joinCommand(command) + "' returned with: InterruptedException.";
          Starter._m_logError.TranslatorExceptionMessage(4, 10900, e);
+         m_lastExitCode = m_process.exitValue();
+         m_lastErrorMessage = "Command '" + joinCommand(command) + "' returned with: InterruptedException.";
       }
       catch (SecurityException e)
       {
-         m_lastErrorMessage = "Command '" + joinCommand(command) + "' returned with: SecurityException.";
          Starter._m_logError.TranslatorExceptionMessage(4, 10900, e);
+         m_lastExitCode = m_process.exitValue();
+         m_lastErrorMessage = "Command '" + joinCommand(command) + "' returned with: SecurityException.";
       }
       finally
       {
