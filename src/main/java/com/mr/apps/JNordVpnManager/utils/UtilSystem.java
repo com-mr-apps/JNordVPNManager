@@ -9,10 +9,14 @@
 package com.mr.apps.JNordVpnManager.utils;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.awt.Desktop;
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -36,6 +40,7 @@ public class UtilSystem
    private static final int    COMMAND_TIMEOUT    = UtilPrefs.getCommandTimeout();
 
    private static String       m_lastErrorMessage = null;
+   private static int          m_lastExitCode   = 0;
    private static Process      m_process          = null;
    private static StringBuffer m_stdOut           = null;
    private static StringBuffer m_stdErr           = null;
@@ -60,6 +65,15 @@ public class UtilSystem
       String message = m_lastErrorMessage;
       m_lastErrorMessage = null;
       return message;
+   }
+
+   /**
+    * Get the last command exit code
+    * @return the last command exit
+    */
+   public static int getLastExitCode()
+   {
+      return m_lastExitCode;
    }
 
    /**
@@ -116,12 +130,12 @@ public class UtilSystem
             m_process.waitFor();
          }
 
-         int exitCode = m_process.exitValue();
-         Starter._m_logError.TraceCmd("Returncode=" + exitCode);
-         if (0 != exitCode)
+         m_lastExitCode = m_process.exitValue();
+         Starter._m_logError.TraceCmd("Returncode=" + m_lastExitCode);
+         if (0 != m_lastExitCode)
          {
             // return error
-            m_lastErrorMessage = "Command '" + joinCommand(command) + "' returned with error code: " + exitCode + ".";
+            m_lastErrorMessage = "Command '" + joinCommand(command) + "' returned with error code: " + m_lastExitCode + ".";
          }
 
          if (null != m_stdOut && m_stdOut.length() > 0) Starter._m_logError.TraceCmd("[stdout]\n" + m_stdOut + "\n");
@@ -284,4 +298,71 @@ public class UtilSystem
       return false;
    }
 
+
+   public static void CopyTextFile(String fromFileName, String toFileName, String sFileEncoding, boolean force) throws IOException
+   {
+      File fromFile = new File(fromFileName);
+      File toFile = new File(toFileName);
+      Starter._m_logError.TraceDebug("Copy file '" + fromFileName + "' to '" + toFileName + "'.");
+
+      if (!fromFile.exists()) throw new IOException("CopyTextFile: " + "no such source file: " + fromFileName);
+      if (!fromFile.isFile()) throw new IOException("CopyTextFile: " + "can't copy directory: " + fromFileName);
+      if (!fromFile.canRead()) throw new IOException("CopyTextFile: " + "source file is unreadable: " + fromFileName);
+
+      if (toFile.isDirectory()) toFile = new File(toFile, fromFile.getName());
+
+      if (toFile.exists())
+      {
+         if (!toFile.canWrite()) throw new IOException("CopyTextFile: " + "destination file is unwriteable: " + toFileName);
+         if (force == false) throw new IOException( "CopyTextFile: " + "existing file was not overwritten.");
+      }
+      else
+      {
+         String parent = toFile.getParent();
+         if (parent == null) parent = System.getProperty("user.dir");
+         File dir = new File(parent);
+         if (!dir.exists()) throw new IOException("CopyTextFile: " + "destination directory doesn't exist: " + parent);
+         if (dir.isFile()) throw new IOException("CopyTextFile: " + "destination is not a directory: " + parent);
+         if (!dir.canWrite()) throw new IOException("CopyTextFile: " + "destination directory is unwriteable: " + parent);
+      }
+
+      BufferedReader fbr = null;
+      BufferedWriter fbw = null;
+      try
+      {
+         FileInputStream fIn = new FileInputStream(fromFile);
+         InputStreamReader isr = new InputStreamReader(fIn, "UTF-8");
+         fbr = new BufferedReader(isr);
+
+         FileOutputStream FOStream = new FileOutputStream(toFile);
+         OutputStreamWriter osw = new OutputStreamWriter(FOStream, sFileEncoding);
+         fbw = new BufferedWriter(osw);
+
+         String buffer = "";
+
+         while ((buffer = fbr.readLine()) != null)
+         {
+            fbw.write(buffer + "\n");
+         }
+      }
+      finally
+      {
+         if (fbr != null) try
+         {
+            fbr.close();
+         }
+         catch (IOException e)
+         {
+            ;
+         }
+         if (fbw != null) try
+         {
+            fbw.close();
+         }
+         catch (IOException e)
+         {
+            ;
+         }
+      }
+   }
 }

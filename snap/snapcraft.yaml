@@ -5,7 +5,7 @@ description: |
   Introducing JNordVPN Manager - a user-friendly, open-source graphical interface for managing NordVPN connections on Linux. This application simplifies VPN administration with features like a server/city list grouped by countries with filter functionality, connection management (login, logout, connect, disconnect, pause), and a world map showing all servers and the active one. Recent connections are also stored for easy reconnection by a single click.
 
 grade: stable
-confinement: classic
+confinement: strict
 base: core22
 
 title: JNordVPNManager
@@ -13,7 +13,7 @@ website: https://github.com/com-mr-apps/JNordVPNManager
 issues: https://github.com/frossm/com-mr-apps/JNordVPNManager/issues
 license: CDDL-1.1
 donation: https://buymeacoffee.com/3dprototyping
-icon: snap/gui/JNordVPNManager.svg
+icon: snap/gui/icon.svg
 compression: lzo
 
 apps:
@@ -37,12 +37,15 @@ parts:
     plugin: dump
     source: snap/local
     source-type: local
+    organize:
+      '*.desktop' : Desktop/
+
 
   j-nordvpn-manager:
     plugin: maven
     source: https://github.com/com-mr-apps/JNordVPNManager.git
-#    source-branch: main
-    source-tag: Release_2024_1_1
+    source-branch: main
+#    source-tag: Release_2024_1_1
     source-type: git
     
     maven-parameters:
