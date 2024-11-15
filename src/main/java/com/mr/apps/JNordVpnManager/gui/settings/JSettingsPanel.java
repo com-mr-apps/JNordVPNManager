@@ -131,7 +131,7 @@ public class JSettingsPanel extends JPanel
       }
       else if (fieldTitle.getElementType().startsWith("N"))
       {
-         return ((JTextField) (fieldMap.get(fieldTitle))).getText();
+         return ((JIntegerStepValField) (fieldMap.get(fieldTitle))).getText();
       }
 
       // should not happen
