@@ -23,11 +23,11 @@ Thank you for considering JNordVPN Manager as your go-to GUI for managing NordVP
 
 ## Execution
 
-JNordVPNManager  is a java program that is all bundled into a single jar file.  To run a jar file on the command line, simply type:
+JNordVPNManager  is a Java program that is all bundled into a single jar file.  To run a jar file on the command line, simply type:
 
     java -jar JNordVPNManager_[version].jar
   
- Please note that java must be in your path and this assumes cal.jar is in your current directory.  Basic command line topics and I won't go into detail here.
+ Please note that Java 11 or higher must be in your path and this assumes the JNordVPNManager.jar is in your current directory.
 
 ## SNAP
 
