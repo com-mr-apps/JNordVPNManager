@@ -41,7 +41,7 @@ This will install the application into a sandbox where it is separated from othe
 
 ### Important:
 Because snaps restrict the execution of commands outside of their own sandbox, JNordVPN Manager will run in "Installation" mode: The created Desktop Icon has the extension '(install)'.
-The application should be run after each snap installation/update from the snap in 'Install mode' to create a new desktop file that runs JNordVPN Manager from the snap installation with the Java command outside of the sandbox.
+The application should be run after each snap installation/update from the snap in 'Install mode' to create a new  [desktop file](https://github.com/com-mr-apps/JNordVPNManager/blob/main/snap/local/JNordVpnManager_Java.desktop) that runs JNordVPN Manager from the snap installation with the Java command outside of the sandbox.
 
 To deinstall type:
 
