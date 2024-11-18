@@ -663,7 +663,7 @@ public class UtilLogErr
             case 10999:
                // reserved for final try/catch exception, to ensure correct program ending on not handled Java system exceptions
                headerLine += "Java System exception";
-               forcedAbend = false; // we already come from this exception thrown below...!
+               forcedAbend = false;
                break;
             default:
                headerLine = "";

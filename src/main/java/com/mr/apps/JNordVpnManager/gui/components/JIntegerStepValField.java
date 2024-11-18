@@ -336,6 +336,11 @@ public class JIntegerStepValField extends JComponent
       return m_jTextField;
    }
 
+   public boolean hasMinMaxValues()
+   {
+      return (m_jScrollBar != null);
+   }
+
    // add ons for changing language
    public void setJLabelPre(String in_text)
    {

@@ -35,15 +35,15 @@ import com.mr.apps.JNordVpnManager.geotools.CurrentLocation;
 import com.mr.apps.JNordVpnManager.geotools.Location;
 import com.mr.apps.JNordVpnManager.geotools.UtilLocations;
 import com.mr.apps.JNordVpnManager.geotools.UtilMapGeneration;
-import com.mr.apps.JNordVpnManager.gui.AboutScreen;
-import com.mr.apps.JNordVpnManager.gui.GuiCustomConsole;
 import com.mr.apps.JNordVpnManager.gui.GuiMapArea;
 import com.mr.apps.JNordVpnManager.gui.GuiMenuBar;
 import com.mr.apps.JNordVpnManager.gui.GuiStatusLine;
-import com.mr.apps.JNordVpnManager.gui.SplashScreen;
 import com.mr.apps.JNordVpnManager.gui.connectLine.GuiConnectLine;
 import com.mr.apps.JNordVpnManager.gui.connectLine.JPauseSlider;
+import com.mr.apps.JNordVpnManager.gui.dialog.JAboutScreen;
+import com.mr.apps.JNordVpnManager.gui.dialog.JCustomConsole;
 import com.mr.apps.JNordVpnManager.gui.dialog.JModalDialog;
+import com.mr.apps.JNordVpnManager.gui.dialog.JSplashScreen;
 import com.mr.apps.JNordVpnManager.gui.serverTree.JServerTreePanel;
 import com.mr.apps.JNordVpnManager.nordvpn.NvpnAccountData;
 import com.mr.apps.JNordVpnManager.nordvpn.NvpnCallbacks;
@@ -73,11 +73,11 @@ public class Starter
    private static JFrame           m_mainFrame                = null;
    private static JServerTreePanel m_serverListPanel          = null;
    private static JMapFrame        m_mapFrame                 = null;
-   private static AboutScreen      m_aboutScreen              = null;
-   private static SplashScreen     m_splashScreen             = null;
+   private static JAboutScreen      m_aboutScreen              = null;
+   private static JSplashScreen     m_splashScreen             = null;
    private static GuiStatusLine    m_statusLine               = null;
    private static GuiConnectLine   m_connectLine              = null;
-   private static GuiCustomConsole m_consoleWindow            = null;
+   private static JCustomConsole m_consoleWindow            = null;
 
    private static String           m_nordvpnVersion;
    private static Cursor           m_applicationDefaultCursor = null;
@@ -115,7 +115,7 @@ public class Starter
     */
    public static void splashScreenInit()
    {
-      m_splashScreen = new SplashScreen("JNordVPN Manager loading...");
+      m_splashScreen = new JSplashScreen("JNordVPN Manager loading...");
       m_splashScreen.show();
    }
 
@@ -312,8 +312,9 @@ public class Starter
 
       // If we are called from snap...: 'strict' doesn't let us execute the 'nordvpn' command outside the snap
       // -> 'Installer mode' to install a local desktop file that runs the jar directly (outside of the snap container)
+      String usrHome = System.getProperty("user.home");
       String myHome = System.getenv("SNAP_REAL_HOME");
-      if (null != myHome)
+      if ((null != myHome) && (false == myHome.equals(usrHome))) // requires additional check for debug.. because eclipse is a snap and sets the SNAP_* variables..
       {
          // we run the jar from the snap installation
          m_installMode = true;
@@ -322,7 +323,7 @@ public class Starter
       }
 
       // activate console
-      m_consoleWindow = new GuiCustomConsole();
+      m_consoleWindow = new JCustomConsole();
       _m_logError.TranslatorInfo("GUI Version: " + version);
       m_splashScreen.setProgress(10);
 
@@ -475,7 +476,7 @@ public class Starter
       m_mainFrame.add(m_mapFrame.getContentPane(), BorderLayout.CENTER);
       m_mainFrame.add(statusPanel, BorderLayout.PAGE_END);
 
-      m_aboutScreen  = new AboutScreen(version);
+      m_aboutScreen  = new JAboutScreen(version);
 
       m_splashScreen.setProgress(80);
       m_splashScreen.setStatus("Update Status...");

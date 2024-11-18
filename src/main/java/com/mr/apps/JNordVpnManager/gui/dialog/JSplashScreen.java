@@ -6,7 +6,7 @@
  * You should have received a copy of the “Commons Clause” license with
  * this file. If not, please visit: https://github.com/com.mr.apps/JNordVpnManager
  */
-package com.mr.apps.JNordVpnManager.gui;
+package com.mr.apps.JNordVpnManager.gui.dialog;
 
 import java.awt.Color;
 import java.awt.Cursor;
@@ -21,7 +21,7 @@ import javax.swing.*;
 import com.mr.apps.JNordVpnManager.Starter;
 import com.mr.apps.JNordVpnManager.utils.UtilSystem;
 
-public class SplashScreen
+public class JSplashScreen
 {
    private static final String SPLASH_IMAGE = "resources/SplashScreen.png";
    private static final String BUYMEACOFFEE_IMAGE = "resources/bmc_qr.png";
@@ -39,7 +39,7 @@ public class SplashScreen
    /**
     * Initiates a new About Screen
     */
-   public SplashScreen()
+   public JSplashScreen()
    {
       this(null);
    }
@@ -50,7 +50,7 @@ public class SplashScreen
     * @param status
     *           is the initial status text to be displayed. In case of null, the Welcome screen is displayed.
     */
-   public SplashScreen(String status)
+   public JSplashScreen(String status)
    {
       m_splashFrame = new JFrame();
       m_splashFrame.setLayout(new BoxLayout(m_splashFrame.getContentPane(), BoxLayout.Y_AXIS));

@@ -21,7 +21,7 @@ import com.mr.apps.JNordVpnManager.geotools.Location;
 import com.mr.apps.JNordVpnManager.geotools.UtilLocations;
 import com.mr.apps.JNordVpnManager.gui.dialog.JModalDialog;
 import com.mr.apps.JNordVpnManager.gui.dialog.JSystemInfoDialog;
-import com.mr.apps.JNordVpnManager.gui.settings.JSettingsDialog;
+import com.mr.apps.JNordVpnManager.gui.dialog.JSplashScreen;
 import com.mr.apps.JNordVpnManager.nordvpn.NvpnAccountData;
 import com.mr.apps.JNordVpnManager.nordvpn.NvpnCallbacks;
 import com.mr.apps.JNordVpnManager.nordvpn.NvpnCommands;
@@ -54,13 +54,13 @@ public class GuiMenuBar
       JMenu fileMenu = new JMenu("File");
       menuBar.add(fileMenu);
 
-      JMenuItem fileSettings = new JMenuItem("Settings");
+      JMenuItem fileSettings = new JMenuItem("Preferences");
+      fileSettings.setToolTipText("Show/Edit Application User Preferences.");
       fileSettings.addActionListener(new ActionListener()
       {
          public void actionPerformed(ActionEvent e)
          {
-            JSettingsDialog sp = new JSettingsDialog(Starter.getMainFrame());
-            sp.getResult();
+            UtilPrefs.showUserPreferencesPanel();
          }
       });
       fileMenu.add(fileSettings);
@@ -262,7 +262,7 @@ public class GuiMenuBar
       {
          public void actionPerformed(ActionEvent e)
          {
-            SplashScreen splashScreen = new SplashScreen();
+            JSplashScreen splashScreen = new JSplashScreen();
             splashScreen.show();
          }
       });

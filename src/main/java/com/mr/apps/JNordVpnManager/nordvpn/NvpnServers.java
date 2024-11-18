@@ -32,7 +32,7 @@ public class NvpnServers
     */
    public static String getServerList(boolean update)
    {
-      String rc_serverList = UtilPrefs.getServerList();
+      String rc_serverList = UtilPrefs.getServerListData();
       if (update)
       {
          Starter.setWaitCursor();
@@ -74,7 +74,7 @@ public class NvpnServers
          rc_serverList = sbListOfServers.toString();
 
          // Update the server list stored in user preferences
-         UtilPrefs.setServerList(rc_serverList);
+         UtilPrefs.setServerListData(rc_serverList);
 
          // ...also update the time stamp
          long timestamp = System.currentTimeMillis();

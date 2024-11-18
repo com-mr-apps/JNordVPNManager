@@ -11,12 +11,15 @@ package com.mr.apps.JNordVpnManager.gui.settings;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javax.swing.BorderFactory;
+import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -24,29 +27,34 @@ import javax.swing.JTextField;
 
 import com.mr.apps.JNordVpnManager.Starter;
 import com.mr.apps.JNordVpnManager.gui.components.JIntegerStepValField;
+import com.mr.apps.JNordVpnManager.gui.components.JResizedIcon;
 import com.mr.apps.JNordVpnManager.utils.UtilPrefs;
 import com.mr.apps.JNordVpnManager.utils.UtilPrefs.FieldTitle;
 
 /**
- * Inspired by https://stackoverflow.com/users/522444/hovercraft-full-of-eels
+ * Common class to create a settings panel<p>
+ * Inspired by https://stackoverflow.com/users/522444/hovercraft-full-of-eels<br>
  * Thanks for the template!
  */
 @SuppressWarnings("serial")
 public class JSettingsPanel extends JPanel
 {
-   private static final Insets         WEST_INSETS = new Insets(5, 0, 5, 5);
-   private static final Insets         EAST_INSETS = new Insets(5, 5, 5, 0);
-   private Map<FieldTitle, Object> fieldMap    = new HashMap<FieldTitle, Object>();
-   private HashMap<FieldTitle,String> m_values = null;
+   private static final Insets     WEST_INSETS = new Insets(5, 0, 5, 5);
+   private static final Insets     EAST_INSETS = new Insets(5, 5, 5, 0);
+   private Map<FieldTitle, Object> m_fieldMap  = new HashMap<FieldTitle, Object>();
+   private String                  m_title;
 
-   public JSettingsPanel()
+   public JSettingsPanel(String title)
    {
-      m_values = UtilPrefs.getAllValues();
+      m_title = title;
       setLayout(new GridBagLayout());
       setBorder(BorderFactory.createCompoundBorder(
             BorderFactory.createTitledBorder("Settings Editor"),
             BorderFactory.createEmptyBorder(5, 5, 5, 5)));
       GridBagConstraints gbc;
+
+      // Label and value field
+      HashMap<FieldTitle,String> hmSettingValues = UtilPrefs.getUserPreferencesDataSet();
       for (int i = 0; i < FieldTitle.values().length; i++)
       {
          FieldTitle fieldTitle = FieldTitle.values()[i];
@@ -57,38 +65,51 @@ public class JSettingsPanel extends JPanel
          if (fieldTitle.getElementType().startsWith("T"))
          {
             JTextField textField = new JTextField(fieldTitle.getLength());
-            textField.setText(m_values.get(fieldTitle));
+            textField.setText(hmSettingValues.get(fieldTitle));
             if (fieldTitle.getMnemonic() > 0) label.setDisplayedMnemonic(fieldTitle.getMnemonic());
             label.setLabelFor(textField);
             add(textField, gbc);
-            fieldMap.put(fieldTitle, textField);
+            m_fieldMap.put(fieldTitle, textField);
          }
          else if (fieldTitle.getElementType().startsWith("B"))
          {
             JCheckBox checkBox = new JCheckBox();
-            checkBox.setSelected(m_values.get(fieldTitle).equals("1"));
+            checkBox.setSelected(hmSettingValues.get(fieldTitle).equals("1"));
             if (fieldTitle.getMnemonic() > 0) label.setDisplayedMnemonic(fieldTitle.getMnemonic());
             label.setLabelFor(checkBox);
             add(checkBox, gbc);
-            fieldMap.put(fieldTitle, checkBox);
+            m_fieldMap.put(fieldTitle, checkBox);
          }
          else if (fieldTitle.getElementType().startsWith("N"))
          {
             int minMax[] = getMinMax(fieldTitle.getElementType());
             JIntegerStepValField textField = new JIntegerStepValField(null, null, minMax[0], minMax[1], 1);
-            textField.setText(m_values.get(fieldTitle));
-            textField.setEditable(false);
+            textField.setText(hmSettingValues.get(fieldTitle));
+            if (textField.hasMinMaxValues()) textField.setEditable(false);
             if (fieldTitle.getMnemonic() > 0) label.setDisplayedMnemonic(fieldTitle.getMnemonic());
             label.setLabelFor(textField);
             add(textField.getJPanel(), gbc);
-            fieldMap.put(fieldTitle, textField);
+            m_fieldMap.put(fieldTitle, textField);
          }
          else
          {
             Starter._m_logError.TranslatorAbend(10997,
-                  "Invalid Element Type.",
-                  "The element type '" + fieldTitle.getElementType() + "' is not implemented. Software implementation error, Program is terminating!");
+                  "Invalid Field Type",
+                  "The field type '" + fieldTitle.getElementType() + "' is not implemented yet. Please open a Issue/Bug report.");
          }
+
+         // Reset button
+         JButton jbReset = new JButton(new JResizedIcon("settingsUndo.png", 15, 10));
+         jbReset.setToolTipText("Reset the field to its default value.");
+         jbReset.addActionListener(new ActionListener()
+         {
+            public void actionPerformed(ActionEvent e)
+            {
+               setSettingValue(fieldTitle, null);
+            }
+         });
+         gbc = createGbc(2, i);
+         add(jbReset, gbc);
       }
    }
 
@@ -100,42 +121,81 @@ public class JSettingsPanel extends JPanel
       gbc.gridwidth = 1;
       gbc.gridheight = 1;
 
-      gbc.anchor = (x == 0) ? GridBagConstraints.WEST : GridBagConstraints.WEST;
-      gbc.fill = (x == 0) ? GridBagConstraints.BOTH : GridBagConstraints.NONE;
+      gbc.anchor = (x != 1) ? GridBagConstraints.WEST : GridBagConstraints.WEST;
+      gbc.fill = (x != 1) ? GridBagConstraints.BOTH : GridBagConstraints.NONE;
 
-      gbc.insets = (x == 0) ? WEST_INSETS : EAST_INSETS;
-      gbc.weightx = (x == 0) ? 0.1 : 1.0;
+      gbc.insets = (x != 1) ? WEST_INSETS : EAST_INSETS;
+      gbc.weightx = (x != 1) ? 0.1 : 1.0;
       gbc.weighty = 1.0;
       return gbc;
    }
 
-   public void updatePrefs()
+   public HashMap<FieldTitle, String> getAllValues()
    {
       HashMap<FieldTitle,String> values = new HashMap <FieldTitle,String>();
       for (FieldTitle fieldTitle : FieldTitle.values())
       {
          values.put(fieldTitle, getFieldText(fieldTitle));
       }
-      UtilPrefs.setAllValues(values);
+      return values;
+   }
+
+   private void setSettingValue(FieldTitle fieldTitle, HashMap <FieldTitle,String> hm)
+   {
+      String newValue = (hm == null) ? fieldTitle.getDefaultValue() : hm.get(fieldTitle);
+      if (fieldTitle.getElementType().startsWith("T"))
+      {
+         ((JTextField) (m_fieldMap.get(fieldTitle))).setText(newValue);
+      }
+      else if (fieldTitle.getElementType().startsWith("B"))
+      {
+         ((JCheckBox) (m_fieldMap.get(fieldTitle))).setSelected(newValue.equals("1"));
+      }
+      else if (fieldTitle.getElementType().startsWith("N"))
+      {
+         ((JIntegerStepValField) (m_fieldMap.get(fieldTitle))).setText(newValue);
+      }
+      else
+      {
+         // should not happen
+         Starter._m_logError.TranslatorAbend(10997,
+               "Invalid Field Type",
+               "The field type '" + fieldTitle.getElementType() + "' is not implemented yet. Please open a Issue/Bug report.");
+         return;
+      }
+      
+   }
+   public void setAllSettingValues(HashMap <FieldTitle,String> hm)
+   {
+      Starter._m_logError.TraceDebug("Reset all " + m_title + " values.");
+      for (FieldTitle fieldTitle : FieldTitle.values())
+      {
+         setSettingValue(fieldTitle, hm);
+      }
    }
 
    public String getFieldText(FieldTitle fieldTitle)
    {
       if (fieldTitle.getElementType().startsWith("T"))
       {
-         return ((JTextField) (fieldMap.get(fieldTitle))).getText();
+         return ((JTextField) (m_fieldMap.get(fieldTitle))).getText();
       }
       else if (fieldTitle.getElementType().startsWith("B"))
       {
-         return (((JCheckBox) (fieldMap.get(fieldTitle))).isSelected()) ? "1" : "0";
+         return (((JCheckBox) (m_fieldMap.get(fieldTitle))).isSelected()) ? "1" : "0";
       }
       else if (fieldTitle.getElementType().startsWith("N"))
       {
-         return ((JIntegerStepValField) (fieldMap.get(fieldTitle))).getText();
+         return ((JIntegerStepValField) (m_fieldMap.get(fieldTitle))).getText();
       }
-
-      // should not happen
-      return null;
+      else
+      {
+         // should not happen
+         Starter._m_logError.TranslatorAbend(10997,
+               "Invalid Field Type",
+               "The field type '" + fieldTitle.getElementType() + "' is not implemented yet. Please open a Issue/Bug report.");
+         return null;
+      }
    }
 
    private int[] getMinMax(String def)
