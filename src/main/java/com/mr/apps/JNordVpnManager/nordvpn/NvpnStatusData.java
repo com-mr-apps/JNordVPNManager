@@ -17,18 +17,20 @@ import com.mr.apps.JNordVpnManager.utils.UtilSystem;
 
 public class NvpnStatusData
 {
-   private boolean         m_isConnected     = false;
-   private String          m_status          = null; // connected / disconnected / if null - error
-   private String          m_server          = null;
-   private String          m_hostname        = null;
-   private String          m_ip              = null;
-   private String          m_country         = null;
-   private String          m_city            = null;
-   private String          m_technology      = null;
-   private String          m_protocol        = null;
-   private String          m_transfer        = null;
-   private String          m_uptime          = null;
-   private String          m_statusText      = null;
+   private boolean m_isConnected       = false;
+   private String  m_status            = null; // connected / disconnected / if null - error
+   private String  m_server            = null;
+   private String  m_hostname          = null;
+   private String  m_ip                = null;
+   private String  m_country           = null;
+   private String  m_city              = null;
+   private String  m_technology        = null;
+   private String  m_protocol          = null;
+   private String  m_postQuantum       = null;
+   private String  m_transfer          = null;
+   private String  m_uptime            = null;
+   private String  m_statusText        = null;
+   private String  m_statusLineMessage = null;
 
    public NvpnStatusData()
    {
@@ -39,6 +41,7 @@ public class NvpnStatusData
          m_status = null;
          m_statusText = UtilSystem.getLastError();
          m_isConnected = false;
+         m_statusLineMessage = m_statusText;
       }
       else
       {
@@ -48,6 +51,7 @@ public class NvpnStatusData
          {
             JModalDialog.showError("NordVPN Status", "'nordvpn status' information cannot be parsed.");
          }
+         m_statusLineMessage= this.toString();
       }
    }
 
@@ -55,14 +59,15 @@ public class NvpnStatusData
    {
       int rc = 0;
       Pattern pattern = Pattern.compile("^\\s*Status:\\s+([^@]+)@" // Connected
-            + "\\s*Server:\\s+([^@]+)@"                            // Denmark #201\n"
-            + "\\s*Hostname:\\s+([^@]+)@"                          // dk201.nordvpn.com\n"
-            + "\\s*IP:\\s+([^@]+)@"                                // 37.120.131.141\n"
-            + "\\s*Country:\\s+([^@]+)@"                           // Denmark\n"
-            + "\\s*City:\\s+([^@]+)@"                              // Copenhagen\n"
-            + "\\s*Current technology:\\s+([^@]+)@"                // NORDLYNX\n"
-            + "\\s*Current protocol:\\s+([^@]+)@"                  // UDP\n"
-            + "\\s*Transfer:\\s+([^@]+)@"                          // 42.07 MiB received, 0.60 MiB sent\n"
+            + "\\s*Server:\\s+([^@]+)@"                            // Denmark #201"
+            + "\\s*Hostname:\\s+([^@]+)@"                          // dk201.nordvpn.com"
+            + "\\s*IP:\\s+([^@]+)@"                                // 37.120.131.141"
+            + "\\s*Country:\\s+([^@]+)@"                           // Denmark"
+            + "\\s*City:\\s+([^@]+)@"                              // Copenhagen"
+            + "\\s*Current technology:\\s+([^@]+)@"                // NORDLYNX"
+            + "\\s*Current protocol:\\s+([^@]+)@"                  // UDP"
+            + "\\s*Post-quantum VPN:\\s+([^@]+)@"                  // Disabled"
+            + "\\s*Transfer:\\s+([^@]+)@"                          // 42.07 MiB received, 0.60 MiB sent"
             + "\\s*Uptime:\\s+([^@]+)",                            // 20 minutes 42 seconds",
             Pattern.CASE_INSENSITIVE);
       Matcher matcher = pattern.matcher(data.replace('\n', '@'));
@@ -79,8 +84,9 @@ public class NvpnStatusData
          setCity(matcher.group(6));
          setTechnology(matcher.group(7));
          setProtocol(matcher.group(8));
-         setTransfer(matcher.group(9));
-         setUptime(matcher.group(10));
+         setPostQuantum(matcher.group(9));
+         setTransfer(matcher.group(10));
+         setUptime(matcher.group(11));
       }
       else
       {
@@ -203,6 +209,16 @@ public class NvpnStatusData
    }
 
 
+   public String getPostQuantum()
+   {
+      return m_postQuantum;
+   }
+
+   public void setPostQuantum(String postQuantum)
+   {
+      this.m_postQuantum = postQuantum;
+   }
+
    public String getTransfer()
    {
       return m_transfer;
@@ -233,15 +249,25 @@ public class NvpnStatusData
    }
 
 
-   public void setStatusText(String m_statusText)
+   public void setStatusText(String statusText)
    {
-      this.m_statusText = m_statusText;
+      this.m_statusText = statusText;
    }
 
 
-   public void setStatus(String m_status)
+   public String getStatusLineMessage()
    {
-      this.m_status = m_status;
+      return m_statusLineMessage;
+   }
+
+   public void setStatusLineMessage(String statusLineMessage)
+   {
+      this.m_statusLineMessage = statusLineMessage;
+   }
+
+   public void setStatus(String status)
+   {
+      this.m_status = status;
    }
 
 
@@ -250,4 +276,10 @@ public class NvpnStatusData
       return m_status;
    }
 
+   public String toString()
+   {
+      return getStatus() + " to " + getCity() + " [" + getCountry() + "]"
+            + ", IP: " + getIp() + ", "
+            + getTechnology() + "/" + getProtocol(); 
+   }
 }
