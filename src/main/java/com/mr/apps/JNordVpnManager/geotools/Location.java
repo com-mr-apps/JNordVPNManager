@@ -70,7 +70,7 @@ public class Location
  
       if (number == 1)
       {
-         Starter._m_logError.TraceDebug("Set current location=" + this.toString() + "<.");         
+         Starter._m_logError.TraceDebug("Location=" + this.toString() + "<.");         
       }
       else if (number == -1)
       {

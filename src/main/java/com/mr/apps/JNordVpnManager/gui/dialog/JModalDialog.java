@@ -236,6 +236,7 @@ public class JModalDialog extends JDialog implements ActionListener
    
    public static int showWarning(String msg)
    {
+      Starter._m_logError.TranslatorWarning(10303, "Warning Dialog", msg);
       JModalDialog dlg = new JModalDialog(Starter.getMainFrame(), "Warning", msg, "Close");
       dlg.m_messagePanel.setBackground(new Color(255,255,153));
       dlg.m_buttonsPanel.setBackground(new Color(255,255,153));
@@ -246,6 +247,7 @@ public class JModalDialog extends JDialog implements ActionListener
    
    public static int showError(String sShortMsg, String sLongMsg)
    {
+      Starter._m_logError.TranslatorError(10904, sShortMsg, sLongMsg);
       JModalDialog jmd = new JModalDialog(Starter.getMainFrame(), sShortMsg, sLongMsg, "Close");
       jmd.m_messagePanel.setBackground(new Color(255,102,102));
       jmd.m_buttonsPanel.setBackground(new Color(255,102,102));

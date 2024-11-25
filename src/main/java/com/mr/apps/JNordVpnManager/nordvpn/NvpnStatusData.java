@@ -8,9 +8,7 @@
  */
 package com.mr.apps.JNordVpnManager.nordvpn;
 
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
+import java.util.HashMap;
 import com.mr.apps.JNordVpnManager.Starter;
 import com.mr.apps.JNordVpnManager.gui.dialog.JModalDialog;
 import com.mr.apps.JNordVpnManager.utils.UtilSystem;
@@ -45,72 +43,56 @@ public class NvpnStatusData
       }
       else
       {
-         // OK
-         int rc = parseData(m_statusText);
-         if (1 == rc)
+         // OK - extract data
+         if (false == parseData(m_statusText))
          {
-            JModalDialog.showError("NordVPN Status", "'nordvpn status' information cannot be parsed.");
-         }
-         m_statusLineMessage= this.toString();
-      }
-   }
-
-   public int parseData(String data)
-   {
-      int rc = 0;
-      Pattern pattern = Pattern.compile("^\\s*Status:\\s+([^@]+)@" // Connected
-            + "\\s*Server:\\s+([^@]+)@"                            // Denmark #201"
-            + "\\s*Hostname:\\s+([^@]+)@"                          // dk201.nordvpn.com"
-            + "\\s*IP:\\s+([^@]+)@"                                // 37.120.131.141"
-            + "\\s*Country:\\s+([^@]+)@"                           // Denmark"
-            + "\\s*City:\\s+([^@]+)@"                              // Copenhagen"
-            + "\\s*Current technology:\\s+([^@]+)@"                // NORDLYNX"
-            + "\\s*Current protocol:\\s+([^@]+)@"                  // UDP"
-            + "\\s*Post-quantum VPN:\\s+([^@]+)@"                  // Disabled"
-            + "\\s*Transfer:\\s+([^@]+)@"                          // 42.07 MiB received, 0.60 MiB sent"
-            + "\\s*Uptime:\\s+([^@]+)",                            // 20 minutes 42 seconds",
-            Pattern.CASE_INSENSITIVE);
-      Matcher matcher = pattern.matcher(data.replace('\n', '@'));
-      boolean matchFound = matcher.find();
-      if (matchFound)
-      {
-         // Status: Connected...
-         setConnected(true);
-         setStatus(matcher.group(1));
-         setServer(matcher.group(2));
-         setHostname(matcher.group(3));
-         setIp(matcher.group(4));
-         setCountry(matcher.group(5));
-         setCity(matcher.group(6));
-         setTechnology(matcher.group(7));
-         setProtocol(matcher.group(8));
-         setPostQuantum(matcher.group(9));
-         setTransfer(matcher.group(10));
-         setUptime(matcher.group(11));
-      }
-      else
-      {
-         setConnected(false);
-         Pattern pattern2 = Pattern.compile("^\\s*Status:\\s+(.*)", // Disconnected
-               Pattern.CASE_INSENSITIVE);
-         Matcher matcher2 = pattern2.matcher(data.replace('\n', '@'));
-         matchFound = matcher2.find();
-         if (matchFound)
-         {
-            // disconnected
-            setStatus(matcher2.group(1));
+            // failed
+            setStatus("Disconnected");
+            m_statusLineMessage = "'nordvpn status' information cannot be parsed.";
+            JModalDialog.showError("NordVPN Status", m_statusLineMessage);
          }
          else
          {
-            // Parsing Error
-            rc = 1;
-            Starter._m_logError.TranslatorError(10100, "Parsing NordVPN Status information", data);
-            Starter._m_logError.TraceDebug("NordVPN Status Parsing Pattern1=" + pattern.toString() + "<.");
-            Starter._m_logError.TraceDebug("NordVPN Status Parsing Pattern2=" + pattern2.toString() + "<.");
+            m_statusLineMessage= this.toString();
          }
       }
+   }
 
-      return rc;
+   public boolean parseData(String data)
+   {
+      HashMap<String,String> values = new HashMap<String, String>();
+      try
+      {
+         String[] saLines = data.split("\\n");
+         for (String line : saLines)
+         {
+            String[] parts = line.split(":");
+            values.put(parts[0], parts[1].trim());
+         }
+      }
+      catch (Exception e)
+      {
+         // Parsing Error
+         Starter._m_logError.TranslatorError(10100,
+               "Parsing NordVPN Status Information",
+               data);
+         return false;
+      }
+
+      // Parsing OK
+      setStatus(values.get("Status"));
+      setServer(values.get("Server"));
+      setHostname(values.get("Hostname"));
+      setIp(values.get("IP"));
+      setCountry(values.get("Country"));
+      setCity(values.get("City"));
+      setTechnology(values.get("Current technology"));
+      setProtocol(values.get("Current protocol"));
+      setPostQuantum(values.get("Post-quantum VPN"));
+      setTransfer(values.get("Transfer"));
+      setUptime(values.get("Uptime"));
+
+      return true;
    }
    
    public boolean isConnected()
@@ -267,6 +249,7 @@ public class NvpnStatusData
 
    public void setStatus(String status)
    {
+      this.m_isConnected = (status.equals("Connected")) ? true : false;
       this.m_status = status;
    }
 
@@ -278,8 +261,8 @@ public class NvpnStatusData
 
    public String toString()
    {
-      return getStatus() + " to " + getCity() + " [" + getCountry() + "]"
+      return getStatus() + ((isConnected()) ? " to " + getCity() + " [" + getCountry() + "]"
             + ", IP: " + getIp() + ", "
-            + getTechnology() + "/" + getProtocol(); 
+            + getTechnology() + "/" + getProtocol() : ""); 
    }
 }

@@ -48,6 +48,7 @@ import com.mr.apps.JNordVpnManager.gui.serverTree.JServerTreePanel;
 import com.mr.apps.JNordVpnManager.nordvpn.NvpnAccountData;
 import com.mr.apps.JNordVpnManager.nordvpn.NvpnCallbacks;
 import com.mr.apps.JNordVpnManager.nordvpn.NvpnCommands;
+import com.mr.apps.JNordVpnManager.nordvpn.NvpnStatusData;
 import com.mr.apps.JNordVpnManager.utils.UtilLogErr;
 import com.mr.apps.JNordVpnManager.utils.UtilPrefs;
 import com.mr.apps.JNordVpnManager.utils.UtilSystem;
@@ -73,11 +74,11 @@ public class Starter
    private static JFrame           m_mainFrame                = null;
    private static JServerTreePanel m_serverListPanel          = null;
    private static JMapFrame        m_mapFrame                 = null;
-   private static JAboutScreen      m_aboutScreen              = null;
-   private static JSplashScreen     m_splashScreen             = null;
+   private static JAboutScreen     m_aboutScreen              = null;
+   private static JSplashScreen    m_splashScreen             = null;
    private static GuiStatusLine    m_statusLine               = null;
    private static GuiConnectLine   m_connectLine              = null;
-   private static JCustomConsole m_consoleWindow            = null;
+   private static JCustomConsole   m_consoleWindow            = null;
 
    private static String           m_nordvpnVersion;
    private static Cursor           m_applicationDefaultCursor = null;
@@ -85,6 +86,7 @@ public class Starter
    private static boolean          m_skipWindowGainedFocus    = false;
    private static boolean          m_installMode              = false;
 
+   private static NvpnStatusData   m_statusData               = null;
    private static CurrentLocation  m_currentServer            = null;
 
    /**
@@ -545,8 +547,8 @@ public class Starter
       if ((true == m_installMode) || (null == m_statusLine)) return false;
 
       // get the current connected server from the "nordvpn status" command
-      CurrentLocation loc = m_statusLine.update();
-      m_currentServer = loc;
+      m_statusData = new NvpnStatusData();
+      m_currentServer = m_statusLine.update(m_statusData);
  
       if (null != m_currentServer && m_currentServer.isConnected())
       {
@@ -621,7 +623,12 @@ public class Starter
    {
       return m_mainFrame;
    }
-   
+
+   public static NvpnStatusData getCurrentStatusData()
+   {
+      return m_statusData;
+   }
+
    public static boolean isInstallMode()
    {
       return m_installMode;

@@ -114,11 +114,10 @@ public class GuiStatusLine
     * Update the connection status line.
     * @return the current city/country location from the status command [in case of connected]
     */
-   public CurrentLocation update()
+   public CurrentLocation update(NvpnStatusData statusData)
    {
       CurrentLocation ret_loc = null;
 
-      NvpnStatusData statusData = new NvpnStatusData();
       if (null == statusData.getStatus())
       {
          /*
@@ -137,10 +136,7 @@ public class GuiStatusLine
          ret_loc = new CurrentLocation(UtilLocations.getLocation(statusData.getCity(), statusData.getCountry()));
          ret_loc.setConnected(true);
 
-         String msg = statusData.getStatus() + " to " + statusData.getCity() + " [" + statusData.getCountry() + "]"
-         + ", IP: " + statusData.getIp() + ", "
-         + statusData.getTechnology() + "/" + statusData.getProtocol();
-         updateStatusLine(0, msg);
+         updateStatusLine(0, statusData.getStatusLineMessage());
       }
       else
       {
@@ -157,7 +153,7 @@ public class GuiStatusLine
          else
          {
             // Status: Disconnected (or error message...)
-            updateStatusLine(2, statusData.getStatusText());
+            updateStatusLine(2, statusData.getStatusLineMessage());
          }
       }
 
