@@ -12,21 +12,46 @@ import com.mr.apps.JNordVpnManager.utils.UtilSystem;
 
 public class NvpnCommands {
 
-   private static final String CMD_WHICH = "which";
-   private static final String CMD_NORDVPN = "nordvpn"; 
-   private static final String ARG_ACCOUNT = "account";
-   private static final String ARG_CONNECT = "connect"; 
-   private static final String ARG_COUNTRIES = "countries"; 
-   private static final String ARG_DISCONNECT = "disconnect"; 
-   private static final String ARG_GROUPS = "groups";
-   private static final String ARG_LOGIN = "login";
-   private static final String ARG_LOGOUT = "logout";
-   private static final String ARG_SETTINGS = "settings";
-   private static final String ARG_STATUS = "status";
-   private static final String ARG_VERSION = "--version";
-   private static final String ARG_DAEMON_VERSION = "version";
-   private static final String ARG_CITIES = "cities";
-	
+   private static final String CMD_WHICH            = "which";
+   private static final String CMD_NORDVPN          = "nordvpn";
+   private static final String ARG_VERSION          = "--version";
+   private static final String ARG_DAEMON_VERSION   = "version";
+   private static final String ARG_STATUS           = "status";
+   private static final String ARG_ACCOUNT          = "account";
+
+   private static final String ARG_DISCONNECT       = "disconnect";
+   private static final String ARG_CONNECT          = "connect";
+   private static final String ARG_COUNTRIES        = "countries";
+   private static final String ARG_CITIES           = "cities";
+   private static final String ARG_GROUPS           = "groups";
+
+   private static final String ARG_LOGIN            = "login";
+   private static final String ARG_LOGOUT           = "logout";
+
+   private static final String ARG_SETTINGS         = "settings";
+   private static final String ARG_SET              = "set";
+   private static final String OPT_DEFAULTS         = "defaults";
+   private static final String OPT_AUTOCONNECT      = "autoconnect";
+   private static final String OPT_TPLITE           = "tplite";
+   private static final String OPT_DNS              = "dns";
+   private static final String OPT_FIREWALL         = "firewall";
+   private static final String OPT_FWMARK           = "fwmark";
+   private static final String OPT_IPV6             = "ipv6";
+   private static final String OPT_ROUTING          = "routing";
+   private static final String OPT_ANALYTICS        = "analytics";
+   private static final String OPT_KILLSWITCH       = "killswitch";
+   private static final String OPT_NOTIFY           = "notify";
+   private static final String OPT_TRAY             = "tray";
+   private static final String OPT_TECHNOLOGY       = "technology";
+   private static final String OPT_MESHNET          = "meshnet";
+   private static final String OPT_LAN_DISCOVERY    = "lan-discovery";
+   private static final String OPT_VIRTUAL_LOCATION = "virtual-location";
+   private static final String OPT_POST_QUANTUM     = "post-quantum";
+   private static final String OPT_PROTOCOL         = "protocol";
+
+   private static final String VAL_ENABLED          = "enabled";
+   private static final String VAL_DISABLED         = "disabled";
+
    /**
     * Check, if nordvpn is installed
     * @return 
@@ -60,6 +85,257 @@ public class NvpnCommands {
       String status = null;
       
       status = UtilSystem.runCommand(CMD_NORDVPN, ARG_SETTINGS);
+      
+      return status;
+   }
+
+   /**
+    * Reset nordvpn settings
+    * @return the return of nordvpn set defaults
+    */
+   public static String resetSettings()
+   {
+      String status = null;
+      
+      status = UtilSystem.runCommand(CMD_NORDVPN, ARG_SET, OPT_DEFAULTS);
+      
+      return status;
+   }
+
+   /**
+    * Set nordvpn settings
+    * @return the return of nordvpn set autoConnect value
+    */
+   public static String autoConnectSettings(String value)
+   {
+      String status = null;
+      if (value.isBlank() || value.equals("disabled"))
+      {
+         status = UtilSystem.runCommand(CMD_NORDVPN, ARG_SET, OPT_AUTOCONNECT, VAL_DISABLED);
+      }
+      else if (value.equals("enabled"))
+      {
+         status = UtilSystem.runCommand(CMD_NORDVPN, ARG_SET, OPT_AUTOCONNECT, VAL_ENABLED);
+      }
+      else
+      {
+         status = UtilSystem.runCommand(CMD_NORDVPN, ARG_SET, OPT_AUTOCONNECT, VAL_ENABLED, value);
+      }
+
+      return status;
+   }
+
+   /**
+    * Set nordvpn settings
+    * @return the return of nordvpn set tplite value
+    */
+   public static String tpliteSettings(boolean value)
+   {
+      String status = null;
+      
+      status = UtilSystem.runCommand(CMD_NORDVPN, ARG_SET, OPT_TPLITE, ((value) ? VAL_ENABLED : VAL_DISABLED));
+      
+      return status;
+   }
+
+   /**
+    * Set nordvpn settings
+    * @return the return of nordvpn set dns value
+    */
+   public static String dnsSettings(String value)
+   {
+      String status = null;
+      
+      if (value.isBlank() || value.equals("disabled"))
+      {
+         status = UtilSystem.runCommand(CMD_NORDVPN, ARG_SET, OPT_DNS, VAL_DISABLED);
+      }
+      else
+      {
+         status = UtilSystem.runCommand(CMD_NORDVPN, ARG_SET, OPT_DNS, value);
+      }
+      
+      return status;
+   }
+
+   /**
+    * Set nordvpn settings
+    * @return the return of nordvpn set firewall value
+    */
+   public static String firewallSettings(boolean value)
+   {
+      String status = null;
+      
+      status = UtilSystem.runCommand(CMD_NORDVPN, ARG_SET, OPT_FIREWALL, ((value) ? VAL_ENABLED : VAL_DISABLED));
+      
+      return status;
+   }
+
+   /**
+    * Set nordvpn settings
+    * @return the return of nordvpn set fwmark value
+    */
+   public static String fwmarkSettings(String value)
+   {
+      String status = null;
+      
+      status = UtilSystem.runCommand(CMD_NORDVPN, ARG_SET, OPT_FWMARK, value);
+      
+      return status;
+   }
+
+   /**
+    * Set nordvpn settings
+    * @return the return of nordvpn set ipv6 value
+    */
+   public static String ipv6Settings(boolean value)
+   {
+      String status = null;
+      
+      status = UtilSystem.runCommand(CMD_NORDVPN, ARG_SET, OPT_IPV6, ((value) ? VAL_ENABLED : VAL_DISABLED));
+      
+      return status;
+   }
+
+   /**
+    * Set nordvpn settings
+    * @return the return of nordvpn set routing value
+    */
+   public static String routingSettings(boolean value)
+   {
+      String status = null;
+      
+      status = UtilSystem.runCommand(CMD_NORDVPN, ARG_SET, OPT_ROUTING, ((value) ? VAL_ENABLED : VAL_DISABLED));
+      
+      return status;
+   }
+
+   /**
+    * Set nordvpn settings
+    * @return the return of nordvpn set analytics value
+    */
+   public static String analyticsSettings(boolean value)
+   {
+      String status = null;
+      
+      status = UtilSystem.runCommand(CMD_NORDVPN, ARG_SET, OPT_ANALYTICS, ((value) ? VAL_ENABLED : VAL_DISABLED));
+      
+      return status;
+   }
+
+   /**
+    * Set nordvpn settings
+    * @return the return of nordvpn set killswitch value
+    */
+   public static String killswitchSettings(boolean value)
+   {
+      String status = null;
+      
+      status = UtilSystem.runCommand(CMD_NORDVPN, ARG_SET, OPT_KILLSWITCH, ((value) ? VAL_ENABLED : VAL_DISABLED));
+      
+      return status;
+   }
+
+   /**
+    * Set nordvpn settings
+    * @return the return of nordvpn set notify value
+    */
+   public static String notifySettings(boolean value)
+   {
+      String status = null;
+      
+      status = UtilSystem.runCommand(CMD_NORDVPN, ARG_SET, OPT_NOTIFY, ((value) ? VAL_ENABLED : VAL_DISABLED));
+      
+      return status;
+   }
+
+   /**
+    * Set nordvpn settings
+    * @return the return of nordvpn set tray value
+    */
+   public static String traySettings(boolean value)
+   {
+      String status = null;
+      
+      status = UtilSystem.runCommand(CMD_NORDVPN, ARG_SET, OPT_TRAY, ((value) ? VAL_ENABLED : VAL_DISABLED));
+      
+      return status;
+   }
+
+   /**
+    * Set nordvpn settings
+    * @return the return of nordvpn set technology value
+    */
+   public static String technologySettings(String value)
+   {
+      String status = null;
+      
+      status = UtilSystem.runCommand(CMD_NORDVPN, ARG_SET, OPT_TECHNOLOGY, value);
+      
+      return status;
+   }
+
+   /**
+    * Set nordvpn settings
+    * @return the return of nordvpn set meshnet value
+    */
+   public static String meshnetSettings(boolean value)
+   {
+      String status = null;
+      
+      status = UtilSystem.runCommand(CMD_NORDVPN, ARG_SET, OPT_MESHNET, ((value) ? VAL_ENABLED : VAL_DISABLED));
+      
+      return status;
+   }
+
+   /**
+    * Set nordvpn settings
+    * @return the return of nordvpn set Lan-discovery value
+    */
+   public static String lanDiscoverySettings(boolean value)
+   {
+      String status = null;
+      
+      status = UtilSystem.runCommand(CMD_NORDVPN, ARG_SET, OPT_LAN_DISCOVERY, ((value) ? VAL_ENABLED : VAL_DISABLED));
+      
+      return status;
+   }
+
+   /**
+    * Set nordvpn settings
+    * @return the return of nordvpn set virtual-location value
+    */
+   public static String virtualLocationSettings(boolean value)
+   {
+      String status = null;
+      
+      status = UtilSystem.runCommand(CMD_NORDVPN, ARG_SET, OPT_VIRTUAL_LOCATION, ((value) ? VAL_ENABLED : VAL_DISABLED));
+      
+      return status;
+   }
+
+   /**
+    * Set nordvpn settings
+    * @return the return of nordvpn set post-quantum value
+    */
+   public static String postQuantumSettings(boolean value)
+   {
+      String status = null;
+      
+      status = UtilSystem.runCommand(CMD_NORDVPN, ARG_SET, OPT_POST_QUANTUM, ((value) ? VAL_ENABLED : VAL_DISABLED));
+      
+      return status;
+   }
+
+   /**
+    * Set nordvpn settings
+    * @return the return of nordvpn set protocol value
+    */
+   public static String protocolSettings(String value)
+   {
+      String status = null;
+      
+      status = UtilSystem.runCommand(CMD_NORDVPN, ARG_SET, OPT_PROTOCOL, value);
       
       return status;
    }

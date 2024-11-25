@@ -15,6 +15,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.SortedSet;
+import java.util.TreeSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -22,14 +24,14 @@ import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JLabel;
+import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
+import javax.swing.ListSelectionModel;
 
 import com.mr.apps.JNordVpnManager.Starter;
 import com.mr.apps.JNordVpnManager.gui.components.JIntegerStepValField;
 import com.mr.apps.JNordVpnManager.gui.components.JResizedIcon;
-import com.mr.apps.JNordVpnManager.utils.UtilPrefs;
-import com.mr.apps.JNordVpnManager.utils.UtilPrefs.FieldTitle;
 
 /**
  * Common class to create a settings panel<p>
@@ -39,63 +41,93 @@ import com.mr.apps.JNordVpnManager.utils.UtilPrefs.FieldTitle;
 @SuppressWarnings("serial")
 public class JSettingsPanel extends JPanel
 {
-   private static final Insets     WEST_INSETS = new Insets(5, 0, 5, 5);
-   private static final Insets     EAST_INSETS = new Insets(5, 5, 5, 0);
-   private Map<FieldTitle, Object> m_fieldMap  = new HashMap<FieldTitle, Object>();
-   private String                  m_title;
+   private static final Insets              WEST_INSETS        = new Insets(5, 0, 5, 5);
+   private static final Insets              EAST_INSETS        = new Insets(5, 5, 5, 0);
+   private Map<String, JSettingsPanelField> m_hmSettingsFields = null;
+   private String                           m_title;
 
-   public JSettingsPanel(String title)
+   public JSettingsPanel(String title, Map<String, JSettingsPanelField> hmSettingsFields, HashMap<String,String> hmSettingValues)
    {
       m_title = title;
+      m_hmSettingsFields = hmSettingsFields;
       setLayout(new GridBagLayout());
       setBorder(BorderFactory.createCompoundBorder(
             BorderFactory.createTitledBorder("Settings Editor"),
             BorderFactory.createEmptyBorder(5, 5, 5, 5)));
       GridBagConstraints gbc;
 
-      // Label and value field
-      HashMap<FieldTitle,String> hmSettingValues = UtilPrefs.getUserPreferencesDataSet();
-      for (int i = 0; i < FieldTitle.values().length; i++)
-      {
-         FieldTitle fieldTitle = FieldTitle.values()[i];
-         JLabel label = new JLabel(fieldTitle.getLabel() + ":", JLabel.LEFT);
-         gbc = createGbc(0, i);
-         add(label, gbc);
-         gbc = createGbc(1, i);
-         if (fieldTitle.getElementType().startsWith("T"))
+      int iFieldNb = 0;
+      SortedSet<String> keys = new TreeSet<>(hmSettingsFields.keySet());
+      for (String key : keys) { 
+         JSettingsPanelField settingsField = hmSettingsFields.get(key);
+         String valueField = hmSettingValues.get(key);
+         if (null == valueField)
          {
-            JTextField textField = new JTextField(fieldTitle.getLength());
-            textField.setText(hmSettingValues.get(fieldTitle));
-            if (fieldTitle.getMnemonic() > 0) label.setDisplayedMnemonic(fieldTitle.getMnemonic());
+            Starter._m_logError.TraceDebug("Skip Panel Field (no value): " + settingsField.toString());
+            continue;
+         }
+
+         Starter._m_logError.TraceDebug("Create Panel Field: " + settingsField.toString());
+
+         JLabel label = new JLabel(settingsField.getLabel() + ":", JLabel.LEFT);
+         gbc = createGbc(0, iFieldNb);
+         add(label, gbc);
+         gbc = createGbc(1, iFieldNb);
+         if (settingsField.getElementType().startsWith("T"))
+         {
+            JTextField textField = new JTextField(settingsField.getLength());
+            textField.setText(valueField);
+            if (settingsField.getMnemonic() > 0) label.setDisplayedMnemonic(settingsField.getMnemonic());
             label.setLabelFor(textField);
             add(textField, gbc);
-            m_fieldMap.put(fieldTitle, textField);
+            settingsField.setJPanelComponent(textField);
          }
-         else if (fieldTitle.getElementType().startsWith("B"))
+         else if (settingsField.getElementType().startsWith("B"))
          {
             JCheckBox checkBox = new JCheckBox();
-            checkBox.setSelected(hmSettingValues.get(fieldTitle).equals("1"));
-            if (fieldTitle.getMnemonic() > 0) label.setDisplayedMnemonic(fieldTitle.getMnemonic());
+            checkBox.setSelected(valueField.matches("1|true|enable|on|enabled"));
+            if (settingsField.getMnemonic() > 0) label.setDisplayedMnemonic(settingsField.getMnemonic());
             label.setLabelFor(checkBox);
             add(checkBox, gbc);
-            m_fieldMap.put(fieldTitle, checkBox);
+            settingsField.setJPanelComponent(checkBox);
          }
-         else if (fieldTitle.getElementType().startsWith("N"))
+         else if (settingsField.getElementType().startsWith("N"))
          {
-            int minMax[] = getMinMax(fieldTitle.getElementType());
+            int minMax[] = getMinMax(settingsField.getElementType());
             JIntegerStepValField textField = new JIntegerStepValField(null, null, minMax[0], minMax[1], 1);
-            textField.setText(hmSettingValues.get(fieldTitle));
+            textField.setText(valueField);
             if (textField.hasMinMaxValues()) textField.setEditable(false);
-            if (fieldTitle.getMnemonic() > 0) label.setDisplayedMnemonic(fieldTitle.getMnemonic());
+            if (settingsField.getMnemonic() > 0) label.setDisplayedMnemonic(settingsField.getMnemonic());
             label.setLabelFor(textField);
             add(textField.getJPanel(), gbc);
-            m_fieldMap.put(fieldTitle, textField);
+            settingsField.setJPanelComponent(textField);
+         }
+         else if (settingsField.getElementType().startsWith("L"))
+         {
+            String[] saList = getList(settingsField.getElementType());
+            if (null == saList)
+            {
+               Starter._m_logError.TranslatorError(10500, "Error in List definition", "List values cannot be parsed. Check definition: " + settingsField.getElementType());
+            }
+            else
+            {
+               JList<String> listField = new JList<String>(saList);
+               listField.setLayoutOrientation(JList.HORIZONTAL_WRAP);
+               listField.setVisibleRowCount(1);
+               listField.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+               int idx = getListIndex(saList, valueField);
+               listField.setSelectedIndex(idx);
+               if (settingsField.getMnemonic() > 0) label.setDisplayedMnemonic(settingsField.getMnemonic());
+               label.setLabelFor(listField);
+               add(listField, gbc);
+               settingsField.setJPanelComponent(listField);
+            }
          }
          else
          {
             Starter._m_logError.TranslatorAbend(10997,
                   "Invalid Field Type",
-                  "The field type '" + fieldTitle.getElementType() + "' is not implemented yet. Please open a Issue/Bug report.");
+                  "The field type '" + settingsField.getElementType() + "' is not implemented yet. Please open a Issue/Bug report.");
          }
 
          // Reset button
@@ -105,11 +137,13 @@ public class JSettingsPanel extends JPanel
          {
             public void actionPerformed(ActionEvent e)
             {
-               setSettingValue(fieldTitle, null);
+               setSettingValue(key, settingsField.getJPanelComponent(),  null);
             }
          });
-         gbc = createGbc(2, i);
+         gbc = createGbc(2, iFieldNb);
          add(jbReset, gbc);
+
+         iFieldNb++;
       }
    }
 
@@ -130,30 +164,40 @@ public class JSettingsPanel extends JPanel
       return gbc;
    }
 
-   public HashMap<FieldTitle, String> getAllValues()
+   public HashMap<String, String> getAllValues()
    {
-      HashMap<FieldTitle,String> values = new HashMap <FieldTitle,String>();
-      for (FieldTitle fieldTitle : FieldTitle.values())
+      HashMap<String,String> values = new HashMap <String,String>();
+      for (HashMap.Entry<String, JSettingsPanelField> entry : m_hmSettingsFields.entrySet())
       {
-         values.put(fieldTitle, getFieldText(fieldTitle));
+         String key = entry.getKey();
+         Object field = entry.getValue().getJPanelComponent();
+         values.put(key, getFieldText(m_hmSettingsFields.get(key), field));
       }
       return values;
    }
 
-   private void setSettingValue(FieldTitle fieldTitle, HashMap <FieldTitle,String> hm)
+   private void setSettingValue(String key, Object field, String value)
    {
-      String newValue = (hm == null) ? fieldTitle.getDefaultValue() : hm.get(fieldTitle);
+      if (null == field) return;
+
+      JSettingsPanelField fieldTitle = m_hmSettingsFields.get(key);
+      if (value == null) value = fieldTitle.getDefaultValue();
       if (fieldTitle.getElementType().startsWith("T"))
       {
-         ((JTextField) (m_fieldMap.get(fieldTitle))).setText(newValue);
+         ((JTextField) field).setText(value);
       }
       else if (fieldTitle.getElementType().startsWith("B"))
       {
-         ((JCheckBox) (m_fieldMap.get(fieldTitle))).setSelected(newValue.equals("1"));
+         ((JCheckBox) field).setSelected(value.matches("1|true|enable|on|enabled"));
       }
       else if (fieldTitle.getElementType().startsWith("N"))
       {
-         ((JIntegerStepValField) (m_fieldMap.get(fieldTitle))).setText(newValue);
+         ((JIntegerStepValField) field).setText(value);
+      }
+      else if (fieldTitle.getElementType().startsWith("L"))
+      {
+         int idx = getListIndex(getList(fieldTitle.getElementType()), value);
+         ((JList<?>) field).setSelectedIndex(idx);
       }
       else
       {
@@ -165,28 +209,41 @@ public class JSettingsPanel extends JPanel
       }
       
    }
-   public void setAllSettingValues(HashMap <FieldTitle,String> hm)
+   public void setAllSettingValues(HashMap <String,String> hm)
    {
-      Starter._m_logError.TraceDebug("Reset all " + m_title + " values.");
-      for (FieldTitle fieldTitle : FieldTitle.values())
+      Starter._m_logError.TraceDebug("Refresh " + m_title + " settings panel values.");
+      for (HashMap.Entry<String, JSettingsPanelField> entry : m_hmSettingsFields.entrySet())
       {
-         setSettingValue(fieldTitle, hm);
+         String key = entry.getKey();
+         JSettingsPanelField entryValue = entry.getValue();
+         if (null != entryValue)
+         {
+            Object textField = entryValue.getJPanelComponent();
+            String value = hm.get(key);
+            setSettingValue(key, textField, value);
+         }
       }
    }
 
-   public String getFieldText(FieldTitle fieldTitle)
+   public String getFieldText(JSettingsPanelField fieldTitle, Object field)
    {
+      if (null == field) return null;
+
       if (fieldTitle.getElementType().startsWith("T"))
       {
-         return ((JTextField) (m_fieldMap.get(fieldTitle))).getText();
+         return ((JTextField) field).getText();
       }
       else if (fieldTitle.getElementType().startsWith("B"))
       {
-         return (((JCheckBox) (m_fieldMap.get(fieldTitle))).isSelected()) ? "1" : "0";
+         return (((JCheckBox) field).isSelected()) ? "1" : "0";
       }
       else if (fieldTitle.getElementType().startsWith("N"))
       {
-         return ((JIntegerStepValField) (m_fieldMap.get(fieldTitle))).getText();
+         return ((JIntegerStepValField) field).getText();
+      }
+      else if (fieldTitle.getElementType().startsWith("L"))
+      {
+         return ((JList<?>) field).getSelectedValue().toString();
       }
       else
       {
@@ -212,5 +269,28 @@ public class JSettingsPanel extends JPanel
       }
 
       return minMax;
+   }
+   
+   private String[] getList(String def)
+   {
+      Pattern pattern = Pattern.compile("L\\[([^]]*)\\]", Pattern.CASE_INSENSITIVE);
+      Matcher matcher = pattern.matcher(def);
+      boolean matchFound = matcher.find();
+      if (matchFound)
+      {
+         return matcher.group(1).split(",");
+      }
+      return null;
+   }
+
+   private int getListIndex(String[] list, String value)
+   {
+      int idx = 0;
+      for (String val : list)
+      {
+         if (val.equals(value)) return idx;
+         idx++;
+      }
+      return 0;
    }
 }

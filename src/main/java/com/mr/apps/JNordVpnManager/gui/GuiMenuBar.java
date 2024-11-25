@@ -25,6 +25,7 @@ import com.mr.apps.JNordVpnManager.gui.dialog.JSplashScreen;
 import com.mr.apps.JNordVpnManager.nordvpn.NvpnAccountData;
 import com.mr.apps.JNordVpnManager.nordvpn.NvpnCallbacks;
 import com.mr.apps.JNordVpnManager.nordvpn.NvpnCommands;
+import com.mr.apps.JNordVpnManager.nordvpn.NvpnSettingsData;
 import com.mr.apps.JNordVpnManager.utils.UtilPrefs;
 import com.mr.apps.JNordVpnManager.utils.UtilSystem;
 
@@ -157,6 +158,18 @@ public class GuiMenuBar
       });
       nordvpnMenu.add(menuItemSettings);
 
+      nordvpnMenu.addSeparator();
+
+      JMenuItem menuItemEditSettings = new JMenuItem("Edit Settings");
+      menuItemEditSettings.addActionListener(new ActionListener()
+      {
+         public void actionPerformed(ActionEvent e)
+         {
+            NvpnSettingsData.showNordVpnSettingsPanel();
+         }
+      });
+      nordvpnMenu.add(menuItemEditSettings);
+
       JMenuItem menuItemTestTimeout = new JMenuItem("Test Timeout");
       menuItemTestTimeout.addActionListener(new ActionListener()
       {
@@ -188,7 +201,16 @@ public class GuiMenuBar
          public void actionPerformed(ActionEvent e)
          {
             CurrentLocation loc = Starter.getCurrentServer();
-            NvpnCallbacks.executeConnect(loc);
+            String msg = NvpnCallbacks.executeConnect(loc);
+            if (NvpnCallbacks.isLastError())
+            {
+               msg = NvpnCallbacks.getLastError();
+               JModalDialog.showError("NordVPN Reconnect", msg);
+            }
+            else
+            {
+               JModalDialog.showMessage("NordVPN Reconnect", msg);
+            }
          }
       });
       connectMenu.add(m_menuItemReConnect);
@@ -300,13 +322,26 @@ public class GuiMenuBar
     */
    public static void updateMenuButtons(CurrentLocation loc)
    {
+      String sToolTip = "";
+      if (null != loc)
+      {
+         sToolTip = loc.getCountry() + " " + loc.getCity();
+      }
+      // update Reconnect command - if there is a recent server
+      if (sToolTip.isBlank())
+      {
+         m_menuItemReConnect.setEnabled(false);
+      }
+      else
+      {
+         m_menuItemReConnect.setToolTipText("Connect to Server: " + sToolTip);
+         m_menuItemReConnect.setEnabled(true);
+      }
+
       if (null != loc && loc.isConnected())
       {
          // enable Disconnect command
          m_menuItemDisConnect.setEnabled(true);
-
-         // disable Reconnect command
-         m_menuItemReConnect.setEnabled(false);
          
          // disable Quick connect command
          m_menuItemQuickConnect.setEnabled(false);
@@ -316,24 +351,6 @@ public class GuiMenuBar
          // disable Disconnect command
          m_menuItemDisConnect.setEnabled(false);
 
-         // enable Reconnect command - if there is a recent server
-         String sToolTip = "";
-         if (null != loc)
-         {
-            sToolTip = loc.getCountry() + " " + loc.getCity();
-         }
-
-         // ... and update the tool tip
-         if (sToolTip.isBlank())
-         {
-            m_menuItemReConnect.setEnabled(false);
-         }
-         else
-         {
-            m_menuItemReConnect.setToolTipText("Connect to Server: " + sToolTip);
-            m_menuItemReConnect.setEnabled(true);
-         }
-         
          // enable Quick connect command
          m_menuItemQuickConnect.setEnabled(true);
       }
