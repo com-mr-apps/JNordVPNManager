@@ -17,6 +17,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.io.File;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.StringTokenizer;
 
 import javax.swing.JButton;
@@ -27,7 +28,6 @@ import javax.swing.WindowConstants;
 import com.mr.apps.JNordVpnManager.Starter;
 import com.mr.apps.JNordVpnManager.gui.dialog.JModalDialog;
 import com.mr.apps.JNordVpnManager.utils.UtilPrefs;
-import com.mr.apps.JNordVpnManager.utils.UtilPrefs.FieldTitle;
 
 @SuppressWarnings("serial")
 public class JUserPrefsDialog extends JDialog implements ActionListener
@@ -42,9 +42,12 @@ public class JUserPrefsDialog extends JDialog implements ActionListener
    /**
     * User Preferences Panel Layout definition.
     */
-   public JUserPrefsDialog(Frame owner, String title)
+   public JUserPrefsDialog(Frame owner, String title, Map<String, JSettingsPanelField> settingsPanelFields)
    {
       super(owner, title, true);
+
+      Starter.setWaitCursor();
+      Starter.setCursorCanChange(false);
 
       getContentPane().setLayout(new BorderLayout());
       setResizable(false);
@@ -82,7 +85,7 @@ public class JUserPrefsDialog extends JDialog implements ActionListener
                String file = filedia.getSelectedFile().getAbsolutePath();
                if (file != null && ! file.isBlank())
                {
-                  HashMap<FieldTitle, String> hm = UtilPrefs.importUserPreferences(file);
+                  HashMap<String, String> hm = UtilPrefs.importUserPreferences(file);
                   if (null != hm)
                   {
                      m_userPrefsPanel.setAllSettingValues(hm);
@@ -148,7 +151,8 @@ public class JUserPrefsDialog extends JDialog implements ActionListener
 
       getContentPane().add(headerPanel,BorderLayout.PAGE_START);
 
-      m_userPrefsPanel = new JSettingsPanel(title);
+      m_userPrefsPanel = new JSettingsPanel(title, settingsPanelFields, UtilPrefs.getUserPreferencesDataSet());
+
       getContentPane().add(m_userPrefsPanel,BorderLayout.CENTER);
        
       //Buttons
@@ -162,6 +166,9 @@ public class JUserPrefsDialog extends JDialog implements ActionListener
          buttonsPanel.add(button);
       }
       getContentPane().add(buttonsPanel,BorderLayout.PAGE_END);
+
+      Starter.setCursorCanChange(true);
+      Starter.resetWaitCursor();
 
       pack();
       setVisible(true);
