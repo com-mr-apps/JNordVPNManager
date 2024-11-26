@@ -89,7 +89,7 @@ public class NvpnAccountData
 
       // data line 'VPN Service' contains two information
       String value = values.get("VPN Service");
-      Pattern pattern = Pattern.compile("\\s*([^(]+)\\(([^)]+)\\)\\s*\\n",
+      Pattern pattern = Pattern.compile("\\s*([^( ]+)[ (]([^)]+)\\)\\s*",
             Pattern.CASE_INSENSITIVE);
       Matcher matcher = pattern.matcher(value);
       boolean matchFound = matcher.find();
