@@ -21,6 +21,7 @@ import com.mr.apps.JNordVpnManager.geotools.Location;
 import com.mr.apps.JNordVpnManager.geotools.UtilLocations;
 import com.mr.apps.JNordVpnManager.gui.dialog.JModalDialog;
 import com.mr.apps.JNordVpnManager.gui.dialog.JSystemInfoDialog;
+import com.mr.apps.JNordVpnManager.gui.dialog.JWhatsNewDialog;
 import com.mr.apps.JNordVpnManager.gui.dialog.JSplashScreen;
 import com.mr.apps.JNordVpnManager.nordvpn.NvpnAccountData;
 import com.mr.apps.JNordVpnManager.nordvpn.NvpnCallbacks;
@@ -301,7 +302,19 @@ public class GuiMenuBar
       });
       infoMenu.add(aboutMenu);
 
-      // MenuItem --- Welcome ---
+      // MenuItem --- What's New ---
+      JMenuItem whatsNewMenu = new JMenuItem("What's New");
+      whatsNewMenu.addActionListener(new ActionListener()
+      {
+         public void actionPerformed(ActionEvent e)
+         {
+            JWhatsNewDialog whatsNew = new JWhatsNewDialog();
+            whatsNew.show();
+         }
+      });
+      infoMenu.add(whatsNewMenu);
+
+      // MenuItem --- System Info ---
       JMenuItem infoMenuItem = new JMenuItem("System Info");
       infoMenuItem.addActionListener(new ActionListener()
       {
