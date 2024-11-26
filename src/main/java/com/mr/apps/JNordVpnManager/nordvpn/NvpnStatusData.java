@@ -225,21 +225,14 @@ public class NvpnStatusData
       this.m_uptime = uptime;
    }
 
-
    public String getStatusText()
    {
       return m_statusText;
    }
 
-
    public void setStatusText(String statusText)
    {
       this.m_statusText = statusText;
-   }
-
-   public void setStatusLineMessage(String statusLineMessage)
-   {
-      this.m_statusLineMessage = statusLineMessage;
    }
 
    public String getStatusLineMessage()
@@ -257,7 +250,6 @@ public class NvpnStatusData
       this.m_isConnected = (status.equals("Connected")) ? true : false;
       this.m_status = status;
    }
-
 
    public String getStatus()
    {
