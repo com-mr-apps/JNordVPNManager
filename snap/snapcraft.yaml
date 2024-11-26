@@ -40,7 +40,6 @@ parts:
     organize:
       '*.desktop' : Desktop/
 
-
   j-nordvpn-manager:
     plugin: maven
     source: https://github.com/com-mr-apps/JNordVPNManager.git
@@ -61,3 +60,5 @@ parts:
     override-prime: |
       snapcraftctl prime
       rm -vf usr/lib/jvm/java-11-openjdk-*/lib/security/blacklisted.certs
+      rm -vf jar/original-JNordVpnManager-*.jar
+      ln -sf --relative jar/JNordVpnManager-2024.2.1.jar JNordVpnManager-current.jar
