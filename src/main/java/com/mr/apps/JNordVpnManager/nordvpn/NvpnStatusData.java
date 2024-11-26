@@ -55,6 +55,7 @@ public class NvpnStatusData
          {
             m_statusLineMessage= this.toString();
          }
+         m_statusLineMessage= this.toString();
       }
    }
 
@@ -236,6 +237,10 @@ public class NvpnStatusData
       this.m_statusText = statusText;
    }
 
+   public void setStatusLineMessage(String statusLineMessage)
+   {
+      this.m_statusLineMessage = statusLineMessage;
+   }
 
    public String getStatusLineMessage()
    {
