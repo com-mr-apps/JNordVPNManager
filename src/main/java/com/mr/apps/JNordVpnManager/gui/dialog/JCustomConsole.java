@@ -237,7 +237,7 @@ public class JCustomConsole extends WindowAdapter implements WindowListener, Act
 
       JEditorPane editorPane = new JEditorPane();
       editorPane.setEditable(false);
-      editorPane.setCaretColor(new Color(255, 235, 205)); // hide caret
+      editorPane.setCaretColor(COLOR_wheat); // hide caret
       editorPane.setContentType( "text/html" );
       editorPane.setText("<html><head><style>"
             + "p {font-family: Monospaced; font-size:14;}"
