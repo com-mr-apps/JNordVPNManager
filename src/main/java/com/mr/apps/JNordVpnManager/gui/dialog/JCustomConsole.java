@@ -6,7 +6,7 @@
  * You should have received a copy of the “Commons Clause” license with
  * this file. If not, please visit: https://github.com/com.mr.apps/JNordVpnManager
  */
-package com.mr.apps.JNordVpnManager.gui;
+package com.mr.apps.JNordVpnManager.gui.dialog;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -49,11 +49,10 @@ import javax.swing.text.Element;
 import javax.swing.text.html.HTMLDocument;
 
 import com.mr.apps.JNordVpnManager.Starter;
-import com.mr.apps.JNordVpnManager.gui.dialog.JModalDialog;
 import com.mr.apps.JNordVpnManager.utils.UtilLogErr;
 import com.mr.apps.JNordVpnManager.utils.UtilPrefs;
 
-public class GuiCustomConsole extends WindowAdapter implements WindowListener, ActionListener, Runnable
+public class JCustomConsole extends WindowAdapter implements WindowListener, ActionListener, Runnable
 {
    private static final Color     COLOR_wheat         = new Color(255, 235, 205);
    private static final Color     COLOR_darkGreen     = new Color(40, 180, 99);
@@ -68,7 +67,7 @@ public class GuiCustomConsole extends WindowAdapter implements WindowListener, A
    private final PipedInputStream m_pipedInputStreamOut  = new PipedInputStream();
    private final PipedInputStream m_pipedInputStreamErr = new PipedInputStream();
 
-   public GuiCustomConsole()
+   public JCustomConsole()
    {
       // create all components and add them
       m_consoleMainFrame = new JFrame("JNordVPN Manager Console");
@@ -238,7 +237,7 @@ public class GuiCustomConsole extends WindowAdapter implements WindowListener, A
 
       JEditorPane editorPane = new JEditorPane();
       editorPane.setEditable(false);
-      editorPane.setCaretColor(new Color(255, 235, 205)); // hide caret
+      editorPane.setCaretColor(COLOR_wheat); // hide caret
       editorPane.setContentType( "text/html" );
       editorPane.setText("<html><head><style>"
             + "p {font-family: Monospaced; font-size:14;}"

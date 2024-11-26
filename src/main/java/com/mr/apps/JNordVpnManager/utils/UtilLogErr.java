@@ -634,6 +634,12 @@ public class UtilLogErr
             case 10200:
                headerLine += "Input failture";
                break;
+            case 10301:
+               headerLine += "Info";
+               break;
+            case 10303:
+               headerLine += "Warning";
+               break;
             case 10500:
                headerLine += "Data inconsistency";
                break;
@@ -650,6 +656,9 @@ public class UtilLogErr
             case 10903:
                headerLine += "Open Webpage exception";
                break;
+            case 10904:
+               headerLine += "Show Error Dialog";
+               break;
             // ### internal messages
             case 10996:
                headerLine += "GeoTools Error";
@@ -663,7 +672,7 @@ public class UtilLogErr
             case 10999:
                // reserved for final try/catch exception, to ensure correct program ending on not handled Java system exceptions
                headerLine += "Java System exception";
-               forcedAbend = false; // we already come from this exception thrown below...!
+               forcedAbend = false;
                break;
             default:
                headerLine = "";
@@ -680,16 +689,18 @@ public class UtilLogErr
       if (0 == iMsgNb) headerLine += sShortMsg;
  
       // write header line to log file or console
-      writeLog (headerLine);
+      StringBuffer traceLine = new StringBuffer(headerLine);
       if (sLongMsgArr != null)
       {
          for (int iCnt = 0; iCnt < sLongMsgArr.length; iCnt++)
          {
-            String traceLine = "+\t" + sLongMsgArr[iCnt];
-
-            // write long message to log file or console
-            writeLog (traceLine);
+            traceLine.append("\n+\t");
+            traceLine.append(sLongMsgArr[iCnt]);
+            traceLine.append("\n");
          }
+
+         // write header [+long message] to log file or console
+         writeLog (traceLine.toString());
       }
 
       if ((forcedAbend == true) || (m_fatalError == true))
@@ -800,29 +811,21 @@ public class UtilLogErr
       {
          try
          {
+            if (m_bConsoleOutput == true)
+            {
+               // additional output to the console
+               System.out.println(formatToHtml(sText));
+            }
             if (m_bwLogfileIsActive && m_bwLogfile != null)
             {
                // output to log file
                m_bwLogfile.write(sText + "\n");
                m_bwLogfile.flush();
-               if (m_bConsoleOutput == true)
-               {
-                  // additional output to the console
-                  System.out.println(formatToHtml(sText));
-               }
             }
-            else
+            else if (m_bConsoleOutput == false)
             {
-               if (m_bConsoleOutput == true)
-               {
-                  // output to the console
-                  System.out.println(formatToHtml(sText));
-               }
-               else
-               {
-                  // output to stdout
-                  System.out.println(sText);
-               }
+               // output to stdout
+               System.out.println(sText);
             }
          } // try
          catch (IOException e)

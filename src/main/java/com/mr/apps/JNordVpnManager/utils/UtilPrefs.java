@@ -9,25 +9,54 @@
 package com.mr.apps.JNordVpnManager.utils;
 
 import java.awt.event.KeyEvent;
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.prefs.Preferences;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.stream.Stream;
 
+import com.mr.apps.JNordVpnManager.Starter;
+import com.mr.apps.JNordVpnManager.gui.settings.JUserPrefsDialog;
+import com.mr.apps.JNordVpnManager.gui.settings.JSettingsPanelField;
 import com.mr.apps.JNordVpnManager.utils.String.StringFormat;
 
 /**
- * 
- * storage location (Linux): ~/.java/.userPrefs
+ * Class to manage the application User Preferences.<p>
+ * storage location (Linux): ~/.java/.userPrefs<br>
+ * It also defines/manages the settings (preferences) panel
  */
 public class UtilPrefs
 {
-   // Defaults:
+   private static final String                     AUTODISCONNECTMODE                       = "AUTODISCONNECTMODE";
+   private static final String                     AUTOCONNECTMODE                          = "AUTOCONNECTMODE";
+   private static final String                     COMPACTMODE                              = "COMPACTMODE";
+   private static final String                     COMMAND_TIMEOUT                          = "COMMAND_TIMEOUT";
+   private static final String                     LOGFILE_ACTIVE                           = "LOGFILE_ACTIVE";
+   private static final String                     LOGFILE_NAME                             = "LOGFILE_NAME";
+   private static final String                     LOGFILE_TRACEINIT                        = "TRACEINIT";
+   private static final String                     LOGFILE_TRACECMD                         = "TRACECMD";
+   private static final String                     LOGFILE_TRACEDEBUG                       = "TRACEDEBUG";
+   private static final String                     RECENTSERVER_LIST_LENGTH                 = "RECENTSERVER_LIST_LENGTH";
+   private static final String                     RECENTSERVER_LIST                        = "RECENTSERVER_LIST";
+   private static final String                     RECENTSERVER_COUNTRY                     = "RECENTSERVER_COUNTRY";
+   private static final String                     RECENTSERVER_CITY                        = "RECENTSERVER_CITY";
+   private static final String                     SERVERLIST_TIMESTAMP                     = "SERVERLIST_TIMESTAMP";
+   private static final String                     SERVERLIST_DATA                          = "SERVERLIST_DATA";
+
+   // Internal Defaults
    private static String DEFAULT_PREF_RECENTSERVER_CITY           = "";
    private static String DEFAULT_PREF_RECENTSERVER_COUNTRY        = "";
    private static String DEFAULT_PREF_RECENTSERVER_LIST           = "";
    private static int    DEFAULT_PREF_RECENTSERVER_LIST_LENGTH    = 5;
    private static String DEFAULT_PREF_SERVERLIST_DATA             = "";
    private static String DEFAULT_PREF_SERVERLIST_TIMESTAMP        = "0";
-   private static int    DEFAULT_PREF_SETTINGS_COMPACTMODE        = 0;  // Default is expanded
+   private static int    DEFAULT_PREF_SETTINGS_COMPACTMODE        = 0;  // this flag represents the current state -> no setting. TODO: (?) add another "Start Program in Compact Mode"
    private static int    DEFAULT_PREF_SETTINGS_AUTOCONNECTMODE    = 0;
    private static int    DEFAULT_PREF_SETTINGS_AUTODISCONNECTMODE = 0;
    private static int    DEFAULT_PREF_SETTINGS_TRACEDEBUG         = 0;
@@ -37,95 +66,116 @@ public class UtilPrefs
    private static int    DEFAULT_PREF_SETTINGS_LOGFILE_ACTIVE     = 0;
    private static int    DEFAULT_PREF_SETTINGS_COMMAMD_TIMEOUT    = 30;
 
-   public enum FieldTitle
-   {
-      RECENTSERVER_CITY("Recent Server", "T", KeyEvent.VK_S, 20),
-      RECENTSERVER_COUNTRY("Recent Country", "T", KeyEvent.VK_C, 20),
-      RECENTSERVER_LIST("Recent Servers", "T", -1, 20),
-      RECENTSERVER_LIST_LENGTH("Recent List Size", "N[1,10]", -1, 2),
-      SERVERLIST_DATA("Server Data", "T", KeyEvent.VK_D, 20),
-      SERVERLIST_TIMESTAMP("Timestamp", "T", KeyEvent.VK_T, 10),
-      COMPACTMODE("Compact Mode", "B", KeyEvent.VK_M, 5),
-      AUTOCONNECTMODE("Auto Connect on Program Start", "B", KeyEvent.VK_S, 1),
-      AUTODISCONNECTMODE("Auto Disconnect on Program Exit", "B", KeyEvent.VK_E, 1),
-      TRACEDEBUG("Trace Debug", "B", KeyEvent.VK_B, 1),
-      TRACECMD("Trace Command", "B", KeyEvent.VK_A, 1),
-      TRACEINIT("Trace Init", "B", KeyEvent.VK_I, 1),
-      LOGFILE_NAME("Logfile", "T", KeyEvent.VK_F, 20),
-      LOGFILE_ACTIVE("Write to Logfile", "B", KeyEvent.VK_W, 1),
-      COMMAND_TIMEOUT("Command Timeout (in seconds)", "N", -1, 3);
-
-      private String label;
-      private String elementType;
-      private int    mnemonic;
-      private int    length;
-
-      private FieldTitle(String label, String elementType, int mnemonic, int length)
-      {
-         this.label = label;
-         this.elementType = elementType;
-         this.mnemonic = mnemonic;
-         this.length = length;
-      }
-
-      public String getLabel()
-      {
-         return label;
-      }
-
-      public String getElementType()
-      {
-         return elementType;
-      }
-
-      public int getMnemonic()
-      {
-         return mnemonic;
-      }
-
-      public int getLength()
-      {
-         return length;
-      }
-   };
+   /**
+    * Dataset defining the UserPreference values.
+    * <p>
+    * Contains the panel field description by Id:
+    * <ul>
+    * <li>Label text</li>
+    * <li>Field Type, where: "T" - Text field / "N[min,max]" - Integer with optional range / "B" - Boolean (CheckBox)</li>
+    * <li>Mnemonic (-1 - no KeyEvent)</li>
+    * <li>Field length</li>
+    * <li>Default value</li>
+    * </ul>
+    */
 
    /**
-    * Reset Settings to default values
+    * Show the User Preferences Panel.
     */
-   public static void resetPreferences()
+   public static void showUserPreferencesPanel()
    {
-      /*
-      setServerList(DEFAULT_PREF_SERVERLIST_DATA);
-      setServerListTimestamp(DEFAULT_PREF_SERVERLIST_TIMESTAMP);
-      setRecentCity(DEFAULT_PREF_RECENTSERVER_CITY);
-      setRecentCountry(DEFAULT_PREF_RECENTSERVER_COUNTRY);
-      setCompactMode(DEFAULT_PREF_SETTINGS_COMPACTMODE);
-      setAutoConnectMode(DEFAULT_PREF_SETTINGS_AUTOCONNECTMODE);
-      setAutoDisConnectMode(DEFAULT_PREF_SETTINGS_AUTODISCONNECTMODE);
-      */
-      setRecentServerList(DEFAULT_PREF_RECENTSERVER_LIST);
-      setRecentServerListLength(DEFAULT_PREF_RECENTSERVER_LIST_LENGTH);
-/*
-      setTraceDebug(DEFAULT_PREF_SETTINGS_TRACEDEBUG);
-      setTraceInit(DEFAULT_PREF_SETTINGS_TRACEINIT);
-      setTraceCmd(DEFAULT_PREF_SETTINGS_TRACECMD);
-      setLogfileActive(DEFAULT_PREF_SETTINGS_LOGFILE_ACTIVE);
-      setLogfileName(DEFAULT_PREF_SETTINGS_LOGFILE_NAME);
-      setCommandTimeout(DEFAULT_PREF_SETTINGS_COMMAMD_TIMEOUT);
-*/
+      Map<String, JSettingsPanelField> settingsPanelFieldsMap  = new HashMap<String, JSettingsPanelField>();
+
+      settingsPanelFieldsMap.put(AUTOCONNECTMODE, new JSettingsPanelField("Auto Connect on Program Start", "B", KeyEvent.VK_S, 1, StringFormat.int2String(DEFAULT_PREF_SETTINGS_AUTOCONNECTMODE, "#")));
+      settingsPanelFieldsMap.put(AUTODISCONNECTMODE, new JSettingsPanelField("Auto Disconnect on Program Exit", "B", KeyEvent.VK_E, 1, StringFormat.int2String(DEFAULT_PREF_SETTINGS_AUTODISCONNECTMODE, "#")));
+      settingsPanelFieldsMap.put(COMMAND_TIMEOUT, new JSettingsPanelField("Command Timeout (in seconds)", "N", -1, 3, StringFormat.int2String(DEFAULT_PREF_SETTINGS_COMMAMD_TIMEOUT, "#")));
+//      m_settingsFieldMap.put(COMPACTMODE, new JSettingsPanelField("Start Program in Compact Mode", "B", KeyEvent.VK_M, 5, StringFormat.int2String(DEFAULT_PREF_SETTINGS_COMPACTMODE, "#")));
+      settingsPanelFieldsMap.put(LOGFILE_ACTIVE, new JSettingsPanelField("Write to Logfile", "B", KeyEvent.VK_W, 1, StringFormat.int2String(DEFAULT_PREF_SETTINGS_LOGFILE_ACTIVE, "#")));
+      settingsPanelFieldsMap.put(LOGFILE_NAME, new JSettingsPanelField("Logfile", "T", KeyEvent.VK_F, 20, DEFAULT_PREF_SETTINGS_LOGFILE_NAME));
+      settingsPanelFieldsMap.put(LOGFILE_TRACECMD, new JSettingsPanelField("Trace Command", "B", KeyEvent.VK_A, 1, StringFormat.int2String(DEFAULT_PREF_SETTINGS_TRACECMD, "#")));
+      settingsPanelFieldsMap.put(LOGFILE_TRACEDEBUG, new JSettingsPanelField("Trace Debug", "B", KeyEvent.VK_B, 1, StringFormat.int2String(DEFAULT_PREF_SETTINGS_TRACEDEBUG, "#")));
+      settingsPanelFieldsMap.put(LOGFILE_TRACEINIT, new JSettingsPanelField("Trace Init", "B", KeyEvent.VK_I, 1, StringFormat.int2String(DEFAULT_PREF_SETTINGS_TRACEINIT, "#")));
+      settingsPanelFieldsMap.put(RECENTSERVER_CITY, new JSettingsPanelField("Recent Server", "T", KeyEvent.VK_S, 20, DEFAULT_PREF_RECENTSERVER_CITY));
+      settingsPanelFieldsMap.put(RECENTSERVER_COUNTRY, new JSettingsPanelField("Recent Country", "T", KeyEvent.VK_C, 20, DEFAULT_PREF_RECENTSERVER_COUNTRY));
+      settingsPanelFieldsMap.put(RECENTSERVER_LIST, new JSettingsPanelField("Recent Servers List", "T", -1, 20, DEFAULT_PREF_RECENTSERVER_LIST));
+      settingsPanelFieldsMap.put(RECENTSERVER_LIST_LENGTH, new JSettingsPanelField("Recent Servers List Size", "N[1,10]", -1, 2, StringFormat.int2String(DEFAULT_PREF_RECENTSERVER_LIST_LENGTH, "#")));
+      settingsPanelFieldsMap.put(SERVERLIST_DATA, new JSettingsPanelField("Server Data", "T", KeyEvent.VK_D, 20, DEFAULT_PREF_SERVERLIST_DATA));
+      settingsPanelFieldsMap.put(SERVERLIST_TIMESTAMP, new JSettingsPanelField("Sync. Data Timestamp", "T", KeyEvent.VK_T, 10, DEFAULT_PREF_SERVERLIST_TIMESTAMP));
+
+      JUserPrefsDialog sp = new JUserPrefsDialog(Starter.getMainFrame(), "UserPreferences", settingsPanelFieldsMap);
+      sp.getResult();
    }
 
-   public static void exportPreferences(String fileName)
+   /**
+    * Action "Export" User Preferences to a file.
+    * @param fileName is the file name where to store the data.
+    */
+   public static boolean exportUserPreferences(String fileName, HashMap <String,String> hm)
    {
-      // TODO: exportPreferences to file
+      Starter._m_logError.TraceDebug("Export User Preferences to file '" + fileName + "'.");
+      try (BufferedWriter writer = new BufferedWriter(new FileWriter(fileName, false)))
+      {
+         writer.write("INFO JNordVPN User Preferences Export File");
+
+         for (HashMap.Entry<String, String> entry : hm.entrySet())
+         {
+            String key = entry.getKey();
+            String value = entry.getValue();
+            String line = key + " " + value;
+            writer.write(line);
+            writer.newLine();
+         }
+      }
+      catch (IOException e)
+      {
+         Starter._m_logError.TranslatorExceptionAbend(10901, e);
+         return false;
+      }
+      return true;
    }
 
-   public static void importPreferences(String fileName)
+   /**
+    * Action "Import" User Preferences from a file.
+    * @param fileName is the file name where to read the data.
+    */
+   public static HashMap <String,String> importUserPreferences(String fileName)
    {
-      // TODO: importPreferences from file
+      HashMap<String, String> hm = null;
+
+      Starter._m_logError.TraceDebug("Import User Preferences from file '" + fileName + "'.");
+      try (Stream<String> lines = Files.lines(Paths.get(fileName)))
+      {
+         hm = new HashMap<String, String>();
+         int iLine = 0;
+         for (String line : (Iterable<String>) lines::iterator)
+         {
+            iLine++;
+            Pattern pattern = Pattern.compile("([^\\s]+)\\s+(.*)", Pattern.CASE_INSENSITIVE);
+            Matcher matcher = pattern.matcher(line);
+            boolean matchFound = matcher.find();
+            if (matchFound)
+            {
+               hm.put(matcher.group(1), matcher.group(2));
+            }
+            else
+            {
+               Starter._m_logError.TraceDebug("Line '" + iLine + "' does not match the pattern [key value]!");
+            }
+         }
+      }
+      catch (IOException e)
+      {
+         Starter._m_logError.TranslatorExceptionAbend(10901, e);
+         hm = null;
+      }
+
+      return hm;
    }
 
-   public static String getServerList()
+   /*
+    * Getter/Setter Methods to access the User Data...
+    */
+   public static String getServerListData()
    {
       Preferences nordVpnServerList = Preferences.userRoot().node("com/mr/apps/JNordVpnManager");
       String city = nordVpnServerList.get("ServerList.Data", DEFAULT_PREF_SERVERLIST_DATA);
@@ -133,7 +183,7 @@ public class UtilPrefs
       return city;
    }
 
-   public static void setServerList(String serverList)
+   public static void setServerListData(String serverList)
    {
       Preferences nordVpnServerList = Preferences.userRoot().node("com/mr/apps/JNordVpnManager");
       nordVpnServerList.put("ServerList.Data", serverList);
@@ -365,53 +415,90 @@ public class UtilPrefs
       return;
    }
 
-   public static HashMap <FieldTitle,String> getAllValues()
+   /**
+    * Get a data set with all User Preferences data
+    * @return the dataset with all user preferences data.
+    */
+   public static HashMap <String,String> getUserPreferencesDataSet()
    {
-      HashMap <FieldTitle,String> hm = new HashMap <FieldTitle,String>();
+      HashMap <String,String> hm = new HashMap <String,String>();
       
-      String value = getRecentCity();
-      hm.put(FieldTitle.RECENTSERVER_CITY, value);
-      value = getRecentCountry();
-      hm.put(FieldTitle.RECENTSERVER_COUNTRY, value);
-      value = getRecentServerList();
-      hm.put(FieldTitle.RECENTSERVER_LIST, value);
-      value = StringFormat.int2String(getRecentServerListLength(), "#");
-      hm.put(FieldTitle.RECENTSERVER_LIST_LENGTH, value);
-      value = getServerList();
-      hm.put(FieldTitle.SERVERLIST_DATA, value);
-      value = getServerListTimestamp();
-      hm.put(FieldTitle.SERVERLIST_TIMESTAMP, value);
-      value = StringFormat.int2String(getCompactMode(), "#");
-      hm.put(FieldTitle.COMPACTMODE, value);
-      value = StringFormat.int2String(getAutoConnectMode(), "#");
-      hm.put(FieldTitle.AUTOCONNECTMODE, value);
-      value = StringFormat.int2String(getAutoDisConnectMode(), "#");
-      hm.put(FieldTitle.AUTODISCONNECTMODE, value);
-      value = StringFormat.int2String(getTraceDebug(), "#");
-      hm.put(FieldTitle.TRACEDEBUG, value);
-      value = StringFormat.int2String(getTraceCmd(), "#");
-      hm.put(FieldTitle.TRACECMD, value);
-      value = StringFormat.int2String(getTraceInit(), "#");
-      hm.put(FieldTitle.TRACEINIT, value);
-      value = getLogfileName();
-      hm.put(FieldTitle.LOGFILE_NAME, value);
-      value = StringFormat.int2String(isLogfileActive(), "#");
-      hm.put(FieldTitle.LOGFILE_ACTIVE, value);
-      value = StringFormat.int2String(getCommandTimeout(), "#");
-      hm.put(FieldTitle.COMMAND_TIMEOUT, value);
+      hm.put(RECENTSERVER_CITY, getRecentCity());
+      hm.put(RECENTSERVER_COUNTRY, getRecentCountry());
+      hm.put(RECENTSERVER_LIST, getRecentServerList());
+      hm.put(RECENTSERVER_LIST_LENGTH, StringFormat.int2String(getRecentServerListLength(), "#"));
+      hm.put(SERVERLIST_DATA, getServerListData());
+      hm.put(SERVERLIST_TIMESTAMP, getServerListTimestamp());
+      hm.put(COMPACTMODE, StringFormat.int2String(getCompactMode(), "#"));
+      hm.put(AUTOCONNECTMODE, StringFormat.int2String(getAutoConnectMode(), "#"));
+      hm.put(AUTODISCONNECTMODE, StringFormat.int2String(getAutoDisConnectMode(), "#"));
+      hm.put(LOGFILE_TRACEDEBUG, StringFormat.int2String(getTraceDebug(), "#"));
+      hm.put(LOGFILE_TRACECMD, StringFormat.int2String(getTraceCmd(), "#"));
+      hm.put(LOGFILE_TRACEINIT, StringFormat.int2String(getTraceInit(), "#"));
+      hm.put(LOGFILE_NAME, getLogfileName());
+      hm.put(LOGFILE_ACTIVE, StringFormat.int2String(isLogfileActive(), "#"));
+      hm.put(COMMAND_TIMEOUT, StringFormat.int2String(getCommandTimeout(), "#"));
 
-      
       return hm;
    }
 
-   public static void setAllValues(HashMap <FieldTitle,String> hm)
+   /**
+    * Set User Preferences data with dataset values
+    * @param hm is the data set with the new values
+    */
+   public static void setUserPreferencesDataSet(HashMap <String,String> hm)
    {
-      for (FieldTitle fieldTitle : FieldTitle.values())
+      if (null == hm)
       {
-         String value = hm.get(fieldTitle);
-         // TODO...
-         System.out.printf("%s: %s%n", fieldTitle.getLabel(), value);
+         return;
       }
 
+      Starter._m_logError.TraceDebug("Save all Preference values to UserPrefs:");
+      for (HashMap.Entry<String, String> entry : hm.entrySet())
+      {
+         String key = entry.getKey();
+         String value = entry.getValue();
+         Starter._m_logError.TraceDebug(key + ": " + value);
+      }
+
+      setServerListData(hm.get(SERVERLIST_DATA));
+      setServerListTimestamp(hm.get(SERVERLIST_TIMESTAMP));
+      setRecentCity(hm.get(RECENTSERVER_CITY));
+      setRecentCountry(hm.get(RECENTSERVER_COUNTRY));
+      setCompactMode(Integer.valueOf(hm.get(COMPACTMODE)));
+      setAutoConnectMode(Integer.valueOf(hm.get(AUTOCONNECTMODE)));
+      setAutoDisConnectMode(Integer.valueOf(hm.get(AUTODISCONNECTMODE)));
+      setRecentServerList(hm.get(RECENTSERVER_LIST));
+      setRecentServerListLength(Integer.valueOf(hm.get(RECENTSERVER_LIST_LENGTH)));
+      setTraceDebug(Integer.valueOf(hm.get(LOGFILE_TRACEDEBUG)));
+      setTraceInit(Integer.valueOf(hm.get(LOGFILE_TRACEINIT)));
+      setTraceCmd(Integer.valueOf(hm.get(LOGFILE_TRACECMD)));
+      setLogfileActive(Integer.valueOf(hm.get(LOGFILE_ACTIVE)));
+      setLogfileName(hm.get(LOGFILE_NAME));
+      setCommandTimeout(Integer.valueOf(hm.get(COMMAND_TIMEOUT)));
+   }
+
+   /**
+    * Reset User Preferences to their default values
+    */
+   public static void resetUserPreferenceValues()
+   {
+      Starter._m_logError.TraceDebug("Reset all User Preference values.");
+
+      setServerListData(DEFAULT_PREF_SERVERLIST_DATA);
+      setServerListTimestamp(DEFAULT_PREF_SERVERLIST_TIMESTAMP);
+      setRecentCity(DEFAULT_PREF_RECENTSERVER_CITY);
+      setRecentCountry(DEFAULT_PREF_RECENTSERVER_COUNTRY);
+      setCompactMode(DEFAULT_PREF_SETTINGS_COMPACTMODE);
+      setAutoConnectMode(DEFAULT_PREF_SETTINGS_AUTOCONNECTMODE);
+      setAutoDisConnectMode(DEFAULT_PREF_SETTINGS_AUTODISCONNECTMODE);
+      setRecentServerList(DEFAULT_PREF_RECENTSERVER_LIST);
+      setRecentServerListLength(DEFAULT_PREF_RECENTSERVER_LIST_LENGTH);
+      setTraceDebug(DEFAULT_PREF_SETTINGS_TRACEDEBUG);
+      setTraceInit(DEFAULT_PREF_SETTINGS_TRACEINIT);
+      setTraceCmd(DEFAULT_PREF_SETTINGS_TRACECMD);
+      setLogfileActive(DEFAULT_PREF_SETTINGS_LOGFILE_ACTIVE);
+      setLogfileName(DEFAULT_PREF_SETTINGS_LOGFILE_NAME);
+      setCommandTimeout(DEFAULT_PREF_SETTINGS_COMMAMD_TIMEOUT);
    }
 }

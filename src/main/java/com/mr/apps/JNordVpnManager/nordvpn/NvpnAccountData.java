@@ -8,12 +8,14 @@
  */
 package com.mr.apps.JNordVpnManager.nordvpn;
 
+import java.util.HashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import com.mr.apps.JNordVpnManager.Starter;
 import com.mr.apps.JNordVpnManager.gui.dialog.JModalDialog;
 import com.mr.apps.JNordVpnManager.utils.UtilSystem;
+import com.mr.apps.JNordVpnManager.utils.String.StringFormat;
 
 public class NvpnAccountData
 {
@@ -49,53 +51,68 @@ public class NvpnAccountData
       else
       {
          // OK - extract data
-         int rc = parseData(msg);
-         if (1 == rc)
+         if (false == parseData(msg))
          {
+            // failed
             JModalDialog.showError("NordVPN Account", "'nordvpn account' information cannot be parsed.");
          }
       }
    }
 
-   public int parseData(String data)
+   public boolean parseData(String data)
    {
-      int rc = 0;
-      
-      Pattern pattern = Pattern.compile("^\\s*Account Information:\\s*\\n" // 
-            + "\\s*Email Address:\\s+([^\\n]+)\\n"                         // john.doe@mail.com\n"
-            + "\\s*VPN Service:\\s+([^(]+)\\(([^)]+)\\)\\s*\\n"            // Active (Expires on...)\n"
-            + "\\s*Dedicated IP:\\s+([^\\n]+)\\n"                          // Inactive\n"
-            + "\\s*Multi-factor Authentication \\(MFA\\):\\s+([^\\n]+)",   // disabled"
-            Pattern.CASE_INSENSITIVE);
-      Matcher matcher = pattern.matcher(data);
+      HashMap<String,String> values = new HashMap<String, String>();
+      try
+      {
+         String[] saLines = data.split("\\n");
+         for (String line : saLines)
+         {
+            String[] parts = line.split(":");
+            if (parts.length == 2)
+            {
+               values.put(parts[0], parts[1].trim());
+            }
+            else
+            {
+               values.put(parts[0], "");
+            }
+         }
+      }
+      catch (Exception e)
+      {
+         // Parsing Error
+         Starter._m_logError.TranslatorError(10100,
+               "Parsing NordVPN Account Information",
+               data);
+         return false;
+      }
 
+      // data line 'VPN Service' contains two information
+      String value = values.get("VPN Service");
+      Pattern pattern = Pattern.compile("\\s*([^(]+)\\(([^)]+)\\)\\s*\\n",
+            Pattern.CASE_INSENSITIVE);
+      Matcher matcher = pattern.matcher(value);
       boolean matchFound = matcher.find();
       if (matchFound)
       {
          // Parsing OK
-         this.setLoggedIn(true);            
-         this.setEmail(matcher.group(1));
-         this.setVpnServiceIsActive(matcher.group(2).equalsIgnoreCase("Active"));
-         this.setVpnServiceExpDate(matcher.group(3)); // TODO: extract date
-         this.setVpnDedicatedIdIsActive(matcher.group(4).equalsIgnoreCase("Active"));
-         this.setMfaIsEnabled(matcher.group(4).equalsIgnoreCase("enabled"));
+         this.setVpnServiceIsActive(matcher.group(1));
+         this.setVpnServiceExpDate(matcher.group(2)); // TODO: extract date
       }
       else
       {
          // Parsing Error
-         rc = 1;
-         Starter._m_logError.TranslatorError(10100, "Parsing NordVPN Account Information", data);
-         Starter._m_logError.TraceDebug("NordVPN Account Parsing Pattern=" + pattern.toString() + "<.");
-
-         this.setLoggedIn(false);
-         this.setEmail("noname@mail.com");
-         this.setVpnServiceIsActive(false);
-         this.setVpnServiceExpDate("n/a");
-         this.setVpnDedicatedIdIsActive(false);
-         this.setMfaIsEnabled(false);
+         Starter._m_logError.TranslatorError(10100, "Parsing NordVPN Account Information 'VPN Service'", data);
+         // Fallback
+         if (value.toUpperCase().contains("ACTIVE")) this.setVpnServiceIsActive("Active");
       }
 
-      return rc;
+      this.setLoggedIn(true);            
+      this.setEmail(values.get("Email Address"));
+      this.setVpnDedicatedIdIsActive(values.get("Dedicated IP"));
+      this.setMfaIsEnabled(values.get("Multi-factor Authentication"));
+
+      return true;
    }
 
    public boolean isLoggedIn()
@@ -110,7 +127,7 @@ public class NvpnAccountData
 
    public String getEmail()
    {
-      return m_email;
+      return StringFormat.printString(m_email, "n/a");
    }
 
    public void setEmail(String email)
@@ -123,14 +140,17 @@ public class NvpnAccountData
       return m_vpnServiceIsActive;
    }
 
-   public void setVpnServiceIsActive(boolean vpnServiceIsActive)
+   public void setVpnServiceIsActive(String vpnServiceIsActive)
    {
-      this.m_vpnServiceIsActive = vpnServiceIsActive;
+      if (null != vpnServiceIsActive)
+      {
+         this.m_vpnServiceIsActive = vpnServiceIsActive.equalsIgnoreCase("Active");
+      }
    }
 
    public String getVpnServiceExpDate()
    {
-      return m_vpnServiceExpDate;
+      return StringFormat.printString(m_vpnServiceExpDate, "n/a");
    }
 
    public void setVpnServiceExpDate(String vpnServiceExpDate)
@@ -143,9 +163,12 @@ public class NvpnAccountData
       return m_vpnDedicatedIdIsActive;
    }
 
-   public void setVpnDedicatedIdIsActive(boolean vpnDedicatedIdIsActive)
+   public void setVpnDedicatedIdIsActive(String vpnDedicatedIdIsActive)
    {
-      this.m_vpnDedicatedIdIsActive = vpnDedicatedIdIsActive;
+      if (null != vpnDedicatedIdIsActive)
+      {
+         this.m_vpnDedicatedIdIsActive = vpnDedicatedIdIsActive.equalsIgnoreCase("Active");
+      }
    }
 
    public boolean isMfaIsEnabled()
@@ -153,8 +176,11 @@ public class NvpnAccountData
       return m_mfaIsEnabled;
    }
 
-   public void setMfaIsEnabled(boolean mfaIsEnabled)
+   public void setMfaIsEnabled(String mfaIsEnabled)
    {
-      this.m_mfaIsEnabled = mfaIsEnabled;
+      if (null != mfaIsEnabled)
+      {
+         this.m_mfaIsEnabled = mfaIsEnabled.equalsIgnoreCase("Enabled");
+      }
    }
 }

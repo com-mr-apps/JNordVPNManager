@@ -21,10 +21,12 @@ import com.mr.apps.JNordVpnManager.geotools.Location;
 import com.mr.apps.JNordVpnManager.geotools.UtilLocations;
 import com.mr.apps.JNordVpnManager.gui.dialog.JModalDialog;
 import com.mr.apps.JNordVpnManager.gui.dialog.JSystemInfoDialog;
-import com.mr.apps.JNordVpnManager.gui.settings.JSettingsDialog;
+import com.mr.apps.JNordVpnManager.gui.dialog.JWhatsNewDialog;
+import com.mr.apps.JNordVpnManager.gui.dialog.JSplashScreen;
 import com.mr.apps.JNordVpnManager.nordvpn.NvpnAccountData;
 import com.mr.apps.JNordVpnManager.nordvpn.NvpnCallbacks;
 import com.mr.apps.JNordVpnManager.nordvpn.NvpnCommands;
+import com.mr.apps.JNordVpnManager.nordvpn.NvpnSettingsData;
 import com.mr.apps.JNordVpnManager.utils.UtilPrefs;
 import com.mr.apps.JNordVpnManager.utils.UtilSystem;
 
@@ -54,13 +56,13 @@ public class GuiMenuBar
       JMenu fileMenu = new JMenu("File");
       menuBar.add(fileMenu);
 
-      JMenuItem fileSettings = new JMenuItem("Settings");
+      JMenuItem fileSettings = new JMenuItem("Preferences");
+      fileSettings.setToolTipText("Show/Edit Application User Preferences.");
       fileSettings.addActionListener(new ActionListener()
       {
          public void actionPerformed(ActionEvent e)
          {
-            JSettingsDialog sp = new JSettingsDialog(Starter.getMainFrame());
-            sp.getResult();
+            UtilPrefs.showUserPreferencesPanel();
          }
       });
       fileMenu.add(fileSettings);
@@ -157,6 +159,18 @@ public class GuiMenuBar
       });
       nordvpnMenu.add(menuItemSettings);
 
+      nordvpnMenu.addSeparator();
+
+      JMenuItem menuItemEditSettings = new JMenuItem("Edit Settings");
+      menuItemEditSettings.addActionListener(new ActionListener()
+      {
+         public void actionPerformed(ActionEvent e)
+         {
+            NvpnSettingsData.showNordVpnSettingsPanel();
+         }
+      });
+      nordvpnMenu.add(menuItemEditSettings);
+
       JMenuItem menuItemTestTimeout = new JMenuItem("Test Timeout");
       menuItemTestTimeout.addActionListener(new ActionListener()
       {
@@ -188,7 +202,16 @@ public class GuiMenuBar
          public void actionPerformed(ActionEvent e)
          {
             CurrentLocation loc = Starter.getCurrentServer();
-            NvpnCallbacks.executeConnect(loc);
+            String msg = NvpnCallbacks.executeConnect(loc);
+            if (NvpnCallbacks.isLastError())
+            {
+               msg = NvpnCallbacks.getLastError();
+               JModalDialog.showError("NordVPN Reconnect", msg);
+            }
+            else
+            {
+               JModalDialog.showMessage("NordVPN Reconnect", msg);
+            }
          }
       });
       connectMenu.add(m_menuItemReConnect);
@@ -262,7 +285,7 @@ public class GuiMenuBar
       {
          public void actionPerformed(ActionEvent e)
          {
-            SplashScreen splashScreen = new SplashScreen();
+            JSplashScreen splashScreen = new JSplashScreen();
             splashScreen.show();
          }
       });
@@ -279,7 +302,19 @@ public class GuiMenuBar
       });
       infoMenu.add(aboutMenu);
 
-      // MenuItem --- Welcome ---
+      // MenuItem --- What's New ---
+      JMenuItem whatsNewMenu = new JMenuItem("What's New");
+      whatsNewMenu.addActionListener(new ActionListener()
+      {
+         public void actionPerformed(ActionEvent e)
+         {
+            JWhatsNewDialog whatsNew = new JWhatsNewDialog();
+            whatsNew.show();
+         }
+      });
+      infoMenu.add(whatsNewMenu);
+
+      // MenuItem --- System Info ---
       JMenuItem infoMenuItem = new JMenuItem("System Info");
       infoMenuItem.addActionListener(new ActionListener()
       {
@@ -300,13 +335,26 @@ public class GuiMenuBar
     */
    public static void updateMenuButtons(CurrentLocation loc)
    {
+      String sToolTip = "";
+      if (null != loc)
+      {
+         sToolTip = loc.getCountry() + " " + loc.getCity();
+      }
+      // update Reconnect command - if there is a recent server
+      if (sToolTip.isBlank())
+      {
+         m_menuItemReConnect.setEnabled(false);
+      }
+      else
+      {
+         m_menuItemReConnect.setToolTipText("Connect to Server: " + sToolTip);
+         m_menuItemReConnect.setEnabled(true);
+      }
+
       if (null != loc && loc.isConnected())
       {
          // enable Disconnect command
          m_menuItemDisConnect.setEnabled(true);
-
-         // disable Reconnect command
-         m_menuItemReConnect.setEnabled(false);
          
          // disable Quick connect command
          m_menuItemQuickConnect.setEnabled(false);
@@ -316,24 +364,6 @@ public class GuiMenuBar
          // disable Disconnect command
          m_menuItemDisConnect.setEnabled(false);
 
-         // enable Reconnect command - if there is a recent server
-         String sToolTip = "";
-         if (null != loc)
-         {
-            sToolTip = loc.getCountry() + " " + loc.getCity();
-         }
-
-         // ... and update the tool tip
-         if (sToolTip.isBlank())
-         {
-            m_menuItemReConnect.setEnabled(false);
-         }
-         else
-         {
-            m_menuItemReConnect.setToolTipText("Connect to Server: " + sToolTip);
-            m_menuItemReConnect.setEnabled(true);
-         }
-         
          // enable Quick connect command
          m_menuItemQuickConnect.setEnabled(true);
       }

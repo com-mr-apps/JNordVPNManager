@@ -8,5 +8,3 @@ Icon=${SNAP}/meta/gui/icon.svg
 Terminal=false
 Type=Application
 Categories=Utility;Application;
-#xprop WM_CLASS
-StartupWMClass=com-mr-apps-JNordVpnManager-Starter

@@ -40,8 +40,8 @@ public class GuiConnectLine
 
       JPanel frame = new JPanel();
       frame.setLayout(new BoxLayout(frame, BoxLayout.Y_AXIS));
-      JCheckBox autoConnect = new JCheckBox("Auto Connect");
-      autoConnect.setToolTipText("Automatic connect with last active VPN Server on next program start.");
+      JCheckBox autoConnect = new JCheckBox("GUI Auto Connect");
+      autoConnect.setToolTipText("Automatic connect with the current VPN Server on next program start.");
       int iAutoConnect = UtilPrefs.getAutoConnectMode();
       if (1 == iAutoConnect)
       {
@@ -53,18 +53,22 @@ public class GuiConnectLine
       }
       autoConnect.addActionListener(new ActionListener() {
          @Override
-         public void actionPerformed(ActionEvent e) {
-             JCheckBox cb = (JCheckBox) e.getSource();
-             if (cb.isSelected()) {
-                 UtilPrefs.setAutoConnectMode(1);
-             } else {
-                UtilPrefs.setAutoConnectMode(0);
-             }
+         public void actionPerformed(ActionEvent e)
+         {
+            JCheckBox cb = (JCheckBox) e.getSource();
+            if (cb.isSelected())
+            {
+               UtilPrefs.setAutoConnectMode(1);
+            }
+            else
+            {
+               UtilPrefs.setAutoConnectMode(0);
+            }
          }
       });
       frame.add(autoConnect);
 
-      JCheckBox autoDisConnect = new JCheckBox("Auto Disconnect");
+      JCheckBox autoDisConnect = new JCheckBox("GUI Auto Disconnect");
       autoDisConnect.setToolTipText("Automatic disonnect from VPN Server at program exit.");
       int iAutoDisConnect = UtilPrefs.getAutoDisConnectMode();
       if (1 == iAutoDisConnect)
@@ -78,12 +82,15 @@ public class GuiConnectLine
       autoDisConnect.addActionListener(new ActionListener() {
          @Override
          public void actionPerformed(ActionEvent e) {
-             JCheckBox cb = (JCheckBox) e.getSource();
-             if (cb.isSelected()) {
-                 UtilPrefs.setAutoDisConnectMode(1);
-             } else {
-                UtilPrefs.setAutoDisConnectMode(0);
-             }
+            JCheckBox cb = (JCheckBox) e.getSource();
+            if (cb.isSelected())
+            {
+               UtilPrefs.setAutoDisConnectMode(1);
+            }
+            else
+            {
+               UtilPrefs.setAutoDisConnectMode(0);
+            }
          }
       });
       frame.add(autoDisConnect);
@@ -97,7 +104,8 @@ public class GuiConnectLine
       m_jbMail = new JButton();
       m_jbMail.addActionListener(new ActionListener() {
          @Override
-         public void actionPerformed(ActionEvent e) {
+         public void actionPerformed(ActionEvent e)
+         {
             NvpnCallbacks.executeLogInOut();
          }
       });

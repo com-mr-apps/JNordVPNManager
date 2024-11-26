@@ -6,7 +6,7 @@
  * You should have received a copy of the “Commons Clause” license with
  * this file. If not, please visit: https://github.com/com.mr.apps/JNordVpnManager
  */
-package com.mr.apps.JNordVpnManager.gui;
+package com.mr.apps.JNordVpnManager.gui.dialog;
 
 import java.awt.Color;
 import java.awt.Cursor;
@@ -30,7 +30,7 @@ import javax.swing.event.HyperlinkListener;
 import com.mr.apps.JNordVpnManager.Starter;
 import com.mr.apps.JNordVpnManager.utils.UtilSystem;
 
-public class AboutScreen
+public class JAboutScreen
 {
    private static final String ABOUT_IMAGE        = "resources/AboutScreen.png";
    private static final String BUYMEACOFFEE_IMAGE = "resources/bmc_qr.png";
@@ -88,7 +88,7 @@ public class AboutScreen
    /**
     * Initiates a new About Screen
     */
-   public AboutScreen(String version)
+   public JAboutScreen(String version)
    {
       m_aboutFrame = new JFrame();
       m_aboutFrame.setTitle("About JNordVPN Manager");
