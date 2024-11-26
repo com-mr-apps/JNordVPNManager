@@ -368,9 +368,11 @@ public class Starter
          {
             // desktop file exists
             if (JModalDialog.showConfirm("JNordVPNManager (install).\n" +
-                  "To use JNordVPN Managers full functionality, please use the 'JNordVpnManager_Java.desktop' file or the command:\n" +
+                  "The 'JNordVpnManager_Java.desktop' file is ready to use.\n" +
+                  "Please run JNordVPN Manager with the 'JNordVpnManager_Java.desktop' file, or execute the command:\n" +
                   "/snap/j-nordvpn-manager/current/bin/java -jar /snap/j-nordvpn-manager/current/JNordVpnManager-current.jar.\n" +
-                  "If you continue, you cannot execute any 'nordvpn' command. But you have access to the console to check messages and errors.\n" +
+                  "to use its full functionality.\n\n" +
+                  "If you continue, you cannot execute any 'nordvpn' command, but you have access to the console to check messages and errors.\n\n" +
                   "Please confirm to exit the program.") == JOptionPane.YES_OPTION)
             {
                cleanupAndExit(true);
