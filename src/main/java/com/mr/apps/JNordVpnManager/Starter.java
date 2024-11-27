@@ -339,44 +339,43 @@ public class Starter
 
          // check if the local desktop file already exists (in the real home directory!)
          String targetFile = myHome + "/Desktop/JNordVpnManager_Java.desktop";
-         File fTargetFile = new File(targetFile);
-         if (!fTargetFile.canRead())
+         // ask, if we should copy the desktop file to the local desktop...
+         if (JModalDialog.showConfirm("JNordVPN Manager (install) called.\n" +
+               "To run the application you need an actual 'JNordVPNManager_Java.desktop' file in your local '~/Desktop directory', or execute the command:\n" +
+               "/snap/j-nordvpn-manager/current/bin/java -jar /snap/j-nordvpn-manager/current/JNordVpnManager-current.jar.\n\n" +
+               "Do you want to install the JNordVPNManager_Java.desktop file in your ~/Desktop directory to launch the application?") == JOptionPane.YES_OPTION)
          {
-            // desktop file does not exist - ask, if we can copy the desktop file to the local desktop...
-            _m_logError.TraceDebug("...'JNordVPNManager_Java.desktop' file not found in '~/Desktop directory'.");
-            if (JModalDialog.showConfirm("JNordVPN Manager (install) called.\n" +
-                  "To run the application you can install the 'JNordVPNManager_Java.desktop' file in your local '~/Desktop directory'.\n" +
-                  "Do you want to install the JNordVPNManager_Java.desktop file in your ~/Desktop directory to launch the application?") == JOptionPane.YES_OPTION)
+            // copy the desktop file
+            try
             {
-               // copy the desktop file
-               try
-               {
-                  UtilSystem.CopyTextFile("/snap/j-nordvpn-manager/current/Desktop/JNordVpnManager_Java.desktop",
-                        targetFile,
-                        "UTF-8",
-                        true);
-               }
-               catch (IOException e1)
-               {
-                  // we don't exit to give the user the chance to access the console
-                  _m_logError.TranslatorExceptionMessage(4, 10901, e1);
-               }
+               UtilSystem.CopyTextFile("/snap/j-nordvpn-manager/current/Desktop/JNordVpnManager_Java.desktop",
+                     targetFile,
+                     "UTF-8",
+                     true);
+            }
+            catch (IOException e1)
+            {
+               // we don't exit to give the user the chance to access the console
+               _m_logError.TranslatorExceptionMessage(4, 10901, e1);
             }
          }
 
+         File fTargetFile = new File(targetFile);
          if (fTargetFile.canRead())
          {
             // desktop file exists
-            if (JModalDialog.showConfirm("JNordVPNManager (install).\n" +
-                  "The 'JNordVpnManager_Java.desktop' file is ready to use.\n" +
-                  "Please run JNordVPN Manager with the 'JNordVpnManager_Java.desktop' file, or execute the command:\n" +
-                  "/snap/j-nordvpn-manager/current/bin/java -jar /snap/j-nordvpn-manager/current/JNordVpnManager-current.jar.\n" +
-                  "to use its full functionality.\n\n" +
-                  "If you continue, you cannot execute any 'nordvpn' command, but you have access to the console to check messages and errors.\n\n" +
-                  "Please confirm to exit the program.") == JOptionPane.YES_OPTION)
-            {
-               cleanupAndExit(true);
-            }
+            _m_logError.TraceIni("...'JNordVPNManager_Java.desktop' file found in '~/Desktop directory'.");
+         }
+         else
+         {
+            _m_logError.TraceIni("...'JNordVPNManager_Java.desktop' file not found in '~/Desktop directory'.");
+         }
+
+         if (JModalDialog.showConfirm("JNordVPNManager (install).\n" +
+               "If you continue, you cannot execute any 'nordvpn' command, but you have access to the console and Info menus to check messages and errors.\n\n" +
+               "Please confirm to exit the program.") == JOptionPane.YES_OPTION)
+         {
+            cleanupAndExit(true);
          }
          _m_logError.TraceDebug("...continue execution in 'installer mode'...");
       }
