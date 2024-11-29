@@ -27,15 +27,17 @@ import com.mr.apps.JNordVpnManager.utils.UtilPrefs;
 
 public class GuiStatusLine
 {
-   private static JLabel m_statusIndicator = null;
-   private static JLabel m_statusText = null;
-   private JButton m_minMaxButton = null;
+   private static JLabel               m_statusIndicator      = null;
+   private static JLabel               m_statusText           = null;
+   private JButton                     m_minMaxButton         = null;
 
-   private static final int ICON_SIZE = 32;
-   private static ArrayList<ImageIcon> m_statusImages = new ArrayList<>();
-   private ArrayList<ImageIcon> m_collapseExpandImages = new ArrayList<>();
+   private static final int            ICON_SIZE              = 32;
+   private static ArrayList<ImageIcon> m_statusImages         = new ArrayList<>();
+   private ArrayList<ImageIcon>        m_collapseExpandImages = new ArrayList<>();
 
-   private static String[] m_compactModeToolTip = {"Switch to Compact view.", "Switch to Expanded view."}; 
+   private static String[]             m_compactModeToolTip   = {
+         "Switch to Compact view.", "Switch to Expanded view."
+   };
 
    public GuiStatusLine()
    {

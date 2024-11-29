@@ -69,7 +69,7 @@ public class Starter
    public static final int         STATUS_PAUSED              = 1;
    public static final int         STATUS_DISCONNECTED        = 2;
 
-   private static final String     APPLICATION_ICON_IMAGE     = "resources/icons/icon.jpg";
+   private static final String     APPLICATION_ICON_IMAGE     = "resources/icons/icon.svg";
 
    private static JFrame           m_mainFrame                = null;
    private static JServerTreePanel m_serverListPanel          = null;
@@ -333,6 +333,8 @@ public class Starter
       // -> 'Installer mode' to install a local desktop file that runs the jar directly (outside of the snap container)
       if (m_installMode)
       {
+         m_splashScreen.setStatus("Installation...");
+
          // open the console window
          switchConsoleWindow();
          _m_logError.TraceDebug("JNordVPN Manager called in installation mode (in the snap environment)");
@@ -384,14 +386,14 @@ public class Starter
        * Get the NordVPN version for handle supported features
        */
       m_nordvpnVersion = "n/a";
-      String errMsg = null;
+      String errorGetVersion = null;
       String[] saVersions = NvpnCommands.getVersion();
       if (UtilSystem.isLastError())
       {
          // could not get the version
-         errMsg = UtilSystem.getLastError();
+         errorGetVersion = UtilSystem.getLastError();
       }
-      else
+      if (null != saVersions && null != saVersions[0])
       {
          Pattern pattern = Pattern.compile("^.*(\\d+\\.\\d+\\.\\d+)", Pattern.CASE_INSENSITIVE);
          Matcher matcher = pattern.matcher(saVersions[0]);
@@ -400,42 +402,46 @@ public class Starter
          {
             m_nordvpnVersion = matcher.group(1);
          }
-         else
-         {
-            errMsg = "Invalid formatted version string=" + saVersions[0] + "<.";
-         }
       }
-      if ((null != errMsg) && (false == m_installMode))
+      if ((null != errorGetVersion) && (false == m_installMode))
       {
-         _m_logError.TranslatorError(10000,
-               "NordVPN Version error",
-               errMsg);
+         JModalDialog.showError("NordVPN Version error",
+               errorGetVersion + "\n" + StringFormat.printString(saVersions[0], "") + "\n" + StringFormat.printString(saVersions[1], ""));
       }
       _m_logError.TraceIni("NordVPN version=" + m_nordvpnVersion + ".");
 
-      //-------------------------------------------------------------------------------
-      // Initialize Server Locations
-      UtilLocations.initCsvLocations();
+      /* 
+       * Get the NordVPN account data 
+       */
+      NvpnAccountData accountData = null;
+      if ((null == errorGetVersion) && (false == m_installMode))
+      {
+         accountData = new NvpnAccountData();
+      }
 
       m_splashScreen.setProgress(20);
 
       //-------------------------------------------------------------------------------
       // Menu bar
       GuiMenuBar myMenuBar = new GuiMenuBar();
-      JMenuBar menubar = myMenuBar.create();
+      JMenuBar menubar = myMenuBar.create(accountData);
       m_mainFrame.setJMenuBar(menubar);
-
-      //-------------------------------------------------------------------------------
-      // Connect Panel
-      m_connectLine = new GuiConnectLine();
-      JPanel connectPanel = m_connectLine.create();
-
-      m_splashScreen.setProgress(30);
 
       //-------------------------------------------------------------------------------
       // Status bar Panel
       m_statusLine = new GuiStatusLine();
       JPanel statusPanel = m_statusLine.create();
+
+      m_splashScreen.setProgress(30);
+
+      //-------------------------------------------------------------------------------
+      // Connect Panel
+      m_connectLine = new GuiConnectLine();
+      JPanel connectPanel = m_connectLine.create(accountData);
+
+      //-------------------------------------------------------------------------------
+      // Initialize Server Locations
+      UtilLocations.initCsvLocations();
 
       m_splashScreen.setProgress(40);
       m_splashScreen.setStatus("Create World Map...");
@@ -469,18 +475,26 @@ public class Starter
       m_splashScreen.setProgress(80);
       m_splashScreen.setStatus("Update Status...");
 
-      boolean bConnected = updateServer(); // Update the Status to know if we are already connected
-
-      int iAutoConnect = UtilPrefs.getAutoConnectMode();
-      if (false == bConnected && 1 == iAutoConnect)
+      if ((null != accountData) && (true == accountData.isLoggedIn()))
       {
-         m_splashScreen.setProgress(90);
-         CurrentLocation loc = getCurrentServer();
-         if (null != loc)
+         // we are Ok to get the status and to [auto]connect, when we are successfully logged in
+         boolean bConnected = updateServer(); // Update the Status to know if we are already connected
+
+         int iAutoConnect = UtilPrefs.getAutoConnectMode();
+         if (false == bConnected && 1 == iAutoConnect)
          {
-            m_splashScreen.setStatus("Connect to " + ((Location)loc).toString());
-            NvpnCallbacks.executeConnect(loc);
+            m_splashScreen.setProgress(90);
+            CurrentLocation loc = getCurrentServer();
+            if (null != loc)
+            {
+               m_splashScreen.setStatus("Connect to " + ((Location)loc).toString());
+               NvpnCallbacks.executeConnect(loc);
+            }
          }
+      }
+      else
+      {
+         GuiStatusLine.updateStatusLine(STATUS_DISCONNECTED, "Not logged in to NordVPN Service.");
       }
 
       //-------------------------------------------------------------------------------

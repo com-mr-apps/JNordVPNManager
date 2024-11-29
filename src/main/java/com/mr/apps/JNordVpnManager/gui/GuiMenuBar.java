@@ -44,10 +44,13 @@ public class GuiMenuBar
    private static Vector<Location> m_recentServerIdList           = new Vector<Location>();
 
    /**
-     * Menu Bar Layout definition.
+    * Menu Bar Layout definition.
+    * 
+    * @param accountData
+    *           is the nordvpn account data
     * @return the created menu bar
     */
-   public JMenuBar create()
+   public JMenuBar create(NvpnAccountData accountData)
    {
       JMenuBar menuBar = new JMenuBar();
 
@@ -263,9 +266,7 @@ public class GuiMenuBar
       connectMenu.addSeparator();
       connectMenu.addSeparator();
       
-      NvpnAccountData accountData = new NvpnAccountData();
       m_menuItemLogInOut = new JMenuItem();
-      m_menuItemLogInOut.setToolTipText((accountData.isLoggedIn()) ? "Logout from " + accountData.getEmail() : "Login");
       m_menuItemLogInOut.addActionListener(new ActionListener() {
          public void actionPerformed(ActionEvent e) {
             NvpnCallbacks.executeLogInOut();
@@ -371,8 +372,16 @@ public class GuiMenuBar
 
    public static void updateLoginOut(NvpnAccountData accountData)
    {
-      m_menuItemLogInOut.setText((accountData.isLoggedIn()) ? "Logout" : "Login");
-      m_menuItemLogInOut.setToolTipText((accountData.isLoggedIn()) ? "Logout from " + accountData.getEmail() : "Login");
+      if (null != accountData && !accountData.isFailed())
+      {
+         m_menuItemLogInOut.setText((accountData.isLoggedIn()) ? "Logout" : "Login");
+         m_menuItemLogInOut.setToolTipText((accountData.isLoggedIn()) ? "Logout from " + accountData.getEmail() : "Login");
+      }
+      else
+      {
+         m_menuItemLogInOut.setText("Login");
+         m_menuItemLogInOut.setToolTipText("Login");
+      }
    }
 
    /**
