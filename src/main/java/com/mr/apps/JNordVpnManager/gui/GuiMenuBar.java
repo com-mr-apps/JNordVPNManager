@@ -26,6 +26,7 @@ import com.mr.apps.JNordVpnManager.gui.dialog.JSplashScreen;
 import com.mr.apps.JNordVpnManager.nordvpn.NvpnAccountData;
 import com.mr.apps.JNordVpnManager.nordvpn.NvpnCallbacks;
 import com.mr.apps.JNordVpnManager.nordvpn.NvpnCommands;
+import com.mr.apps.JNordVpnManager.nordvpn.NvpnGroups;
 import com.mr.apps.JNordVpnManager.nordvpn.NvpnSettingsData;
 import com.mr.apps.JNordVpnManager.utils.UtilPrefs;
 import com.mr.apps.JNordVpnManager.utils.UtilSystem;
@@ -234,11 +235,12 @@ public class GuiMenuBar
             else
             {
                // OK
-               Starter.updateServer();
+               Starter.updateCurrentServer();
                JModalDialog.showMessage("NordVPN Connect", msg);
             }
          }
       });
+      updateQuickConnectMenuButton();
       connectMenu.add(m_menuItemQuickConnect);
       
       m_menuItemDisConnect = new JMenuItem("VPN Disconnect");
@@ -339,7 +341,7 @@ public class GuiMenuBar
       String sToolTip = "";
       if (null != loc)
       {
-         sToolTip = loc.getCountry() + " " + loc.getCity();
+         sToolTip = loc.getCountryName() + " " + loc.getCityName();
       }
       // update Reconnect command - if there is a recent server
       if (sToolTip.isBlank())
@@ -356,18 +358,20 @@ public class GuiMenuBar
       {
          // enable Disconnect command
          m_menuItemDisConnect.setEnabled(true);
-         
-         // disable Quick connect command
-         m_menuItemQuickConnect.setEnabled(false);
       }
       else // not connected
       {
          // disable Disconnect command
          m_menuItemDisConnect.setEnabled(false);
-
-         // enable Quick connect command
-         m_menuItemQuickConnect.setEnabled(true);
       }
+   }
+
+   public static void updateQuickConnectMenuButton()
+   {
+      // update Quick connect command Tool tip - display actual command dependent on Region and Group
+      String optGroup = (NvpnGroups.getCurrentRegion().equals(NvpnGroups.NordVPNEnumGroups.all_regions)) ? "--group " + NvpnGroups.getCurrentGroup().name() : NvpnGroups.getCurrentRegion().name();
+      String sToolTip = "nordvpn connect " + optGroup;
+      m_menuItemQuickConnect.setToolTipText(sToolTip);
    }
 
    public static void updateLoginOut(NvpnAccountData accountData)
@@ -420,7 +424,7 @@ public class GuiMenuBar
 
          if (null != loc)
          {
-            m_menuItemRecentServerMenuList[i] = new JMenuItem(loc.getCountry() + " " + loc.getCity());
+            m_menuItemRecentServerMenuList[i] = new JMenuItem(loc.getCountryName() + " " + loc.getCityName());
             m_menuItemRecentServerMenuList[i].addActionListener(new java.awt.event.ActionListener()
             {
                public void actionPerformed(ActionEvent e)
@@ -461,9 +465,15 @@ public class GuiMenuBar
    {
       Location loc = m_recentServerIdList.get(which);
       String msg = NvpnCallbacks.executeConnect(loc);
-      if (NvpnCallbacks.isLastError()) msg = NvpnCallbacks.getLastError();
-
-      JModalDialog.showMessage("NordVPN Connect", msg);
+      if (NvpnCallbacks.isLastError())
+      {
+         msg = NvpnCallbacks.getLastError();
+         JModalDialog.showError("NordVPN Connect", msg);
+      }
+      else
+      {
+         JModalDialog.showMessage("NordVPN Connect", msg);
+      }
    }
 
    /**

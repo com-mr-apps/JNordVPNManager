@@ -63,6 +63,11 @@
 			<artifactId>javacsv</artifactId>
 			<version>2.0</version>
 		</dependency>
+		<dependency>
+			<groupId>org.json</groupId>
+			<artifactId>json</artifactId>
+			<version>20240303</version>
+		</dependency>
 	</dependencies>
 	<repositories>
 		<repository>
@@ -116,7 +121,7 @@
                       </goals>
                       <configuration>
                           <filters>
-                              <!-- filter signed jars in the dependencies -->
+								<!-- filter signed jars in the dependencies -->
                               <filter>
                                   <artifact>*:*</artifact>
                                   <excludes>

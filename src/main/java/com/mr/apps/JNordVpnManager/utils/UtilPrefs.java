@@ -23,6 +23,7 @@ import java.util.stream.Stream;
 
 import com.mr.apps.JNordVpnManager.Starter;
 import com.mr.apps.JNordVpnManager.gui.settings.JUserPrefsDialog;
+import com.mr.apps.JNordVpnManager.nordvpn.NvpnGroups.NordVPNEnumGroups;
 import com.mr.apps.JNordVpnManager.gui.settings.JSettingsPanelField;
 import com.mr.apps.JNordVpnManager.utils.String.StringFormat;
 
@@ -35,8 +36,9 @@ public class UtilPrefs
 {
    private static final String                     AUTODISCONNECTMODE                       = "AUTODISCONNECTMODE";
    private static final String                     AUTOCONNECTMODE                          = "AUTOCONNECTMODE";
-   private static final String                     COMPACTMODE                              = "COMPACTMODE";
+//   private static final String                     COMPACTMODE                              = "COMPACTMODE";
    private static final String                     COMMAND_TIMEOUT                          = "COMMAND_TIMEOUT";
+   private static final String                     CONSOLE_ACTIVE                           = "CONSOLE_ACTIVE";
    private static final String                     LOGFILE_ACTIVE                           = "LOGFILE_ACTIVE";
    private static final String                     LOGFILE_NAME                             = "LOGFILE_NAME";
    private static final String                     LOGFILE_TRACEINIT                        = "TRACEINIT";
@@ -46,6 +48,8 @@ public class UtilPrefs
    private static final String                     RECENTSERVER_LIST                        = "RECENTSERVER_LIST";
    private static final String                     RECENTSERVER_COUNTRY                     = "RECENTSERVER_COUNTRY";
    private static final String                     RECENTSERVER_CITY                        = "RECENTSERVER_CITY";
+//   private static final String                     RECENTSERVER_REGION                      = "RECENTSERVER_REGION";
+//   private static final String                     RECENTSERVER_GROUP                       = "RECENTSERVER_GROUP";
    private static final String                     SERVERLIST_TIMESTAMP                     = "SERVERLIST_TIMESTAMP";
    private static final String                     SERVERLIST_DATA                          = "SERVERLIST_DATA";
 
@@ -53,6 +57,8 @@ public class UtilPrefs
    private static String DEFAULT_PREF_RECENTSERVER_CITY           = "";
    private static String DEFAULT_PREF_RECENTSERVER_COUNTRY        = "";
    private static String DEFAULT_PREF_RECENTSERVER_LIST           = "";
+   private static int    DEFAULT_PREF_RECENTSERVER_REGION         = NordVPNEnumGroups.all_regions.getId();
+   private static int    DEFAULT_PREF_RECENTSERVER_GROUP          = NordVPNEnumGroups.Standard_VPN_Servers.getId();
    private static int    DEFAULT_PREF_RECENTSERVER_LIST_LENGTH    = 5;
    private static String DEFAULT_PREF_SERVERLIST_DATA             = "";
    private static String DEFAULT_PREF_SERVERLIST_TIMESTAMP        = "0";
@@ -64,6 +70,7 @@ public class UtilPrefs
    private static int    DEFAULT_PREF_SETTINGS_TRACEINIT          = 0;
    private static String DEFAULT_PREF_SETTINGS_LOGFILE_NAME       = "~/JNordVpnManager.log";
    private static int    DEFAULT_PREF_SETTINGS_LOGFILE_ACTIVE     = 0;
+   private static int    DEFAULT_PREF_SETTINGS_CONSOLE_ACTIVE     = 0;
    private static int    DEFAULT_PREF_SETTINGS_COMMAMD_TIMEOUT    = 30;
 
    /**
@@ -90,6 +97,7 @@ public class UtilPrefs
       settingsPanelFieldsMap.put(AUTODISCONNECTMODE, new JSettingsPanelField("Auto Disconnect on Program Exit", "B", KeyEvent.VK_E, 1, StringFormat.int2String(DEFAULT_PREF_SETTINGS_AUTODISCONNECTMODE, "#")));
       settingsPanelFieldsMap.put(COMMAND_TIMEOUT, new JSettingsPanelField("Command Timeout (in seconds)", "N", -1, 3, StringFormat.int2String(DEFAULT_PREF_SETTINGS_COMMAMD_TIMEOUT, "#")));
 //      m_settingsFieldMap.put(COMPACTMODE, new JSettingsPanelField("Start Program in Compact Mode", "B", KeyEvent.VK_M, 5, StringFormat.int2String(DEFAULT_PREF_SETTINGS_COMPACTMODE, "#")));
+      settingsPanelFieldsMap.put(CONSOLE_ACTIVE, new JSettingsPanelField("Open Console at Program Start", "B", -1, 1, StringFormat.int2String(DEFAULT_PREF_SETTINGS_CONSOLE_ACTIVE, "#")));
       settingsPanelFieldsMap.put(LOGFILE_ACTIVE, new JSettingsPanelField("Write to Logfile", "B", KeyEvent.VK_W, 1, StringFormat.int2String(DEFAULT_PREF_SETTINGS_LOGFILE_ACTIVE, "#")));
       settingsPanelFieldsMap.put(LOGFILE_NAME, new JSettingsPanelField("Logfile", "T", KeyEvent.VK_F, 20, DEFAULT_PREF_SETTINGS_LOGFILE_NAME));
       settingsPanelFieldsMap.put(LOGFILE_TRACECMD, new JSettingsPanelField("Trace Command", "B", KeyEvent.VK_A, 1, StringFormat.int2String(DEFAULT_PREF_SETTINGS_TRACECMD, "#")));
@@ -97,6 +105,8 @@ public class UtilPrefs
       settingsPanelFieldsMap.put(LOGFILE_TRACEINIT, new JSettingsPanelField("Trace Init", "B", KeyEvent.VK_I, 1, StringFormat.int2String(DEFAULT_PREF_SETTINGS_TRACEINIT, "#")));
       settingsPanelFieldsMap.put(RECENTSERVER_CITY, new JSettingsPanelField("Recent Server", "T", KeyEvent.VK_S, 20, DEFAULT_PREF_RECENTSERVER_CITY));
       settingsPanelFieldsMap.put(RECENTSERVER_COUNTRY, new JSettingsPanelField("Recent Country", "T", KeyEvent.VK_C, 20, DEFAULT_PREF_RECENTSERVER_COUNTRY));
+//      settingsPanelFieldsMap.put(RECENTSERVER_REGION, new JSettingsPanelField("Recent Server Region", "B", -1, 1, StringFormat.int2String(DEFAULT_PREF_RECENTSERVER_REGION, "#")));
+//      settingsPanelFieldsMap.put(RECENTSERVER_GROUP, new JSettingsPanelField("Recent Servers Group", "B", -1, 1, StringFormat.int2String(DEFAULT_PREF_RECENTSERVER_GROUP, "#")));
       settingsPanelFieldsMap.put(RECENTSERVER_LIST, new JSettingsPanelField("Recent Servers List", "T", -1, 20, DEFAULT_PREF_RECENTSERVER_LIST));
       settingsPanelFieldsMap.put(RECENTSERVER_LIST_LENGTH, new JSettingsPanelField("Recent Servers List Size", "N[1,10]", -1, 2, StringFormat.int2String(DEFAULT_PREF_RECENTSERVER_LIST_LENGTH, "#")));
       settingsPanelFieldsMap.put(SERVERLIST_DATA, new JSettingsPanelField("Server Data", "T", KeyEvent.VK_D, 20, DEFAULT_PREF_SERVERLIST_DATA));
@@ -116,6 +126,7 @@ public class UtilPrefs
       try (BufferedWriter writer = new BufferedWriter(new FileWriter(fileName, false)))
       {
          writer.write("INFO JNordVPN User Preferences Export File");
+         writer.newLine();
 
          for (HashMap.Entry<String, String> entry : hm.entrySet())
          {
@@ -128,7 +139,7 @@ public class UtilPrefs
       }
       catch (IOException e)
       {
-         Starter._m_logError.TranslatorExceptionAbend(10901, e);
+         Starter._m_logError.LoggingExceptionAbend(10901, e);
          return false;
       }
       return true;
@@ -165,7 +176,7 @@ public class UtilPrefs
       }
       catch (IOException e)
       {
-         Starter._m_logError.TranslatorExceptionAbend(10901, e);
+         Starter._m_logError.LoggingExceptionAbend(10901, e);
          hm = null;
       }
 
@@ -235,6 +246,38 @@ public class UtilPrefs
    {
       Preferences nordVpnRecentServer = Preferences.userRoot().node("com/mr/apps/JNordVpnManager");
       nordVpnRecentServer.put("RecentServer.Country", country);
+
+      return;
+   }
+
+   public static int getRecentServerRegion()
+   {
+      Preferences settingsRecentServerRegion = Preferences.userRoot().node("com/mr/apps/JNordVpnManager/Settings");
+      int recentServerRegion = settingsRecentServerRegion.getInt("RecentServer.Region", DEFAULT_PREF_RECENTSERVER_REGION);
+
+      return recentServerRegion;
+   }
+
+   public static void setRecentServerRegion(int recentServerRegion)
+   {
+      Preferences settingsRecentServerRegion = Preferences.userRoot().node("com/mr/apps/JNordVpnManager/Settings");
+      settingsRecentServerRegion.putInt("RecentServer.Region", recentServerRegion);
+
+      return;
+   }
+
+   public static int getRecentServerGroup()
+   {
+      Preferences settingsRecentServerGroup = Preferences.userRoot().node("com/mr/apps/JNordVpnManager/Settings");
+      int recentServerGroup = settingsRecentServerGroup.getInt("RecentServer.Group", DEFAULT_PREF_RECENTSERVER_GROUP);
+
+      return recentServerGroup;
+   }
+
+   public static void setRecentServerGroup(int recentServerGroup)
+   {
+      Preferences settingsRecentServerGroup = Preferences.userRoot().node("com/mr/apps/JNordVpnManager/Settings");
+      settingsRecentServerGroup.putInt("RecentServer.Group", recentServerGroup);
 
       return;
    }
@@ -399,6 +442,22 @@ public class UtilPrefs
       return;
    }
 
+   public static int isConsoleActive()
+   {
+      Preferences settingsConsoleActive = Preferences.userRoot().node("com/mr/apps/JNordVpnManager/Settings");
+      int consoleActive = settingsConsoleActive.getInt("Console.ActiveOnProgramStart", DEFAULT_PREF_SETTINGS_CONSOLE_ACTIVE);
+
+      return consoleActive;
+   }
+
+   public static void setConsoleActive(int consoleActive)
+   {
+      Preferences settingsConsoleActive = Preferences.userRoot().node("com/mr/apps/JNordVpnManager/Settings");
+      settingsConsoleActive.putInt("Console.ActiveOnProgramStart", consoleActive);
+
+      return;
+   }
+
    public static int getCommandTimeout()
    {
       Preferences settingsCommandTimeout = Preferences.userRoot().node("com/mr/apps/JNordVpnManager/Settings");
@@ -425,11 +484,13 @@ public class UtilPrefs
       
       hm.put(RECENTSERVER_CITY, getRecentCity());
       hm.put(RECENTSERVER_COUNTRY, getRecentCountry());
+//      hm.put(RECENTSERVER_REGION, StringFormat.int2String(getRecentServerRegion(), "#"));
+//      hm.put(RECENTSERVER_GROUP, StringFormat.int2String(getRecentServerGroup(), "#"));
       hm.put(RECENTSERVER_LIST, getRecentServerList());
       hm.put(RECENTSERVER_LIST_LENGTH, StringFormat.int2String(getRecentServerListLength(), "#"));
       hm.put(SERVERLIST_DATA, getServerListData());
       hm.put(SERVERLIST_TIMESTAMP, getServerListTimestamp());
-      hm.put(COMPACTMODE, StringFormat.int2String(getCompactMode(), "#"));
+//      hm.put(COMPACTMODE, StringFormat.int2String(getCompactMode(), "#"));
       hm.put(AUTOCONNECTMODE, StringFormat.int2String(getAutoConnectMode(), "#"));
       hm.put(AUTODISCONNECTMODE, StringFormat.int2String(getAutoDisConnectMode(), "#"));
       hm.put(LOGFILE_TRACEDEBUG, StringFormat.int2String(getTraceDebug(), "#"));
@@ -438,6 +499,7 @@ public class UtilPrefs
       hm.put(LOGFILE_NAME, getLogfileName());
       hm.put(LOGFILE_ACTIVE, StringFormat.int2String(isLogfileActive(), "#"));
       hm.put(COMMAND_TIMEOUT, StringFormat.int2String(getCommandTimeout(), "#"));
+      hm.put(CONSOLE_ACTIVE, StringFormat.int2String(isConsoleActive(), "#"));
 
       return hm;
    }
@@ -465,7 +527,9 @@ public class UtilPrefs
       setServerListTimestamp(hm.get(SERVERLIST_TIMESTAMP));
       setRecentCity(hm.get(RECENTSERVER_CITY));
       setRecentCountry(hm.get(RECENTSERVER_COUNTRY));
-      setCompactMode(Integer.valueOf(hm.get(COMPACTMODE)));
+//      setRecentServerRegion(Integer.valueOf(hm.get(RECENTSERVER_REGION)));
+//      setRecentServerGroup(Integer.valueOf(hm.get(RECENTSERVER_GROUP)));
+//      setCompactMode(Integer.valueOf(hm.get(COMPACTMODE)));
       setAutoConnectMode(Integer.valueOf(hm.get(AUTOCONNECTMODE)));
       setAutoDisConnectMode(Integer.valueOf(hm.get(AUTODISCONNECTMODE)));
       setRecentServerList(hm.get(RECENTSERVER_LIST));
@@ -476,6 +540,7 @@ public class UtilPrefs
       setLogfileActive(Integer.valueOf(hm.get(LOGFILE_ACTIVE)));
       setLogfileName(hm.get(LOGFILE_NAME));
       setCommandTimeout(Integer.valueOf(hm.get(COMMAND_TIMEOUT)));
+      setConsoleActive(Integer.valueOf(hm.get(CONSOLE_ACTIVE)));
    }
 
    /**
@@ -489,6 +554,8 @@ public class UtilPrefs
       setServerListTimestamp(DEFAULT_PREF_SERVERLIST_TIMESTAMP);
       setRecentCity(DEFAULT_PREF_RECENTSERVER_CITY);
       setRecentCountry(DEFAULT_PREF_RECENTSERVER_COUNTRY);
+      setRecentServerRegion(DEFAULT_PREF_RECENTSERVER_REGION);
+      setRecentServerGroup(DEFAULT_PREF_RECENTSERVER_GROUP);
       setCompactMode(DEFAULT_PREF_SETTINGS_COMPACTMODE);
       setAutoConnectMode(DEFAULT_PREF_SETTINGS_AUTOCONNECTMODE);
       setAutoDisConnectMode(DEFAULT_PREF_SETTINGS_AUTODISCONNECTMODE);
@@ -500,5 +567,6 @@ public class UtilPrefs
       setLogfileActive(DEFAULT_PREF_SETTINGS_LOGFILE_ACTIVE);
       setLogfileName(DEFAULT_PREF_SETTINGS_LOGFILE_NAME);
       setCommandTimeout(DEFAULT_PREF_SETTINGS_COMMAMD_TIMEOUT);
+      setConsoleActive(DEFAULT_PREF_SETTINGS_CONSOLE_ACTIVE);
    }
 }

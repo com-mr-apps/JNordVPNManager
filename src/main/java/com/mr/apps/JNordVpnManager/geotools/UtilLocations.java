@@ -12,27 +12,164 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.HashMap;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import com.csvreader.CsvReader;
 import com.mr.apps.JNordVpnManager.Starter;
+import com.mr.apps.JNordVpnManager.nordvpn.NvpnGroups.NordVPNEnumGroups;
+import com.mr.apps.JNordVpnManager.utils.Json.JsonReader;
 import com.mr.apps.JNordVpnManager.utils.String.StringFormat;
 
 public class UtilLocations
 {
-   // all the locations from the csv table
-   private static HashMap<String, Location> m_csvLocations = new HashMap<String, Location>();
+   // all the locations from the server list or csv table (key = server name [city@country] - names with spaces)
+   private static HashMap<String, Location> m_countryLocations = null;
    
    // CSV file with location features
    private static final String LOCATIONS_CSV = "resources/locations.csv";
+   private static final String LOCATIONS_HTTPS = "https://api.nordvpn.com/v1/servers?limit=0";
+
+   public static void initNordVpnServersLocations()
+   {
+      Starter._m_logError.TraceIni("Initialize locations from Server: " + LOCATIONS_HTTPS);
+      m_countryLocations = new HashMap<String, Location>();
+      try
+      {
+         JSONArray jsonArrAll = JsonReader.readJsonFromUrl(LOCATIONS_HTTPS);
+
+         String sCity = null;
+         String sCountry = null;
+         Double dLatitude = null;
+         Double dLongitude = null;
+         int locationId = -1;
+         int n = jsonArrAll.length();
+         for (int i = 0; i < n; ++i)
+         {
+            //System.out.println("------- " + i);
+            // --- stations
+            JSONObject jsonObjStations = jsonArrAll.getJSONObject(i);
+            //System.out.println(jsonObjStations.getInt("id"));
+            //System.out.println(jsonObjStations.getString("name"));
+            //System.out.println(jsonObjStations.getString("station"));
+            //System.out.println(jsonObjStations.getString("hostname"));
+            //System.out.println(jsonObjStations.getString("status"));
+            //System.out.println(jsonObjStations.getInt("load"));
+
+            // --- --- services
+            boolean hasVPN = false;
+            JSONArray jsonArrServices = jsonObjStations.getJSONArray("services");
+            int nSer = jsonArrServices.length();
+            for (int iSer = 0; iSer < nSer; ++iSer)
+            {
+               JSONObject jsonObjService = jsonArrServices.getJSONObject(iSer);
+               //System.out.println(jsonObjService.getInt("id"));
+               //System.out.println(jsonObjService.getString("identifier"));
+               if (jsonObjService.getString("identifier").equalsIgnoreCase("vpn")) hasVPN = true;
+            }
+            if (!hasVPN) continue; // filter only VPN entries
+
+            // --- --- locations (one server per entry!
+            JSONArray jsonArrLocations = jsonObjStations.getJSONArray("locations");
+            int nLoc = jsonArrLocations.length();
+            if (nLoc > 1)
+            {
+               Starter._m_logError.LoggingWarning(10995,
+                     "Get Server Locations",
+                     "Not supported yet: More than one location defined for: " + jsonObjStations.getString("name"));
+               nLoc = 1;
+            }
+
+            JSONObject jsonObjLocation = null;
+            JSONObject jsonObjCountry = null;
+            JSONObject jsonObjCity = null;
+            for (int iLoc = 0; iLoc < nLoc; ++iLoc)
+            {
+               jsonObjLocation = jsonArrLocations.getJSONObject(iLoc);
+               //System.out.println(jsonObjLocation.getInt("id"));
+   
+               jsonObjCountry = jsonObjLocation.getJSONObject("country");
+               sCountry = jsonObjCountry.getString("name");
+   
+               jsonObjCity = jsonObjCountry.getJSONObject("city");
+               sCity = jsonObjCity.getString("name");
+            }
+
+            Location newLocation = m_countryLocations.get(getServerId(sCity, sCountry).toLowerCase());
+            if (null == newLocation)
+            {
+               // one locations definition entry per city
+               locationId = jsonObjCity.getInt("id");
+               dLatitude = jsonObjCity.getDouble("latitude");
+               dLongitude = jsonObjCity.getDouble("longitude");
+
+               newLocation = new Location(sCity, sCountry, dLongitude, dLatitude, locationId);
+               newLocation.setCountryId(jsonObjCountry.getInt("id"));
+               newLocation.setCountryCode(jsonObjCountry.getString("code"));
+               m_countryLocations.put(newLocation.getServerId().toLowerCase(), newLocation);
+            }
+   
+            // --- --- technologies
+            JSONArray jsonArrTechnologies = jsonObjStations.getJSONArray("technologies");
+            int nTec = jsonArrTechnologies.length();
+            for (int iTec = 0; iTec < nTec; ++iTec)
+            {
+               JSONObject jsonObjTechnology = jsonArrTechnologies.getJSONObject(iTec);
+               //System.out.println(jsonObjTechnology.getInt("id"));
+               //System.out.println(jsonObjTechnology.getString("identifier")); // openvpn_udp/openvpn_tcp/proxy_ssl/ikev2
+               JSONObject jsonObjPivot = jsonObjTechnology.getJSONObject("pivot");
+               //System.out.println(jsonObjPivot.getString("status")); // online/offline
+               newLocation.addTechnology(jsonObjPivot.getInt("technology_id"));
+            }
+   
+            // --- --- groups
+            JSONArray jsonArrGroups = jsonObjStations.getJSONArray("groups");
+            int nGrp = jsonArrGroups.length();
+            for (int iGrp = 0; iGrp < nGrp; ++iGrp)
+            {
+               JSONObject jsonObjGroup = jsonArrGroups.getJSONObject(iGrp);
+               if ((sCity.startsWith("Kansas") || sCity.startsWith("New York")) && (jsonObjGroup.getInt("id") == 19))
+               {
+                  // skip invalid group entry "Europe" for Kansas City - Record nb. 6390 (03.12.2024)
+                  // ...and New York Record nb. ?
+                  Starter._m_logError.TraceIni("Skip invalid Group Entry 'Europe' for '" + sCity + "' / '" + sCountry + "' Record Nb: " + i);
+                  continue;
+               }
+
+               newLocation.addGroup(NordVPNEnumGroups.get(jsonObjGroup.getInt("id")));
+               //JSONObject jsonObjType = jsonObjGroup.getJSONObject("type"); // Europe/legacy_standard/legacy_p2p/
+               //System.out.println(jsonObjType.getInt("id"));
+               //System.out.println(jsonObjType.getString("identifier")); // region/legacy_group_category
+            }
+   
+            // --- --- specifications
+            // JSONArray jsonArrSpecifications = jsonObjStations.getJSONArray("specifications");
+   
+            // --- --- ips
+            // JSONArray jsonArrIps = jsonObjStations.getJSONArray("ips");
+   
+         }
+         Starter._m_logError.TraceIni("Location Records read from Server: " + m_countryLocations.size() + ".");
+      }
+      catch (JSONException | IOException | InterruptedException e)
+      {
+         Starter._m_logError.LoggingExceptionMessage(4, 10500, e);
+   
+         // Fallback from csv table
+         initCsvLocations();
+      }
+   }
 
    public static void initCsvLocations()
    {
-      Starter._m_logError.TraceIni("Initialize locations from CSV: " + LOCATIONS_CSV + "<.");
-      
+      Starter._m_logError.TraceIni("Initialize locations from CSV: " + LOCATIONS_CSV);
+      m_countryLocations = new HashMap<String, Location>();
+
       try
       {
          // LAT, LON, CITY, NUMBER
-         CsvReader locations = new CsvReader(Starter.class.getResourceAsStream(LOCATIONS_CSV), Charset.defaultCharset()); //UtilSystem.getFilePath(LOCATIONS_CSV));
+         CsvReader locations = new CsvReader(Starter.class.getResourceAsStream(LOCATIONS_CSV), Charset.defaultCharset());
 
          locations.readHeaders();
 
@@ -49,20 +186,20 @@ public class UtilLocations
             int number = Integer.parseInt(sNumber.trim());
             
             Location newLocation = new Location(sCity, sCountry, longitude, latitude, number);
-            m_csvLocations.put(newLocation.getServerId().toLowerCase(), newLocation);
+            m_countryLocations.put(newLocation.getServerId().toLowerCase(), newLocation);
          }
          locations.close();
       }
       catch (FileNotFoundException e)
       {
-         Starter._m_logError.TranslatorExceptionMessage(5, 10902, e);
+         Starter._m_logError.LoggingExceptionMessage(5, 10902, e);
       }
       catch (IOException e)
       {
-         Starter._m_logError.TranslatorExceptionMessage(5, 10901, e);
+         Starter._m_logError.LoggingExceptionMessage(5, 10901, e);
       }
 
-      Starter._m_logError.TraceIni("Location Records read from CSV: " + m_csvLocations.size() + "<.");
+      Starter._m_logError.TraceIni("Location Records read from CSV: " + m_countryLocations.size() + "<.");
    }
 
    /**
@@ -83,8 +220,12 @@ public class UtilLocations
     */
    public static Location getLocation(String serverId)
    {
-      Location loc = m_csvLocations.get(serverId.replace('_', ' ').toLowerCase());
-      if (null == loc) loc = new Location();
+      Location loc = null;
+      if (null != m_countryLocations)
+      {
+         loc = m_countryLocations.get(serverId.replace('_', ' ').toLowerCase());
+      }
+      if (null == loc) loc = new Location(serverId);
       return loc;
    }
    

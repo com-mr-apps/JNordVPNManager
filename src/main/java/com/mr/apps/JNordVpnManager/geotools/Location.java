@@ -9,6 +9,9 @@
 package com.mr.apps.JNordVpnManager.geotools;
 
 import com.mr.apps.JNordVpnManager.Starter;
+import com.mr.apps.JNordVpnManager.nordvpn.NvpnGroups;
+import com.mr.apps.JNordVpnManager.nordvpn.NvpnGroups.NordVPNEnumGroups;
+import com.mr.apps.JNordVpnManager.nordvpn.NvpnTechnologies;
 
 /**
  * Store locations from the CSV table.
@@ -19,24 +22,33 @@ public class Location
 {
    public static final String SERVERID_SEPARATOR = "@";
    public static final String SERVERID_LIST_SEPARATOR = ":";
-   protected String serverId;
-   protected String city;
-   protected String country;
-   protected double longitude;
-   protected double latitude;
-   protected int number;
+
+   protected String m_serverId;
+   protected String m_cityName;
+   protected String m_countryName;
+   protected String m_countryCode;
+   protected double m_longitude;
+   protected double m_latitude;
+   protected int m_countryId;
+   protected int m_cityId;
+   protected NvpnTechnologies m_technologies;
+   protected NvpnGroups m_groups;
  
    public Location()
    {
       setServerId("nowhere@nowhere");
       setLongitude(0.0);
       setLatitude(0.0);
-      setNumber(0);
-      setCity("nowhere");
-      setCountry("nowhere");
+      setCountryId(0);
+      setCityId(0);
+      setCityName("nowhere");
+      setCountryName("nowhere");
+      setCountryCode("");
+      m_technologies = new NvpnTechnologies();
+      m_groups = new NvpnGroups();
    }
 
-   public Location (String serverId, double longitude, double latitude, int number)
+   public Location (String serverId, double longitude, double latitude, int cityId)
    {
       String[] sa = serverId.split(SERVERID_SEPARATOR);
       String city = "";
@@ -54,106 +66,136 @@ public class Location
       if (null == country || country.isBlank())
       {
          setServerId(city.trim() + SERVERID_SEPARATOR);
-         setCity(city);
-         setCountry("");
-         number = -1;  // for error handling!!
+         setCityName(city);
+         setCountryName("");
+         cityId = -1;  // for error handling!!
       }
       else
       {
          setServerId(city.trim() + SERVERID_SEPARATOR + country.trim());
-         setCity(city);
-         setCountry(country);
+         setCityName(city);
+         setCountryName(country);
       }
       setLongitude(longitude);
       setLatitude(latitude);
-      setNumber(number);
+      setCityId(cityId);
+
+      m_technologies = new NvpnTechnologies();
+      m_groups = new NvpnGroups();
  
-      if (number == 1)
+      if (cityId == 1)
       {
+         // internal generated temporary location
          Starter._m_logError.TraceDebug("Location=" + this.toString() + "<.");         
       }
-      else if (number == -1)
+      else if (cityId == -1)
       {
-         Starter._m_logError.TranslatorError(10200, "Location Definition Error", "Location=" + this.toString() + "< cannot be defined!");         
+         Starter._m_logError.LoggingError(10200, "Location Definition Error", "Location=" + this.toString() + "< cannot be defined!");         
       }
       else
       {
          // from CSV
          //JNordVpnManager._m_logError.TraceDebug("Add location=" + this.toString() + "<.");
       }
-      
+     
    }
-   public Location (String city, String country, double longitude, double latitude, int number)
+
+   public Location(String serverId)
    {
-      this(city+"@"+country, longitude, latitude, number);
+      this(serverId, 0.0, 0.0, 1);
+   }
+
+   public Location (String cityName, String countryName, double longitude, double latitude, int cityId)
+   {
+      this(cityName+"@"+countryName, longitude, latitude, cityId);
    }
 
    public String getServerId()
    {
-      return serverId;
+      return m_serverId;
    }
 
    public void setServerId(String serverId)
    {
-      this.serverId = serverId;
+      this.m_serverId = serverId;
    }
 
    public double getLongitude()
    {
-      return longitude;
+      return m_longitude;
    }
 
    public void setLongitude(double longitude)
    {
-      this.longitude = longitude;
+      this.m_longitude = longitude;
    }
 
    public double getLatitude()
    {
-      return latitude;
+      return m_latitude;
    }
 
    public void setLatitude(double latitude)
    {
-      this.latitude = latitude;
+      this.m_latitude = latitude;
    }
 
-   public int getNumber()
+   public int getCountryId()
    {
-      return number;
+      return m_countryId;
    }
 
-   public void setNumber(int number)
+   public void setCountryId(int countryId)
    {
-      this.number = number;
+      this.m_countryId = countryId;
+   }
+
+   public int getCityId()
+   {
+      return m_cityId;
+   }
+
+   public void setCityId(int cityId)
+   {
+      this.m_cityId = cityId;
    }
 
    /**
     * Get the city name
-    * @return the city name from CSV table
+    * @return the city name from the original source
     */
-   public String getCity()
+   public String getCityName()
    {
-      return city;
+      return m_cityName;
    }
 
-   public void setCity(String city)
+   public void setCityName(String cityName)
    {
-      this.city = city;
+      this.m_cityName = cityName;
    }
 
    /**
     * Get the country name
-    * @return the country name from CSV table
+    * @return the country name from the original source
     */
-   public String getCountry()
+   public String getCountryName()
    {
-      return country;
+      return m_countryName;
    }
 
-   public void setCountry(String country)
+   public void setCountryName(String countryName)
    {
-      this.country = country;
+      this.m_countryName = countryName;
+   }
+   
+   public String getCountryCode()
+   {
+      return m_countryCode;
+   }
+
+   public void setCountryCode(String countryCode)
+   {
+      this.m_countryCode = countryCode;
    }
    
    /**
@@ -162,7 +204,7 @@ public class Location
     */
    public String getCityNordVPN()
    {
-      return city.replace(' ', '_');
+      return m_cityName.replace(' ', '_');
    }
 
    /**
@@ -171,11 +213,31 @@ public class Location
     */
    public String getCountryNordVPN()
    {
-      return country.replace(' ', '_');
+      return m_countryName.replace(' ', '_');
+   }
+
+   public void addTechnology(int id)
+   {
+      m_technologies.addTechnology(id);
+   }
+
+   public boolean hasTechnology(int id)
+   {
+      return m_technologies.hasTechnology(id);
+   }
+
+   public void addGroup(NordVPNEnumGroups id)
+   {
+      m_groups.addGroup(id);
+   }
+
+   public boolean hasGroup(NordVPNEnumGroups m_filterRegion)
+   {
+      return m_groups.hasGroup(m_filterRegion);
    }
 
    public String toString()
    {
-      return city + "/" + country + " [" + longitude + "," + latitude + "] (id=" + number + ")";
+      return m_cityName + "/" + m_countryName + " [" + m_longitude + "," + m_latitude + "] (id=" + m_cityId + ") Groups=" + m_groups.toString() + " / Technologies=" + m_technologies.toString();
    }
 }

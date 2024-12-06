@@ -8,6 +8,8 @@
  */
 package com.mr.apps.JNordVpnManager.nordvpn;
 
+import com.mr.apps.JNordVpnManager.geotools.Location;
+import com.mr.apps.JNordVpnManager.geotools.UtilLocations;
 import com.mr.apps.JNordVpnManager.utils.UtilSystem;
 
 public class NvpnCommands {
@@ -48,6 +50,8 @@ public class NvpnCommands {
    private static final String OPT_VIRTUAL_LOCATION = "virtual-location";
    private static final String OPT_POST_QUANTUM     = "post-quantum";
    private static final String OPT_PROTOCOL         = "protocol";
+
+   private static final String OPT_GROUP            = "--group";
 
    private static final String VAL_ENABLED          = "enabled";
    private static final String VAL_DISABLED         = "disabled";
@@ -418,27 +422,44 @@ public class NvpnCommands {
    public static String connect(String country, String city)
    {
       String status = null;
+      String idGroup = NvpnGroups.getCurrentGroup().name();
       
       if (null == city || city.isBlank())
       {
          if (null == country || country.isBlank())
          {
-            status = UtilSystem.runCommand(CMD_NORDVPN, ARG_CONNECT);
+            // Quick Connect with group - if Region is set, region group, else legacy group
+            String optGroup = (NvpnGroups.getCurrentRegion().equals(NvpnGroups.NordVPNEnumGroups.all_regions)) ? OPT_GROUP + " " + idGroup : NvpnGroups.getCurrentRegion().name();
+            status = UtilSystem.runCommand(CMD_NORDVPN, ARG_CONNECT, optGroup);
          }
          else
          {
-            status = UtilSystem.runCommand(CMD_NORDVPN, ARG_CONNECT, country);
+            // with country only - add legacy group
+            status = UtilSystem.runCommand(CMD_NORDVPN, ARG_CONNECT, OPT_GROUP, idGroup, country);
          }
       }
       else
       {
          if (null == country || country.isBlank())
          {
-            status = UtilSystem.runCommand(CMD_NORDVPN, ARG_CONNECT, city);
+            // with city only - add legacy group
+            status = UtilSystem.runCommand(CMD_NORDVPN, ARG_CONNECT, OPT_GROUP, idGroup, city);
          }
          else
          {
-            status = UtilSystem.runCommand(CMD_NORDVPN, ARG_CONNECT, country, city);
+            // with country and city
+            // In some cases (called from auto connect or recent list) we must check, if the current legacy group is valid for that server...
+            Location loc = UtilLocations.getLocation(UtilLocations.getServerId(city, country));
+            if (loc.hasGroup(NvpnGroups.getCurrentGroup()))
+            {
+               status = UtilSystem.runCommand(CMD_NORDVPN, ARG_CONNECT, OPT_GROUP, idGroup, city);
+            }
+            else
+            {
+               UtilSystem.setLastError(UtilSystem.joinCommand(CMD_NORDVPN, ARG_CONNECT, OPT_GROUP, idGroup, city) + 
+                     "\nServer '" + country + "/" + city + "' does not support group: " + idGroup +
+                     "\nPlease select a correct group or change the server.", -1);
+            }
          }
       }
       return status;
