@@ -119,7 +119,7 @@ public class UtilMapGeneration
       }
       catch (Exception e)
       {
-         Starter._m_logError.TranslatorExceptionMessage(4, 10996, e);
+         Starter._m_logError.LoggingExceptionMessage(4, 10996, e);
       }
  
       return mapFrame;
@@ -176,8 +176,8 @@ public class UtilMapGeneration
    /**
     * Create the layer with the current VPN server
     * @param serverName is the name of the current active VPN server
-    * @param longitude is the longitude
-    * @param latitude is the latitude
+    * @param m_longitude is the longitude
+    * @param m_latitude is the latitude
     * @return the created layer
     */
    private static UpdatableLayer createCurrentServerMapLayer(Location loc)
@@ -269,7 +269,7 @@ public class UtilMapGeneration
       }
       catch (IOException e)
       {
-         Starter._m_logError.TranslatorExceptionMessage(3, 10500, e);
+         Starter._m_logError.LoggingExceptionMessage(3, 10500, e);
       }
  
       return layer;
@@ -328,7 +328,7 @@ public class UtilMapGeneration
          double latitude = loc.getLatitude();
          double longitude = loc.getLongitude();
          String name = cityId;
-         int number = loc.getNumber();
+         int number = loc.getCityId();
 
          // Longitude (= x coordinate) first !
          Point point = geometryFactory.createPoint(new Coordinate(longitude, latitude));
@@ -347,7 +347,7 @@ public class UtilMapGeneration
 
          if (number == 0)
          {
-            Starter._m_logError.TranslatorInfo("VPN Server location for city=" + cityId + "< not found. Locations database requires an update!");
+            Starter._m_logError.LoggingInfo("VPN Server location for city=" + cityId + "< not found. Locations database requires an update!");
          }
       }
 
@@ -385,10 +385,12 @@ public class UtilMapGeneration
          if (nb > 0)
          {
             // got a match
-            Starter._m_logError.TranslatorInfo("VPN Server selected: " + info.toString());
+            Starter._m_logError.LoggingInfo("VPN Server selected: " + info.toString());
             Map<String, Object> data = info.getFeatureData(0);
             String serverId = (String) data.get("Name");
-            loc = new Location(serverId, pos.getX(), pos.getY(), 1);
+
+            loc = UtilLocations.getLocation(serverId);
+//            loc = new Location(serverId, pos.getX(), pos.getY(), 1);
          }
          else
          {
@@ -401,17 +403,22 @@ public class UtilMapGeneration
             if (nb > 0)
             {
                // got a match
-               Starter._m_logError.TranslatorInfo("VPN Server country selected: " + info.toString().substring(0, 80) + "...");  
+               Starter._m_logError.LoggingInfo("VPN Server country selected: " + info.toString().substring(0, 80) + "...");  
                Map<String, Object> data = info.getFeatureData(0);
                String serverId = (String) data.get("NAME");
-               loc = new Location(serverId, pos.getX(), pos.getY(), 1);
-               // TODO: possible country name mismatches between World Map Data Base and NordVPN country names!
+
+               // name mappings for geo-map country selections to NordVPN names
+               if (serverId.equalsIgnoreCase("Laos")) serverId = "Lao People's Democratic Republic";
+               if (serverId.startsWith("United States of")) serverId = "United States";
+
+               loc = UtilLocations.getLocation(serverId);
+//               loc = new Location(serverId, pos.getX(), pos.getY(), 1);
             }
          }
       }
       catch (Exception e)
       {
-         Starter._m_logError.TranslatorExceptionMessage(4, 10996, e);
+         Starter._m_logError.LoggingExceptionMessage(4, 10996, e);
       }
 
       return loc;

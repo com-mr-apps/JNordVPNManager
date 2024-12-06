@@ -39,6 +39,7 @@ public class JNordVpnSettingsDialog extends JDialog implements ActionListener
    private final static int CANCEL_BUTTON = 2;
 
    private String m_result;
+   private boolean m_requiresUpdate = false;
    private JSettingsPanel m_nvpnSettingsPanel = null;
    private NvpnSettingsData m_nvpnSettingsData = null;
 
@@ -52,7 +53,8 @@ public class JNordVpnSettingsDialog extends JDialog implements ActionListener
       Starter.setWaitCursor();
       Starter.setCursorCanChange(false);
 
-      m_nvpnSettingsData = new NvpnSettingsData();
+      // get the current NordVPN Settings data
+      m_nvpnSettingsData = Starter.getCurrentSettingsData();
 
       getContentPane().setLayout(new BorderLayout());
       setResizable(false);
@@ -197,6 +199,7 @@ public class JNordVpnSettingsDialog extends JDialog implements ActionListener
       Starter.setCursorCanChange(true);
       Starter.resetWaitCursor();
 
+      m_requiresUpdate = false;
       pack();
       setVisible(true);
       repaint();
@@ -234,12 +237,16 @@ public class JNordVpnSettingsDialog extends JDialog implements ActionListener
       {
          case SET_BUTTON :
             Starter._m_logError.TraceDebug("Set changed NordVPN Settings.");
-            boolean needsUpdate = m_nvpnSettingsData.setSettingsDataSet(m_nvpnSettingsPanel.getAllValues(), false);
-            if (needsUpdate)
+            Starter.setWaitCursor();
+            Starter.setCursorCanChange(false);
+            m_requiresUpdate = m_nvpnSettingsData.setSettingsDataSet(m_nvpnSettingsPanel.getAllValues(), false);
+            if (m_requiresUpdate)
             {
-               // ...some settings changed...
-               Starter.updateServer();
+               // in case of update required (settings changed) we force the Windows Gained Focus which triggers an Data and GUI update
+               Starter.setForceWindowGainedFocus();         
             }
+            Starter.setCursorCanChange(true);
+            Starter.resetWaitCursor();
             break;
 
          case RESET_BUTTON :
@@ -247,9 +254,14 @@ public class JNordVpnSettingsDialog extends JDialog implements ActionListener
             if (JModalDialog.showConfirm("'nordvpn set defaults' will be executed.\nThis command will reset all Settings to the NordVPN Defaults.\nDo you want to continue?") == JOptionPane.YES_OPTION)
             {
                // reset settings
+               Starter.setWaitCursor();
+               Starter.setCursorCanChange(false);
                m_nvpnSettingsData.resetNordVPNSettingsValues();
                HashMap<String, String> hm = m_nvpnSettingsData.getSettingsDataSet(false);
                m_nvpnSettingsPanel.setAllSettingValues(hm);
+               Starter.setForceWindowGainedFocus();         
+               Starter.setCursorCanChange(true);
+               Starter.resetWaitCursor();
             }
             break;
 

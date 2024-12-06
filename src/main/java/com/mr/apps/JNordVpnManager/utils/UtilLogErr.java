@@ -15,7 +15,7 @@ import com.mr.apps.JNordVpnManager.Starter;
 import com.mr.apps.JNordVpnManager.gui.dialog.JModalDialog;
 
 /**
- * This class is a common error and message logging utility for com.mr.apps applications. The constructor gets an file
+ * This class is a common error and message logging utility for com.mr.apps applications. The constructor gets a file
  * handler to the log file and the [optional] trace settings flags.
  * <P>
  * We differ between [Debug]Trace output and messages. The messages have the format:
@@ -29,7 +29,7 @@ import com.mr.apps.JNordVpnManager.gui.dialog.JModalDialog;
  * 
  * where:
  * <ul>
- * <li>type - is one of the [severity] types: Info, Warning, Error, Fatal Error.</li>
+ * <li>type - is one of the [severity] types: Info (1,2), Warning (3), Error (4), Fatal Error (5).</li>
  * <li>classification - is a fix classification text only for common messages upwards 10000.</li>
  * <li>msgNb - is the message number. Common messages starts with 10000.</li>
  * <li>short message - is a one line short message.</li>
@@ -38,12 +38,12 @@ import com.mr.apps.JNordVpnManager.gui.dialog.JModalDialog;
  * <P>
  * In case of Fatal Error [a not recoverable error], the main application method Starter.cleanupAndExit() is called, to
  * force the program termination.<br>
- * Logging information is written to the specified log file on disk, parallel [if activated] the output is also written
+ * Logging information is written to the [optionally specified] log file on disk, parallel [if activated] the output is also written
  * to the console [stdout or console window].<br>
  * Environment variables (possibly overwritten by GUI settings):
  * <ul>
  * <it>COM_MR_APPS_TRACE - Trace settings [off|dbg,cmd,ini]</it>
- * <it>COM_MR_APPS_LOGGING - if set to a file name, activates an additional log-file output
+ * <it>COM_MR_APPS_LOGFILE - if set to a file name, activates an additional log-file output
  * or the fallback file name for the logging file</it>
  * </ul>
  */
@@ -148,7 +148,7 @@ public class UtilLogErr
                if (false == fLog.delete())
                {
                   // existing logfile cannot be deleted -> reset logfile name and redirect output to stdout
-                  TranslatorWarning(10900, 
+                  LoggingWarning(10900, 
                         "Cannot delete log file",
                         "Error on delete old log file=" + sErrorLogFileName + "<. Output redireced to console.");
                   sErrorLogFileName = null;
@@ -180,7 +180,7 @@ public class UtilLogErr
          catch (IOException e)
          {
             // Log file could not be opened. Redirect output of logs and errors to stdout.
-            TranslatorWarning(10900, 
+            LoggingWarning(10900, 
                   "Cannot open log file",
                   "Error on open log file=" + sErrorLogFileName + "<. Output redireced to console.");
          }
@@ -189,14 +189,14 @@ public class UtilLogErr
       // output after opening log file
       if (traceValue != null)
       {
-         TranslatorInfo("Environment variable COM_MR_APPS_TRACE=" + traceValue + "<.");
+         LoggingInfo("Environment variable COM_MR_APPS_TRACE=" + traceValue + "<.");
       }
 
       if ((null != sErrorLogFileName) && (sErrorLogFileName.endsWith(".testlog") == false))
       {
          // "..._JUnit.testlog" is the log file extension for the JUnit test cases. 
          // Don't output info for test cases, because it causes differences to the references 
-         TranslatorInfo("Log file name=" + sErrorLogFileName + "< [" + m_sFileEncoding + "]");
+         LoggingInfo("Log file name=" + sErrorLogFileName + "< [" + m_sFileEncoding + "]");
       }
    }
 
@@ -301,7 +301,7 @@ public class UtilLogErr
       }
       catch (Exception e)
       {
-         TranslatorError(10900,
+         LoggingError(10900,
                "Invalid Program File Encoding",
                "The defined Charset=" + m_sFileEncoding + "< is invalid. Reset to Charset=" + rcCharset.displayName() + "<!");
       }
@@ -325,7 +325,7 @@ public class UtilLogErr
    {
       if (true == isActive && m_bwLogfile == null)
       {
-         TranslatorWarning(10902,
+         LoggingWarning(10902,
                "No log file defined.",
                "Output to log file cannot be activated!");
          return false;
@@ -335,7 +335,7 @@ public class UtilLogErr
       {
          if (false == isActive)
          {
-            TranslatorInfo("Deactivate output in log file!");
+            LoggingInfo("Deactivate output in log file!");
             m_bwLogfileIsActive = isActive;
          }
       }
@@ -343,7 +343,7 @@ public class UtilLogErr
       {
          if (true == isActive)
          {
-            TranslatorInfo("Activate output in log file!");
+            LoggingInfo("Activate output in log file!");
             m_bwLogfileIsActive = isActive;
          }
       }
@@ -385,42 +385,42 @@ public class UtilLogErr
    {
       if (m_nbErrors + m_nbWarnings == 0)
       {
-         return "[Info] Translator results: No errors or warnings detected.";
+         return "[Info] Logging results: No errors or warnings detected.";
       }
       else if (m_nbErrors == 0)
       {
-         return "[Warning] Translator results: " + m_nbWarnings + " warning" + ((m_nbWarnings > 1) ? "s" : "") + " detected!";
+         return "[Warning] Logging results: " + m_nbWarnings + " warning" + ((m_nbWarnings > 1) ? "s" : "") + " detected!";
       }
       else
       {
-         return "[Error] Translator results: " + m_nbErrors + " error" + ((m_nbErrors > 1) ? "s" : "") + " and " + m_nbWarnings + " warning" + ((m_nbWarnings > 1) ? "s" : "") + " detected!";         
+         return "[Error] Logging results: " + m_nbErrors + " error" + ((m_nbErrors > 1) ? "s" : "") + " and " + m_nbWarnings + " warning" + ((m_nbWarnings > 1) ? "s" : "") + " detected!";         
       }
    }
 
    /** 
     * Generate a simple text message line.
     * @param sShortMsg is the short message text.
-    * @see UtilLogErr#TranslatorWriteMessage(int, int, String, String [])
+    * @see UtilLogErr#LoggingWriteMessage(int, int, String, String [])
     */
-   public void TranslatorText (String sShortMsg)
+   public void LoggingText (String sShortMsg)
    {
       int iSev = 0;
       int iMsgNb = 0;
       String[] sLongMsgArr = null;
-      TranslatorWriteMessage (iSev, iMsgNb, sShortMsg, sLongMsgArr);
+      LoggingWriteMessage (iSev, iMsgNb, sShortMsg, sLongMsgArr);
    }
 
    /** 
     * Generate a simple info message.
     * @param sShortMsg is the short message text.
-    * @see UtilLogErr#TranslatorWriteMessage(int, int, String, String [])
+    * @see UtilLogErr#LoggingWriteMessage(int, int, String, String [])
     */
-   public void TranslatorInfo (String sShortMsg)
+   public void LoggingInfo (String sShortMsg)
    {
       int iSev = 1;
       int iMsgNb = 0;
       String[] sLongMsgArr = null;
-      TranslatorWriteMessage (iSev, iMsgNb, sShortMsg, sLongMsgArr);
+      LoggingWriteMessage (iSev, iMsgNb, sShortMsg, sLongMsgArr);
    }
 
    /** 
@@ -428,12 +428,12 @@ public class UtilLogErr
     * @param iMsgNb is the error number.
     * @param sShortMsg is the short message text.
     * @param sLongMsgArr is the long message text array.
-    * @see UtilLogErr#TranslatorWriteMessage(int, int, String, String [])
+    * @see UtilLogErr#LoggingWriteMessage(int, int, String, String [])
     */
-   public void TranslatorWarning (int iMsgNb, String sShortMsg, String[] sLongMsgArr)
+   public void LoggingWarning (int iMsgNb, String sShortMsg, String[] sLongMsgArr)
    {
       int iSev = 3;
-      TranslatorWriteMessage (iSev, iMsgNb, sShortMsg, sLongMsgArr);
+      LoggingWriteMessage (iSev, iMsgNb, sShortMsg, sLongMsgArr);
    }
    
    /** 
@@ -441,12 +441,12 @@ public class UtilLogErr
     * @param iMsgNb is the error number.
     * @param sShortMsg is the short message text.
     * @param sLongMsg is the long message text (split on newline characters).
-    * @see UtilLogErr#TranslatorWriteMessage(int, int, String, String [])
+    * @see UtilLogErr#LoggingWriteMessage(int, int, String, String [])
     */
-   public void TranslatorWarning (int iMsgNb, String sShortMsg, String sLongMsg)
+   public void LoggingWarning (int iMsgNb, String sShortMsg, String sLongMsg)
    {
       int iSev = 3;
-      TranslatorWriteMessage (iSev, iMsgNb, sShortMsg, sLongMsg);
+      LoggingWriteMessage (iSev, iMsgNb, sShortMsg, sLongMsg);
    }
    
    /** 
@@ -454,12 +454,12 @@ public class UtilLogErr
     * @param iMsgNb is the error number.
     * @param sShortMsg is the short message text.
     * @param sLongMsgArr is the long message text array.
-    * @see UtilLogErr#TranslatorWriteMessage(int, int, String, String [])
+    * @see UtilLogErr#LoggingWriteMessage(int, int, String, String [])
     */
-   public void TranslatorError (int iMsgNb, String sShortMsg, String[] sLongMsgArr)
+   public void LoggingError (int iMsgNb, String sShortMsg, String[] sLongMsgArr)
    {
       int iSev = 4;
-      TranslatorWriteMessage (iSev, iMsgNb, sShortMsg, sLongMsgArr);
+      LoggingWriteMessage (iSev, iMsgNb, sShortMsg, sLongMsgArr);
    }
    
    /** 
@@ -467,12 +467,12 @@ public class UtilLogErr
     * @param iMsgNb is the error number.
     * @param sShortMsg is the short message text.
     * @param sLongMsg is the long message text (split on newline characters).
-    * @see UtilLogErr#TranslatorWriteMessage(int, int, String, String [])
+    * @see UtilLogErr#LoggingWriteMessage(int, int, String, String [])
     */
-   public void TranslatorError (int iMsgNb, String sShortMsg, String sLongMsg)
+   public void LoggingError (int iMsgNb, String sShortMsg, String sLongMsg)
    {
       int iSev = 4;
-      TranslatorWriteMessage (iSev, iMsgNb, sShortMsg, sLongMsg);
+      LoggingWriteMessage (iSev, iMsgNb, sShortMsg, sLongMsg);
    }
    
    /** 
@@ -480,12 +480,12 @@ public class UtilLogErr
     * @param iMsgNb is the error number.
     * @param sShortMsg is the short message text.
     * @param sLongMsgArr is the long message text array.
-    * @see UtilLogErr#TranslatorWriteMessage(int, int, String, String [])
+    * @see UtilLogErr#LoggingWriteMessage(int, int, String, String [])
     */
-   public void TranslatorAbend (int iMsgNb, String sShortMsg, String[] sLongMsgArr)
+   public void LoggingAbend (int iMsgNb, String sShortMsg, String[] sLongMsgArr)
    {
       int iSev = 5;
-      TranslatorWriteMessage (iSev, iMsgNb, sShortMsg, sLongMsgArr);
+      LoggingWriteMessage (iSev, iMsgNb, sShortMsg, sLongMsgArr);
    }
    
    /** 
@@ -493,24 +493,24 @@ public class UtilLogErr
     * @param iMsgNb is the error number.
     * @param sShortMsg is the short message text.
     * @param sLongMsg is the long message text (split on newline characters).
-    * @see UtilLogErr#TranslatorWriteMessage(int, int, String, String [])
+    * @see UtilLogErr#LoggingWriteMessage(int, int, String, String [])
     */
-   public void TranslatorAbend (int iMsgNb, String sShortMsg, String sLongMsg)
+   public void LoggingAbend (int iMsgNb, String sShortMsg, String sLongMsg)
    {
       int iSev = 5;
-      TranslatorWriteMessage (iSev, iMsgNb, sShortMsg, sLongMsg);
+      LoggingWriteMessage (iSev, iMsgNb, sShortMsg, sLongMsg);
    }
    
    /** 
     * Generate an Abend Message for java exceptions. Write detailed stack traces, if debug trace is active. 
     * @param iMsgNb is the error number.
     * @param ex is the exception.
-    * @see UtilLogErr#TranslatorWriteMessage(int, int, String, String [])
+    * @see UtilLogErr#LoggingWriteMessage(int, int, String, String [])
     */
-   public void TranslatorExceptionAbend (int iMsgNb, Exception ex)
+   public void LoggingExceptionAbend (int iMsgNb, Exception ex)
    {
       int iSev = 5;
-      TranslatorExceptionMessage (iSev, iMsgNb, ex);
+      LoggingExceptionMessage (iSev, iMsgNb, ex);
    }
 
    /** 
@@ -518,9 +518,9 @@ public class UtilLogErr
     * @param iSev is the severity level.
     * @param iMsgNb is the error number.
     * @param ex is the exception.
-    * @see UtilLogErr#TranslatorWriteMessage(int, int, String, String [])
+    * @see UtilLogErr#LoggingWriteMessage(int, int, String, String [])
     */
-   public void TranslatorExceptionMessage (int iSev, int iMsgNb, Exception ex)
+   public void LoggingExceptionMessage (int iSev, int iMsgNb, Exception ex)
    {
       if (m_fatalError == true)
       {
@@ -531,7 +531,7 @@ public class UtilLogErr
       String msgText = ex.getMessage();
       if (msgText == null)
       {
-         msgText = "Translator exception (check CONSOLE output or set Trace=dbg for detailled stack trace)\n";
+         msgText = "Logging exception (check CONSOLE output or set Trace=dbg for detailled stack trace)\n";
          if (isTraceFlagSet(TRACE_Debug) == false)
          {
             // if we don't get an error message and we don't have set Trace=dbg, we dump the trace now on the console
@@ -542,7 +542,7 @@ public class UtilLogErr
       if (msgText.startsWith("[Fatal Error]"))
       {
          // Runtime exception thrown in case of iSev=5
-         TranslatorWriteMessage(iSev, -1, msgText, "");
+         LoggingWriteMessage(iSev, -1, msgText, "");
          // additional output to console
          if ((m_bwLogfileIsActive  && m_bwLogfile != null) && (m_bConsoleOutput == false)) System.out.println(msgText + "\n");
       }
@@ -555,12 +555,12 @@ public class UtilLogErr
             Writer writer = new StringWriter();
             PrintWriter printWriter = new PrintWriter(writer);
             ex.printStackTrace(printWriter);
-            TranslatorWriteMessage(iSev, iMsgNb, msgText, writer.toString());
+            LoggingWriteMessage(iSev, iMsgNb, msgText, writer.toString());
          }
          else
          {
             // no debug, write only message
-            TranslatorWriteMessage(iSev, iMsgNb, msgText, "");
+            LoggingWriteMessage(iSev, iMsgNb, msgText, "");
          }
       }
    }
@@ -571,16 +571,16 @@ public class UtilLogErr
     * @param iMsgNb is the error number.
     * @param sShortMsg is the short message text.
     * @param sLongMsg is the long message text (split on newline characters).
-    * @see UtilLogErr#TranslatorWriteMessage(int, int, String, String [])
+    * @see UtilLogErr#LoggingWriteMessage(int, int, String, String [])
     */
-   public void TranslatorWriteMessage (int iSev, int iMsgNb, String sShortMsg, String sLongMsg)
+   public void LoggingWriteMessage (int iSev, int iMsgNb, String sShortMsg, String sLongMsg)
    {
       String[] sLongMsgArr = null;
       if ((sLongMsg != null) && (sLongMsg.length() > 0))
       {
          sLongMsgArr = sLongMsg.split("[\\r\\n]+|[\\n]+");
       }
-      TranslatorWriteMessage (iSev, iMsgNb, sShortMsg, sLongMsgArr);
+      LoggingWriteMessage (iSev, iMsgNb, sShortMsg, sLongMsgArr);
    }
 
    /** 
@@ -593,7 +593,7 @@ public class UtilLogErr
     * @param sLongMsgArr is the long message text array.
     * @throws RuntimeException for fatal errors.
     */
-   public void TranslatorWriteMessage (int iSev, int iMsgNb, String sShortMsg, String[] sLongMsgArr)
+   public void LoggingWriteMessage (int iSev, int iMsgNb, String sShortMsg, String[] sLongMsgArr)
    {
       if (sShortMsg == null) sShortMsg = "";
       boolean forcedAbend = false;
@@ -660,6 +660,9 @@ public class UtilLogErr
                headerLine += "Show Error Dialog";
                break;
             // ### internal messages
+            case 10995:
+               headerLine += "Not Supported";
+               break;
             case 10996:
                headerLine += "GeoTools Error";
                break;
@@ -698,10 +701,10 @@ public class UtilLogErr
             traceLine.append(sLongMsgArr[iCnt]);
             traceLine.append("\n");
          }
-
-         // write header [+long message] to log file or console
-         writeLog (traceLine.toString());
       }
+
+      // write header [+long message] to log file or console
+      writeLog (traceLine.toString());
 
       if ((forcedAbend == true) || (m_fatalError == true))
       {

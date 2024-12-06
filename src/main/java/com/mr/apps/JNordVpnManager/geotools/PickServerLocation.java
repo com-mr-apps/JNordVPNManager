@@ -65,7 +65,7 @@ public class PickServerLocation extends InfoToolHelper
       if (!isSupportedLayer(layer))
       {
          IllegalArgumentException e = new IllegalArgumentException("[Fatal Error] layer must be an instance of FeatureLayer");
-         Starter._m_logError.TranslatorExceptionMessage(5, 10996, e);
+         Starter._m_logError.LoggingExceptionMessage(5, 10996, e);
       }
 
       super.setLayer(layer);
@@ -163,7 +163,7 @@ public class PickServerLocation extends InfoToolHelper
       }
       catch (Exception ex)
       {
-         Starter._m_logError.TranslatorExceptionMessage(5, 10996, ex);
+         Starter._m_logError.LoggingExceptionMessage(5, 10996, ex);
          //throw new IllegalStateException(ex);
          return null;
       }
@@ -180,7 +180,7 @@ public class PickServerLocation extends InfoToolHelper
          {
             // this should never happen
             IllegalArgumentException e = new IllegalArgumentException("[Fatal Error] Target layer has been lost");
-            Starter._m_logError.TranslatorExceptionMessage(5, 10996, e);
+            Starter._m_logError.LoggingExceptionMessage(5, 10996, e);
          }
          mapBounds = getLayer().getBounds();
       }
@@ -205,7 +205,7 @@ public class PickServerLocation extends InfoToolHelper
          }
          catch (Exception ex)
          {
-            Starter._m_logError.TranslatorExceptionMessage(5, 10996, ex);
+            Starter._m_logError.LoggingExceptionMessage(5, 10996, ex);
          }
       }
 

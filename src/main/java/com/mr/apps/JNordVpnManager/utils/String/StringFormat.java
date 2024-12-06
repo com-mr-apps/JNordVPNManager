@@ -10,6 +10,7 @@ package com.mr.apps.JNordVpnManager.utils.String;
 
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
+import java.util.ArrayList;
 import java.util.Locale;
 
 public class StringFormat
@@ -80,6 +81,32 @@ public class StringFormat
       oString = f.format(iVal);
 
       return oString;
+   }
+
+   /**
+    * Convert an integer array to a String, using a decimal format.
+    * @param intArr is the array to be formatted
+    * @param sFormat is the format e.g. "#0"
+    * @return the formatted string
+    */
+   public static String int2String (ArrayList<Integer> intArr, String sFormat)
+   {
+      StringBuffer oString = new StringBuffer();
+      oString.append("[");
+
+      if (null != intArr)
+      {
+         if ((sFormat == null) || (true == sFormat.isBlank())) sFormat = DEFAULT_INTEGER_FORMAT;
+         DecimalFormat f = new DecimalFormat(sFormat, _m_decimalFormatSymbols);
+         for (int iVal : intArr)
+         {
+            if (oString.length() > 1) oString.append(",");
+            oString.append(f.format(iVal));
+         }
+      }
+      oString.append("]");
+
+      return oString.toString();
    }
 
    /**

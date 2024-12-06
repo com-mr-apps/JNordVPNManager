@@ -296,13 +296,13 @@ public class JCustomConsole extends WindowAdapter implements WindowListener, Act
       catch (java.io.IOException io)
       {
          Starter._m_logError.setConsoleOutput(false);
-         Starter._m_logError.TranslatorExceptionMessage(4, 10901, io);
+         Starter._m_logError.LoggingExceptionMessage(4, 10901, io);
          Starter._m_logError.setConsoleOutput(true);
       }
       catch (SecurityException se)
       {
          Starter._m_logError.setConsoleOutput(false);
-         Starter._m_logError.TranslatorExceptionMessage(4, 10901, se);
+         Starter._m_logError.LoggingExceptionMessage(4, 10901, se);
          Starter._m_logError.setConsoleOutput(true);
       }
 
@@ -314,13 +314,13 @@ public class JCustomConsole extends WindowAdapter implements WindowListener, Act
       catch (java.io.IOException io)
       {
          Starter._m_logError.setConsoleOutput(false);
-         Starter._m_logError.TranslatorExceptionMessage(4, 10901, io);
+         Starter._m_logError.LoggingExceptionMessage(4, 10901, io);
          Starter._m_logError.setConsoleOutput(true);
       }
       catch (SecurityException se)
       {
          Starter._m_logError.setConsoleOutput(false);
-         Starter._m_logError.TranslatorExceptionMessage(4, 10901, se);
+         Starter._m_logError.LoggingExceptionMessage(4, 10901, se);
          Starter._m_logError.setConsoleOutput(true);
       }
 
@@ -383,7 +383,7 @@ public class JCustomConsole extends WindowAdapter implements WindowListener, Act
       catch (Exception e)
       {
          Starter._m_logError.setConsoleOutput(false);
-         Starter._m_logError.TranslatorExceptionMessage(4, 10901, e);
+         Starter._m_logError.LoggingExceptionMessage(4, 10901, e);
          Starter._m_logError.setConsoleOutput(true);
       }
    }
@@ -481,7 +481,7 @@ public class JCustomConsole extends WindowAdapter implements WindowListener, Act
       }
       catch (Exception e)
       {
-         Starter._m_logError.TranslatorExceptionMessage(4, 10901, e);
+         Starter._m_logError.LoggingExceptionMessage(4, 10901, e);
          JModalDialog.showError("Save Logfile Error", "Could not write log file.\n" + e.getMessage());
       }
    }
@@ -534,7 +534,7 @@ public class JCustomConsole extends WindowAdapter implements WindowListener, Act
       catch (BadLocationException | IOException e)
       {
          Starter._m_logError.setConsoleOutput(false);
-         Starter._m_logError.TranslatorExceptionMessage(4, 10901, e);
+         Starter._m_logError.LoggingExceptionMessage(4, 10901, e);
          Starter._m_logError.setConsoleOutput(true);
       }
       finally

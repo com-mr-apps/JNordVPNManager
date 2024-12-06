@@ -145,10 +145,10 @@ public class NvpnSettingsData
       m_settingsPanelFieldsMap.put(MESHNET, new JSettingsPanelField("Enable Meshnet", "B", KeyEvent.VK_M, 1, this.getMeshnet(true)));
       m_settingsPanelFieldsMap.put(NOTIFY, new JSettingsPanelField("Enable Notifications", "B", KeyEvent.VK_N, 1, this.getNotify(true)));
       m_settingsPanelFieldsMap.put(POST_QUANTUM, new JSettingsPanelField("Enable Post-Quantum Encryption", "B", KeyEvent.VK_Q, 1, this.getPostQuantum(true)));
-      m_settingsPanelFieldsMap.put(PROTOCOL, new JSettingsPanelField("Protocol", "L[TCP,UDP]", KeyEvent.VK_P, 1, this.getTechnology(true)));
+      m_settingsPanelFieldsMap.put(PROTOCOL, new JSettingsPanelField("Protocol", "L[TCP,UDP]", KeyEvent.VK_P, 1, this.getProtocol(true)));
       m_settingsPanelFieldsMap.put(ROUTING, new JSettingsPanelField("Enable traffic routing", "B", KeyEvent.VK_R, 1, this.getRouting(true)));
       m_settingsPanelFieldsMap.put(TECHNOLOGY, new JSettingsPanelField("Technology", "L[NORDLYNX,OPENVPN]", KeyEvent.VK_T, 1, this.getTechnology(true)));
-      m_settingsPanelFieldsMap.put(TPLITE, new JSettingsPanelField("Threat Protection Lite", "B", -1, 1, this.getProtocol(true)));
+      m_settingsPanelFieldsMap.put(TPLITE, new JSettingsPanelField("Threat Protection Lite", "B", -1, 1, this.getTplite(true)));
       m_settingsPanelFieldsMap.put(TRAY, new JSettingsPanelField("Enable Tray Icon", "B", -1, 1, this.getTray(true)));
       m_settingsPanelFieldsMap.put(VIRTUAL_LOCATION, new JSettingsPanelField("Enable Virtual Locations", "B", KeyEvent.VK_V, 1, this.getVirtualLocation(true)));
    }
@@ -208,7 +208,7 @@ public class NvpnSettingsData
       catch (Exception e)
       {
          // Parsing Error
-         Starter._m_logError.TranslatorError(10100,
+         Starter._m_logError.LoggingError(10100,
                "Parsing NordVPN Settings Information",
                data);
          return false;
@@ -232,6 +232,9 @@ public class NvpnSettingsData
       this.m_virtualLocation = values.get("Virtual Location");
       this.m_postQuantum = values.get("Post-quantum VPN");
       this.m_protocol = values.get("Protocol");
+
+      // initialize protocol - in case of NORDVPN not set
+      if (null == this.m_protocol) this.m_protocol = "UDP";
 
       // the following values contain the text "disabled" it they are not set -> reset them
       if (this.m_autoConnect.equals("disabled")) this.m_autoConnect = "";
@@ -270,25 +273,29 @@ public class NvpnSettingsData
       try (BufferedWriter writer = new BufferedWriter(new FileWriter(fileName, false)))
       {
          writer.write("INFO JNordVPN Settings Export File");
+         writer.newLine();
 
          for (HashMap.Entry<String, String> entry : hm.entrySet())
          {
             String key = entry.getKey();
             String value = entry.getValue();
-            JSettingsPanelField field = m_settingsPanelFieldsMap.get(key);
-            if (field.getElementType().startsWith("B"))
+            if (null != value)
             {
-               // we get "0" and "1" back from settings panel - I work here with disabled/enabled
-               value = (value.matches("1|true|enable|on|enabled")) ? "enabled" : "disabled";
+               JSettingsPanelField field = m_settingsPanelFieldsMap.get(key);
+               if (field.getElementType().startsWith("B"))
+               {
+                  // we get "0" and "1" back from settings panel - I work here with disabled/enabled
+                  value = (string2boolean(value)) ? "enabled" : "disabled";
+               }
+               String line = key + " " + value;
+               writer.write(line);
+               writer.newLine();
             }
-            String line = key + " " + value;
-            writer.write(line);
-            writer.newLine();
          }
       }
       catch (IOException e)
       {
-         Starter._m_logError.TranslatorExceptionAbend(10901, e);
+         Starter._m_logError.LoggingExceptionAbend(10901, e);
          return false;
       }
       return true;
@@ -327,7 +334,7 @@ public class NvpnSettingsData
       }
       catch (IOException e)
       {
-         Starter._m_logError.TranslatorExceptionAbend(10901, e);
+         Starter._m_logError.LoggingExceptionAbend(10901, e);
          hm = null;
       }
 
@@ -777,6 +784,7 @@ public class NvpnSettingsData
          {
             // call set command
             m_technology = data;
+            if (m_technology.equals("NORDLYNX")) m_protocol = "UDP";
             String msg = NvpnCommands.technologySettings(data);
             if (UtilSystem.isLastError())
             {
@@ -944,6 +952,12 @@ public class NvpnSettingsData
 
    public String getProtocol(boolean def)
    {
+      if (m_technology.equals("NORDLYNX"))
+      {
+         // NORDLYNX protocol is fix UDP - only OPENVPN supports TCP
+         return "UDP";
+      }
+
       if (true == def)
       {
          Preferences prefs = Preferences.userRoot().node("com/mr/apps/JNordVpnManager/nordvpn");
@@ -958,6 +972,13 @@ public class NvpnSettingsData
    public boolean setProtocol(String data, boolean def)
    {
       if (null == data) return false;
+
+      if (m_technology.equals("NORDLYNX"))
+      {
+         // NORDLYNX protocol is fix UDP - only OPENVPN supports TCP
+         m_protocol = "UDP";
+         return false;
+      }
 
       if (true == def)
       {
@@ -1028,7 +1049,7 @@ public class NvpnSettingsData
     *           is true for set default settings to User Prefs and false for change current NordVPN Settings
     * @param hm
     *           is the data set with the new values
-    * @return true if a current NordVPN setting was changed (needs Status line update)
+    * @return true if a current NordVPN setting was changed (needs Status line and/or tree update)
     */
    public boolean setSettingsDataSet(HashMap <String,String> hm, boolean def)
    {

@@ -8,11 +8,15 @@
  */
 package com.mr.apps.JNordVpnManager.geotools;
 
+/**
+ * Class for the current location<p>
+ * Extends class Location by connected status attribute.
+ */
 public class CurrentLocation extends Location
 {
    private boolean isConnected;
 
-   CurrentLocation()
+   public CurrentLocation()
    {
       super();
       setConnected(false);
@@ -20,12 +24,14 @@ public class CurrentLocation extends Location
 
    public CurrentLocation(Location loc)
    {
-      this.serverId = loc.serverId;
-      this.city = loc.city;
-      this.country = loc.country;
-      this.longitude = loc.longitude;
-      this.latitude = loc.latitude;
-      this.number = loc.number;
+      this.m_serverId = loc.m_serverId;
+      this.m_cityName = loc.m_cityName;
+      this.m_countryName = loc.m_countryName;
+      this.m_longitude = loc.m_longitude;
+      this.m_latitude = loc.m_latitude;
+      this.m_cityId = loc.m_cityId;
+      this.m_groups = loc.m_groups;
+      this.m_technologies = loc.m_technologies;
       setConnected(false);
    }
 

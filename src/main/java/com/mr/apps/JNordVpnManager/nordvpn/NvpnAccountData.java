@@ -84,7 +84,7 @@ public class NvpnAccountData
       catch (Exception e)
       {
          // Parsing Error
-         Starter._m_logError.TranslatorError(10100,
+         Starter._m_logError.LoggingError(10100,
                "Parsing NordVPN Account Information",
                data);
          return false;
@@ -105,7 +105,7 @@ public class NvpnAccountData
       else
       {
          // Parsing Error
-         Starter._m_logError.TranslatorError(10100, "Parsing NordVPN Account Information 'VPN Service'", data);
+         Starter._m_logError.LoggingError(10100, "Parsing NordVPN Account Information 'VPN Service'", data);
          // Fallback
          if (value.toUpperCase().contains("ACTIVE")) this.setVpnServiceIsActive("Active");
       }

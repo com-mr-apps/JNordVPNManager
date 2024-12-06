@@ -208,7 +208,11 @@ public class JUserPrefsDialog extends JDialog implements ActionListener
          case SAVE_BUTTON :
             Starter._m_logError.TraceDebug("Save changed User Preferences.");
             // Update User Preferences
+            Starter.setWaitCursor();
+            Starter.setCursorCanChange(false);
             UtilPrefs.setUserPreferencesDataSet(m_userPrefsPanel.getAllValues());
+            Starter.setCursorCanChange(true);
+            Starter.resetWaitCursor();
             break;
 
          case CANCEL_BUTTON :
