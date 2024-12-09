@@ -1,6 +1,7 @@
 package com.mr.apps.JNordVpnManager.utils.Json;
 
 import java.io.IOException;
+import java.net.ConnectException;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -10,7 +11,7 @@ import org.json.JSONException;
 
 public class JsonReader
 {
-   public static JSONArray readJsonFromUrl(String url) throws IOException, InterruptedException, JSONException
+   public static JSONArray readJsonFromUrl(String url) throws IOException, InterruptedException, JSONException, ConnectException
    {
       HttpClient client = HttpClient.newHttpClient();
       HttpRequest request = HttpRequest.newBuilder().uri(URI.create(url)).build();

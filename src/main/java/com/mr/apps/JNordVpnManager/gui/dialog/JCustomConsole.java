@@ -251,7 +251,7 @@ public class JCustomConsole extends WindowAdapter implements WindowListener, Act
       JPanel buttonRow = new JPanel();
       JButton btnClear = new JButton("Clear Log");
       JButton btnSave = new JButton("Save Log");
-      JButton btnClose = new JButton("Close Log");
+      JButton btnClose = new JButton("Close Console");
       JButton btnExit = new JButton("Exit JNordVPN Manager");
       buttonRow.setLayout(new FlowLayout(FlowLayout.CENTER));
       buttonRow.add(btnSave);

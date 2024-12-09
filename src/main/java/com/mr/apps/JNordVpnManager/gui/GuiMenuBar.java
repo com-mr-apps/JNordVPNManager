@@ -482,6 +482,8 @@ public class GuiMenuBar
     */
    public static void addToMenuRecentServerListItems(Location loc)
    {
+      if (null == m_menuItemRecentServer) return;
+
       for (int n = 0; n < m_recentServerIdList.size(); n++)
       {
          if (m_recentServerIdList.get(n).getServerId().equals(loc.getServerId()) == true)

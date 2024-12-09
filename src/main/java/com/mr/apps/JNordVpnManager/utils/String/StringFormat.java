@@ -159,4 +159,18 @@ public class StringFormat
       }
       return oDouble;
    }
+   
+   /**
+    * Return the boolean value of a string values representing a boolean value
+    * <p>
+    * Valid boolean string values are 1|true|enable|on|enabled or 0|false|disable|off|disabled
+    * 
+    * @param value
+    *           is the String value that represents a boolean
+    * @return true if the string values represents true, else false
+    */
+   public static boolean string2boolean(String value)
+   {
+      return value.matches("1|true|enable|on|enabled");
+   }
 }

@@ -18,6 +18,7 @@ import com.mr.apps.JNordVpnManager.gui.dialog.JModalDialog;
 import com.mr.apps.JNordVpnManager.gui.settings.JNordVpnSettingsDialog;
 import com.mr.apps.JNordVpnManager.gui.settings.JSettingsPanelField;
 import com.mr.apps.JNordVpnManager.utils.UtilSystem;
+import com.mr.apps.JNordVpnManager.utils.String.StringFormat;
 
 /**
  * Class to manage nordvpn settings
@@ -285,7 +286,7 @@ public class NvpnSettingsData
                if (field.getElementType().startsWith("B"))
                {
                   // we get "0" and "1" back from settings panel - I work here with disabled/enabled
-                  value = (string2boolean(value)) ? "enabled" : "disabled";
+                  value = (StringFormat.string2boolean(value)) ? "enabled" : "disabled";
                }
                String line = key + " " + value;
                writer.write(line);
@@ -422,7 +423,7 @@ public class NvpnSettingsData
          {
             // call set command
             m_tplite = data;
-            NvpnCommands.tpliteSettings(string2boolean(data));
+            NvpnCommands.tpliteSettings(StringFormat.string2boolean(data));
             if (UtilSystem.getLastExitCode() == 0) return true;
          }
       }
@@ -495,7 +496,7 @@ public class NvpnSettingsData
          {
             // call set command
             m_firewall = data;
-            NvpnCommands.firewallSettings(string2boolean(data));
+            NvpnCommands.firewallSettings(StringFormat.string2boolean(data));
             if (UtilSystem.getLastExitCode() == 0) return true;
          }
       }
@@ -568,7 +569,7 @@ public class NvpnSettingsData
          {
             // call set command
             m_ipv6 = data;
-            NvpnCommands.ipv6Settings(string2boolean(data));
+            NvpnCommands.ipv6Settings(StringFormat.string2boolean(data));
             if (UtilSystem.getLastExitCode() == 0) return true;
          }
       }
@@ -604,7 +605,7 @@ public class NvpnSettingsData
          {
             // call set command
             m_routing = data;
-            NvpnCommands.routingSettings(string2boolean(data));
+            NvpnCommands.routingSettings(StringFormat.string2boolean(data));
             if (UtilSystem.getLastExitCode() == 0) return true;
          }
       }
@@ -640,7 +641,7 @@ public class NvpnSettingsData
          {
             // call set command
             m_analytics = data;
-            NvpnCommands.analyticsSettings(string2boolean(data));
+            NvpnCommands.analyticsSettings(StringFormat.string2boolean(data));
             if (UtilSystem.getLastExitCode() == 0) return true;
          }
       }
@@ -676,7 +677,7 @@ public class NvpnSettingsData
          {
             // call set command
             m_killswitch = data;
-            NvpnCommands.killswitchSettings(string2boolean(data));
+            NvpnCommands.killswitchSettings(StringFormat.string2boolean(data));
             if (UtilSystem.getLastExitCode() == 0) return true;
          }
       }
@@ -712,7 +713,7 @@ public class NvpnSettingsData
          {
             // call set command
             m_notify = data;
-            NvpnCommands.notifySettings(string2boolean(data));
+            NvpnCommands.notifySettings(StringFormat.string2boolean(data));
             if (UtilSystem.getLastExitCode() == 0) return true;
          }
       }
@@ -748,7 +749,7 @@ public class NvpnSettingsData
          {
             // call set command
             m_tray = data;
-            NvpnCommands.traySettings(string2boolean(data));
+            NvpnCommands.traySettings(StringFormat.string2boolean(data));
             if (UtilSystem.getLastExitCode() == 0) return true;
          }
       }
@@ -830,7 +831,7 @@ public class NvpnSettingsData
          {
             // call set command
             m_meshnet = data;
-            NvpnCommands.meshnetSettings(string2boolean(data));
+            NvpnCommands.meshnetSettings(StringFormat.string2boolean(data));
             if (UtilSystem.getLastExitCode() == 0) return true;
          }
       }
@@ -866,7 +867,7 @@ public class NvpnSettingsData
          {
             // call set command
             m_lanDiscovery = data;
-            NvpnCommands.lanDiscoverySettings(string2boolean(data));
+            NvpnCommands.lanDiscoverySettings(StringFormat.string2boolean(data));
             if (UtilSystem.getLastExitCode() == 0) return true;
          }
       }
@@ -902,7 +903,7 @@ public class NvpnSettingsData
          {
             // call set command
             m_virtualLocation = data;
-            NvpnCommands.virtualLocationSettings(string2boolean(data));
+            NvpnCommands.virtualLocationSettings(StringFormat.string2boolean(data));
             if (UtilSystem.getLastExitCode() == 0)
             {
                JModalDialog.showMessage("nordvpn set virtual-location " + data, "Please refresh the server list to get a list of the actual available servers.");
@@ -942,7 +943,7 @@ public class NvpnSettingsData
          {
             // call set command
             m_postQuantum = data;
-            NvpnCommands.postQuantumSettings(string2boolean(data));
+            NvpnCommands.postQuantumSettings(StringFormat.string2boolean(data));
             if (UtilSystem.getLastExitCode() == 0) return true;
          }
       }
@@ -1109,20 +1110,6 @@ public class NvpnSettingsData
       }
       getNordVPNSettings();
    }
-   
-   /**
-    * Return the boolean value of a string values representing a boolean value
-    * <p>
-    * Valid boolean string values are 1|true|enable|on|enabled or 0|false|disable|off|disabled
-    * 
-    * @param value
-    *           is the String value that represents a boolean
-    * @return true if the string values represents true, else false
-    */
-   private boolean string2boolean(String value)
-   {
-      return value.matches("1|true|enable|on|enabled");
-   }
 
    /**
     * Check, if two string values representing boolean values are equal
@@ -1137,6 +1124,6 @@ public class NvpnSettingsData
     */
    private boolean equalBoolean(String value1, String value2)
    {
-      return string2boolean(value1) == string2boolean(value2);
+      return StringFormat.string2boolean(value1) == StringFormat.string2boolean(value2);
    }
 }

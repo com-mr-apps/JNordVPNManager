@@ -219,7 +219,11 @@ public class JSettingsPanel extends JPanel
          if (null != entryValue)
          {
             Object textField = entryValue.getJPanelComponent();
-            String value = hm.get(key);
+            String value = null;
+            if (null != hm)
+            {
+               value = hm.get(key);
+            }
             setSettingValue(key, textField, value);
          }
       }
