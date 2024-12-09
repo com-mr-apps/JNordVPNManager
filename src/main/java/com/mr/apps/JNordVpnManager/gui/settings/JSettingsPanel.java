@@ -107,7 +107,7 @@ public class JSettingsPanel extends JPanel
             String[] saList = getList(settingsField.getElementType());
             if (null == saList)
             {
-               Starter._m_logError.TranslatorError(10500, "Error in List definition", "List values cannot be parsed. Check definition: " + settingsField.getElementType());
+               Starter._m_logError.LoggingError(10500, "Error in List definition", "List values cannot be parsed. Check definition: " + settingsField.getElementType());
             }
             else
             {
@@ -125,7 +125,7 @@ public class JSettingsPanel extends JPanel
          }
          else
          {
-            Starter._m_logError.TranslatorAbend(10997,
+            Starter._m_logError.LoggingAbend(10997,
                   "Invalid Field Type",
                   "The field type '" + settingsField.getElementType() + "' is not implemented yet. Please open a Issue/Bug report.");
          }
@@ -202,7 +202,7 @@ public class JSettingsPanel extends JPanel
       else
       {
          // should not happen
-         Starter._m_logError.TranslatorAbend(10997,
+         Starter._m_logError.LoggingAbend(10997,
                "Invalid Field Type",
                "The field type '" + fieldTitle.getElementType() + "' is not implemented yet. Please open a Issue/Bug report.");
          return;
@@ -219,7 +219,11 @@ public class JSettingsPanel extends JPanel
          if (null != entryValue)
          {
             Object textField = entryValue.getJPanelComponent();
-            String value = hm.get(key);
+            String value = null;
+            if (null != hm)
+            {
+               value = hm.get(key);
+            }
             setSettingValue(key, textField, value);
          }
       }
@@ -248,7 +252,7 @@ public class JSettingsPanel extends JPanel
       else
       {
          // should not happen
-         Starter._m_logError.TranslatorAbend(10997,
+         Starter._m_logError.LoggingAbend(10997,
                "Invalid Field Type",
                "The field type '" + fieldTitle.getElementType() + "' is not implemented yet. Please open a Issue/Bug report.");
          return null;

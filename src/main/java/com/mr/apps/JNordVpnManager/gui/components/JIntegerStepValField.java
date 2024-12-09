@@ -65,7 +65,7 @@ public class JIntegerStepValField extends JComponent
       }
       catch (Exception e)
       {
-         Starter._m_logError.TranslatorExceptionMessage(5, 10998, e);
+         Starter._m_logError.LoggingExceptionMessage(5, 10998, e);
       }
    }
 
@@ -78,7 +78,7 @@ public class JIntegerStepValField extends JComponent
       }
       catch (Exception e)
       {
-         Starter._m_logError.TranslatorExceptionMessage(5, 10998, e);
+         Starter._m_logError.LoggingExceptionMessage(5, 10998, e);
       }
    }
 

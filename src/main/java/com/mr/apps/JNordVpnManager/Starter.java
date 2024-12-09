@@ -48,6 +48,7 @@ import com.mr.apps.JNordVpnManager.gui.serverTree.JServerTreePanel;
 import com.mr.apps.JNordVpnManager.nordvpn.NvpnAccountData;
 import com.mr.apps.JNordVpnManager.nordvpn.NvpnCallbacks;
 import com.mr.apps.JNordVpnManager.nordvpn.NvpnCommands;
+import com.mr.apps.JNordVpnManager.nordvpn.NvpnSettingsData;
 import com.mr.apps.JNordVpnManager.nordvpn.NvpnStatusData;
 import com.mr.apps.JNordVpnManager.utils.UtilLogErr;
 import com.mr.apps.JNordVpnManager.utils.UtilPrefs;
@@ -69,7 +70,7 @@ public class Starter
    public static final int         STATUS_PAUSED              = 1;
    public static final int         STATUS_DISCONNECTED        = 2;
 
-   private static final String     APPLICATION_ICON_IMAGE     = "resources/icons/icon.jpg";
+   private static final String     APPLICATION_ICON_IMAGE     = "resources/icons/icon.svg";
 
    private static JFrame           m_mainFrame                = null;
    private static JServerTreePanel m_serverListPanel          = null;
@@ -84,10 +85,13 @@ public class Starter
    private static Cursor           m_applicationDefaultCursor = null;
    private static boolean          m_cursorChangeAllowed      = true;
    private static boolean          m_skipWindowGainedFocus    = false;
+   private static boolean          m_forceWindowGainedFocus   = false;
    private static boolean          m_installMode              = false;
 
-   private static NvpnStatusData   m_statusData               = null;
+   private static NvpnStatusData   m_nvpnStatusData           = null;
    private static CurrentLocation  m_currentServer            = null;
+   private static NvpnSettingsData m_nvpnSettingsData         = null;
+   private static NvpnAccountData  m_nvpnAccountData          = null;
 
    /**
     * NordVPN GUI application.
@@ -95,7 +99,7 @@ public class Starter
     */
    public static void main(String[] args) throws Exception
    {
-      _m_logError.TranslatorInfo("JNordVPN Manager launched...");
+      _m_logError.LoggingInfo("JNordVPN Manager launched...");
  
      splashScreenInit();
      SwingUtilities.invokeLater(() -> new Starter());
@@ -127,7 +131,18 @@ public class Starter
     */
    public static void setSkipWindowGainedFocus()
    {
+      Starter._m_logError.TraceDebug("Set m_skipWindowGainedFocus=true");
       m_skipWindowGainedFocus = true;
+   }
+
+   /**
+    * Method to set the flag to force "WindowGainedFocus" event for main application<p>
+    * Force the Event to execute from the application, to update the GUI.
+    */
+   public static void setForceWindowGainedFocus()
+   {
+      Starter._m_logError.TraceDebug("Set m_forceWindowGainedFocus=true");
+      m_forceWindowGainedFocus = true;
    }
 
    /**
@@ -187,7 +202,7 @@ public class Starter
          {
             // exit confirmed
             cleanUp();
-            _m_logError.TranslatorInfo("... exit JNordVPN Manager.");
+            _m_logError.LoggingInfo("... exit JNordVPN Manager.");
             System.exit(0);
          }
       }
@@ -206,7 +221,7 @@ public class Starter
             }
 
             cleanUp();
-            _m_logError.TranslatorInfo("... exit JNordVPN Manager.");
+            _m_logError.LoggingInfo("... exit JNordVPN Manager.");
 
             // exit program with last error code (or 0)
             System.exit(_m_logError.getLastErrCode());
@@ -229,7 +244,7 @@ public class Starter
       
       // TODO: save current UtilPrefs settings
 
-      updateServer(); // update recent server settings
+      updateCurrentServer(); // update recent server settings
       
       if (m_splashScreen.getProgress() < 100)
       {
@@ -265,18 +280,29 @@ public class Starter
             if (e.getOppositeWindow()==null)
             {
                // gain focus -> update GUI with current data
-               _m_logError.TraceDebug("windowGainedFocus");
-               if (m_skipWindowGainedFocus)
+               if (!m_forceWindowGainedFocus && m_skipWindowGainedFocus)
                {
                   // Flag is set from the internal message dialogs. On close [re-enter in main application] I don't need an update
                   m_skipWindowGainedFocus = false;
+                  _m_logError.TraceDebug("windowGainedFocus skipped");
                }
-               else if (false == m_installMode)
+               else
                {
-                  updateServer();
-                  NvpnAccountData accountData = new NvpnAccountData();
-                  GuiMenuBar.updateLoginOut(accountData);
-                  GuiConnectLine.updateLoginOut(accountData);            
+                  m_forceWindowGainedFocus = false;
+                  m_skipWindowGainedFocus = false;
+                  if (false == m_installMode)
+                  {
+                     _m_logError.TraceDebug("windowGainedFocus launched");
+                     m_nvpnSettingsData = new NvpnSettingsData();
+                     m_nvpnAccountData = new NvpnAccountData();
+                     // update the status line, commands menu and world map current server layer
+                     updateCurrentServer();
+                     // update the server tree (and world map all servers layer)
+                     m_serverListPanel.updateFilterTreeCB();
+                     // update login information
+                     GuiMenuBar.updateLoginOut(m_nvpnAccountData);
+                     GuiConnectLine.updateLoginOut(m_nvpnAccountData);
+                  }
                }
             }
          }
@@ -301,51 +327,57 @@ public class Starter
       }
       m_mainFrame.setIconImage(appImage);
 
-      /*
-       * Check, if Nordvpn is installed
-       */
+      // -------------------------------------------------------------------------------
+      // Check, if Nordvpn is installed
+      // -------------------------------------------------------------------------------
       if (!NvpnCommands.isInstalled())
       {
          // TranslatorAbend() calls cleanupAndExit()
-         _m_logError.TranslatorAbend(10998,
+         _m_logError.LoggingAbend(10998,
                "Backend NordVPN not installed.",
                "'nordvpn' command not found.\nCheck installation of NordVPN!\n\nExit program.");
       }
 
+      // activate console
+      m_consoleWindow = new JCustomConsole();
+      _m_logError.LoggingInfo("GUI Version: " + version);
+      m_splashScreen.setProgress(10);
+
+      int iConsoleActive = UtilPrefs.isConsoleActive();
+      if (1 == iConsoleActive)
+      {
+         // open the console at program start
+         switchConsoleWindow();
+      }
+
+      // -------------------------------------------------------------------------------
       // If we are called from snap...: 'strict' doesn't let us execute the 'nordvpn' command outside the snap
       // -> 'Installer mode' to install a local desktop file that runs the jar directly (outside of the snap container)
+      // -------------------------------------------------------------------------------
       String usrHome = System.getProperty("user.home");
       String myHome = System.getenv("SNAP_REAL_HOME");
       if ((null != myHome) && (false == myHome.equals(usrHome))) // requires additional check for debug.. because eclipse is a snap and sets the SNAP_* variables..
       {
          // we run the jar from the snap installation
+         m_splashScreen.setStatus("Installation...");
+         _m_logError.TraceDebug("JNordVPN Manager called in installation mode (in the snap environment)");
          m_installMode = true;
          _m_logError.enableTraceFlag(UtilLogErr.TRACE_Init);
          _m_logError.enableTraceFlag(UtilLogErr.TRACE_Cmd);
-      }
 
-      // activate console
-      m_consoleWindow = new JCustomConsole();
-      _m_logError.TranslatorInfo("GUI Version: " + version);
-      m_splashScreen.setProgress(10);
-
-      // If we are called from snap...: 'strict' doesn't let us execute the 'nordvpn' command outside the snap
-      // -> 'Installer mode' to install a local desktop file that runs the jar directly (outside of the snap container)
-      if (m_installMode)
-      {
-         // open the console window
-         switchConsoleWindow();
-         _m_logError.TraceDebug("JNordVPN Manager called in installation mode (in the snap environment)");
+         // open the console window (if not already open)
+         if (0 == iConsoleActive) switchConsoleWindow();
 
          // check if the local desktop file already exists (in the real home directory!)
          String targetFile = myHome + "/Desktop/JNordVpnManager_Java.desktop";
+
          // ask, if we should copy the desktop file to the local desktop...
          if (JModalDialog.showConfirm("JNordVPN Manager (install) called.\n" +
                "To run the application you need an actual 'JNordVPNManager_Java.desktop' file in your local '~/Desktop directory', or execute the command:\n" +
                "/snap/j-nordvpn-manager/current/bin/java -jar /snap/j-nordvpn-manager/current/JNordVpnManager-current.jar.\n\n" +
                "Do you want to install the JNordVPNManager_Java.desktop file in your ~/Desktop directory to launch the application?") == JOptionPane.YES_OPTION)
          {
-            // copy the desktop file
+            // yes - copy the desktop file
             try
             {
                UtilSystem.CopyTextFile("/snap/j-nordvpn-manager/current/Desktop/JNordVpnManager_Java.desktop",
@@ -356,7 +388,7 @@ public class Starter
             catch (IOException e1)
             {
                // we don't exit to give the user the chance to access the console
-               _m_logError.TranslatorExceptionMessage(4, 10901, e1);
+               _m_logError.LoggingExceptionMessage(4, 10901, e1);
             }
          }
 
@@ -375,23 +407,24 @@ public class Starter
                "If you continue, you cannot execute any 'nordvpn' command, but you have access to the console and Info menus to check messages and errors.\n\n" +
                "Please confirm to exit the program.") == JOptionPane.YES_OPTION)
          {
+            // yes - exit
             cleanupAndExit(true);
          }
          _m_logError.TraceDebug("...continue execution in 'installer mode'...");
       }
 
-      /* 
-       * Get the NordVPN version for handle supported features
-       */
+      // -------------------------------------------------------------------------------
+      // Get the NordVPN version for handle supported features
+      // -------------------------------------------------------------------------------
       m_nordvpnVersion = "n/a";
-      String errMsg = null;
+      String errorGetVersion = null;
       String[] saVersions = NvpnCommands.getVersion();
       if (UtilSystem.isLastError())
       {
          // could not get the version
-         errMsg = UtilSystem.getLastError();
+         errorGetVersion = UtilSystem.getLastError();
       }
-      else
+      if (null != saVersions && null != saVersions[0])
       {
          Pattern pattern = Pattern.compile("^.*(\\d+\\.\\d+\\.\\d+)", Pattern.CASE_INSENSITIVE);
          Matcher matcher = pattern.matcher(saVersions[0]);
@@ -400,48 +433,76 @@ public class Starter
          {
             m_nordvpnVersion = matcher.group(1);
          }
-         else
-         {
-            errMsg = "Invalid formatted version string=" + saVersions[0] + "<.";
-         }
       }
-      if ((null != errMsg) && (false == m_installMode))
+      if ((null != errorGetVersion) && (false == m_installMode))
       {
-         _m_logError.TranslatorError(10000,
-               "NordVPN Version error",
-               errMsg);
+         JModalDialog.showError("NordVPN Version error",
+               errorGetVersion + "\n" + StringFormat.printString(saVersions[0], "") + "\n" + StringFormat.printString(saVersions[1], ""));
       }
       _m_logError.TraceIni("NordVPN version=" + m_nordvpnVersion + ".");
 
       //-------------------------------------------------------------------------------
-      // Initialize Server Locations
-      UtilLocations.initCsvLocations();
-
-      m_splashScreen.setProgress(20);
-
-      //-------------------------------------------------------------------------------
-      // Menu bar
-      GuiMenuBar myMenuBar = new GuiMenuBar();
-      JMenuBar menubar = myMenuBar.create();
-      m_mainFrame.setJMenuBar(menubar);
-
-      //-------------------------------------------------------------------------------
-      // Connect Panel
-      m_connectLine = new GuiConnectLine();
-      JPanel connectPanel = m_connectLine.create();
-
-      m_splashScreen.setProgress(30);
-
-      //-------------------------------------------------------------------------------
       // Status bar Panel
+      //-------------------------------------------------------------------------------
       m_statusLine = new GuiStatusLine();
       JPanel statusPanel = m_statusLine.create();
+
+      // -------------------------------------------------------------------------------
+      // Get NordVPN account and settings data 
+      // -------------------------------------------------------------------------------
+      if ((null == errorGetVersion) && (false == m_installMode))
+      {
+         m_splashScreen.setProgress(20);
+         m_splashScreen.setStatus("Get NordVPN Information...");
+
+         m_nvpnAccountData = new NvpnAccountData();
+         m_nvpnSettingsData = new NvpnSettingsData();
+         m_nvpnStatusData = new NvpnStatusData();
+      }
+
+      //-------------------------------------------------------------------------------
+      // If we are logged in, get the status and optionally [auto]connect
+      //-------------------------------------------------------------------------------
+      boolean bConnected = false;
+      if ((null != m_nvpnAccountData) && (true == m_nvpnAccountData.isLoggedIn()))
+      {
+         bConnected = m_nvpnStatusData.isConnected();
+
+         int iAutoConnect = UtilPrefs.getAutoConnectMode();
+         if (false == bConnected && 1 == iAutoConnect)
+         {
+            m_splashScreen.setProgress(30);
+            CurrentLocation loc = getCurrentServer();
+            if (null != loc)
+            {
+               m_splashScreen.setStatus("Auto Connect to " + ((Location)loc).getServerId());
+               String msg = NvpnCallbacks.executeConnect(loc);
+               if (NvpnCallbacks.isLastError())
+               {
+                  msg = NvpnCallbacks.getLastError();
+                  JModalDialog.showError("JNordVPN Manager Auto Connect", msg);
+               }
+               else
+               {
+                  // get the updated status (should be connected)
+                  m_nvpnStatusData = new NvpnStatusData();
+                  bConnected = m_nvpnStatusData.isConnected();
+               }
+            }
+         }
+      }
+
+      if (!bConnected)
+      {
+         GuiStatusLine.updateStatusLine(STATUS_DISCONNECTED, "Not logged in to NordVPN Service.");
+      }
 
       m_splashScreen.setProgress(40);
       m_splashScreen.setStatus("Create World Map...");
 
       //-------------------------------------------------------------------------------
-      // Map Area
+      // Initialize Map Area
+      // -------------------------------------------------------------------------------
       GuiMapArea mapArea = new GuiMapArea();
       // Create a map content and add our shape file (with locations) to it
       m_mapFrame = mapArea.create();
@@ -450,15 +511,32 @@ public class Starter
       m_splashScreen.setStatus("Create Server list...");
 
       //-------------------------------------------------------------------------------
-      // Server Location Area
+      // Server Location Selection Tree
+      //-------------------------------------------------------------------------------
       m_serverListPanel = new JServerTreePanel();
       m_serverListPanel.setPreferredSize(new Dimension(255, 400));
 
-      m_splashScreen.setProgress(70);
+      m_splashScreen.setProgress(60);
       m_splashScreen.setStatus("Create Layout...");
 
       //-------------------------------------------------------------------------------
+      // Menu bar (after JServerTreePanel!)
+      //-------------------------------------------------------------------------------
+      GuiMenuBar myMenuBar = new GuiMenuBar();
+      JMenuBar menubar = myMenuBar.create(m_nvpnAccountData);
+      m_mainFrame.setJMenuBar(menubar);
+
+      m_splashScreen.setProgress(70);
+
+      //-------------------------------------------------------------------------------
+      // Connect Panel
+      //-------------------------------------------------------------------------------
+      m_connectLine = new GuiConnectLine();
+      JPanel connectPanel = m_connectLine.create(m_nvpnAccountData);
+
+      //-------------------------------------------------------------------------------
       // main frame layout
+      //-------------------------------------------------------------------------------
       m_mainFrame.add(connectPanel, BorderLayout.PAGE_START);
       m_mainFrame.add(m_serverListPanel, BorderLayout.LINE_START);
       m_mainFrame.add(m_mapFrame.getContentPane(), BorderLayout.CENTER);
@@ -466,30 +544,18 @@ public class Starter
 
       m_aboutScreen  = new JAboutScreen(version);
 
-      m_splashScreen.setProgress(80);
-      m_splashScreen.setStatus("Update Status...");
-
-      boolean bConnected = updateServer(); // Update the Status to know if we are already connected
-
-      int iAutoConnect = UtilPrefs.getAutoConnectMode();
-      if (false == bConnected && 1 == iAutoConnect)
-      {
-         m_splashScreen.setProgress(90);
-         CurrentLocation loc = getCurrentServer();
-         if (null != loc)
-         {
-            m_splashScreen.setStatus("Connect to " + ((Location)loc).toString());
-            NvpnCallbacks.executeConnect(loc);
-         }
-      }
+      m_splashScreen.setProgress(90);
+      m_splashScreen.setStatus("Finalize...");
 
       //-------------------------------------------------------------------------------
       // display main frame
+      //-------------------------------------------------------------------------------
       int compactMode = (m_installMode) ? 1 : UtilPrefs.getCompactMode();
       switchCompactMode(compactMode); // calls pack() and sets minimum size
       m_mainFrame.setVisible(true);
 
       m_splashScreen.setProgress(100); // ..and close the splash screen (Important: AFTER setVisible of main frame, else the application icon disappears!)
+      updateCurrentServer();
 
       _m_logError.TraceIni("**********************************************************************************\n"
                          + "Finished Initialization.\n"
@@ -509,7 +575,7 @@ public class Starter
          CurrentLocation loc = new CurrentLocation(UtilLocations.getLocation(city, country));
          loc.setConnected(false);
          // return only a "real" location
-         return (loc.getNumber() == 0) ? null : loc;
+         return (loc.getCityId() <= 0) ? null : loc;
       }
       return m_currentServer;
    }
@@ -528,13 +594,13 @@ public class Starter
     * 
     * @return the current connection status (true == connected)
     */
-   public static boolean updateServer()
+   public static boolean updateCurrentServer()
    {
-      if ((true == m_installMode) || (null == m_statusLine)) return false;
+      if ((true == m_installMode) || (m_splashScreen.getProgress() < 100)) return false;
 
       // get the current connected server from the "nordvpn status" command
-      m_statusData = new NvpnStatusData();
-      m_currentServer = m_statusLine.update(m_statusData);
+      m_nvpnStatusData = new NvpnStatusData();
+      m_currentServer = m_statusLine.update(m_nvpnStatusData);
  
       if (null != m_currentServer && m_currentServer.isConnected())
       {
@@ -542,8 +608,8 @@ public class Starter
          _m_logError.TraceDebug("Update Current active Server=" + m_currentServer.toString() + "<.");
 
          // Update preferences with current connected server
-         UtilPrefs.setRecentCountry(m_currentServer.getCountry());
-         UtilPrefs.setRecentCity(m_currentServer.getCity());
+         UtilPrefs.setRecentCountry(m_currentServer.getCountryName());
+         UtilPrefs.setRecentCity(m_currentServer.getCityName());
 
          // Update the current server map layer and zoom there
          UtilMapGeneration.changeCurrentServerMapLayer(m_currentServer);
@@ -570,7 +636,7 @@ public class Starter
       
       return (null == m_currentServer) ? false : m_currentServer.isConnected();
    }
-   
+
    /**
     * Switch between Compact and Expanded Manager View
     * @param mode is 1 for Compact mode, 0 for Expanded mode.
@@ -612,7 +678,17 @@ public class Starter
 
    public static NvpnStatusData getCurrentStatusData()
    {
-      return m_statusData;
+      return m_nvpnStatusData;
+   }
+
+   public static NvpnSettingsData getCurrentSettingsData()
+   {
+      return m_nvpnSettingsData;
+   }
+
+   public static NvpnAccountData getCurrentAccountData()
+   {
+      return m_nvpnAccountData;
    }
 
    public static boolean isInstallMode()

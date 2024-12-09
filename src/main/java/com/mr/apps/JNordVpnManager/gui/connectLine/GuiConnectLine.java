@@ -33,7 +33,14 @@ public class GuiConnectLine
 
    }
 
-   public JPanel create()
+   /**
+    * Connect Line Panel Layout definition.
+    * 
+    * @param accountData
+    *           is the nordvpn account data
+    * @return the created connect line panel
+    */
+   public JPanel create(NvpnAccountData accountData)
    {
       JPanel connectPanel = new JPanel(new BorderLayout());
       connectPanel.setBorder(BorderFactory.createEmptyBorder(0,5,5,5));
@@ -99,7 +106,6 @@ public class GuiConnectLine
       JPauseSlider ps = new JPauseSlider();
       connectPanel.add(ps, BorderLayout.CENTER);
 
-      NvpnAccountData accountData = new NvpnAccountData();
       JPanel mailPanel = new JPanel(new FlowLayout());
       m_jbMail = new JButton();
       m_jbMail.addActionListener(new ActionListener() {
@@ -121,7 +127,15 @@ public class GuiConnectLine
 
    public static void updateLoginOut(NvpnAccountData accountData)
    {
-      m_jbMail.setText((accountData.isLoggedIn()) ? accountData.getEmail() : "Login");
-      m_jbMail.setToolTipText((accountData.isLoggedIn()) ? "Logout from " + accountData.getEmail() : "Login");
+      if (null != accountData && !accountData.isFailed())
+      {
+         m_jbMail.setText((accountData.isLoggedIn()) ? accountData.getEmail() : "Login");
+         m_jbMail.setToolTipText((accountData.isLoggedIn()) ? "Logout from " + accountData.getEmail() : "Login");
+      }
+      else
+      {
+         m_jbMail.setText("Login");
+         m_jbMail.setToolTipText("Login");
+      }
    }
 }

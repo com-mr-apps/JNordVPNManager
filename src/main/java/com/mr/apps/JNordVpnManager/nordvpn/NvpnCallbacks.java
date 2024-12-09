@@ -61,7 +61,7 @@ public class NvpnCallbacks
       m_lastErrorMessage = null;
       if (null != loc)
       {
-         Starter._m_logError.TranslatorInfo("Change Server: " + loc.toString());
+         Starter._m_logError.LoggingInfo("Change Server: " + loc.toString());
 
          String city = loc.getCityNordVPN();
          String country = loc.getCountryNordVPN();
@@ -81,7 +81,7 @@ public class NvpnCallbacks
          else
          {
             // OK
-            Starter.updateServer();
+            Starter.updateCurrentServer();
             GuiMenuBar.addToMenuRecentServerListItems(loc);
          }
       }
@@ -101,7 +101,7 @@ public class NvpnCallbacks
       else
       {
          // OK
-         Starter.updateServer();
+         Starter.updateCurrentServer();
 
          // if command returns 2 lines, suppress the second line (TODO: Requester with rating)
          String[] msgLines= msg.split("\\n");
@@ -145,14 +145,14 @@ public class NvpnCallbacks
                }
                catch (URISyntaxException e)
                {
-                  Starter._m_logError.TranslatorExceptionAbend(10903, e);
+                  Starter._m_logError.LoggingExceptionAbend(10903, e);
                   m_lastErrorMessage = "Could not launch web page URL=" + matcher.group(1);
                }
             }
             else
             {
                // Parsing Error
-               Starter._m_logError.TranslatorError(10100, "Parsing NordVPN Login Information", msg);
+               Starter._m_logError.LoggingError(10100, "Parsing NordVPN Login Information", msg);
                Starter._m_logError.TraceDebug("NordVPN login Pattern=" + pattern.toString());
 
                m_lastErrorMessage = "'nordvpn login' information cannot be parsed.";
@@ -239,7 +239,7 @@ public class NvpnCallbacks
             else if (newStatus == false)
             {
                // switch from login to logout -> server disconnected
-               Starter.updateServer();
+               Starter.updateCurrentServer();
             }
 
             // update GUI

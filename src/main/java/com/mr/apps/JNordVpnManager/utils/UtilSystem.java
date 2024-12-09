@@ -67,6 +67,11 @@ public class UtilSystem
       return message;
    }
 
+   public static void setLastError(String msg, int rc)
+   {
+      m_lastErrorMessage = msg;
+      m_lastExitCode = rc;
+   }
    /**
     * Get the last command exit code
     * @return the last command exit
@@ -158,19 +163,19 @@ public class UtilSystem
       }
       catch (IOException e)
       {
-         Starter._m_logError.TranslatorExceptionMessage(4, 10900, e);
+         Starter._m_logError.LoggingExceptionMessage(4, 10900, e);
          m_lastExitCode = m_process.exitValue();
          m_lastErrorMessage = "Command '" + joinCommand(command) + "' returned with: IOException.";
       }
       catch (InterruptedException e)
       {
-         Starter._m_logError.TranslatorExceptionMessage(4, 10900, e);
+         Starter._m_logError.LoggingExceptionMessage(4, 10900, e);
          m_lastExitCode = m_process.exitValue();
          m_lastErrorMessage = "Command '" + joinCommand(command) + "' returned with: InterruptedException.";
       }
       catch (SecurityException e)
       {
-         Starter._m_logError.TranslatorExceptionMessage(4, 10900, e);
+         Starter._m_logError.LoggingExceptionMessage(4, 10900, e);
          m_lastExitCode = m_process.exitValue();
          m_lastErrorMessage = "Command '" + joinCommand(command) + "' returned with: SecurityException.";
       }
@@ -179,7 +184,7 @@ public class UtilSystem
          Starter.resetWaitCursor();
       }
 
-      if (null != m_lastErrorMessage) Starter._m_logError.TranslatorError(10900, "Command Error Message:", m_lastErrorMessage);
+      if (null != m_lastErrorMessage) Starter._m_logError.LoggingError(10900, "Command Error Message:", m_lastErrorMessage);
       return m_stdOut.toString();
    }
 
@@ -223,7 +228,7 @@ public class UtilSystem
     *           is the VARARG command
     * @return the joined command
     */
-   private static String joinCommand(String... command)
+   public static String joinCommand(String... command)
    {
       StringBuffer fullCommand = new StringBuffer();
       for (String s : command)
@@ -262,7 +267,7 @@ public class UtilSystem
    
    public static boolean openWebpage(URI uri)
    {
-      Starter._m_logError.TranslatorInfo("Open URL in WebBrower: " + uri.toString());
+      Starter._m_logError.LoggingInfo("Open URL in WebBrower: " + uri.toString());
       Desktop desktop = Desktop.isDesktopSupported() ? Desktop.getDesktop() : null;
       if (desktop != null && desktop.isSupported(Desktop.Action.BROWSE))
       {
@@ -273,19 +278,19 @@ public class UtilSystem
          }
          catch (Exception e)
          {
-            Starter._m_logError.TranslatorExceptionMessage(4, 10903, e);
+            Starter._m_logError.LoggingExceptionMessage(4, 10903, e);
          }
       }
       else
       {
-         Starter._m_logError.TranslatorError(10903,
+         Starter._m_logError.LoggingError(10903,
                "The Desktop does not support to open URL's in WebBrowers!",
                "URL: " + uri.toString() + " cannot be opened.\n" +
                "Try Fallback with xdg-open [url] command...");
          String status = runCommand("xdg-open", uri.toString());
          if (UtilSystem.isLastError())
          {
-            Starter._m_logError.TranslatorError(10903,
+            Starter._m_logError.LoggingError(10903,
                   "Command 'xdg-open [url]' returned with error",
                   status);
          }
@@ -305,7 +310,7 @@ public class UtilSystem
       }
       catch (URISyntaxException e)
       {
-         Starter._m_logError.TranslatorExceptionMessage(4, 10903, e);
+         Starter._m_logError.LoggingExceptionMessage(4, 10903, e);
       }
       return false;
    }

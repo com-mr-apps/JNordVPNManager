@@ -243,7 +243,7 @@ public class JPauseSlider extends JPanel
       {
          setTimeSlider(iTime);
       }
-      Starter._m_logError.TranslatorInfo("Start Pause: Disconnect from VPN for " + timeSliderValueToText(m_timeSlider.getValue()) + ".");
+      Starter._m_logError.LoggingInfo("Start Pause: Disconnect from VPN for " + timeSliderValueToText(m_timeSlider.getValue()) + ".");
       m_timer.start();
       m_startStopButton.setIcon(m_timerStartStopImages.get(1));
       m_startStopButton.setToolTipText("Reconnect.");
@@ -258,7 +258,7 @@ public class JPauseSlider extends JPanel
     */
    private static void stopTheTimer()
    {
-      Starter._m_logError.TranslatorInfo("Stop Pause.");
+      Starter._m_logError.LoggingInfo("Stop Pause.");
       m_timer.stop();
       m_startStopButton.setIcon(m_timerStartStopImages.get(0));
       m_startStopButton.setToolTipText("Pause VPN connection for " + timeSliderValueToText(m_timeSlider.getValue()) + ".");

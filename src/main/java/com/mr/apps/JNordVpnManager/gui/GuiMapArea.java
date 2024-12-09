@@ -92,7 +92,7 @@ public class GuiMapArea
                }
                else if (e.getButton() == MouseEvent.BUTTON3)
                {
-                  if (JModalDialog.showYesNoDialog("Connect to", loc.getCountry() + " " + loc.getCity()) == JOptionPane.YES_OPTION)
+                  if (JModalDialog.showYesNoDialog("Connect to", loc.getCountryName() + " " + loc.getCityName()) == JOptionPane.YES_OPTION)
                  {
                      NvpnCallbacks.executeConnect(loc);
                  }                  

@@ -19,6 +19,7 @@ import com.mr.apps.JNordVpnManager.utils.String.StringFormat;
 
 public class NvpnAccountData
 {
+   private boolean m_failed                 = false;
    private boolean m_loggedIn               = false;
    private String  m_email                  = null;
    private boolean m_vpnServiceIsActive     = false;
@@ -37,6 +38,7 @@ public class NvpnAccountData
          }
          else
          {
+            setFailed(true);
             msg = UtilSystem.getLastError();
             if (Starter.isInstallMode())
             {
@@ -54,6 +56,7 @@ public class NvpnAccountData
          if (false == parseData(msg))
          {
             // failed
+            setFailed(true);
             JModalDialog.showError("NordVPN Account", "'nordvpn account' information cannot be parsed.");
          }
       }
@@ -81,7 +84,7 @@ public class NvpnAccountData
       catch (Exception e)
       {
          // Parsing Error
-         Starter._m_logError.TranslatorError(10100,
+         Starter._m_logError.LoggingError(10100,
                "Parsing NordVPN Account Information",
                data);
          return false;
@@ -102,7 +105,7 @@ public class NvpnAccountData
       else
       {
          // Parsing Error
-         Starter._m_logError.TranslatorError(10100, "Parsing NordVPN Account Information 'VPN Service'", data);
+         Starter._m_logError.LoggingError(10100, "Parsing NordVPN Account Information 'VPN Service'", data);
          // Fallback
          if (value.toUpperCase().contains("ACTIVE")) this.setVpnServiceIsActive("Active");
       }
@@ -182,5 +185,15 @@ public class NvpnAccountData
       {
          this.m_mfaIsEnabled = mfaIsEnabled.equalsIgnoreCase("Enabled");
       }
+   }
+
+   public boolean isFailed()
+   {
+      return m_failed;
+   }
+
+   public void setFailed(boolean m_failed)
+   {
+      this.m_failed = m_failed;
    }
 }

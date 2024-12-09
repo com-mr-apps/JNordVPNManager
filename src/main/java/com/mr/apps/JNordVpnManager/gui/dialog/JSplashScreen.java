@@ -90,7 +90,7 @@ public class JSplashScreen
             }
             catch (URISyntaxException e)
             {
-               Starter._m_logError.TranslatorExceptionAbend(10903, e);
+               Starter._m_logError.LoggingExceptionAbend(10903, e);
             }
          }
       });
@@ -116,7 +116,7 @@ public class JSplashScreen
                }
                catch (URISyntaxException e)
                {
-                  Starter._m_logError.TranslatorExceptionAbend(10903, e);
+                  Starter._m_logError.LoggingExceptionAbend(10903, e);
                }
             }
          });

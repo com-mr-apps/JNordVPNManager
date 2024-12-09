@@ -19,6 +19,7 @@ import java.util.Enumeration;
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -36,10 +37,15 @@ import javax.swing.tree.TreePath;
 import com.mr.apps.JNordVpnManager.Starter;
 import com.mr.apps.JNordVpnManager.geotools.CurrentLocation;
 import com.mr.apps.JNordVpnManager.geotools.Location;
+import com.mr.apps.JNordVpnManager.geotools.UtilLocations;
 import com.mr.apps.JNordVpnManager.geotools.UtilMapGeneration;
+import com.mr.apps.JNordVpnManager.gui.GuiMenuBar;
 import com.mr.apps.JNordVpnManager.gui.dialog.JModalDialog;
 import com.mr.apps.JNordVpnManager.nordvpn.NvpnCallbacks;
+import com.mr.apps.JNordVpnManager.nordvpn.NvpnGroups;
+import com.mr.apps.JNordVpnManager.nordvpn.NvpnGroups.NordVPNEnumGroups;
 import com.mr.apps.JNordVpnManager.nordvpn.NvpnServers;
+import com.mr.apps.JNordVpnManager.nordvpn.NvpnTechnologies;
 import com.mr.apps.JNordVpnManager.utils.UtilPrefs;
 import com.mr.apps.JNordVpnManager.utils.UtilSystem;
 
@@ -52,6 +58,8 @@ public class JServerTreePanel extends JPanel implements TreeSelectionListener
    private static String m_filterText = "";
    private boolean m_lockUpdate = false;
    private JButton m_buttonRefresh = null;
+   private JComboBox<?> m_filterRegions = null;
+   private JComboBox<?> m_filterGroups = null;
    private Color m_buttonDefaultFgColor = null;
    private static boolean m_statusInitServerList = true;
    private static boolean m_skipValueChangedEvent = false;
@@ -65,13 +73,92 @@ public class JServerTreePanel extends JPanel implements TreeSelectionListener
       this.setLayout(new BorderLayout());
       this.setBorder(BorderFactory.createEmptyBorder(0,5,0,5));
 
-
       // ---------------------------------------------------------------------------------------------
       // Filter row
       // ---------------------------------------------------------------------------------------------
       JPanel filterPanel = new JPanel();
       filterPanel.setBorder(BorderFactory.createEmptyBorder(0,5,0,15));
       filterPanel.setLayout(new BorderLayout(10,0));
+
+      // Regions Filter
+      JPanel filterPanelGroups = new JPanel();
+      filterPanelGroups.setLayout(new BorderLayout());
+
+      NordVPNEnumGroups[] iaRegions = { NordVPNEnumGroups.all_regions, NordVPNEnumGroups.The_Americas, NordVPNEnumGroups.Africa_The_Middle_East_And_India, NordVPNEnumGroups.Asia_Pacific, NordVPNEnumGroups.Europe };
+      String saRegions[]            = { "All Regions",                 "America",                      "Africa/Middle East/India",                         "Asia/Pacific",                 "Europe" };
+      m_filterRegions = new JComboBox<Object>(saRegions);
+
+      int idxRegion = NvpnGroups.getFieldIndex(NvpnGroups.getCurrentRegion(), iaRegions, 0);
+      m_filterRegions.setSelectedIndex(idxRegion);
+      Starter._m_logError.TraceDebug("Init selected Region Filter with: " + iaRegions[idxRegion]);
+
+      m_filterRegions.addActionListener(new ActionListener()
+      {
+         public void actionPerformed(ActionEvent e)
+         {
+            int index = m_filterRegions.getSelectedIndex();
+            switch (index)
+            {
+               case 1 :
+                  NvpnGroups.setCurrentRegion(NordVPNEnumGroups.The_Americas);
+                  break;
+               case 2 :
+                  NvpnGroups.setCurrentRegion(NordVPNEnumGroups.Africa_The_Middle_East_And_India);
+                  break;
+               case 3 :
+                  NvpnGroups.setCurrentRegion(NordVPNEnumGroups.Asia_Pacific);
+                  break;
+               case 4 :
+                  NvpnGroups.setCurrentRegion(NordVPNEnumGroups.Europe);
+                  break;
+               default /* 0 */:
+                  NvpnGroups.setCurrentRegion(NordVPNEnumGroups.all_regions);
+            }
+            updateFilterTreeCB();
+            GuiMenuBar.updateQuickConnectMenuButton();
+         }
+      });
+      filterPanelGroups.add(m_filterRegions, BorderLayout.PAGE_START);
+
+      // Regions Groups
+      NordVPNEnumGroups[] iaGroups = { NordVPNEnumGroups.Standard_VPN_Servers, NordVPNEnumGroups.P2P, NordVPNEnumGroups.Double_VPN, NordVPNEnumGroups.Onion_Over_VPN, NordVPNEnumGroups.Dedicated_IP };
+      String saGroups[]            = { "Standard VPN Servers",                 "P2P",                 "Double VPN",                 "Onion Over VPN",                 "Dedicated IP" };
+      m_filterGroups = new JComboBox<Object>(saGroups);
+
+      int idxGroup = NvpnGroups.getFieldIndex(NvpnGroups.getCurrentGroup(), iaGroups, 0);
+      m_filterGroups.setSelectedIndex(idxGroup);
+      Starter._m_logError.TraceDebug("Init selected Group Filter with: " + iaGroups[idxGroup]);
+
+      m_filterGroups.addActionListener(new ActionListener()
+      {
+         public void actionPerformed(ActionEvent e)
+         {
+            int index = m_filterGroups.getSelectedIndex();
+            switch (index)
+            {
+               case 1 :
+                  NvpnGroups.setCurrentGroup(NordVPNEnumGroups.P2P);
+                  break;
+               case 2 :
+                  NvpnGroups.setCurrentGroup(NordVPNEnumGroups.Double_VPN);
+                  break;
+               case 3 :
+                  NvpnGroups.setCurrentGroup(NordVPNEnumGroups.Onion_Over_VPN);
+                  break;
+               case 4 :
+                  NvpnGroups.setCurrentGroup(NordVPNEnumGroups.Dedicated_IP);
+                  break;
+               default /* 0 */:
+                  NvpnGroups.setCurrentGroup(NordVPNEnumGroups.Standard_VPN_Servers);
+            }
+            updateFilterTreeCB();
+            GuiMenuBar.updateQuickConnectMenuButton();
+         }
+      });
+      filterPanelGroups.add(m_filterGroups, BorderLayout.PAGE_END);
+      filterPanel.add(filterPanelGroups, BorderLayout.PAGE_START);
+
+      // Text Search Filter
       ImageIcon imageLabel = new ImageIcon(Starter.class.getResource("resources/icons/search_in_tree_32.png"));
       JLabel filterLabel = new JLabel(imageLabel);
       filterLabel.setToolTipText("Filter for VPN Servers");
@@ -83,15 +170,15 @@ public class JServerTreePanel extends JPanel implements TreeSelectionListener
          {
             if (m_filterTextField.getText().length() >= MIN_CHARS_FOR_FILTER)
             {
-               // activate Filter
+               // activate Filter (lower case for case independent search)
                m_filterText = m_filterTextField.getText().toLowerCase();
-               updateFilterTreeCB(m_filterText);
+               updateFilterTreeCB();
             }
             else if (!m_filterText.isBlank())
             {
                // reset Filter
                m_filterText = "";
-               updateFilterTreeCB(m_filterText);
+               updateFilterTreeCB();
             }
          }
       });
@@ -103,7 +190,7 @@ public class JServerTreePanel extends JPanel implements TreeSelectionListener
             {
                m_filterTextField.setText("");
                m_filterText = "";
-               updateFilterTreeCB(m_filterText);
+               updateFilterTreeCB();
             }
          }
       });
@@ -122,11 +209,11 @@ public class JServerTreePanel extends JPanel implements TreeSelectionListener
       {
          public void actionPerformed(ActionEvent e)
          {
-            if (true == m_statusInitServerList || JModalDialog.showConfirm("Update of the server list takes some time.\nDo you want to continue?") == JOptionPane.YES_OPTION)
+            if (true == m_statusInitServerList || JModalDialog.showConfirm("Update of the server list may take some time.\nDo you want to continue?") == JOptionPane.YES_OPTION)
             {
                DefaultMutableTreeNode root = createServerTree(true);
                m_tree.setModel(new MyModel(root));
-               Starter.updateServer();
+               Starter.updateCurrentServer();
             }
          }
       });
@@ -158,9 +245,8 @@ public class JServerTreePanel extends JPanel implements TreeSelectionListener
     * <p>
     * This method updates the server list tree based on the filter text field.<br>
     * If a filter is active, all nodes are automatically expanded.
-    * @param filterText is the filter text (not case sensitive)
     */
-   private void updateFilterTreeCB(String filterText)
+   public void updateFilterTreeCB()
    {
       // avoid multiple calls
       if (m_lockUpdate) return;
@@ -169,7 +255,7 @@ public class JServerTreePanel extends JPanel implements TreeSelectionListener
       // create the server list tree based on the current content
       DefaultMutableTreeNode root = createServerTree(false);
       m_tree.setModel(new MyModel(root));
-      if (!filterText.isBlank())
+      if (!m_filterText.isBlank())
       {
          // filter
          for (int r = 0; r < m_tree.getRowCount(); r++)
@@ -196,8 +282,11 @@ public class JServerTreePanel extends JPanel implements TreeSelectionListener
     */
    private JScrollPane initTree()
    {
-      // create the server tree without update from NordVPN (init/empty or from user prefs)
-      DefaultMutableTreeNode root = createServerTree(false);
+      // create the server tree dependent on auto update option from NordVPN (init/empty or from user prefs)
+      boolean update = (UtilPrefs.getServerListAutoUpdate() == 0) ? false : true;
+      Starter._m_logError.TraceIni("Auto Update Server List [from Application Preferences]: " + update);
+
+      DefaultMutableTreeNode root = createServerTree(update);
       DefaultTreeModel model = new MyModel(root);
       m_tree = new JTree(model);
       m_tree.addTreeSelectionListener(this);
@@ -221,10 +310,57 @@ public class JServerTreePanel extends JPanel implements TreeSelectionListener
       DefaultMutableTreeNode root = new DefaultMutableTreeNode("Serverlist");
       ArrayList<String> vpnServers = new ArrayList<String>(); 
 
-      String serverPrefString = NvpnServers.getServerList(update);
-      if (null != serverPrefString && !serverPrefString.isBlank())
+      NordVPNEnumGroups filterRegion = NvpnGroups.getCurrentRegion();
+      NordVPNEnumGroups filterGroup = NvpnGroups.getCurrentGroup();
+      String sTechnology = Starter.getCurrentSettingsData().getTechnology(false);
+      int iTechFilter = NvpnTechnologies.ikev2; // NORDLYNX
+      if (sTechnology.equalsIgnoreCase("OPENVPN"))
       {
-         String[] saServerList = serverPrefString.split(Location.SERVERID_LIST_SEPARATOR);
+         String sProtocol = Starter.getCurrentSettingsData().getProtocol(false);
+         boolean bObfuscate = false; // TODO
+         if (sProtocol.equalsIgnoreCase("TCP"))
+         {
+            if (bObfuscate)
+            {
+               iTechFilter = NvpnTechnologies.openvpn_xor_tcp;
+            }
+            else
+            {
+               iTechFilter = NvpnTechnologies.openvpn_tcp;
+            }
+         }
+         else
+         {
+            if (bObfuscate)
+            {
+               iTechFilter = NvpnTechnologies.openvpn_xor_udp;
+            }
+            else
+            {
+               iTechFilter = NvpnTechnologies.openvpn_udp;
+            }
+         }
+      }
+
+      int nbCountries = 0;
+      String serverListString = NvpnServers.getCountriesServerList(update);
+      if (NvpnGroups.isValid())
+      {
+         m_filterGroups.setEnabled(true);
+         m_filterRegions.setEnabled(true);
+         m_filterGroups.setToolTipText("Filter by Server Groups.");
+         m_filterRegions.setToolTipText("Filter by Server Regions.");
+      }
+      else
+      {
+         m_filterGroups.setEnabled(false);
+         m_filterRegions.setEnabled(false);
+         m_filterGroups.setToolTipText("Please refresh the server list from internet to get the server groups information!");
+         m_filterRegions.setToolTipText("Please refresh the server list from internet to get the server regions information!");
+      }
+      if (null != serverListString && !serverListString.isBlank())
+      {
+         String[] saServerList = serverListString.split(Location.SERVERID_LIST_SEPARATOR);
          if (saServerList.length > 0)
          {
             for (String countries : saServerList)
@@ -239,29 +375,39 @@ public class JServerTreePanel extends JPanel implements TreeSelectionListener
                   boolean matchCountry = false;
                   if (m_filterText.isBlank() || country.toLowerCase().contains(m_filterText))
                   {
-                     countryNode = new DefaultMutableTreeNode(country.replace('_', ' '));
-                     root.add(countryNode);
+                     // Country matches the filter search text
                      matchCountry = true;
                   }
 
                   String[] saCities = cities.split("/");
                   for (String city : saCities)
                   {
-                     if (m_filterText.isBlank() || city.toLowerCase().contains(m_filterText) || matchCountry)
+                     // 1. check filter search text (or country name did match)
+                     if (m_filterText.isBlank() || (!m_filterText.isBlank() && city.toLowerCase().contains(m_filterText)) || matchCountry)
                      {
-                        if (null == countryNode)
+                        Location loc = UtilLocations.getLocation(UtilLocations.getServerId(city, country));
+                        // 2. Check Technology
+                        if (loc.hasTechnology(iTechFilter))
                         {
-                           countryNode = new DefaultMutableTreeNode(country);
-                           root.add(countryNode);
+                           // 3. check region- and groups-filter defined on server locations
+                           if (loc.hasGroup(filterRegion) && loc.hasGroup(filterGroup))
+                           {
+                              if (null == countryNode)
+                              {
+                                 countryNode = new DefaultMutableTreeNode(country);
+                                 root.add(countryNode);
+                                 ++nbCountries;
+                              }
+                              countryNode.add(new JServerNode(loc));
+                              if (!vpnServers.contains(loc.getServerId())) vpnServers.add(loc.getServerId());
+                           }
                         }
-                        countryNode.add(new JServerNode(country, city));
-                        if (!vpnServers.contains(city + Location.SERVERID_SEPARATOR + country)) vpnServers.add(city + Location.SERVERID_SEPARATOR + country);
                      }
                   }
                }
                else
                {
-                  Starter._m_logError.TranslatorError(10100,
+                  Starter._m_logError.LoggingError(10100,
                         "Parsing Error",
                         "The Server Countries List String cannot be parsed:\n" +
                         saCountryCities);
@@ -271,10 +417,10 @@ public class JServerTreePanel extends JPanel implements TreeSelectionListener
          }
          else
          {
-            Starter._m_logError.TranslatorError(10100,
+            Starter._m_logError.LoggingError(10100,
                   "Parsing Error",
                   "The Server List String cannot be parsed:\n" +
-                  serverPrefString);
+                  serverListString);
             return root;
          }
          
@@ -300,7 +446,7 @@ public class JServerTreePanel extends JPanel implements TreeSelectionListener
          // actualize map
          UtilMapGeneration.changeVpnServerLocationsMapLayer(vpnServers);
          UtilMapGeneration.zoomServerLayer();
-         Starter._m_logError.TranslatorInfo("Refreshed " + vpnServers.size() + " VPN Servers.");
+         Starter._m_logError.LoggingInfo("Refreshed " + vpnServers.size() + " VPN Servers (in " + nbCountries + " countries).");
       }
       else
       {
@@ -310,6 +456,7 @@ public class JServerTreePanel extends JPanel implements TreeSelectionListener
          // deactivate the server filter text field
          m_filterTextField.setEnabled(false);
       }
+
       return root;
    }
 
@@ -355,8 +502,8 @@ public class JServerTreePanel extends JPanel implements TreeSelectionListener
       DefaultMutableTreeNode root = (DefaultMutableTreeNode) m_tree.getModel().getRoot();
       Enumeration<TreeNode> e = root.preorderEnumeration();
 
-      String s = loc.getCity();
-      String p = loc.getCountry();
+      String s = loc.getCityName();
+      String p = loc.getCountryName();
       
       boolean inCountryNode = false;
       while (e.hasMoreElements())

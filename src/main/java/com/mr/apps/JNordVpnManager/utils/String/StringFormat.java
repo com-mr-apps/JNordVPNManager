@@ -10,6 +10,7 @@ package com.mr.apps.JNordVpnManager.utils.String;
 
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
+import java.util.ArrayList;
 import java.util.Locale;
 
 public class StringFormat
@@ -83,6 +84,32 @@ public class StringFormat
    }
 
    /**
+    * Convert an integer array to a String, using a decimal format.
+    * @param intArr is the array to be formatted
+    * @param sFormat is the format e.g. "#0"
+    * @return the formatted string
+    */
+   public static String int2String (ArrayList<Integer> intArr, String sFormat)
+   {
+      StringBuffer oString = new StringBuffer();
+      oString.append("[");
+
+      if (null != intArr)
+      {
+         if ((sFormat == null) || (true == sFormat.isBlank())) sFormat = DEFAULT_INTEGER_FORMAT;
+         DecimalFormat f = new DecimalFormat(sFormat, _m_decimalFormatSymbols);
+         for (int iVal : intArr)
+         {
+            if (oString.length() > 1) oString.append(",");
+            oString.append(f.format(iVal));
+         }
+      }
+      oString.append("]");
+
+      return oString.toString();
+   }
+
+   /**
     * Convert an integer value to a String, using a decimal format.
     * @param lVal is the value to be formatted
     * @param sFormat is the format e.g. "#0"
@@ -131,5 +158,19 @@ public class StringFormat
          oDouble = Double.parseDouble(sVal);
       }
       return oDouble;
+   }
+   
+   /**
+    * Return the boolean value of a string values representing a boolean value
+    * <p>
+    * Valid boolean string values are 1|true|enable|on|enabled or 0|false|disable|off|disabled
+    * 
+    * @param value
+    *           is the String value that represents a boolean
+    * @return true if the string values represents true, else false
+    */
+   public static boolean string2boolean(String value)
+   {
+      return value.matches("1|true|enable|on|enabled");
    }
 }

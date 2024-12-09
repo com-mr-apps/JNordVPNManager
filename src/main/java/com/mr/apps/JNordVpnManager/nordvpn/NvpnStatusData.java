@@ -53,9 +53,9 @@ public class NvpnStatusData
          }
          else
          {
-            m_statusLineMessage= this.toString();
+            m_statusLineMessage = this.toString();
          }
-         m_statusLineMessage= this.toString();
+         m_statusLineMessage = this.toString();
       }
    }
 
@@ -74,7 +74,7 @@ public class NvpnStatusData
       catch (Exception e)
       {
          // Parsing Error
-         Starter._m_logError.TranslatorError(10100,
+         Starter._m_logError.LoggingError(10100,
                "Parsing NordVPN Status Information",
                data);
          return false;
@@ -259,7 +259,7 @@ public class NvpnStatusData
    public String toString()
    {
       return getStatus() + ((isConnected()) ? " to " + getCity() + " [" + getCountry() + "]"
-            + ", IP: " + getIp() + ", "
-            + getTechnology() + "/" + getProtocol() : ""); 
+            + ", IP: " + getIp() + " (" + getHostname() + "), "
+            + getTechnology() + "/" + getProtocol() + "/" + NvpnGroups.getCurrentGroup().name()  : ""); 
    }
 }

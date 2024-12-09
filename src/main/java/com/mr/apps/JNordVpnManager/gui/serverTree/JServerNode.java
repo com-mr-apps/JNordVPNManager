@@ -11,33 +11,29 @@ package com.mr.apps.JNordVpnManager.gui.serverTree;
 import javax.swing.tree.DefaultMutableTreeNode;
 
 import com.mr.apps.JNordVpnManager.geotools.Location;
-import com.mr.apps.JNordVpnManager.geotools.UtilLocations;
 
 @SuppressWarnings("serial")
 public class JServerNode extends DefaultMutableTreeNode
 {
 
-   private String group, server;
    private Location loc;
 
-   public JServerNode(String group, String server)
+   public JServerNode(Location loc)
    {
-      super(server.replace('_', ' ')); // mangle display names
-      this.group = group;
-      this.server = server;
+      super(loc.getCityName());
 
       // linked Location object from CSV table
-      this.loc = UtilLocations.getLocation(UtilLocations.getServerId(server, group));
+      this.loc = loc;
    }
 
-   public String getGroup()
+   public String getCountry()
    {
-      return group;
+      return loc.getCountryName();
    }
 
    public String getServer()
    {
-      return server;
+      return loc.getCityName();
    }
 
    public Location getLocation()
