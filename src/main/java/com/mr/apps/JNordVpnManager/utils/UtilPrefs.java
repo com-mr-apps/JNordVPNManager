@@ -52,6 +52,7 @@ public class UtilPrefs
 //   private static final String                     RECENTSERVER_GROUP                       = "RECENTSERVER_GROUP";
    private static final String                     SERVERLIST_TIMESTAMP                     = "SERVERLIST_TIMESTAMP";
    private static final String                     SERVERLIST_DATA                          = "SERVERLIST_DATA";
+   private static final String                     SERVERLIST_AUTOUPDATE                    = "SERVERLIST_AUTOUPDATE";
 
    // Internal Defaults
    private static String DEFAULT_PREF_RECENTSERVER_CITY           = "";
@@ -62,6 +63,7 @@ public class UtilPrefs
    private static int    DEFAULT_PREF_RECENTSERVER_LIST_LENGTH    = 5;
    private static String DEFAULT_PREF_SERVERLIST_DATA             = "";
    private static String DEFAULT_PREF_SERVERLIST_TIMESTAMP        = "0";
+   private static int    DEFAULT_PREF_SERVERLIST_AUTOUPDATE       = 0;
    private static int    DEFAULT_PREF_SETTINGS_COMPACTMODE        = 0;  // this flag represents the current state -> no setting. TODO: (?) add another "Start Program in Compact Mode"
    private static int    DEFAULT_PREF_SETTINGS_AUTOCONNECTMODE    = 0;
    private static int    DEFAULT_PREF_SETTINGS_AUTODISCONNECTMODE = 0;
@@ -109,6 +111,7 @@ public class UtilPrefs
 //      settingsPanelFieldsMap.put(RECENTSERVER_GROUP, new JSettingsPanelField("Recent Servers Group", "B", -1, 1, StringFormat.int2String(DEFAULT_PREF_RECENTSERVER_GROUP, "#")));
       settingsPanelFieldsMap.put(RECENTSERVER_LIST, new JSettingsPanelField("Recent Servers List", "T", -1, 20, DEFAULT_PREF_RECENTSERVER_LIST));
       settingsPanelFieldsMap.put(RECENTSERVER_LIST_LENGTH, new JSettingsPanelField("Recent Servers List Size", "N[1,10]", -1, 2, StringFormat.int2String(DEFAULT_PREF_RECENTSERVER_LIST_LENGTH, "#")));
+      settingsPanelFieldsMap.put(SERVERLIST_AUTOUPDATE, new JSettingsPanelField("Auto Update Serverdata on Program Start", "B", KeyEvent.VK_U, 1, StringFormat.int2String(DEFAULT_PREF_SERVERLIST_AUTOUPDATE, "#")));
       settingsPanelFieldsMap.put(SERVERLIST_DATA, new JSettingsPanelField("Server Data", "T", KeyEvent.VK_D, 20, DEFAULT_PREF_SERVERLIST_DATA));
       settingsPanelFieldsMap.put(SERVERLIST_TIMESTAMP, new JSettingsPanelField("Sync. Data Timestamp", "T", KeyEvent.VK_T, 10, DEFAULT_PREF_SERVERLIST_TIMESTAMP));
 
@@ -198,6 +201,22 @@ public class UtilPrefs
    {
       Preferences nordVpnServerList = Preferences.userRoot().node("com/mr/apps/JNordVpnManager");
       nordVpnServerList.put("ServerList.Data", serverList);
+
+      return;
+   }
+
+   public static int getServerListAutoUpdate()
+   {
+      Preferences settingsServerListAutoUpdate = Preferences.userRoot().node("com/mr/apps/JNordVpnManager/Settings");
+      int serverListAutoUpdate = settingsServerListAutoUpdate.getInt("ServerList.AutoUpdate", DEFAULT_PREF_SERVERLIST_AUTOUPDATE);
+
+      return serverListAutoUpdate;
+   }
+
+   public static void setServerListAutoUpdate(int serverListAutoUpdate)
+   {
+      Preferences settingsServerListAutoUpdate = Preferences.userRoot().node("com/mr/apps/JNordVpnManager/Settings");
+      settingsServerListAutoUpdate.putInt("ServerList.AutoUpdate", serverListAutoUpdate);
 
       return;
    }
@@ -490,6 +509,7 @@ public class UtilPrefs
       hm.put(RECENTSERVER_LIST_LENGTH, StringFormat.int2String(getRecentServerListLength(), "#"));
       hm.put(SERVERLIST_DATA, getServerListData());
       hm.put(SERVERLIST_TIMESTAMP, getServerListTimestamp());
+      hm.put(SERVERLIST_AUTOUPDATE, StringFormat.int2String(getServerListAutoUpdate(), "#"));
 //      hm.put(COMPACTMODE, StringFormat.int2String(getCompactMode(), "#"));
       hm.put(AUTOCONNECTMODE, StringFormat.int2String(getAutoConnectMode(), "#"));
       hm.put(AUTODISCONNECTMODE, StringFormat.int2String(getAutoDisConnectMode(), "#"));
@@ -525,6 +545,7 @@ public class UtilPrefs
 
       setServerListData(hm.get(SERVERLIST_DATA));
       setServerListTimestamp(hm.get(SERVERLIST_TIMESTAMP));
+      setServerListAutoUpdate(Integer.valueOf(hm.get(SERVERLIST_AUTOUPDATE)));
       setRecentCity(hm.get(RECENTSERVER_CITY));
       setRecentCountry(hm.get(RECENTSERVER_COUNTRY));
 //      setRecentServerRegion(Integer.valueOf(hm.get(RECENTSERVER_REGION)));
@@ -550,6 +571,7 @@ public class UtilPrefs
    {
       Starter._m_logError.TraceDebug("Reset all User Preference values.");
 
+      setServerListAutoUpdate(DEFAULT_PREF_SERVERLIST_AUTOUPDATE);
       setServerListData(DEFAULT_PREF_SERVERLIST_DATA);
       setServerListTimestamp(DEFAULT_PREF_SERVERLIST_TIMESTAMP);
       setRecentCity(DEFAULT_PREF_RECENTSERVER_CITY);
