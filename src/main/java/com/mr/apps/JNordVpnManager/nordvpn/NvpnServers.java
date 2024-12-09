@@ -15,6 +15,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import com.mr.apps.JNordVpnManager.Starter;
+import com.mr.apps.JNordVpnManager.geotools.UtilLocations;
 import com.mr.apps.JNordVpnManager.gui.dialog.JModalDialog;
 import com.mr.apps.JNordVpnManager.utils.UtilPrefs;
 import com.mr.apps.JNordVpnManager.utils.UtilSystem;
@@ -26,9 +27,11 @@ public class NvpnServers
    private static final String COUNTRIES_HTTPS = "https://api.nordvpn.com/v1/servers/countries?limit=0";
 
    /**
-    * Get the standard server list.
+    * Get the Countries server list.
     * <p>
-    * The VPN Server list is generated from 2(3) "sources":
+    * First, we try to get all the server locations with group and technology information from:<br>
+    * https://api.nordvpn.com/v1/servers?limit=0 (or from a local csv file).<p>
+    * Second, the VPN Server list is generated from 2(3) "sources":
     * <ul>
     * <li>the server list stored in user preferences, or</it>
     * <it>updated over network direct from NordVPN 'https://api.nordvpn.com/v1/servers/countries'</it>
@@ -46,13 +49,28 @@ public class NvpnServers
    public static String getCountriesServerList(boolean update)
    {
       String rc_serverList = UtilPrefs.getServerListData();
-      if (update)
-      {
-         Starter.setWaitCursor();
-         Starter.setCursorCanChange(false);
+      boolean isUpdated = false;
 
-         try
+      Starter.setWaitCursor();
+      Starter.setCursorCanChange(false);
+
+      try
+      {
+         // -------------------------------------------------------------------------------
+         // Initialize/Update Server Locations (create server location objects with group and technology information)
+         // -------------------------------------------------------------------------------
+         int rc = UtilLocations.initNordVpnServersLocations(update);
+         if (rc != 0)
          {
+            Starter._m_logError.LoggingError(10500,
+                  "Get Server Locations",
+                  "Failed to get server data from NordVPN - Fallback data is used.");
+         }
+         else if (update)
+         {
+            // -------------------------------------------------------------------------------
+            // Initialize/Update Server Country@Cities list
+            // -------------------------------------------------------------------------------
             Starter._m_logError.TraceIni("Update Countries List from Server: " + COUNTRIES_HTTPS);
             StringBuffer sbListOfServers = new StringBuffer();
             JSONArray jsonArrCountries = JsonReader.readJsonFromUrl(COUNTRIES_HTTPS);
@@ -78,28 +96,33 @@ public class NvpnServers
                }
             }
             rc_serverList = sbListOfServers.toString();
+            isUpdated = true;
          }
-         catch (JSONException | IOException | InterruptedException e)
-         {
-            Starter._m_logError.LoggingExceptionMessage(4, 10500, e);
-
-            // Fallback from nordvpn command (slowly)
-            rc_serverList = getCountriesServerList2();
-         }
-
-         if (null != rc_serverList)
-         {
-            // Update the server list stored in user preferences
-            UtilPrefs.setServerListData(rc_serverList);
-
-            // ...also update the time stamp
-            long timestamp = System.currentTimeMillis();
-            UtilPrefs.setServerListTimestamp(StringFormat.long2String(timestamp, null));
-         }
-
-         Starter.setCursorCanChange(true);
-         Starter.resetWaitCursor();
       }
+      catch (JSONException | IOException | InterruptedException e)
+      {
+         Starter._m_logError.LoggingExceptionMessage(4, 10500, e);
+      }
+
+      if ((null == rc_serverList) && (update))
+      {
+         // Fallback from nordvpn command (slowly - and requires Internet connection)
+         rc_serverList = getCountriesServerList2();
+         isUpdated = true;
+      }
+
+      if (isUpdated) 
+      {
+         // Update the server list stored in user preferences
+         UtilPrefs.setServerListData(rc_serverList);
+
+         // ...also update the time stamp
+         long timestamp = System.currentTimeMillis();
+         UtilPrefs.setServerListTimestamp(StringFormat.long2String(timestamp, null));
+      }
+
+      Starter.setCursorCanChange(true);
+      Starter.resetWaitCursor();
 
       return rc_serverList;
    }

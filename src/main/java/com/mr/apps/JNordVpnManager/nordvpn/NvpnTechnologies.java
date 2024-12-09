@@ -30,31 +30,47 @@ public class NvpnTechnologies
    public static final int mesh_relay = 50;
    public static final int nordwhisper = 51;
 
+   // Storage for technologies per location
    private ArrayList<Integer> m_techIds = null;
+
+   private static boolean m_isValid = false;
 
    public NvpnTechnologies()
    {
-      m_techIds = new ArrayList<Integer>();
+   }
+
+   public static boolean isValid()
+   {
+      return m_isValid;
+   }
+
+   public static void init()
+   {
+      m_isValid = false;
    }
 
    public void addTechnology(int id)
    {
+      if (null == m_techIds) m_techIds = new ArrayList<Integer>();
       if (m_techIds.contains(id)) return;
       m_techIds.add(id);
+      m_isValid = true;
    }
 
    public boolean hasTechnology(int id)
    {
-      return (null == m_techIds) ? false : m_techIds.contains(id);
+      // if m_techIds == null, we couldn't access the NordVPN technology data
+      return (null == m_techIds) ? true : m_techIds.contains(id);
    }
 
    public void resetTechnologies()
    {
-      m_techIds = new ArrayList<Integer>();      
+      m_techIds = null;      
    }
 
    public String toString()
    {
+      if (null == m_techIds) return "";
       return StringFormat.int2String(m_techIds, null);
    }
 

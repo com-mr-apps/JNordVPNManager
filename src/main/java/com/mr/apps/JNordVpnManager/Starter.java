@@ -441,6 +441,11 @@ public class Starter
       }
       _m_logError.TraceIni("NordVPN version=" + m_nordvpnVersion + ".");
 
+      //-------------------------------------------------------------------------------
+      // Status bar Panel
+      //-------------------------------------------------------------------------------
+      m_statusLine = new GuiStatusLine();
+      JPanel statusPanel = m_statusLine.create();
 
       // -------------------------------------------------------------------------------
       // Get NordVPN account and settings data 
@@ -452,14 +457,44 @@ public class Starter
 
          m_nvpnAccountData = new NvpnAccountData();
          m_nvpnSettingsData = new NvpnSettingsData();
+         m_nvpnStatusData = new NvpnStatusData();
+      }
 
-         //-------------------------------------------------------------------------------
-         // Initialize Server Locations
-         // -------------------------------------------------------------------------------
-         m_splashScreen.setProgress(30);
-         m_splashScreen.setStatus("Import Locations...");
+      //-------------------------------------------------------------------------------
+      // If we are logged in, get the status and optionally [auto]connect
+      //-------------------------------------------------------------------------------
+      boolean bConnected = false;
+      if ((null != m_nvpnAccountData) && (true == m_nvpnAccountData.isLoggedIn()))
+      {
+         bConnected = m_nvpnStatusData.isConnected();
 
-         UtilLocations.initNordVpnServersLocations();
+         int iAutoConnect = UtilPrefs.getAutoConnectMode();
+         if (false == bConnected && 1 == iAutoConnect)
+         {
+            m_splashScreen.setProgress(30);
+            CurrentLocation loc = getCurrentServer();
+            if (null != loc)
+            {
+               m_splashScreen.setStatus("Auto Connect to " + ((Location)loc).getServerId());
+               String msg = NvpnCallbacks.executeConnect(loc);
+               if (NvpnCallbacks.isLastError())
+               {
+                  msg = NvpnCallbacks.getLastError();
+                  JModalDialog.showError("JNordVPN Manager Auto Connect", msg);
+               }
+               else
+               {
+                  // get the updated status (should be connected)
+                  m_nvpnStatusData = new NvpnStatusData();
+                  bConnected = m_nvpnStatusData.isConnected();
+               }
+            }
+         }
+      }
+
+      if (!bConnected)
+      {
+         GuiStatusLine.updateStatusLine(STATUS_DISCONNECTED, "Not logged in to NordVPN Service.");
       }
 
       m_splashScreen.setProgress(40);
@@ -491,12 +526,6 @@ public class Starter
       JMenuBar menubar = myMenuBar.create(m_nvpnAccountData);
       m_mainFrame.setJMenuBar(menubar);
 
-      //-------------------------------------------------------------------------------
-      // Status bar Panel
-      //-------------------------------------------------------------------------------
-      m_statusLine = new GuiStatusLine();
-      JPanel statusPanel = m_statusLine.create();
-
       m_splashScreen.setProgress(70);
 
       //-------------------------------------------------------------------------------
@@ -515,37 +544,8 @@ public class Starter
 
       m_aboutScreen  = new JAboutScreen(version);
 
-      m_splashScreen.setProgress(80);
-      m_splashScreen.setStatus("Update Status...");
-
-      //-------------------------------------------------------------------------------
-      // If we are logged in, get the status and optionally [auto]connect
-      //-------------------------------------------------------------------------------
-      if ((null != m_nvpnAccountData) && (true == m_nvpnAccountData.isLoggedIn()))
-      {
-         boolean bConnected = updateCurrentServer(); // Update the Status to know if we are already connected
-
-         int iAutoConnect = UtilPrefs.getAutoConnectMode();
-         if (false == bConnected && 1 == iAutoConnect)
-         {
-            m_splashScreen.setProgress(90);
-            CurrentLocation loc = getCurrentServer();
-            if (null != loc)
-            {
-               m_splashScreen.setStatus("Auto Connect to " + ((Location)loc).getServerId());
-               String msg = NvpnCallbacks.executeConnect(loc);
-               if (NvpnCallbacks.isLastError())
-               {
-                  msg = NvpnCallbacks.getLastError();
-                  JModalDialog.showError("JNordVPN Manager Auto Connect", msg);
-               }
-            }
-         }
-      }
-      else
-      {
-         GuiStatusLine.updateStatusLine(STATUS_DISCONNECTED, "Not logged in to NordVPN Service.");
-      }
+      m_splashScreen.setProgress(90);
+      m_splashScreen.setStatus("Finalize...");
 
       //-------------------------------------------------------------------------------
       // display main frame
@@ -555,6 +555,7 @@ public class Starter
       m_mainFrame.setVisible(true);
 
       m_splashScreen.setProgress(100); // ..and close the splash screen (Important: AFTER setVisible of main frame, else the application icon disappears!)
+      updateCurrentServer();
 
       _m_logError.TraceIni("**********************************************************************************\n"
                          + "Finished Initialization.\n"
@@ -574,7 +575,7 @@ public class Starter
          CurrentLocation loc = new CurrentLocation(UtilLocations.getLocation(city, country));
          loc.setConnected(false);
          // return only a "real" location
-         return (loc.getCityId() == 0) ? null : loc;
+         return (loc.getCityId() <= 0) ? null : loc;
       }
       return m_currentServer;
    }
@@ -595,7 +596,7 @@ public class Starter
     */
    public static boolean updateCurrentServer()
    {
-      if ((true == m_installMode) || (null == m_statusLine)) return false;
+      if ((true == m_installMode) || (m_splashScreen.getProgress() < 100)) return false;
 
       // get the current connected server from the "nordvpn status" command
       m_nvpnStatusData = new NvpnStatusData();

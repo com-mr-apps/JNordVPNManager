@@ -22,6 +22,8 @@ public class NvpnGroups
    // Storage for groups per location
    private ArrayList<NordVPNEnumGroups> m_groups = null;
 
+   private static boolean m_isValid = false;
+
    public static enum NordVPNEnumGroups
    {
       all_regions                   (99999),
@@ -80,30 +82,44 @@ public class NvpnGroups
 
    public NvpnGroups()
    {
-      m_groups = new ArrayList<NordVPNEnumGroups>();
-      m_groups.add(NordVPNEnumGroups.all_regions);
+   }
+
+   public static boolean isValid()
+   {
+      return m_isValid;
+   }
+
+   public static void init()
+   {
+      m_isValid = false;
    }
 
    public void addGroup(NordVPNEnumGroups id)
    {
+      if (null == m_groups)
+      {
+         m_groups = new ArrayList<NordVPNEnumGroups>();
+         m_groups.add(NordVPNEnumGroups.all_regions);
+      }
       if (m_groups.contains(id)) return;
       m_groups.add(id);
+      m_isValid = true;
    }
 
    public void addGroup(int id)
    {
-      if (m_groups.contains(NordVPNEnumGroups.get(id))) return;
       m_groups.add(NordVPNEnumGroups.get(id));
    }
 
    public boolean hasGroup(NordVPNEnumGroups idGroup)
    {
-      return (null == m_groups) ? false : m_groups.contains(idGroup);
+      // if m_groups == null, we couldn't access the NordVPN groups data
+      return (null == m_groups) ? true : m_groups.contains(idGroup);
    }
 
    public void resetGroups()
    {
-      m_groups = new ArrayList<NordVPNEnumGroups>();      
+      m_groups = null;      
    }
 
    public static NordVPNEnumGroups getCurrentRegion()
@@ -144,6 +160,7 @@ public class NvpnGroups
 
    public String toString()
    {
+      if (null == m_groups) return "";
       StringBuffer sb = new StringBuffer("["); 
       for (NordVPNEnumGroups iGroup : m_groups)
       {

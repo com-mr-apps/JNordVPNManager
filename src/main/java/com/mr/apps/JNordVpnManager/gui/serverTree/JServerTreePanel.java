@@ -58,6 +58,8 @@ public class JServerTreePanel extends JPanel implements TreeSelectionListener
    private static String m_filterText = "";
    private boolean m_lockUpdate = false;
    private JButton m_buttonRefresh = null;
+   private JComboBox<?> m_filterRegions = null;
+   private JComboBox<?> m_filterGroups = null;
    private Color m_buttonDefaultFgColor = null;
    private static boolean m_statusInitServerList = true;
    private static boolean m_skipValueChangedEvent = false;
@@ -84,17 +86,17 @@ public class JServerTreePanel extends JPanel implements TreeSelectionListener
 
       NordVPNEnumGroups[] iaRegions = { NordVPNEnumGroups.all_regions, NordVPNEnumGroups.The_Americas, NordVPNEnumGroups.Africa_The_Middle_East_And_India, NordVPNEnumGroups.Asia_Pacific, NordVPNEnumGroups.Europe };
       String saRegions[]            = { "All Regions",                 "America",                      "Africa/Middle East/India",                         "Asia/Pacific",                 "Europe" };
-      JComboBox<?> filterRegions = new JComboBox<Object>(saRegions);
+      m_filterRegions = new JComboBox<Object>(saRegions);
 
       int idxRegion = NvpnGroups.getFieldIndex(NvpnGroups.getCurrentRegion(), iaRegions, 0);
-      filterRegions.setSelectedIndex(idxRegion);
+      m_filterRegions.setSelectedIndex(idxRegion);
       Starter._m_logError.TraceDebug("Init selected Region Filter with: " + iaRegions[idxRegion]);
 
-      filterRegions.addActionListener(new ActionListener()
+      m_filterRegions.addActionListener(new ActionListener()
       {
          public void actionPerformed(ActionEvent e)
          {
-            int index = filterRegions.getSelectedIndex();
+            int index = m_filterRegions.getSelectedIndex();
             switch (index)
             {
                case 1 :
@@ -116,22 +118,22 @@ public class JServerTreePanel extends JPanel implements TreeSelectionListener
             GuiMenuBar.updateQuickConnectMenuButton();
          }
       });
-      filterPanelGroups.add(filterRegions, BorderLayout.PAGE_START);
+      filterPanelGroups.add(m_filterRegions, BorderLayout.PAGE_START);
 
       // Regions Groups
       NordVPNEnumGroups[] iaGroups = { NordVPNEnumGroups.Standard_VPN_Servers, NordVPNEnumGroups.P2P, NordVPNEnumGroups.Double_VPN, NordVPNEnumGroups.Onion_Over_VPN, NordVPNEnumGroups.Dedicated_IP };
       String saGroups[]            = { "Standard VPN Servers",                 "P2P",                 "Double VPN",                 "Onion Over VPN",                 "Dedicated IP" };
-      JComboBox<?> filterGroups = new JComboBox<Object>(saGroups);
+      m_filterGroups = new JComboBox<Object>(saGroups);
 
       int idxGroup = NvpnGroups.getFieldIndex(NvpnGroups.getCurrentGroup(), iaGroups, 0);
-      filterGroups.setSelectedIndex(idxGroup);
+      m_filterGroups.setSelectedIndex(idxGroup);
       Starter._m_logError.TraceDebug("Init selected Group Filter with: " + iaGroups[idxGroup]);
 
-      filterGroups.addActionListener(new ActionListener()
+      m_filterGroups.addActionListener(new ActionListener()
       {
          public void actionPerformed(ActionEvent e)
          {
-            int index = filterGroups.getSelectedIndex();
+            int index = m_filterGroups.getSelectedIndex();
             switch (index)
             {
                case 1 :
@@ -153,7 +155,7 @@ public class JServerTreePanel extends JPanel implements TreeSelectionListener
             GuiMenuBar.updateQuickConnectMenuButton();
          }
       });
-      filterPanelGroups.add(filterGroups, BorderLayout.PAGE_END);
+      filterPanelGroups.add(m_filterGroups, BorderLayout.PAGE_END);
       filterPanel.add(filterPanelGroups, BorderLayout.PAGE_START);
 
       // Text Search Filter
@@ -207,7 +209,7 @@ public class JServerTreePanel extends JPanel implements TreeSelectionListener
       {
          public void actionPerformed(ActionEvent e)
          {
-            if (true == m_statusInitServerList || JModalDialog.showConfirm("Update of the server list takes some time.\nDo you want to continue?") == JOptionPane.YES_OPTION)
+            if (true == m_statusInitServerList || JModalDialog.showConfirm("Update of the server list may take some time.\nDo you want to continue?") == JOptionPane.YES_OPTION)
             {
                DefaultMutableTreeNode root = createServerTree(true);
                m_tree.setModel(new MyModel(root));
@@ -280,8 +282,11 @@ public class JServerTreePanel extends JPanel implements TreeSelectionListener
     */
    private JScrollPane initTree()
    {
-      // create the server tree without update from NordVPN (init/empty or from user prefs)
-      DefaultMutableTreeNode root = createServerTree(false);
+      // create the server tree dependent on auto update option from NordVPN (init/empty or from user prefs)
+      boolean update = (UtilPrefs.getServerListAutoUpdate() == 0) ? false : true;
+      Starter._m_logError.TraceIni("Auto Update Server List [from Application Preferences]: " + update);
+
+      DefaultMutableTreeNode root = createServerTree(update);
       DefaultTreeModel model = new MyModel(root);
       m_tree = new JTree(model);
       m_tree.addTreeSelectionListener(this);
@@ -339,6 +344,20 @@ public class JServerTreePanel extends JPanel implements TreeSelectionListener
 
       int nbCountries = 0;
       String serverListString = NvpnServers.getCountriesServerList(update);
+      if (NvpnGroups.isValid())
+      {
+         m_filterGroups.setEnabled(true);
+         m_filterRegions.setEnabled(true);
+         m_filterGroups.setToolTipText("Filter by Server Groups.");
+         m_filterRegions.setToolTipText("Filter by Server Regions.");
+      }
+      else
+      {
+         m_filterGroups.setEnabled(false);
+         m_filterRegions.setEnabled(false);
+         m_filterGroups.setToolTipText("Please refresh the server list from internet to get the server groups information!");
+         m_filterRegions.setToolTipText("Please refresh the server list from internet to get the server regions information!");
+      }
       if (null != serverListString && !serverListString.isBlank())
       {
          String[] saServerList = serverListString.split(Location.SERVERID_LIST_SEPARATOR);
