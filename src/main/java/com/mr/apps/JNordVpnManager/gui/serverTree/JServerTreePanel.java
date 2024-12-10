@@ -45,6 +45,7 @@ import com.mr.apps.JNordVpnManager.nordvpn.NvpnCallbacks;
 import com.mr.apps.JNordVpnManager.nordvpn.NvpnGroups;
 import com.mr.apps.JNordVpnManager.nordvpn.NvpnGroups.NordVPNEnumGroups;
 import com.mr.apps.JNordVpnManager.nordvpn.NvpnServers;
+import com.mr.apps.JNordVpnManager.nordvpn.NvpnSettingsData;
 import com.mr.apps.JNordVpnManager.nordvpn.NvpnTechnologies;
 import com.mr.apps.JNordVpnManager.utils.UtilPrefs;
 import com.mr.apps.JNordVpnManager.utils.UtilSystem;
@@ -312,11 +313,13 @@ public class JServerTreePanel extends JPanel implements TreeSelectionListener
 
       NordVPNEnumGroups filterRegion = NvpnGroups.getCurrentRegion();
       NordVPNEnumGroups filterGroup = NvpnGroups.getCurrentGroup();
-      String sTechnology = Starter.getCurrentSettingsData().getTechnology(false);
+      String sTechnology = "NORDLYNX";
+      NvpnSettingsData csd = Starter.getCurrentSettingsData();
+      if (null != csd) sTechnology = csd.getTechnology(false);
       int iTechFilter = NvpnTechnologies.ikev2; // NORDLYNX
-      if (sTechnology.equalsIgnoreCase("OPENVPN"))
+      if ((null != csd) && (sTechnology.equalsIgnoreCase("OPENVPN")))
       {
-         String sProtocol = Starter.getCurrentSettingsData().getProtocol(false);
+         String sProtocol = csd.getProtocol(false);
          boolean bObfuscate = false; // TODO
          if (sProtocol.equalsIgnoreCase("TCP"))
          {
