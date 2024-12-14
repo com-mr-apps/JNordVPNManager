@@ -1,6 +1,6 @@
 # JNordVPN Manager (Linux)
 
-**Introducing JNordVPN Manager - a user-friendly, open-source graphical interface for managing NordVPN connections on Linux. This application simplifies VPN administration with features like a server/city list grouped by countries with filter functionality, connection management (login, logout, connect, disconnect, pause), and a world map showing all servers and the active one. Recent connections are also stored for easy reconnection by a single click.**
+**Introducing JNordVPN Manager - a user-friendly, open-source graphical interface for managing NordVPN connections on Linux. This application simplifies VPN administration with features like a server/city list grouped by countries with filter functionality (by name,region ot legacy group), connection management (login, logout, connect, disconnect, reconnect, pause), NordVPN Settings management and a world map showing all servers and the active one. Recent connections are also stored for easy reconnection by a single click.**
 
 ![JNordVPNManager_expanded](https://github.com/user-attachments/assets/0d94b444-d18d-4a81-9ade-8d0b2eaf7762)
 
@@ -9,8 +9,10 @@ JNordVPN Manager is an open-source graphical user interface (GUI) application de
 
 Key Features:
 
-* **Server Search**: Easily find and connect to VPN servers from all around the world using filters by country and city.
+* **Server Search**: Easily find and connect to VPN servers from all around the world using filters by country/city, technology/protocol, regions and legacy groups.
+* **Legacy Groups**: Support (filter) Servers by: Standard servers, Double VPN, Onion over VPN, Dedicated IP, Obfuscated servers.
 * **Connection Management**: Control your NordVPN connections with ease - (re)connect, disconnect, pause, or resume your sessions with a single click.
+* **NordVPN Settings**: Manage your individual NordVPN settings direct from the GUI - export/import to/from local settings files for an easy switch between your different setups.
 * **Recent Connections**: The application stores your recent connections for easy reconnection. Simply select one to reconnect instantly.
 * **World Map View**: Visualize all available VPN servers on a world map and focus on the active server, providing an intuitive way to navigate through NordVPN's vast network.
 * **Security**: The application does not store any login information (Account, Password). It is just an interface for the the native nordvpn commands.
@@ -38,11 +40,13 @@ See [Snapcraft Homepage](https://snapcraft.io) for more information. You can dow
 
 `sudo snap install j-nordvpn-manager`  (Assuming snap is installed)
 
-This will install the application into a sandbox where it is separated from other applications.
+This will install the application into a sandbox where it is separated from other applications. After the snap is installed, the application can be run directly from the command line as follows:
+
+    /snap/j-nordvpn-manager/current/bin/java -jar /snap/j-nordvpn-manager/current/JNordVpnManager-current.jar
 
 ### Important:
-Because snaps restrict the execution of commands outside of their own sandbox, JNordVPN Manager will run in "Installation" mode: The created Desktop Icon has the extension '(install)'.
-The application should be run after each snap installation/update from the snap in 'Install mode' to create a new  [desktop file](https://github.com/com-mr-apps/JNordVPNManager/blob/main/snap/local/JNordVpnManager_Java.desktop) that runs JNordVPN Manager from the snap installation with the Java command outside of the sandbox.
+Because snaps restrict the execution of commands outside of their own sandbox, JNordVPN Manager will run in "Installation" mode: The snap created Desktop Icon has the extension '(install)'.
+The application should be run after the snap installation at least once from the snap in 'Install mode' to create a new  [desktop file](https://github.com/com-mr-apps/JNordVPNManager/blob/main/snap/local/JNordVpnManager_Java.desktop), with that JNordVPN Manager runs with the Java command outside of the sandbox - version independent - from the snap installation (see command line above).
 
 To deinstall type:
 
