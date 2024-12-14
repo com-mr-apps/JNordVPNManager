@@ -659,6 +659,9 @@ public class UtilLogErr
             case 10904:
                headerLine += "Show Error Dialog";
                break;
+            case 10905:
+               headerLine += "Reconnect Required";
+               break;
             // ### internal messages
             case 10995:
                headerLine += "Not Supported";
@@ -678,7 +681,7 @@ public class UtilLogErr
                forcedAbend = false;
                break;
             default:
-               headerLine = "";
+               //headerLine = "";
          }
          headerLine += " (rc=" + iMsgNb + "): " + sShortMsg;
       }

@@ -260,6 +260,6 @@ public class NvpnStatusData
    {
       return getStatus() + ((isConnected()) ? " to " + getCity() + " [" + getCountry() + "]"
             + ", IP: " + getIp() + " (" + getHostname() + "), "
-            + getTechnology() + "/" + getProtocol() + "/" + NvpnGroups.getCurrentGroup().name()  : ""); 
+            + getTechnology() + "/" + getProtocol() : ""); 
    }
 }
