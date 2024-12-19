@@ -206,16 +206,7 @@ public class GuiMenuBar
          public void actionPerformed(ActionEvent e)
          {
             CurrentLocation loc = Starter.getCurrentServer();
-            String msg = NvpnCallbacks.executeConnect(loc);
-            if (NvpnCallbacks.isLastError())
-            {
-               msg = NvpnCallbacks.getLastError();
-               JModalDialog.showError("NordVPN Reconnect", msg);
-            }
-            else
-            {
-               JModalDialog.showMessage("NordVPN Reconnect", msg);
-            }
+            NvpnCallbacks.executeConnect(loc, "NordVPN Reconnect", "NordVPN Reconnect");
          }
       });
       connectMenu.add(m_menuItemReConnect);
@@ -464,16 +455,7 @@ public class GuiMenuBar
    private static void recentServerSelectedCB(ActionEvent e, int which)
    {
       Location loc = m_recentServerIdList.get(which);
-      String msg = NvpnCallbacks.executeConnect(loc);
-      if (NvpnCallbacks.isLastError())
-      {
-         msg = NvpnCallbacks.getLastError();
-         JModalDialog.showError("NordVPN Connect", msg);
-      }
-      else
-      {
-         JModalDialog.showMessage("NordVPN Connect", msg);
-      }
+      NvpnCallbacks.executeConnect(loc, "NordVPN Connect", "NordVPN Connect");
    }
 
    /**

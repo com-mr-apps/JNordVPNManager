@@ -55,7 +55,7 @@ public class NvpnCallbacks
       return message;
    }
 
-   public static String executeConnect(Location loc)
+   public static String executeConnect(Location loc, String titleOk, String titleKo)
    {
       String msg = "no message...";
       m_lastErrorMessage = null;
@@ -75,7 +75,11 @@ public class NvpnCallbacks
             }
             else
             {
-               m_lastErrorMessage = UtilSystem.getLastError();
+               m_lastErrorMessage = UtilSystem.getLastError() + "\n" + msg;
+            }
+            if (null != titleKo)
+            {
+               JModalDialog.showError(titleKo, msg);
             }
          }
          else
@@ -83,6 +87,10 @@ public class NvpnCallbacks
             // OK
             Starter.updateCurrentServer();
             GuiMenuBar.addToMenuRecentServerListItems(loc);
+         }
+         if (null != titleOk)
+         {
+            JModalDialog.showMessageAutoClose(titleOk, msg);
          }
       }
 
@@ -233,7 +241,7 @@ public class NvpnCallbacks
                CurrentLocation loc = Starter.getCurrentServer();
                if (null != loc)
                {
-                  NvpnCallbacks.executeConnect(loc);
+                  NvpnCallbacks.executeConnect(loc, null, null);
                }
             }
             else if (newStatus == false)

@@ -476,19 +476,8 @@ public class Starter
             CurrentLocation loc = getCurrentServer();
             if (null != loc)
             {
-               m_splashScreen.setStatus("Auto Connect to " + ((Location)loc).getServerId());
-               String msg = NvpnCallbacks.executeConnect(loc);
-               if (NvpnCallbacks.isLastError())
-               {
-                  msg = NvpnCallbacks.getLastError();
-                  JModalDialog.showError("JNordVPN Manager Auto Connect", msg);
-               }
-               else
-               {
-                  // get the updated status (should be connected)
-                  m_nvpnStatusData = new NvpnStatusData();
-                  bConnected = m_nvpnStatusData.isConnected();
-               }
+               m_splashScreen.setStatus("GUI Auto Connect to " + ((Location)loc).getServerId());
+               NvpnCallbacks.executeConnect(loc, null, "JNordVPN Manager Auto Connect");
             }
          }
       }

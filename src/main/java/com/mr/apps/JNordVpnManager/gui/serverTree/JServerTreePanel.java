@@ -732,16 +732,7 @@ public class JServerTreePanel extends JPanel implements TreeSelectionListener
          if (node != m_tree.getModel().getRoot() && node != null)
          {
             Location loc = ((JServerNode) node).getLocation();
-            String msg = NvpnCallbacks.executeConnect(loc);
-            if (NvpnCallbacks.isLastError())
-            {
-               msg = NvpnCallbacks.getLastError();
-               JModalDialog.showError("NordVPN Connect", msg);
-            }
-            else
-            {
-               JModalDialog.showMessage("NordVPN Connect", msg);
-            }
+            NvpnCallbacks.executeConnect(loc, "NordVPN Connect", "NordVPN Connect");
          }
       }
       else

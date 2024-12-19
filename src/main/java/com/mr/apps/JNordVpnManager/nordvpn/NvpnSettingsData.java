@@ -1197,16 +1197,7 @@ public class NvpnSettingsData
          {
             // Reconnect
             CurrentLocation loc = Starter.getCurrentServer();
-            String msg = NvpnCallbacks.executeConnect(loc);
-            if (NvpnCallbacks.isLastError())
-            {
-               msg = NvpnCallbacks.getLastError();
-               JModalDialog.showError("NordVPN Reconnect", msg);
-            }
-            else
-            {
-               JModalDialog.showMessage("NordVPN Reconnect", msg);
-            }
+            NvpnCallbacks.executeConnect(loc, "NordVPN Reconnect", "NordVPN Reconnect");
          }
       }
    }

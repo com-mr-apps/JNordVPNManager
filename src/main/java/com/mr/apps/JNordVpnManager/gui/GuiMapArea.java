@@ -87,15 +87,15 @@ public class GuiMapArea
                {
                   if (null != loc)
                   {
-                     NvpnCallbacks.executeConnect(loc);
+                     NvpnCallbacks.executeConnect(loc, "NordVPN Connect", "NordVPN Connect");
                   }
                }
                else if (e.getButton() == MouseEvent.BUTTON3)
                {
                   if (JModalDialog.showYesNoDialog("Connect to", loc.getCountryName() + " " + loc.getCityName()) == JOptionPane.YES_OPTION)
                  {
-                     NvpnCallbacks.executeConnect(loc);
-                 }                  
+                     NvpnCallbacks.executeConnect(loc, "NordVPN Connect", "NordVPN Connect");
+                 }
                }
             }
 /*

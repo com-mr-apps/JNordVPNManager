@@ -25,11 +25,13 @@ import javax.swing.JDialog;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextArea;
+import javax.swing.Timer;
 import javax.swing.border.BevelBorder;
 import javax.swing.border.LineBorder;
 import javax.swing.border.TitledBorder;
 
 import com.mr.apps.JNordVpnManager.Starter;
+import com.mr.apps.JNordVpnManager.utils.UtilPrefs;
 
 /**
  * Utility class for modal dialog panels.<p>
@@ -46,10 +48,13 @@ import com.mr.apps.JNordVpnManager.Starter;
 @SuppressWarnings("serial")
 public class JModalDialog extends JDialog implements ActionListener
 {
-   private String m_result;
-   private String m_buttons;
-   private JPanel m_messagePanel;
-   private JPanel m_buttonsPanel;
+   private String  m_result;
+   private String  m_buttons;
+   private JPanel  m_messagePanel;
+   private JPanel  m_buttonsPanel;
+   private Timer   m_autoCloseTimer;
+   private int     m_iTimer;
+   private JButton m_button;
 
    /**
     * Constructor for any modal dialog
@@ -70,6 +75,7 @@ public class JModalDialog extends JDialog implements ActionListener
       super(owner, title, true);
 //      Starter._m_logError.TraceDebug("(JModalDialog) " + title + " / Buttons=" + buttons + " / Message=\n" + msg);
 
+      m_autoCloseTimer = null;
       m_buttons = new String(buttons);
 
       // Dialog Main Window
@@ -111,9 +117,9 @@ public class JModalDialog extends JDialog implements ActionListener
       StringTokenizer strtok = new StringTokenizer(m_buttons, ",");
       while (strtok.hasMoreTokens())
       {
-         JButton button = new JButton(strtok.nextToken());
-         button.addActionListener(this);
-         m_buttonsPanel.add(button);
+         m_button = new JButton(strtok.nextToken());
+         m_button.addActionListener(this);
+         m_buttonsPanel.add(m_button);
       }
       dialogPanel.add(m_buttonsPanel, BorderLayout.PAGE_END);
 
@@ -134,6 +140,11 @@ public class JModalDialog extends JDialog implements ActionListener
     */
    public void closeDialog()
    {
+      if (null != m_autoCloseTimer)
+      {
+         m_autoCloseTimer.stop();
+         m_autoCloseTimer = null;
+      }
       Starter.setSkipWindowGainedFocus();
       setVisible(false);
       dispose();
@@ -226,6 +237,60 @@ public class JModalDialog extends JDialog implements ActionListener
       return JOptionPane.CLOSED_OPTION;
    }
    
+   /**
+    * Message Dialog with Auto Close Countdown
+    * <p>
+    * Countdown time is set in UserPrefs:
+    * <ul>
+    * <li>&lt;0 - Auto Close Countdown deactivated</li>
+    * <li>=0 - don't show Dialog</li>
+    * <li>&gt;0 - Auto Close Countdown in seconds</li>
+    * </ul>
+    * 
+    * @param title
+    *           is the message title
+    * @param msg
+    *           is the message
+    * @return JOptionPane.CLOSED_OPTION
+    */
+   public static int showMessageAutoClose(String title, String msg)
+   {
+      int iTimer = UtilPrefs.getMessageAutoclose();
+      if (0 != iTimer)
+      {
+         JModalDialog dlg = new JModalDialog(Starter.getMainFrame(), title, msg, "Ok");
+         if (iTimer > 0)
+         {
+            // ---------------------------------------------------------------------------
+            // define and start the timer
+            dlg.m_iTimer = iTimer;
+            dlg.m_autoCloseTimer = new Timer(1000, new ActionListener() {
+               @Override
+               public void actionPerformed(ActionEvent e)
+               {
+                  if (dlg.m_iTimer <= 1)
+                  {
+                     dlg.closeDialog();
+                  }
+                  else
+                  {
+                     dlg.m_iTimer -= 1;
+                     dlg.m_button.setText("Ok (" + dlg.m_iTimer + ")");
+                     dlg.m_autoCloseTimer.start();
+                  }
+               }
+            });
+            dlg.m_autoCloseTimer.start();
+         }
+
+         dlg.m_button.setText("Ok (" + dlg.m_iTimer + ")");
+         dlg.repaint();
+         dlg.setVisible(true);
+      }
+
+      return JOptionPane.CLOSED_OPTION;
+   }
+
    public static int showInfo(String msg)
    {
       JModalDialog dlg = new JModalDialog(Starter.getMainFrame(), "Information", msg, "Close");
