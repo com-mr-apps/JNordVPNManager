@@ -40,6 +40,7 @@ import com.mr.apps.JNordVpnManager.geotools.Location;
 import com.mr.apps.JNordVpnManager.geotools.UtilLocations;
 import com.mr.apps.JNordVpnManager.geotools.UtilMapGeneration;
 import com.mr.apps.JNordVpnManager.gui.GuiMenuBar;
+import com.mr.apps.JNordVpnManager.gui.dialog.JAccelerateDialog;
 import com.mr.apps.JNordVpnManager.gui.dialog.JModalDialog;
 import com.mr.apps.JNordVpnManager.nordvpn.NvpnCallbacks;
 import com.mr.apps.JNordVpnManager.nordvpn.NvpnGroups;
@@ -104,8 +105,8 @@ public class JServerTreePanel extends JPanel implements TreeSelectionListener
       JPanel filterPanelGroups = new JPanel();
       filterPanelGroups.setLayout(new BorderLayout());
 
-      NordVPNEnumGroups[] iaRegions = { NordVPNEnumGroups.all_regions, NordVPNEnumGroups.The_Americas, NordVPNEnumGroups.Africa_The_Middle_East_And_India, NordVPNEnumGroups.Asia_Pacific, NordVPNEnumGroups.Europe };
-      String saRegions[]            = { "All Regions",                 "America",                      "Africa/Middle East/India",                         "Asia/Pacific",                 "Europe" };
+      NordVPNEnumGroups[] iaRegions = { NordVPNEnumGroups.all_regions, NordVPNEnumGroups.The_Americas, NordVPNEnumGroups.Africa_The_Middle_East_And_India, NordVPNEnumGroups.Asia_Pacific, NordVPNEnumGroups.Europe, null };
+      String saRegions[]            = { "All Regions",                 "America",                      "Africa/Middle East/India",                         "Asia/Pacific",                 "Europe",                 "[NordVPN Recommanded Servers]" };
       m_filterRegions = new JComboBox<Object>(saRegions);
 
       int idxRegion = NvpnGroups.getFieldIndex(NvpnGroups.getCurrentRegion(), iaRegions, 0);
@@ -131,6 +132,10 @@ public class JServerTreePanel extends JPanel implements TreeSelectionListener
                case 4 :
                   NvpnGroups.setCurrentRegion(NordVPNEnumGroups.Europe);
                   break;
+               case 5 :
+                  JAccelerateDialog accelerateDialig = new JAccelerateDialog();
+                  accelerateDialig.show();
+                  return;
                default /* 0 */:
                   NvpnGroups.setCurrentRegion(NordVPNEnumGroups.all_regions);
             }

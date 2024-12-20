@@ -41,7 +41,7 @@ public class JWhatsNewDialog
          + "<h3>Accelerated Development (by Donations):</h3>"
          + "Functionality that is not planned yet. The start of implementation can be accelerated by <a href=\"https://buymeacoffee.com/3dprototyping\">[donations]</a>."
          + "<ul>"
-         + "<li><strong>Support NordVPN Recommanded Servers</strong>: new functionality <a href=\"https://github.com/com-mr-apps/JNordVPNManager/issues/16\">[GitHub Issue #16]</a>.</li>"
+         + "<li><strong>Support NordVPN Recommended Servers</strong>: new functionality <a href=\"https://github.com/com-mr-apps/JNordVPNManager/issues/16\">[GitHub Issue #16]</a>.</li>"
          + "<li><strong>Support Whitelist</strong>: new functionality <a href=\"https://github.com/com-mr-apps/JNordVPNManager/issues/17\">[GitHub Issue #17]</a>.</li>"
          + "<li><strong>Support Meshnet</strong>: new functionality <a href=\"https://github.com/com-mr-apps/JNordVPNManager/issues/18\">[GitHub Issue #18]</a>.</li>"
          + "<li><strong>List of Favorite Server Connections</strong>: switch Tree list to user defined Favorite Server Connections (add/delete).</li>"
