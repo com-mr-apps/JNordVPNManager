@@ -143,6 +143,7 @@ public class JSplashScreen
          m_progressBar = new JProgressBar(0, 100);
          m_splashFrame.add(m_progressBar);
          m_splashFrame.setPreferredSize(new Dimension(imageIcon.getIconWidth(), imageIcon.getIconHeight() + 40));
+         Starter._m_logError.setCurStartTime();
       }
 
       m_splashFrame.setUndecorated(true);
@@ -170,6 +171,7 @@ public class JSplashScreen
     */
    public void setProgress(int progress)
    {
+      Starter._m_logError.getCurElapsedTime("Progress " + progress);
       m_progressBar.setValue(progress);
       m_splashFrame.update(m_splashFrame.getGraphics());
       if (progress == 100)

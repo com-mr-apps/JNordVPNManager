@@ -13,6 +13,7 @@ import java.nio.charset.Charset;
 
 import com.mr.apps.JNordVpnManager.Starter;
 import com.mr.apps.JNordVpnManager.gui.dialog.JModalDialog;
+import com.mr.apps.JNordVpnManager.utils.String.StringFormat;
 
 /**
  * This class is a common error and message logging utility for com.mr.apps applications. The constructor gets a file
@@ -69,6 +70,8 @@ public class UtilLogErr
    private int                 m_nbWarnings           = 0;
    private boolean             m_bConsoleOutput       = false;
    private boolean             m_fatalError           = false;
+   private long                m_appStartTime         = System.currentTimeMillis();
+   private long                m_curStartTime         = System.currentTimeMillis();
 
    /**
     * Constructor for the Common Logging+Error Class
@@ -924,5 +927,56 @@ public class UtilLogErr
    public void setConsoleOutput(boolean mode)
    {
       m_bConsoleOutput = mode;
+   }
+
+   /**
+    * Set the application start time manually.
+    * 
+    * @return the current time in milliseconds
+    */
+   public long setAppStartTime()
+   {
+      m_appStartTime = System.currentTimeMillis();
+      return m_appStartTime;
+   }
+
+   /**
+    * Get the application elapsed time and generate a debug trace output.
+    * 
+    * @return the application elapsed time in milliseconds
+    */
+   public long getAppElapsedTime()
+   {
+      long stopTime = System.currentTimeMillis();
+      long deltaTime = stopTime - m_appStartTime;
+      TraceDebug("Application elapsed time: " + StringFormat.long2String(deltaTime, "") + "ms");
+      return deltaTime;
+   }
+
+   /**
+    * Set the current start time for elapsed time measurements.
+    * 
+    * @return the current time in milliseconds
+    */
+   public long setCurStartTime()
+   {
+      m_curStartTime = System.currentTimeMillis();
+      return m_curStartTime;
+   }
+
+   /**
+    * Get the elapsed time until the last call of set/get current time and generate a debug trace output.
+    * 
+    * @param msg
+    *           is a message for the debug output.
+    * @return the delta time between last calls for current time.
+    */
+   public long getCurElapsedTime(String msg)
+   {
+      long stopTime = System.currentTimeMillis();
+      long deltaTime = stopTime - m_curStartTime;
+      TraceDebug("Delta elapsed time [" + msg + "]: " + StringFormat.long2String(deltaTime, "") + "ms");
+      setCurStartTime();
+      return deltaTime;
    }
 }
