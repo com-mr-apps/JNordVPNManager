@@ -69,8 +69,10 @@ public class JModalDialog extends JDialog implements ActionListener
     *           is the dialog message
     * @param buttons
     *           is a comma separated list with the available button names e.g. "Ok,Cancel"
+    * @param color
+    *           is the dialog background color
     */
-   public JModalDialog(Frame owner, String title, String msg, String buttons)
+   public JModalDialog(Frame owner, String title, String msg, String buttons, Color color)
    {
       super(owner, title, true);
 //      Starter._m_logError.TraceDebug("(JModalDialog) " + title + " / Buttons=" + buttons + " / Message=\n" + msg);
@@ -105,8 +107,6 @@ public class JModalDialog extends JDialog implements ActionListener
             new Font("SansSerif",Font.BOLD, 12),
             Color.BLACK));
       messageText.setFont(messageText.getFont().deriveFont(Font.ITALIC));
-//      messageText.setBackground(Color.lightGray);
-//      messageText.setCaretColor(Color.lightGray);
       messageText.setText(msg);
       messageText.setEditable(false);
       m_messagePanel.add(messageText, BorderLayout.CENTER);
@@ -122,6 +122,18 @@ public class JModalDialog extends JDialog implements ActionListener
          m_buttonsPanel.add(m_button);
       }
       dialogPanel.add(m_buttonsPanel, BorderLayout.PAGE_END);
+
+      if (null != color)
+      {
+         messageText.setBackground(color);
+         messageText.setCaretColor(color);
+         m_messagePanel.setBackground(color);
+         m_buttonsPanel.setBackground(color);
+      }
+      else
+      {
+         messageText.setCaretColor(Color.white);
+      }
 
       pack();
    }
@@ -173,7 +185,7 @@ public class JModalDialog extends JDialog implements ActionListener
 
    public static JModalDialog JOptionDialog(String title, String msg, String button_text)
    {
-      JModalDialog dlg = new JModalDialog(Starter.getMainFrame(), title, msg, button_text);
+      JModalDialog dlg = new JModalDialog(Starter.getMainFrame(), title, msg, button_text, null);
       dlg.repaint();
       dlg.setVisible(true);
       return dlg;
@@ -181,7 +193,7 @@ public class JModalDialog extends JDialog implements ActionListener
 
    public static int OKDialog(String title, String msg, String button_text)
    {
-      JModalDialog dlg = new JModalDialog(Starter.getMainFrame(), title, msg, button_text);
+      JModalDialog dlg = new JModalDialog(Starter.getMainFrame(), title, msg, button_text, null);
       dlg.repaint();
       dlg.setVisible(true);
       return dlg.getResult();
@@ -189,7 +201,7 @@ public class JModalDialog extends JDialog implements ActionListener
 
    public static int OKDialog(String title, String msg)
    {
-      JModalDialog dlg = new JModalDialog(Starter.getMainFrame(), title , msg, "OK");
+      JModalDialog dlg = new JModalDialog(Starter.getMainFrame(), title , msg, "OK", null);
       dlg.repaint();
       dlg.setVisible(true);
       return dlg.getResult();
@@ -197,7 +209,7 @@ public class JModalDialog extends JDialog implements ActionListener
 
    public static int YesNoDialog(String msg)
    {
-      JModalDialog dlg = new JModalDialog(Starter.getMainFrame(), "Question", msg, "Yes,No");
+      JModalDialog dlg = new JModalDialog(Starter.getMainFrame(), "Question", msg, "Yes,No", null);
       dlg.repaint();
       dlg.setVisible(true);
       return dlg.getResult();
@@ -205,7 +217,7 @@ public class JModalDialog extends JDialog implements ActionListener
 
    public static int YesNoCancelDialog(String msg)
    {
-      JModalDialog dlg = new JModalDialog(Starter.getMainFrame(), "Question", msg, "Yes,No,Cancel");
+      JModalDialog dlg = new JModalDialog(Starter.getMainFrame(), "Question", msg, "Yes,No,Cancel", null);
       dlg.repaint();
       dlg.setVisible(true);
       return dlg.getResult();
@@ -213,9 +225,7 @@ public class JModalDialog extends JDialog implements ActionListener
 
    public static int showYesNoDialog(String title, String msg)
    {
-      JModalDialog dlg = new JModalDialog(Starter.getMainFrame(), title, msg, "Yes,No");
-      dlg.m_messagePanel.setBackground(new Color(51,153,255));
-      dlg.m_buttonsPanel.setBackground(new Color(51,153,255));
+      JModalDialog dlg = new JModalDialog(Starter.getMainFrame(), title, msg, "Yes,No", new Color(51,153,255));
       dlg.repaint();
       dlg.setVisible(true);
       return (dlg.getResult() == 0) ? JOptionPane.YES_OPTION : JOptionPane.NO_OPTION;
@@ -223,7 +233,7 @@ public class JModalDialog extends JDialog implements ActionListener
    
    public static int showConfirm(String msg)
    {
-      JModalDialog dlg = new JModalDialog(Starter.getMainFrame(), "Please Confirm", msg, "Yes,No");
+      JModalDialog dlg = new JModalDialog(Starter.getMainFrame(), "Please Confirm", msg, "Yes,No", null);
       dlg.repaint();
       dlg.setVisible(true);
       return (dlg.getResult() == 0) ? JOptionPane.YES_OPTION : JOptionPane.NO_OPTION;
@@ -231,7 +241,7 @@ public class JModalDialog extends JDialog implements ActionListener
    
    public static int showMessage(String title, String msg)
    {
-      JModalDialog dlg = new JModalDialog(Starter.getMainFrame(), title, msg, "Ok");
+      JModalDialog dlg = new JModalDialog(Starter.getMainFrame(), title, msg, "Ok", null);
       dlg.repaint();
       dlg.setVisible(true);
       return JOptionPane.CLOSED_OPTION;
@@ -258,7 +268,7 @@ public class JModalDialog extends JDialog implements ActionListener
       int iTimer = UtilPrefs.getMessageAutoclose();
       if (0 != iTimer)
       {
-         JModalDialog dlg = new JModalDialog(Starter.getMainFrame(), title, msg, "Ok");
+         JModalDialog dlg = new JModalDialog(Starter.getMainFrame(), title, msg, "Ok", null);
          if (iTimer > 0)
          {
             // ---------------------------------------------------------------------------
@@ -293,7 +303,7 @@ public class JModalDialog extends JDialog implements ActionListener
 
    public static int showInfo(String msg)
    {
-      JModalDialog dlg = new JModalDialog(Starter.getMainFrame(), "Information", msg, "Close");
+      JModalDialog dlg = new JModalDialog(Starter.getMainFrame(), "Information", msg, "Close", null);
       dlg.repaint();
       dlg.setVisible(true);
       return JOptionPane.CLOSED_OPTION;
@@ -302,9 +312,7 @@ public class JModalDialog extends JDialog implements ActionListener
    public static int showWarning(String msg)
    {
       Starter._m_logError.LoggingWarning(10303, "Warning Dialog", msg);
-      JModalDialog dlg = new JModalDialog(Starter.getMainFrame(), "Warning", msg, "Close");
-      dlg.m_messagePanel.setBackground(new Color(255,255,153));
-      dlg.m_buttonsPanel.setBackground(new Color(255,255,153));
+      JModalDialog dlg = new JModalDialog(Starter.getMainFrame(), "Warning", msg, "Close", new Color(255,255,153));
       dlg.repaint();
       dlg.setVisible(true);
       return JOptionPane.CLOSED_OPTION;
@@ -313,9 +321,7 @@ public class JModalDialog extends JDialog implements ActionListener
    public static int showError(String sShortMsg, String sLongMsg)
    {
       Starter._m_logError.LoggingError(10904, sShortMsg, sLongMsg);
-      JModalDialog jmd = new JModalDialog(Starter.getMainFrame(), sShortMsg, sLongMsg, "Close");
-      jmd.m_messagePanel.setBackground(new Color(255,102,102));
-      jmd.m_buttonsPanel.setBackground(new Color(255,102,102));
+      JModalDialog jmd = new JModalDialog(Starter.getMainFrame(), sShortMsg, sLongMsg, "Close", new Color(255,102,102));
       jmd.repaint();
       jmd.setVisible(true);
       return JOptionPane.CLOSED_OPTION;

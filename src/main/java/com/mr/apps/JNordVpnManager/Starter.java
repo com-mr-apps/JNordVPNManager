@@ -109,7 +109,7 @@ public class Starter
    {
       // get the application implementation version from jar manifest file
       Package p = getClass().getPackage();
-      String version = StringFormat.printString(p.getImplementationVersion(), "<n/a>", "<n/a>");
+      String version = StringFormat.printString(p.getImplementationVersion(), "n/a", "n/a");
       m_splashScreen.setVersion(version);
 
       // initialize the application

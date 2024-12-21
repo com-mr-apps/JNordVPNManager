@@ -32,7 +32,7 @@ public class JWhatsNewDialog
          + "[Released in December 2024]"
          + "<ul>"
          + "<li><strong>Obfuscated Server Connections</strong>: Added support of the NordVPN setting <code>Obfuscated</code> for OPENVPN technology. If <em>enabled</em>, the server treelist filters servers, available for obfuscated VPN connections. For more information see: <a href=\"https://support.nordvpn.com/hc/en-us/articles/19479130821521-Different-NordVPN-server-categories-explained#h_01HGTG79DQP0NW71K286YDW061\">Obfuscated Servers Explained [NordVPN Support]</a></p></li>"
-         + "<li><strong>Application Preferences</strong>: Added new setting <code>Auto Close Message Dialogs</code>. This setting defines for some dialogs an auto close countdown. Valid values are:<ul><li><em>-1</em>: no Countdown</li><li><em>=0</em>: don't show the dialog</li><li><em>&gt;0</em>: Close countdown in seconds</li></ul></p></li>"
+         + "<li><strong>Application Preferences</strong>: Added new setting <code>Auto Close Message Dialogs</code>. This setting defines for some dialogs an auto close countdown. Valid values are:<ul><li><em>-1</em>: Auto close disabled</li><li><em>=0</em>: Don't show the dialog</li><li><em>&gt;0</em>: Close countdown in seconds</li></ul></p></li>"
          + "</ul>"
          + "<h3>What's Next:</h3>"
          + "<ul>"

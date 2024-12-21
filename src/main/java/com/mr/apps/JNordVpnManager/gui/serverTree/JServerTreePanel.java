@@ -170,7 +170,7 @@ public class JServerTreePanel extends JPanel implements TreeSelectionListener
             if ((newIndex == idxObfuscatedGroup) && (!bObfuscate))
             {
                // require to change setting 'obfuscate enabled' (only available for technology OPENVPN!)
-               JModalDialog dlg = JModalDialog.JOptionDialog("Obfuscated Servers", "Setting 'Obfuscate' is disabled. To connect to VPN servers with obfuscation, the setting must be activated and the protocol type must be OPENVPN.\n"
+               JModalDialog dlg = JModalDialog.JOptionDialog("Obfuscated Servers", "Setting 'Obfuscate' is disabled. To connect to VPN servers with obfuscation,\nit must be activated in NordVPN settings and the protocol type must be OPENVPN.\n"
                      + "\n Please choose the OPENVPN protocol to enable obfuscation, or choose Cancel.",
                      "OPENVPN TCP,OPENVPN UDP,Cancel");
                int rc = dlg.getResult();
@@ -405,8 +405,7 @@ public class JServerTreePanel extends JPanel implements TreeSelectionListener
     * Create the server list tree.
     * 
     * @param update
-    *           if true, the server list is updated from NordVPN, else the server list stored in user preferences is
-    *           used
+    *           if true, the server list is updated from NordVPN, else the server list local stored is used
     * @return the root server node
     */
    private DefaultMutableTreeNode createServerTree(boolean update)
