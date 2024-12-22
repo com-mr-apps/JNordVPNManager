@@ -432,7 +432,7 @@ public class JServerTreePanel extends JPanel implements TreeSelectionListener
 
       NordVPNEnumGroups filterRegion = NvpnGroups.getCurrentRegion();
       NordVPNEnumGroups filterGroup = NvpnGroups.getCurrentGroup();
-      Starter._m_logError.TraceDebug("Filter current Region = '" + filterRegion.name() + "' / Filter current Legacy Group = '"+ filterGroup.name() + "'.");
+      Starter._m_logError.TraceDebug("Filter current Region = '" + filterRegion.name() + "' / Filter current Legacy Group = '" + filterGroup.name() + "' / Filter Text = '" + m_filterText + "'.");
       String sTechnology = "NORDLYNX";
       if (null != csd) sTechnology = csd.getTechnology(false);
       int iTechFilter = NvpnTechnologies.ikev2; // NORDLYNX

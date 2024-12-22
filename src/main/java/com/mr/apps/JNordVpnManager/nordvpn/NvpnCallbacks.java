@@ -226,32 +226,32 @@ public class NvpnCallbacks
             // Login - wait for login in external Browser (or cancel) 
             /* JAutoCloseLoginDialog jd = */ new JAutoCloseLoginDialog(Starter.getMainFrame(), msg);
          }
+      }
 
-         // get the current status
-         accountData = new NvpnAccountData();
-         boolean newStatus =  accountData.isLoggedIn();
-         if (newStatus != currentStatus)
+      // get the current status
+      accountData = new NvpnAccountData();
+      boolean newStatus = accountData.isLoggedIn();
+      if (newStatus != currentStatus)
+      {
+         // OK, status changed
+         int iAutoConnect = UtilPrefs.getAutoConnectMode();
+         if ((1 == iAutoConnect) && (newStatus == true))
          {
-            // OK, status changed
-            int iAutoConnect = UtilPrefs.getAutoConnectMode();
-            if ((1 == iAutoConnect) && (newStatus == true))
+            // AutoConnect after login
+            CurrentLocation loc = Starter.getCurrentServer();
+            if (null != loc)
             {
-               // AutoConnect after login
-               CurrentLocation loc = Starter.getCurrentServer();
-               if (null != loc)
-               {
-                  NvpnCallbacks.executeConnect(loc, null, null);
-               }
-            }
-            else if (newStatus == false)
-            {
-               // switch from login to logout -> server disconnected
-               Starter.updateCurrentServer();
+               NvpnCallbacks.executeConnect(loc, null, null);
             }
          }
-
-         // update current account data and dependent GUI elements
-         Starter.updateAccountData(accountData);
+         else if (newStatus == false)
+         {
+            // switch from login to logout -> server disconnected
+            Starter.updateCurrentServer();
+         }
       }
+
+      // update current account data and dependent GUI elements
+      Starter.updateAccountData(accountData);
    }
 }
