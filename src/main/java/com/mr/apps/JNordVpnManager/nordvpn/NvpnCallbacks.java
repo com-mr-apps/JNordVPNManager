@@ -22,7 +22,6 @@ import com.mr.apps.JNordVpnManager.Starter;
 import com.mr.apps.JNordVpnManager.geotools.CurrentLocation;
 import com.mr.apps.JNordVpnManager.geotools.Location;
 import com.mr.apps.JNordVpnManager.gui.GuiMenuBar;
-import com.mr.apps.JNordVpnManager.gui.connectLine.GuiConnectLine;
 import com.mr.apps.JNordVpnManager.gui.dialog.JAutoCloseLoginDialog;
 import com.mr.apps.JNordVpnManager.gui.dialog.JModalDialog;
 import com.mr.apps.JNordVpnManager.utils.UtilPrefs;
@@ -210,7 +209,7 @@ public class NvpnCallbacks
          }
          else
          {
-            // Login LO
+            // Login KO
             JModalDialog.showError("NordVPN Login", m_lastErrorMessage);
          }         
       }
@@ -249,11 +248,10 @@ public class NvpnCallbacks
                // switch from login to logout -> server disconnected
                Starter.updateCurrentServer();
             }
-
-            // update GUI
-            GuiMenuBar.updateLoginOut(accountData);
-            GuiConnectLine.updateLoginOut(accountData);            
          }
+
+         // update current account data and dependent GUI elements
+         Starter.updateAccountData(accountData);
       }
    }
 }

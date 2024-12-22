@@ -265,7 +265,6 @@ public class GuiMenuBar
             NvpnCallbacks.executeLogInOut();
          }
       });
-      updateLoginOut(accountData);
       connectMenu.add(m_menuItemLogInOut);
 
       // -------------------------------------------------------------------------------------
@@ -325,7 +324,9 @@ public class GuiMenuBar
 
    /**
     * Update Menu Buttons
-    * @param loc is the current connected or disconnected location
+    * 
+    * @param loc
+    *           is the current connected or disconnected location
     */
    public static void updateMenuButtons(CurrentLocation loc)
    {
@@ -365,7 +366,13 @@ public class GuiMenuBar
       m_menuItemQuickConnect.setToolTipText(sToolTip);
    }
 
-   public static void updateLoginOut(NvpnAccountData accountData)
+   /**
+    * Update GUI elements dependent on account data.
+    * 
+    * @param accountData
+    *           is the current account data
+    */
+   public static void updateLoginLogout(NvpnAccountData accountData)
    {
       if (null != accountData && !accountData.isFailed())
       {

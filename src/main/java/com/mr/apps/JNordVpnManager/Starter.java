@@ -294,14 +294,12 @@ public class Starter
                   {
                      _m_logError.TraceDebug("windowGainedFocus launched");
                      m_nvpnSettingsData = new NvpnSettingsData();
-                     m_nvpnAccountData = new NvpnAccountData();
+                     // update account data and dependent GUI elements
+                     updateAccountData(new NvpnAccountData());
                      // update the status line, commands menu and world map current server layer
                      updateCurrentServer();
                      // update the server tree (and world map all servers layer)
                      m_serverListPanel.updateFilterTreeCB();
-                     // update login information
-                     GuiMenuBar.updateLoginOut(m_nvpnAccountData);
-                     GuiConnectLine.updateLoginOut(m_nvpnAccountData);
                   }
                }
             }
@@ -525,6 +523,11 @@ public class Starter
       JPanel connectPanel = m_connectLine.create(m_nvpnAccountData);
 
       //-------------------------------------------------------------------------------
+      // initialize data dependent GUI elements
+      //-------------------------------------------------------------------------------
+      updateAccountData(null);
+
+      //-------------------------------------------------------------------------------
       // main frame layout
       //-------------------------------------------------------------------------------
       m_mainFrame.add(connectPanel, BorderLayout.PAGE_START);
@@ -578,7 +581,7 @@ public class Starter
     * <li>Get the real current connected server (if not connected we set the current server to the last connected)</it>
     * <li>Update the status line</it>
     * <li>Update the server tree and world map with current server</it>
-    * <li>Update menu buttons dependent from connection status</it>
+    * <li>Update menu buttons dependent from status data</it>
     * </ul>
     * Remark: Login/Logout status is not handled here. In case of logout, status is disconnected.
     * 
@@ -625,6 +628,19 @@ public class Starter
       GuiMenuBar.updateMenuButtons(m_currentServer);
       
       return (null == m_currentServer) ? false : m_currentServer.isConnected();
+   }
+
+   /**
+    * Update GUI elements Login/Logout information.
+    * 
+    * @param is
+    *           the current account data (if null, we use the previous set data)
+    */
+   public static void updateAccountData(NvpnAccountData accountData)
+   {
+      if (null != accountData) m_nvpnAccountData = accountData;
+      GuiMenuBar.updateLoginLogout(m_nvpnAccountData);
+      GuiConnectLine.updateLoginLogout(m_nvpnAccountData);
    }
 
    /**
