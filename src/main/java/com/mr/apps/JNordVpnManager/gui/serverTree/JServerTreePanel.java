@@ -415,7 +415,8 @@ public class JServerTreePanel extends JPanel implements TreeSelectionListener
 
       NvpnSettingsData csd = Starter.getCurrentSettingsData();
       int idxFilterGroups = m_filterGroups.getSelectedIndex(); // current filter group selected
-      boolean bObfuscate = StringFormat.string2boolean(csd.getObfuscate(false)); // current setting obfuscated [enabled,disabled]
+      boolean bObfuscate = false;
+      if (null != csd) bObfuscate = StringFormat.string2boolean(csd.getObfuscate(false)); // current setting obfuscated [enabled,disabled]
       int idxObfuscatedGroup = NvpnGroups.getFieldIndex(NordVPNEnumGroups.legacy_obfuscated_servers, m_iaGroups, 0); // list index of filter group obfuscated button
       if (bObfuscate && (idxFilterGroups != idxObfuscatedGroup))
       {
