@@ -22,8 +22,11 @@ import com.mr.apps.JNordVpnManager.Starter;
 import com.mr.apps.JNordVpnManager.geotools.CurrentLocation;
 import com.mr.apps.JNordVpnManager.geotools.UtilLocations;
 import com.mr.apps.JNordVpnManager.gui.connectLine.JPauseSlider;
+import com.mr.apps.JNordVpnManager.nordvpn.NvpnGroups.NordVPNEnumGroups;
+import com.mr.apps.JNordVpnManager.nordvpn.NvpnSettingsData;
 import com.mr.apps.JNordVpnManager.nordvpn.NvpnStatusData;
 import com.mr.apps.JNordVpnManager.utils.UtilPrefs;
+import com.mr.apps.JNordVpnManager.utils.String.StringFormat;
 
 public class GuiStatusLine
 {
@@ -126,8 +129,10 @@ public class GuiStatusLine
           *  error
           */
          m_statusText.setText(statusData.getStatusText());
+         return ret_loc;
       }
-      else if (statusData.isConnected())
+
+      if (statusData.isConnected())
       {
          /*
           *  connected
@@ -138,7 +143,36 @@ public class GuiStatusLine
          ret_loc = new CurrentLocation(UtilLocations.getLocation(statusData.getCity(), statusData.getCountry()));
          ret_loc.setConnected(true);
 
-         updateStatusLine(0, statusData.getStatusLineMessage());
+         NvpnSettingsData settingsData = Starter.getCurrentSettingsData();
+         int iconId = 0;
+         if (false == settingsData.getTechnology(false).equals(statusData.getTechnology()))
+         {
+            // reconnect required - settings technology <> current technology
+            iconId = 1;
+            Starter._m_logError.LoggingError(10905,
+                  "Server Connection Settings Mismatch",
+                  "The current server connection uses '" + statusData.getTechnology() + "' but settings are set to '" + settingsData.getTechnology(false) + "'.");
+         }
+         else if (true == statusData.getTechnology().equals("OPENVPN"))
+         {
+            if (false == settingsData.getProtocol(false).equals(statusData.getProtocol()))
+            {
+               // reconnect required - settings OPENVPN protocol <> current OPENVPN protocol
+               iconId = 1;
+               Starter._m_logError.LoggingError(10905,
+                     "Server Connection Settings Mismatch",
+                     "The current server connection uses '" + statusData.getProtocol() + "' but settings are set to '" + settingsData.getProtocol(false) + "'.");
+            }
+            else if ((StringFormat.string2boolean(settingsData.getObfuscate(false)) == true) && (false == ret_loc.hasGroup(NordVPNEnumGroups.legacy_obfuscated_servers)))
+            {
+               // reconnect required - current server does not support obfuscated
+               iconId = 1;
+               Starter._m_logError.LoggingError(10905,
+                     "Server Connection Settings Mismatch",
+                     "The current server does not support obfuscation. Please manually reconnect to a server that supports obfuscation.");
+            }
+         }
+         updateStatusLine(iconId, statusData.getStatusLineMessage());
       }
       else
       {
@@ -170,6 +204,6 @@ public class GuiStatusLine
    public static void updateStatusLine(int iStatus, String msg)
    {
       m_statusIndicator.setIcon(m_statusImages.get(iStatus));
-      m_statusText.setText(msg);
+      if (null != msg) m_statusText.setText(msg);
    }
 }

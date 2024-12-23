@@ -109,7 +109,7 @@ public class Starter
    {
       // get the application implementation version from jar manifest file
       Package p = getClass().getPackage();
-      String version = StringFormat.printString(p.getImplementationVersion(), "<n/a>", "<n/a>");
+      String version = StringFormat.printString(p.getImplementationVersion(), "n/a", "n/a");
       m_splashScreen.setVersion(version);
 
       // initialize the application
@@ -294,14 +294,12 @@ public class Starter
                   {
                      _m_logError.TraceDebug("windowGainedFocus launched");
                      m_nvpnSettingsData = new NvpnSettingsData();
-                     m_nvpnAccountData = new NvpnAccountData();
+                     // update account data and dependent GUI elements
+                     updateAccountData(new NvpnAccountData());
                      // update the status line, commands menu and world map current server layer
                      updateCurrentServer();
                      // update the server tree (and world map all servers layer)
                      m_serverListPanel.updateFilterTreeCB();
-                     // update login information
-                     GuiMenuBar.updateLoginOut(m_nvpnAccountData);
-                     GuiConnectLine.updateLoginOut(m_nvpnAccountData);
                   }
                }
             }
@@ -476,19 +474,8 @@ public class Starter
             CurrentLocation loc = getCurrentServer();
             if (null != loc)
             {
-               m_splashScreen.setStatus("Auto Connect to " + ((Location)loc).getServerId());
-               String msg = NvpnCallbacks.executeConnect(loc);
-               if (NvpnCallbacks.isLastError())
-               {
-                  msg = NvpnCallbacks.getLastError();
-                  JModalDialog.showError("JNordVPN Manager Auto Connect", msg);
-               }
-               else
-               {
-                  // get the updated status (should be connected)
-                  m_nvpnStatusData = new NvpnStatusData();
-                  bConnected = m_nvpnStatusData.isConnected();
-               }
+               m_splashScreen.setStatus("GUI Auto Connect to " + ((Location)loc).getServerId());
+               NvpnCallbacks.executeConnect(loc, null, "JNordVPN Manager Auto Connect");
             }
          }
       }
@@ -534,6 +521,11 @@ public class Starter
       //-------------------------------------------------------------------------------
       m_connectLine = new GuiConnectLine();
       JPanel connectPanel = m_connectLine.create(m_nvpnAccountData);
+
+      //-------------------------------------------------------------------------------
+      // initialize data dependent GUI elements
+      //-------------------------------------------------------------------------------
+      updateAccountData(null);
 
       //-------------------------------------------------------------------------------
       // main frame layout
@@ -589,7 +581,7 @@ public class Starter
     * <li>Get the real current connected server (if not connected we set the current server to the last connected)</it>
     * <li>Update the status line</it>
     * <li>Update the server tree and world map with current server</it>
-    * <li>Update menu buttons dependent from connection status</it>
+    * <li>Update menu buttons dependent from status data</it>
     * </ul>
     * Remark: Login/Logout status is not handled here. In case of logout, status is disconnected.
     * 
@@ -636,6 +628,19 @@ public class Starter
       GuiMenuBar.updateMenuButtons(m_currentServer);
       
       return (null == m_currentServer) ? false : m_currentServer.isConnected();
+   }
+
+   /**
+    * Update GUI elements Login/Logout information.
+    * 
+    * @param is
+    *           the current account data (if null, we use the previous set data)
+    */
+   public static void updateAccountData(NvpnAccountData accountData)
+   {
+      if (null != accountData) m_nvpnAccountData = accountData;
+      GuiMenuBar.updateLoginLogout(m_nvpnAccountData);
+      GuiConnectLine.updateLoginLogout(m_nvpnAccountData);
    }
 
    /**

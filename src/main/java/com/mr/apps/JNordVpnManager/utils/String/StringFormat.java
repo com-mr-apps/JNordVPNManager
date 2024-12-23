@@ -171,6 +171,6 @@ public class StringFormat
     */
    public static boolean string2boolean(String value)
    {
-      return value.matches("1|true|enable|on|enabled");
+      return value.matches("1|[Tt]rue|[Ee]nable[d]?|[Oo]n");
    }
 }

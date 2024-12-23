@@ -14,6 +14,8 @@ import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 import com.mr.apps.JNordVpnManager.Starter;
+import com.mr.apps.JNordVpnManager.geotools.CurrentLocation;
+import com.mr.apps.JNordVpnManager.gui.GuiStatusLine;
 import com.mr.apps.JNordVpnManager.gui.dialog.JModalDialog;
 import com.mr.apps.JNordVpnManager.gui.settings.JNordVpnSettingsDialog;
 import com.mr.apps.JNordVpnManager.gui.settings.JSettingsPanelField;
@@ -39,6 +41,8 @@ Commands:
      fwmark                                       Traffic control filter used in policy-based routing. It allows classifying packets based on a previously set
                                                   fwmark by iptables.
      ipv6                                         Enables or disables use of the IPv6.
+     obfuscate                                    Enables or disables obfuscation. When enabled, this feature allows to bypass network traffic sensors which aim
+                                                  to detect usage of the protocol and log, throttle or block it.
      routing                                      Allows routing traffic through VPN servers and peer devices in Meshnet. This setting must be enabled to send
                                                   your traffic through a VPN server or a peer device. If the setting is disabled, the app will only initiate
                                                   necessary connections to a VPN server or a peer device but won’t start traffic routing.
@@ -68,6 +72,7 @@ public class NvpnSettingsData
    private static final String                     TECHNOLOGY                             = "TECHNOLOGY";
    private static final String                     TRAY                                   = "TRAY";
    private static final String                     NOTIFY                                 = "NOTIFY";
+   private static final String                     OBFUSCATE                              = "OBFUSCATE";
    private static final String                     KILLSWITCH                             = "KILLSWITCH";
    private static final String                     ANALYTICS                              = "ANALYTICS";
    private static final String                     ROUTING                                = "ROUTING";
@@ -85,6 +90,7 @@ public class NvpnSettingsData
    private static String                           DEFAULT_NVPN_SETTINGS_FIREWALL         = "enabled";
    private static String                           DEFAULT_NVPN_SETTINGS_FWMARK           = "";
    private static String                           DEFAULT_NVPN_SETTINGS_IPV6             = "disabled";
+   private static String                           DEFAULT_NVPN_SETTINGS_OBFUSCATE        = "disabled";
    private static String                           DEFAULT_NVPN_SETTINGS_ROUTING          = "enabled";
    private static String                           DEFAULT_NVPN_SETTINGS_ANALYTICS        = "disabled";
    private static String                           DEFAULT_NVPN_SETTINGS_KILLSWITCH       = "disabled";
@@ -103,6 +109,7 @@ public class NvpnSettingsData
    private String                                  m_firewall                             = DEFAULT_NVPN_SETTINGS_FIREWALL;
    private String                                  m_fwmark                               = DEFAULT_NVPN_SETTINGS_FWMARK;
    private String                                  m_ipv6                                 = DEFAULT_NVPN_SETTINGS_IPV6;
+   private String                                  m_obfuscate                            = DEFAULT_NVPN_SETTINGS_OBFUSCATE;
    private String                                  m_routing                              = DEFAULT_NVPN_SETTINGS_ROUTING;
    private String                                  m_analytics                            = DEFAULT_NVPN_SETTINGS_ANALYTICS;
    private String                                  m_killswitch                           = DEFAULT_NVPN_SETTINGS_KILLSWITCH;
@@ -114,6 +121,8 @@ public class NvpnSettingsData
    private String                                  m_virtualLocation                      = DEFAULT_NVPN_SETTINGS_VIRTUAL_LOCATION;
    private String                                  m_postQuantum                          = DEFAULT_NVPN_SETTINGS_POST_QUANTUM;
    private String                                  m_protocol                             = DEFAULT_NVPN_SETTINGS_PROTOCOL;
+
+   private static boolean                          m_requiresReconnect                    = false;
 
    /**
     * Dataset defining the NordVPN Settings values.
@@ -145,8 +154,9 @@ public class NvpnSettingsData
       m_settingsPanelFieldsMap.put(LAN_DISCOVERY, new JSettingsPanelField("Enable LAN Discovery", "B", KeyEvent.VK_L, 20, this.getLanDiscovery(true)));
       m_settingsPanelFieldsMap.put(MESHNET, new JSettingsPanelField("Enable Meshnet", "B", KeyEvent.VK_M, 1, this.getMeshnet(true)));
       m_settingsPanelFieldsMap.put(NOTIFY, new JSettingsPanelField("Enable Notifications", "B", KeyEvent.VK_N, 1, this.getNotify(true)));
+      m_settingsPanelFieldsMap.put(OBFUSCATE, new JSettingsPanelField("Enable Obfuscation (OPENVPN)", "B", KeyEvent.VK_O, 1, this.getObfuscate(true)));
       m_settingsPanelFieldsMap.put(POST_QUANTUM, new JSettingsPanelField("Enable Post-Quantum Encryption", "B", KeyEvent.VK_Q, 1, this.getPostQuantum(true)));
-      m_settingsPanelFieldsMap.put(PROTOCOL, new JSettingsPanelField("Protocol", "L[TCP,UDP]", KeyEvent.VK_P, 1, this.getProtocol(true)));
+      m_settingsPanelFieldsMap.put(PROTOCOL, new JSettingsPanelField("Protocol (OPENVPN)", "L[TCP,UDP]", KeyEvent.VK_P, 1, this.getProtocol(true)));
       m_settingsPanelFieldsMap.put(ROUTING, new JSettingsPanelField("Enable traffic routing", "B", KeyEvent.VK_R, 1, this.getRouting(true)));
       m_settingsPanelFieldsMap.put(TECHNOLOGY, new JSettingsPanelField("Technology", "L[NORDLYNX,OPENVPN]", KeyEvent.VK_T, 1, this.getTechnology(true)));
       m_settingsPanelFieldsMap.put(TPLITE, new JSettingsPanelField("Threat Protection Lite", "B", -1, 1, this.getTplite(true)));
@@ -224,6 +234,7 @@ public class NvpnSettingsData
       this.m_killswitch = values.get("Kill Switch");
       this.m_tplite = values.get("Threat Protection Lite");
       this.m_notify = values.get("Notify");
+      this.m_obfuscate = values.get("Obfuscate");
       this.m_tray = values.get("Tray");
       this.m_autoConnect = values.get("Auto-connect");
       this.m_ipv6 = values.get("IPv6");
@@ -234,8 +245,9 @@ public class NvpnSettingsData
       this.m_postQuantum = values.get("Post-quantum VPN");
       this.m_protocol = values.get("Protocol");
 
-      // initialize protocol - in case of NORDVPN not set
+      // initialize settings - in case of NORDLYNX they are not set
       if (null == this.m_protocol) this.m_protocol = "UDP";
+      if (null == this.m_obfuscate) this.m_obfuscate = "disabled";
 
       // the following values contain the text "disabled" it they are not set -> reset them
       if (this.m_autoConnect.equals("disabled")) this.m_autoConnect = "";
@@ -607,6 +619,7 @@ public class NvpnSettingsData
             m_routing = data;
             NvpnCommands.routingSettings(StringFormat.string2boolean(data));
             if (UtilSystem.getLastExitCode() == 0) return true;
+            m_requiresReconnect = true;
          }
       }
 
@@ -721,6 +734,59 @@ public class NvpnSettingsData
       return false;
    }
 
+   public String getObfuscate(boolean def)
+   {
+      if (true == def)
+      {
+         Preferences prefs = Preferences.userRoot().node("com/mr/apps/JNordVpnManager/nordvpn");
+         return prefs.get("Settings.obfuscate", DEFAULT_NVPN_SETTINGS_OBFUSCATE);
+      }
+      else
+      {
+         return m_obfuscate;
+      }
+   }
+
+   public boolean setObfuscate(String data, boolean def)
+   {
+      if (null == data) return false;
+
+      if (true == def)
+      {
+         Preferences prefs = Preferences.userRoot().node("com/mr/apps/JNordVpnManager/nordvpn");
+         prefs.put("Settings.obfuscate", data);
+      }
+      else
+      {
+         if (!equalBoolean(m_obfuscate, data))
+         {
+            // call set command
+            if (m_technology.equals("NORDLYNX"))
+            {
+               m_obfuscate = "disabled";
+            }
+            else
+            {
+               m_obfuscate = data;
+               String msg = NvpnCommands.obfuscateSettings(StringFormat.string2boolean(data));
+               if (UtilSystem.isLastError())
+               {
+                  msg = UtilSystem.getLastError();
+                  JModalDialog.showError("NordVPN Set Obfuscate", msg);
+               }
+               else
+               {
+                  JModalDialog.showMessage("NordVPN Set Obfuscate", msg);
+                  m_requiresReconnect = true;
+                  return true;
+               }
+            }
+         }
+      }
+
+      return false;
+   }
+
    public String getTray(boolean def)
    {
       if (true == def)
@@ -785,7 +851,6 @@ public class NvpnSettingsData
          {
             // call set command
             m_technology = data;
-            if (m_technology.equals("NORDLYNX")) m_protocol = "UDP";
             String msg = NvpnCommands.technologySettings(data);
             if (UtilSystem.isLastError())
             {
@@ -795,6 +860,10 @@ public class NvpnSettingsData
             else
             {
                JModalDialog.showMessage("NordVPN Set Technology", msg);
+
+               // we need to re-read the settings
+               getNordVPNSettings();
+               m_requiresReconnect = true;
                return true;
             }
          }
@@ -906,7 +975,7 @@ public class NvpnSettingsData
             NvpnCommands.virtualLocationSettings(StringFormat.string2boolean(data));
             if (UtilSystem.getLastExitCode() == 0)
             {
-               JModalDialog.showMessage("nordvpn set virtual-location " + data, "Please refresh the server list to get a list of the actual available servers.");
+               JModalDialog.showMessage("nordvpn set virtual-location " + data, "Please refresh the server list to get a list of the actual available servers and manually reconnect.");
                return true;
             }
          }
@@ -1001,6 +1070,7 @@ public class NvpnSettingsData
             else
             {
                JModalDialog.showMessage("NordVPN Set Protocol", msg);
+               m_requiresReconnect = true;
                return true;
             }
          }
@@ -1030,6 +1100,7 @@ public class NvpnSettingsData
       hm.put(ANALYTICS, getAnalytics(def));
       hm.put(KILLSWITCH, getKillswitch(def));
       hm.put(NOTIFY, getNotify(def));
+      hm.put(OBFUSCATE, getObfuscate(def));
       hm.put(TRAY, getTray(def));
       hm.put(TECHNOLOGY, getTechnology(def));
       hm.put(MESHNET, getMeshnet(def));
@@ -1068,6 +1139,7 @@ public class NvpnSettingsData
          Starter._m_logError.TraceDebug(key + ": " + value);
       }
 
+      rc |= setTechnology(hm.get(TECHNOLOGY), def);
       rc |= setAutoConnect(hm.get(AUTOCONNECT), def);
       rc |= setTplite(hm.get(TPLITE), def);
       rc |= setDns(hm.get(DNS), def);
@@ -1078,8 +1150,8 @@ public class NvpnSettingsData
       rc |= setAnalytics(hm.get(ANALYTICS), def);
       rc |= setKillswitch(hm.get(KILLSWITCH), def);
       rc |= setNotify(hm.get(NOTIFY), def);
+      rc |= setObfuscate(hm.get(OBFUSCATE), def);
       rc |= setTray(hm.get(TRAY), def);
-      rc |= setTechnology(hm.get(TECHNOLOGY), def);
       rc |= setMeshnet(hm.get(MESHNET), def);
       rc |= setLanDiscovery(hm.get(LAN_DISCOVERY), def);
       rc |= setVirtualLocation(hm.get(VIRTUAL_LOCATION), def);
@@ -1109,6 +1181,25 @@ public class NvpnSettingsData
          JModalDialog.showMessage("Reset NordVPN Settings", msg);
       }
       getNordVPNSettings();
+   }
+
+   public static void reconnectIfRequired()
+   {
+      if (true == m_requiresReconnect)
+      {
+         m_requiresReconnect = false;
+         GuiStatusLine.updateStatusLine(1, null); // set the Icon to warning(pause)
+         JModalDialog dlg = JModalDialog.JOptionDialog("Reconnect Required", "To establish the VPN connection with the changed settings, a reconnect or a manual server change is required.\n"
+               + "Do you want to reconnect now (may fail if the server does not support the changed settings)?",
+               "Reconnect,Cancel");
+         int rc = dlg.getResult();
+         if (rc == 0)
+         {
+            // Reconnect
+            CurrentLocation loc = Starter.getCurrentServer();
+            NvpnCallbacks.executeConnect(loc, "NordVPN Reconnect", "NordVPN Reconnect");
+         }
+      }
    }
 
    /**

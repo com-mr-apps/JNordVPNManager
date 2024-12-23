@@ -115,7 +115,6 @@ public class GuiConnectLine
             NvpnCallbacks.executeLogInOut();
          }
       });
-      updateLoginOut(accountData);
       mailPanel.add(m_jbMail);
 
       connectPanel.add(mailPanel, BorderLayout.LINE_END);
@@ -125,7 +124,13 @@ public class GuiConnectLine
       return connectPanel;
    }
 
-   public static void updateLoginOut(NvpnAccountData accountData)
+   /**
+    * Update GUI elements dependent on account data.
+    * 
+    * @param accountData
+    *           is the current account data
+    */
+   public static void updateLoginLogout(NvpnAccountData accountData)
    {
       if (null != accountData && !accountData.isFailed())
       {

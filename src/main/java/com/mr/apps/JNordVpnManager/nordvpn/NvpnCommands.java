@@ -10,6 +10,7 @@ package com.mr.apps.JNordVpnManager.nordvpn;
 
 import com.mr.apps.JNordVpnManager.geotools.Location;
 import com.mr.apps.JNordVpnManager.geotools.UtilLocations;
+import com.mr.apps.JNordVpnManager.nordvpn.NvpnGroups.NordVPNEnumGroups;
 import com.mr.apps.JNordVpnManager.utils.UtilSystem;
 
 public class NvpnCommands {
@@ -43,6 +44,7 @@ public class NvpnCommands {
    private static final String OPT_ANALYTICS        = "analytics";
    private static final String OPT_KILLSWITCH       = "killswitch";
    private static final String OPT_NOTIFY           = "notify";
+   private static final String OPT_OBFUSCATE        = "obfuscate";
    private static final String OPT_TRAY             = "tray";
    private static final String OPT_TECHNOLOGY       = "technology";
    private static final String OPT_MESHNET          = "meshnet";
@@ -255,6 +257,19 @@ public class NvpnCommands {
 
    /**
     * Set nordvpn settings
+    * @return the return of nordvpn set obfuscate value
+    */
+   public static String obfuscateSettings(boolean value)
+   {
+      String status = null;
+      
+      status = UtilSystem.runCommand(CMD_NORDVPN, ARG_SET, OPT_OBFUSCATE, ((value) ? VAL_ENABLED : VAL_DISABLED));
+      
+      return status;
+   }
+
+   /**
+    * Set nordvpn settings
     * @return the return of nordvpn set tray value
     */
    public static String traySettings(boolean value)
@@ -422,20 +437,42 @@ public class NvpnCommands {
    public static String connect(String country, String city)
    {
       String status = null;
-      String idGroup = NvpnGroups.getCurrentGroup().name();
+      NordVPNEnumGroups currentGroup = NvpnGroups.getCurrentGroup();
+      // NvpnSettingsData csd = Starter.getCurrentSettingsData();
+      boolean bObfuscate = currentGroup.equals(NordVPNEnumGroups.legacy_obfuscated_servers); // StringFormat.string2boolean(csd.getObfuscate(false));
       
       if (null == city || city.isBlank())
       {
          if (null == country || country.isBlank())
          {
-            // Quick Connect with group - if Region is set, region group, else legacy group
-            String optGroup = (NvpnGroups.getCurrentRegion().equals(NvpnGroups.NordVPNEnumGroups.all_regions)) ? OPT_GROUP + " " + idGroup : NvpnGroups.getCurrentRegion().name();
-            status = UtilSystem.runCommand(CMD_NORDVPN, ARG_CONNECT, optGroup);
+            // Quick Connect with group - if Region is set, region group, else legacy group (both attributes in the same command are not valid)
+            if (NvpnGroups.getCurrentRegion().equals(NvpnGroups.NordVPNEnumGroups.all_regions))
+            {
+               if (bObfuscate)
+               {
+                  status = UtilSystem.runCommand(CMD_NORDVPN, ARG_CONNECT);
+               }
+               else
+               {
+                  status = UtilSystem.runCommand(CMD_NORDVPN, ARG_CONNECT, OPT_GROUP, currentGroup.name());
+               }
+            }
+            else
+            {
+               status = UtilSystem.runCommand(CMD_NORDVPN, ARG_CONNECT, NvpnGroups.getCurrentRegion().name());
+            }
          }
          else
          {
             // with country only - add legacy group
-            status = UtilSystem.runCommand(CMD_NORDVPN, ARG_CONNECT, OPT_GROUP, idGroup, country);
+            if (bObfuscate)
+            {
+               status = UtilSystem.runCommand(CMD_NORDVPN, ARG_CONNECT, country);
+            }
+            else
+            {
+               status = UtilSystem.runCommand(CMD_NORDVPN, ARG_CONNECT, OPT_GROUP, currentGroup.name(), country);
+            }
          }
       }
       else
@@ -443,22 +480,46 @@ public class NvpnCommands {
          if (null == country || country.isBlank())
          {
             // with city only - add legacy group
-            status = UtilSystem.runCommand(CMD_NORDVPN, ARG_CONNECT, OPT_GROUP, idGroup, city);
+            if (bObfuscate)
+            {
+               status = UtilSystem.runCommand(CMD_NORDVPN, ARG_CONNECT, city);
+            }
+            else
+            {
+               status = UtilSystem.runCommand(CMD_NORDVPN, ARG_CONNECT, OPT_GROUP, currentGroup.name(), city);
+            }
          }
          else
          {
             // with country and city
             // In some cases (called from auto connect or recent list) we must check, if the current legacy group is valid for that server...
+            // if 'obfuscate' is set (only for OPENVPN), group attribute  is not allowed - in that case, the variable 'legacyGroup' is set to ""
             Location loc = UtilLocations.getLocation(UtilLocations.getServerId(city, country));
-            if (loc.hasGroup(NvpnGroups.getCurrentGroup()))
+            if (loc.hasGroup(currentGroup))
             {
-               status = UtilSystem.runCommand(CMD_NORDVPN, ARG_CONNECT, OPT_GROUP, idGroup, city);
+               if (bObfuscate)
+               {
+                  status = UtilSystem.runCommand(CMD_NORDVPN, ARG_CONNECT, city);
+               }
+               else
+               {
+                  status = UtilSystem.runCommand(CMD_NORDVPN, ARG_CONNECT, OPT_GROUP, currentGroup.name(), city);
+               }
             }
             else
             {
-               UtilSystem.setLastError(UtilSystem.joinCommand(CMD_NORDVPN, ARG_CONNECT, OPT_GROUP, idGroup, city) + 
-                     "\nServer '" + country + "/" + city + "' does not support group: " + idGroup +
-                     "\nPlease select a correct group or change the server.", -1);
+               if (bObfuscate)
+               {
+                  UtilSystem.setLastError(UtilSystem.joinCommand(CMD_NORDVPN, ARG_CONNECT, city) + 
+                        "\nServer '" + country + "/" + city + "' does not support group: " + currentGroup.name() +
+                        "\nPlease select a correct legacy group or change the server.", -1);
+               }
+               else
+               {
+                  UtilSystem.setLastError(UtilSystem.joinCommand(CMD_NORDVPN, ARG_CONNECT, OPT_GROUP, currentGroup.name(), city) + 
+                        "\nServer '" + country + "/" + city + "' does not support group: " + currentGroup.name() +
+                        "\nPlease select a correct legacy group or change the server.", -1);
+               }
             }
          }
       }

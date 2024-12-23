@@ -40,6 +40,7 @@ import com.mr.apps.JNordVpnManager.geotools.Location;
 import com.mr.apps.JNordVpnManager.geotools.UtilLocations;
 import com.mr.apps.JNordVpnManager.geotools.UtilMapGeneration;
 import com.mr.apps.JNordVpnManager.gui.GuiMenuBar;
+import com.mr.apps.JNordVpnManager.gui.dialog.JAccelerateDialog;
 import com.mr.apps.JNordVpnManager.gui.dialog.JModalDialog;
 import com.mr.apps.JNordVpnManager.nordvpn.NvpnCallbacks;
 import com.mr.apps.JNordVpnManager.nordvpn.NvpnGroups;
@@ -49,21 +50,40 @@ import com.mr.apps.JNordVpnManager.nordvpn.NvpnSettingsData;
 import com.mr.apps.JNordVpnManager.nordvpn.NvpnTechnologies;
 import com.mr.apps.JNordVpnManager.utils.UtilPrefs;
 import com.mr.apps.JNordVpnManager.utils.UtilSystem;
+import com.mr.apps.JNordVpnManager.utils.String.StringFormat;
 
 @SuppressWarnings("serial")
 public class JServerTreePanel extends JPanel implements TreeSelectionListener
 {
-   private static final int MIN_CHARS_FOR_FILTER = 3;
-   private static JTree m_tree = null;
-   private JTextField m_filterTextField = null;
-   private static String m_filterText = "";
-   private boolean m_lockUpdate = false;
-   private JButton m_buttonRefresh = null;
-   private JComboBox<?> m_filterRegions = null;
-   private JComboBox<?> m_filterGroups = null;
-   private Color m_buttonDefaultFgColor = null;
-   private static boolean m_statusInitServerList = true;
-   private static boolean m_skipValueChangedEvent = false;
+   private static final int           MIN_CHARS_FOR_FILTER    = 3;
+   private static JTree               m_tree                  = null;
+   private JTextField                 m_filterTextField       = null;
+   private static String              m_filterText            = "";
+   private boolean                    m_lockUpdate            = false;
+   private JButton                    m_buttonRefresh         = null;
+   private JComboBox<?>               m_filterRegions         = null;
+   private JComboBox<?>               m_filterGroups          = null;
+   private Color                      m_buttonDefaultFgColor  = null;
+   private static boolean             m_statusInitServerList  = true;
+   private static boolean             m_skipValueChangedEvent = false;
+   private static boolean             m_skipGroupChangedEvent = false;
+
+   private static NordVPNEnumGroups[] m_iaGroups              = {
+         NordVPNEnumGroups.Standard_VPN_Servers,
+         NordVPNEnumGroups.P2P,
+         NordVPNEnumGroups.Double_VPN,
+         NordVPNEnumGroups.Onion_Over_VPN,
+         NordVPNEnumGroups.Dedicated_IP,
+         NordVPNEnumGroups.legacy_obfuscated_servers
+   };
+   private static String              saGroupsText[]          = {
+         "Standard VPN Servers",
+         "P2P",
+         "Double VPN",
+         "Onion Over VPN",
+         "Dedicated IP",
+         "Obfuscated Servers"
+   };
 
    /**
     * Server List Panel Layout definition.
@@ -85,8 +105,8 @@ public class JServerTreePanel extends JPanel implements TreeSelectionListener
       JPanel filterPanelGroups = new JPanel();
       filterPanelGroups.setLayout(new BorderLayout());
 
-      NordVPNEnumGroups[] iaRegions = { NordVPNEnumGroups.all_regions, NordVPNEnumGroups.The_Americas, NordVPNEnumGroups.Africa_The_Middle_East_And_India, NordVPNEnumGroups.Asia_Pacific, NordVPNEnumGroups.Europe };
-      String saRegions[]            = { "All Regions",                 "America",                      "Africa/Middle East/India",                         "Asia/Pacific",                 "Europe" };
+      NordVPNEnumGroups[] iaRegions = { NordVPNEnumGroups.all_regions, NordVPNEnumGroups.The_Americas, NordVPNEnumGroups.Africa_The_Middle_East_And_India, NordVPNEnumGroups.Asia_Pacific, NordVPNEnumGroups.Europe, null };
+      String saRegions[]            = { "All Regions",                 "America",                      "Africa/Middle East/India",                         "Asia/Pacific",                 "Europe",                 "[NordVPN Recommanded Servers]" };
       m_filterRegions = new JComboBox<Object>(saRegions);
 
       int idxRegion = NvpnGroups.getFieldIndex(NvpnGroups.getCurrentRegion(), iaRegions, 0);
@@ -112,6 +132,10 @@ public class JServerTreePanel extends JPanel implements TreeSelectionListener
                case 4 :
                   NvpnGroups.setCurrentRegion(NordVPNEnumGroups.Europe);
                   break;
+               case 5 :
+                  JAccelerateDialog accelerateDialig = new JAccelerateDialog();
+                  accelerateDialig.show();
+                  return;
                default /* 0 */:
                   NvpnGroups.setCurrentRegion(NordVPNEnumGroups.all_regions);
             }
@@ -121,21 +145,90 @@ public class JServerTreePanel extends JPanel implements TreeSelectionListener
       });
       filterPanelGroups.add(m_filterRegions, BorderLayout.PAGE_START);
 
-      // Regions Groups
-      NordVPNEnumGroups[] iaGroups = { NordVPNEnumGroups.Standard_VPN_Servers, NordVPNEnumGroups.P2P, NordVPNEnumGroups.Double_VPN, NordVPNEnumGroups.Onion_Over_VPN, NordVPNEnumGroups.Dedicated_IP };
-      String saGroups[]            = { "Standard VPN Servers",                 "P2P",                 "Double VPN",                 "Onion Over VPN",                 "Dedicated IP" };
-      m_filterGroups = new JComboBox<Object>(saGroups);
+      // Legacy Groups Filter
+      m_filterGroups = new JComboBox<Object>(saGroupsText);
 
-      int idxGroup = NvpnGroups.getFieldIndex(NvpnGroups.getCurrentGroup(), iaGroups, 0);
+      int idxGroup = NvpnGroups.getFieldIndex(NvpnGroups.getCurrentGroup(), m_iaGroups, 0);
       m_filterGroups.setSelectedIndex(idxGroup);
-      Starter._m_logError.TraceDebug("Init selected Group Filter with: " + iaGroups[idxGroup]);
+      Starter._m_logError.TraceDebug("Init selected Group Filter with: " + m_iaGroups[idxGroup]);
 
       m_filterGroups.addActionListener(new ActionListener()
       {
          public void actionPerformed(ActionEvent e)
          {
-            int index = m_filterGroups.getSelectedIndex();
-            switch (index)
+            if (m_skipGroupChangedEvent == true) return; // avoid recursion
+
+            // get index of the new selected group filter
+            int newIndex = m_filterGroups.getSelectedIndex();
+
+            NvpnSettingsData csd = Starter.getCurrentSettingsData();
+            boolean bObfuscate = StringFormat.string2boolean(csd.getObfuscate(false));
+            int idxObfuscatedGroup = NvpnGroups.getFieldIndex(NordVPNEnumGroups.legacy_obfuscated_servers, m_iaGroups, 0); // list index of group filter obfuscated button
+            int idxCurrentGroup = NvpnGroups.getFieldIndex(NvpnGroups.getCurrentGroup(), m_iaGroups, 0); // list index of the current active group filter
+            Starter._m_logError.TraceDebug("Group Filter selection changed: new Index='" + newIndex + "' / Obfuscate='" + bObfuscate + "' / current Index='" + idxCurrentGroup + "' / Index Obfuscated='" + idxObfuscatedGroup + "'.");
+            
+            if ((newIndex == idxObfuscatedGroup) && (!bObfuscate))
+            {
+               // require to change setting 'obfuscate enabled' (only available for technology OPENVPN!)
+               JModalDialog dlg = JModalDialog.JOptionDialog("Obfuscated Servers", "Setting 'Obfuscate' is disabled. To connect to VPN servers with obfuscation,\nit must be activated in NordVPN settings and the protocol type must be OPENVPN.\n"
+                     + "\n Please choose the OPENVPN protocol to enable obfuscation, or choose Cancel.",
+                     "OPENVPN TCP,OPENVPN UDP,Cancel");
+               int rc = dlg.getResult();
+               if (rc == 2)
+               {
+                  // undo selection
+                  m_skipGroupChangedEvent = true;
+                  m_filterGroups.setSelectedIndex(idxCurrentGroup);
+                  m_skipGroupChangedEvent = false;
+                  return;
+               }
+               else
+               {
+                  csd.setTechnology("OPENVPN", false);
+                  if (rc == 0)
+                  {
+                     csd.setProtocol("TCP", false);
+                  }
+                  else // rc == 1
+                  {
+                     csd.setProtocol("UDP", false);
+                  }
+                  csd.setObfuscate("Enable", false);
+               }
+            }
+            else if ((newIndex != idxObfuscatedGroup) && (bObfuscate))
+            {
+               // require to change setting 'obfuscate disabled'
+               JModalDialog dlg = JModalDialog.JOptionDialog("Change Legacy Group", "Setting 'Obfuscate' is currently enabled. To connect to VPN servers with another legacy group, obfuscation must be deactivated.\n"
+                     + "\n Please choose disable obfuscation, change technology to 'NORDLYNX' or choose Cancel.",
+                     "Disable Obfuscation,NORDLYNX,Cancel");
+               int rc = dlg.getResult();
+               if (rc == 0)
+               {
+                  csd.setObfuscate("Disabled", false);
+               }
+               else if (rc == 1)
+               {
+                  csd.setTechnology("NORDLYNX", false);
+               }
+               else
+               {
+                  // undo selection
+                  m_skipGroupChangedEvent = true;
+                  m_filterGroups.setSelectedIndex(idxCurrentGroup);
+                  m_skipGroupChangedEvent = false;
+                  return;
+               }
+            }
+
+            if (newIndex == idxCurrentGroup)
+            {
+               // no group change -> no update required
+               return;
+            }
+
+            // Group change -> set the new current legacy group
+            switch (newIndex)
             {
                case 1 :
                   NvpnGroups.setCurrentGroup(NordVPNEnumGroups.P2P);
@@ -148,6 +241,9 @@ public class JServerTreePanel extends JPanel implements TreeSelectionListener
                   break;
                case 4 :
                   NvpnGroups.setCurrentGroup(NordVPNEnumGroups.Dedicated_IP);
+                  break;
+               case 5 :
+                  NvpnGroups.setCurrentGroup(NordVPNEnumGroups.legacy_obfuscated_servers);
                   break;
                default /* 0 */:
                   NvpnGroups.setCurrentGroup(NordVPNEnumGroups.Standard_VPN_Servers);
@@ -227,7 +323,7 @@ public class JServerTreePanel extends JPanel implements TreeSelectionListener
       // Server tree
       // ---------------------------------------------------------------------------------------------
       JScrollPane jsp = initTree();
-      this.add(jsp, BorderLayout.CENTER); // jsp in center: automatic resize!!! ;)
+      this.add(jsp, BorderLayout.CENTER); // jsp in 'CENTER': automatic resize!!! ;)
    }
 
    /**
@@ -249,7 +345,7 @@ public class JServerTreePanel extends JPanel implements TreeSelectionListener
     */
    public void updateFilterTreeCB()
    {
-      // avoid multiple calls
+      // avoid recursive calls caused by GUI elements updates (callbacks called)
       if (m_lockUpdate) return;
       m_lockUpdate = true;
 
@@ -274,6 +370,10 @@ public class JServerTreePanel extends JPanel implements TreeSelectionListener
             JServerTreePanel.activateTreeNode(loc);            
          }
       }
+
+      // if settings changed we need to reconnect
+      NvpnSettingsData.reconnectIfRequired();
+
       m_lockUpdate = false;
    }
 
@@ -303,7 +403,9 @@ public class JServerTreePanel extends JPanel implements TreeSelectionListener
 
    /**
     * Create the server list tree.
-    * @param update if true, the server list is updated from NordVPN, else the server list stored in user preferences is used
+    * 
+    * @param update
+    *           if true, the server list is updated from NordVPN, else the server list local stored is used
     * @return the root server node
     */
    private DefaultMutableTreeNode createServerTree(boolean update)
@@ -311,56 +413,109 @@ public class JServerTreePanel extends JPanel implements TreeSelectionListener
       DefaultMutableTreeNode root = new DefaultMutableTreeNode("Serverlist");
       ArrayList<String> vpnServers = new ArrayList<String>(); 
 
+      NvpnSettingsData csd = Starter.getCurrentSettingsData();
+      int idxFilterGroups = m_filterGroups.getSelectedIndex(); // current filter group selected
+      boolean bObfuscate = StringFormat.string2boolean(csd.getObfuscate(false)); // current setting obfuscated [enabled,disabled]
+      int idxObfuscatedGroup = NvpnGroups.getFieldIndex(NordVPNEnumGroups.legacy_obfuscated_servers, m_iaGroups, 0); // list index of filter group obfuscated button
+      if (bObfuscate && (idxFilterGroups != idxObfuscatedGroup))
+      {
+         // we come from change settings update GUI -> Obfuscate=enabled - filter groups selection must be set to 'Obfuscated'
+         Starter._m_logError.TraceDebug("Update of filter group selection required, because obfuscate is enabled but selected group index is '" + idxFilterGroups + "'.");
+         m_filterGroups.setSelectedIndex(idxObfuscatedGroup);
+      }
+      else if (!bObfuscate && (idxFilterGroups == idxObfuscatedGroup))
+      {
+         // we come from change settings update GUI -> Obfuscate=disabled - filter groups selection must be changed from 'Obfuscated' (Default Standard Servers)
+         Starter._m_logError.TraceDebug("Update of filter group selection required, because obfuscate is disabled but selected group index is '" + idxFilterGroups + "' (Obfuscated Servers).");
+         m_filterGroups.setSelectedIndex(0);
+      }
+
       NordVPNEnumGroups filterRegion = NvpnGroups.getCurrentRegion();
       NordVPNEnumGroups filterGroup = NvpnGroups.getCurrentGroup();
+      Starter._m_logError.TraceDebug("Filter current Region = '" + filterRegion.name() + "' / Filter current Legacy Group = '" + filterGroup.name() + "' / Filter Text = '" + m_filterText + "'.");
       String sTechnology = "NORDLYNX";
-      NvpnSettingsData csd = Starter.getCurrentSettingsData();
       if (null != csd) sTechnology = csd.getTechnology(false);
       int iTechFilter = NvpnTechnologies.ikev2; // NORDLYNX
       if ((null != csd) && (sTechnology.equalsIgnoreCase("OPENVPN")))
       {
          String sProtocol = csd.getProtocol(false);
-         boolean bObfuscate = false; // TODO
          if (sProtocol.equalsIgnoreCase("TCP"))
          {
             if (bObfuscate)
             {
+               // OPENVNP / TCP / Obfuscated
                iTechFilter = NvpnTechnologies.openvpn_xor_tcp;
+               if (!filterGroup.equals(NordVPNEnumGroups.legacy_obfuscated_servers))
+               {
+                  // this should not happen!
+                  Starter._m_logError.LoggingError(90500,
+                        "Legacy Group Mismatch",
+                        "KO: Setting Obfuscate=enabled but group is '" + filterGroup.name() + "'");
+               }
             }
             else
             {
+               // OPENVNP / TCP / not Obfuscated
                iTechFilter = NvpnTechnologies.openvpn_tcp;
+               if (filterGroup.equals(NordVPNEnumGroups.legacy_obfuscated_servers))
+               {
+                  // this should not happen!
+                  Starter._m_logError.LoggingError(90500,
+                        "Legacy Group Mismatch",
+                        "KO: Setting Obfuscate=disabled but group is '" + filterGroup.name() + "'");
+               }
             }
          }
          else
          {
             if (bObfuscate)
             {
+               // OPENVNP / UDP / Obfuscated
                iTechFilter = NvpnTechnologies.openvpn_xor_udp;
+               if (!filterGroup.equals(NordVPNEnumGroups.legacy_obfuscated_servers))
+               {
+                  // this should not happen!
+                  Starter._m_logError.LoggingError(90500,
+                        "Legacy Group Mismatch",
+                        "KO: Setting Obfuscate=enabled but group is '" + filterGroup.name() + "'");
+               }
             }
             else
             {
+               // OPENVNP / UDP / not Obfuscated
                iTechFilter = NvpnTechnologies.openvpn_udp;
+               if (!filterGroup.equals(NordVPNEnumGroups.legacy_obfuscated_servers))
+               {
+                  // this should not happen!
+                  Starter._m_logError.LoggingError(90500,
+                        "Legacy Group Mismatch",
+                        "KO: Setting Obfuscate=disabled but group is '" + filterGroup.name() + "'");
+               }
             }
          }
       }
 
+      // get the complete server list
       int nbCountries = 0;
       String serverListString = NvpnServers.getCountriesServerList(update);
       if (NvpnGroups.isValid())
       {
+         // Server list from NordVPN server with region/groups information
          m_filterGroups.setEnabled(true);
          m_filterRegions.setEnabled(true);
-         m_filterGroups.setToolTipText("Filter by Server Groups.");
+         m_filterGroups.setToolTipText("Filter by Server Legacy Groups.");
          m_filterRegions.setToolTipText("Filter by Server Regions.");
       }
       else
       {
+         // Fallback from 'nordvpn countries' command (stored in UserPrefs) w/o region/groups information
          m_filterGroups.setEnabled(false);
          m_filterRegions.setEnabled(false);
-         m_filterGroups.setToolTipText("Please refresh the server list from internet to get the server groups information!");
+         m_filterGroups.setToolTipText("Please refresh the server list from internet to get the server legacy groups information!");
          m_filterRegions.setToolTipText("Please refresh the server list from internet to get the server regions information!");
       }
+
+      // create the tree with applied filters (Text/Region/Group + Technology/Protocol)
       if (null != serverListString && !serverListString.isBlank())
       {
          String[] saServerList = serverListString.split(Location.SERVERID_LIST_SEPARATOR);
@@ -446,7 +601,7 @@ public class JServerTreePanel extends JPanel implements TreeSelectionListener
          // we have a server list
          m_statusInitServerList = false;
          
-         // actualize map
+         // actualize world map
          UtilMapGeneration.changeVpnServerLocationsMapLayer(vpnServers);
          UtilMapGeneration.zoomServerLayer();
          Starter._m_logError.LoggingInfo("Refreshed " + vpnServers.size() + " VPN Servers (in " + nbCountries + " countries).");
@@ -497,7 +652,9 @@ public class JServerTreePanel extends JPanel implements TreeSelectionListener
 
    /**
     * Utility to find the tree path of a location
-    * @param loc is the location
+    * 
+    * @param loc
+    *           is the location
     * @return if found, the tree path of the location, else null
     */
    private static TreePath findNode(Location loc)
@@ -571,7 +728,7 @@ public class JServerTreePanel extends JPanel implements TreeSelectionListener
    @Override
    public void valueChanged(TreeSelectionEvent e)
    {
-      if (m_skipValueChangedEvent) return;
+      if (m_skipValueChangedEvent) return; // avoid recursive calls
 
       if (m_tree.getLastSelectedPathComponent() instanceof JServerNode)
       {
@@ -579,16 +736,7 @@ public class JServerTreePanel extends JPanel implements TreeSelectionListener
          if (node != m_tree.getModel().getRoot() && node != null)
          {
             Location loc = ((JServerNode) node).getLocation();
-            String msg = NvpnCallbacks.executeConnect(loc);
-            if (NvpnCallbacks.isLastError())
-            {
-               msg = NvpnCallbacks.getLastError();
-               JModalDialog.showError("NordVPN Connect", msg);
-            }
-            else
-            {
-               JModalDialog.showMessage("NordVPN Connect", msg);
-            }
+            NvpnCallbacks.executeConnect(loc, "NordVPN Connect", "NordVPN Connect");
          }
       }
       else

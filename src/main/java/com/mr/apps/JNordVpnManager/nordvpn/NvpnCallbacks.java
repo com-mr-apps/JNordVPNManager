@@ -22,7 +22,6 @@ import com.mr.apps.JNordVpnManager.Starter;
 import com.mr.apps.JNordVpnManager.geotools.CurrentLocation;
 import com.mr.apps.JNordVpnManager.geotools.Location;
 import com.mr.apps.JNordVpnManager.gui.GuiMenuBar;
-import com.mr.apps.JNordVpnManager.gui.connectLine.GuiConnectLine;
 import com.mr.apps.JNordVpnManager.gui.dialog.JAutoCloseLoginDialog;
 import com.mr.apps.JNordVpnManager.gui.dialog.JModalDialog;
 import com.mr.apps.JNordVpnManager.utils.UtilPrefs;
@@ -55,7 +54,7 @@ public class NvpnCallbacks
       return message;
    }
 
-   public static String executeConnect(Location loc)
+   public static String executeConnect(Location loc, String titleOk, String titleKo)
    {
       String msg = "no message...";
       m_lastErrorMessage = null;
@@ -75,7 +74,11 @@ public class NvpnCallbacks
             }
             else
             {
-               m_lastErrorMessage = UtilSystem.getLastError();
+               m_lastErrorMessage = UtilSystem.getLastError() + "\n" + msg;
+            }
+            if (null != titleKo)
+            {
+               JModalDialog.showError(titleKo, msg);
             }
          }
          else
@@ -83,6 +86,10 @@ public class NvpnCallbacks
             // OK
             Starter.updateCurrentServer();
             GuiMenuBar.addToMenuRecentServerListItems(loc);
+         }
+         if (null != titleOk)
+         {
+            JModalDialog.showMessageAutoClose(titleOk, msg);
          }
       }
 
@@ -202,7 +209,7 @@ public class NvpnCallbacks
          }
          else
          {
-            // Login LO
+            // Login KO
             JModalDialog.showError("NordVPN Login", m_lastErrorMessage);
          }         
       }
@@ -219,33 +226,32 @@ public class NvpnCallbacks
             // Login - wait for login in external Browser (or cancel) 
             /* JAutoCloseLoginDialog jd = */ new JAutoCloseLoginDialog(Starter.getMainFrame(), msg);
          }
+      }
 
-         // get the current status
-         accountData = new NvpnAccountData();
-         boolean newStatus =  accountData.isLoggedIn();
-         if (newStatus != currentStatus)
+      // get the current status
+      accountData = new NvpnAccountData();
+      boolean newStatus = accountData.isLoggedIn();
+      if (newStatus != currentStatus)
+      {
+         // OK, status changed
+         int iAutoConnect = UtilPrefs.getAutoConnectMode();
+         if ((1 == iAutoConnect) && (newStatus == true))
          {
-            // OK, status changed
-            int iAutoConnect = UtilPrefs.getAutoConnectMode();
-            if ((1 == iAutoConnect) && (newStatus == true))
+            // AutoConnect after login
+            CurrentLocation loc = Starter.getCurrentServer();
+            if (null != loc)
             {
-               // AutoConnect after login
-               CurrentLocation loc = Starter.getCurrentServer();
-               if (null != loc)
-               {
-                  NvpnCallbacks.executeConnect(loc);
-               }
+               NvpnCallbacks.executeConnect(loc, null, null);
             }
-            else if (newStatus == false)
-            {
-               // switch from login to logout -> server disconnected
-               Starter.updateCurrentServer();
-            }
-
-            // update GUI
-            GuiMenuBar.updateLoginOut(accountData);
-            GuiConnectLine.updateLoginOut(accountData);            
+         }
+         else if (newStatus == false)
+         {
+            // switch from login to logout -> server disconnected
+            Starter.updateCurrentServer();
          }
       }
+
+      // update current account data and dependent GUI elements
+      Starter.updateAccountData(accountData);
    }
 }

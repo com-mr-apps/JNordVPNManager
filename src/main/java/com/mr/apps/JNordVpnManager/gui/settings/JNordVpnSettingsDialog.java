@@ -243,7 +243,7 @@ public class JNordVpnSettingsDialog extends JDialog implements ActionListener
             if (m_requiresUpdate)
             {
                // in case of update required (settings changed) we force the Windows Gained Focus which triggers an Data and GUI update
-               Starter.setForceWindowGainedFocus();         
+               Starter.setForceWindowGainedFocus();
             }
             Starter.setCursorCanChange(true);
             Starter.resetWaitCursor();

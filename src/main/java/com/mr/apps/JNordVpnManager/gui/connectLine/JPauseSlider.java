@@ -263,7 +263,7 @@ public class JPauseSlider extends JPanel
       m_startStopButton.setIcon(m_timerStartStopImages.get(0));
       m_startStopButton.setToolTipText("Pause VPN connection for " + timeSliderValueToText(m_timeSlider.getValue()) + ".");
       CurrentLocation loc = Starter.getCurrentServer();
-      if (null != loc && false == loc.isConnected()) NvpnCallbacks.executeConnect(loc);
+      if (null != loc && false == loc.isConnected()) NvpnCallbacks.executeConnect(loc, null, null);
       setTimeSlider(DEFAULT_START_TIME);
    }
 
