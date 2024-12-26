@@ -1,0 +1,10 @@
+<svg width="32" height="24" viewBox="0 0 32 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path fill-rule="evenodd" clip-rule="evenodd" d="M1 0H31C31.5523 0 32 0.447715 32 1V23C32 23.5523 31.5523 24 31 24H1C0.447715 24 0 23.5523 0 23V1C0 0.447715 0.447715 0 1 0Z" fill="#0B4EA2"/>
+<path fill-rule="evenodd" clip-rule="evenodd" d="M0 16H32V23C32 23.5523 31.5523 24 31 24H1C0.447715 24 0 23.5523 0 23V16Z" fill="#EE1C25"/>
+<path fill-rule="evenodd" clip-rule="evenodd" d="M0 1C0 0.447715 0.447715 0 1 0H31C31.5523 0 32 0.447715 32 1V8H0V1Z" fill="#F7F7F7"/>
+<path d="M5 4H17V13L11 17.5L5 13V4Z" fill="#F7F7F7"/>
+<path fill-rule="evenodd" clip-rule="evenodd" d="M7 6V12L11 15L15 12V6H7Z" fill="#0B4EA2"/>
+<path fill-rule="evenodd" clip-rule="evenodd" d="M7 6H15V10H7V6Z" fill="#EE1C25"/>
+<path fill-rule="evenodd" clip-rule="evenodd" d="M10 8H12V12H10V8Z" fill="white"/>
+<path opacity="0.2" fill-rule="evenodd" clip-rule="evenodd" d="M31 0H1C0.447715 0 0 0.447715 0 1V23C0 23.5523 0.447715 24 1 24H31C31.5523 24 32 23.5523 32 23V1C32 0.447715 31.5523 0 31 0ZM1 23V1H31V23H1Z" fill="black"/>
+</svg>
