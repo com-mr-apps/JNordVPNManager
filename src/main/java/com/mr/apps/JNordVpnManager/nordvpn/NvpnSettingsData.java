@@ -1008,7 +1008,7 @@ public class NvpnSettingsData
       }
       else
       {
-         if (!equalBoolean(m_postQuantum, data))
+         if ((null != m_postQuantum) && (false == equalBoolean(m_postQuantum, data)))
          {
             // call set command
             m_postQuantum = data;
