@@ -114,7 +114,7 @@ public class JNordVpnSettingsDialog extends JDialog implements ActionListener
             // import a settings file
             JFileChooser filedia = new JFileChooser();
             filedia.setDialogType(JFileChooser.OPEN_DIALOG);
-            filedia.setCurrentDirectory(new File(System.getProperty("user.home")));
+            filedia.setCurrentDirectory(new File(System.getProperty("user.home"), Starter.APPLICATION_DATA_DIR));
 //          filedia.setFileFilter(new FileNameExtensionFilter("Settings File [exp]", "exp"));
             int ret = filedia.showOpenDialog(m_nvpnSettingsPanel);
             if (ret == 0)
@@ -147,7 +147,7 @@ public class JNordVpnSettingsDialog extends JDialog implements ActionListener
             // export a settings file
             JFileChooser filedia = new JFileChooser();
             filedia.setDialogType(JFileChooser.SAVE_DIALOG);
-            filedia.setCurrentDirectory(new File(System.getProperty("user.home")));
+            filedia.setCurrentDirectory(new File(System.getProperty("user.home"), Starter.APPLICATION_DATA_DIR));
 //            filedia.setFileFilter(new FileNameExtensionFilter("Settings File [exp]", "exp"));
             int ret = filedia.showSaveDialog(m_nvpnSettingsPanel);
             if (ret == 0)

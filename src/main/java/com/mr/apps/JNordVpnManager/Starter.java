@@ -64,6 +64,7 @@ import com.mr.apps.JNordVpnManager.utils.String.StringFormat;
 public class Starter
 {
    public static final UtilLogErr  _m_logError                = new UtilLogErr(UtilPrefs.getLogfileName(), null, null);
+   public static final String      APPLICATION_DATA_DIR       = "/.local/share/.JNordVpnManager"; // ..added to $HOME directory
 
    public static final int         STATUS_UNKNOWN             = -1;
    public static final int         STATUS_CONNECTED           = 0;
@@ -99,9 +100,9 @@ public class Starter
     */
    public static void main(String[] args) throws Exception
    {
-      _m_logError.LoggingInfo("JNordVPN Manager launched...");
- 
      splashScreenInit();
+     consoleWindowInit();
+      _m_logError.LoggingInfo("JNordVPN Manager launched...");
      SwingUtilities.invokeLater(() -> new Starter());
    }
 
@@ -124,6 +125,15 @@ public class Starter
       m_splashScreen = new JSplashScreen("JNordVPN Manager loading...");
       m_splashScreen.show();
    }
+
+   /**
+    * Create the Console output Window
+    */
+   public static void consoleWindowInit()
+   {
+      m_consoleWindow = new JCustomConsole();
+   }
+
 
    /**
     * Method to set the flag to skip "WindowGainedFocus" event for main application<p>
@@ -258,6 +268,8 @@ public class Starter
     */
    private void init(String version)
    {
+      _m_logError.LoggingInfo("GUI Version: " + version);
+
       // main frame
       m_mainFrame = new JFrame();
       m_mainFrame.setLayout(new BorderLayout());
@@ -336,11 +348,9 @@ public class Starter
                "'nordvpn' command not found.\nCheck installation of NordVPN!\n\nExit program.");
       }
 
-      // activate console
-      m_consoleWindow = new JCustomConsole();
-      _m_logError.LoggingInfo("GUI Version: " + version);
       m_splashScreen.setProgress(10);
 
+      // activate console
       int iConsoleActive = UtilPrefs.isConsoleActive();
       if (1 == iConsoleActive)
       {
