@@ -164,7 +164,7 @@ public class NvpnGroups
       StringBuffer sb = new StringBuffer(); 
       for (NordVPNEnumGroups iGroup : m_groups)
       {
-         if (sb.length() > 1) sb.append(";");
+         if (sb.length() > 0) sb.append(";");
          sb.append(NordVPNEnumGroups.get(iGroup.getId()));
       }
       return sb.toString();
@@ -176,7 +176,7 @@ public class NvpnGroups
       StringBuffer sb = new StringBuffer(); 
       for (NordVPNEnumGroups iGroup : m_groups)
       {
-         if (sb.length() > 1) sb.append(";");
+         if (sb.length() > 0) sb.append(";");
          sb.append(iGroup.getId());
       }
       return sb.toString();

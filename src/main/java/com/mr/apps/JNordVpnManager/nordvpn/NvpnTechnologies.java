@@ -80,7 +80,7 @@ public class NvpnTechnologies
       StringBuffer sb = new StringBuffer(); 
       for (int iTechId : m_techIds)
       {
-         if (sb.length() > 1) sb.append(";");
+         if (sb.length() > 0) sb.append(";");
          sb.append(iTechId);
       }
       return sb.toString();
