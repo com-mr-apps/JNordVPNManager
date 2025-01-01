@@ -231,6 +231,11 @@ public class Location
       m_groups.addGroup(id);
    }
 
+   public void addGroup(int id)
+   {
+      m_groups.addGroup(id);
+   }
+
    public boolean hasGroup(NordVPNEnumGroups m_filterRegion)
    {
       return m_groups.hasGroup(m_filterRegion);
@@ -238,6 +243,11 @@ public class Location
 
    public String toString()
    {
-      return m_cityName + "/" + m_countryName + " [" + m_longitude + "," + m_latitude + "] (id=" + m_cityId + ") Groups=" + m_groups.toString() + " / Technologies=" + m_technologies.toString();
+      return m_serverId + " [" + m_longitude + "," + m_latitude + "] (id=" + m_cityId + ") Groups=" + m_groups.toString() + " / Technologies=" + m_technologies.toString();
+   }
+
+   public String exportAsCsvData()
+   {
+      return m_latitude + "," + m_longitude + "," + m_cityName + "," + m_countryName + "," + m_cityId + "," + m_groups.toStringId() + "," + m_technologies.toStringId();
    }
 }

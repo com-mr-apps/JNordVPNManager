@@ -378,13 +378,23 @@ public class JServerTreePanel extends JPanel implements TreeSelectionListener
    }
 
    /**
-    * Initialize the server tree
+    * Initialize the server tree (on program start)
     * @return the created tree ScrollPane
     */
    private JScrollPane initTree()
    {
-      // create the server tree dependent on auto update option from NordVPN (init/empty or from user prefs)
-      boolean update = (UtilPrefs.getServerListAutoUpdate() == 0) ? false : true;
+      // create the server tree from NordVPN (update=true) or from [existing] local data (update=false) - dependent on auto update option(s)
+      boolean update = false;
+      int autoUpdateIntervall = UtilPrefs.getServerListAutoUpdate();
+      if (autoUpdateIntervall > 0)
+      {
+         // calculate the days between last update and now
+         String timestamp = UtilPrefs.getServerListTimestamp();
+         long lTimestamp = Long.parseLong(timestamp);
+         long days = UtilSystem.getDaysUntilNow(lTimestamp);
+         // check with defined auto update interval
+         update = (days >= autoUpdateIntervall) ? true : false;
+      }
       Starter._m_logError.TraceIni("Auto Update Server List [from Application Preferences]: " + update);
 
       DefaultMutableTreeNode root = createServerTree(update);

@@ -9,7 +9,6 @@
 package com.mr.apps.JNordVpnManager.nordvpn;
 
 import java.io.IOException;
-
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -33,9 +32,9 @@ public class NvpnServers
     * https://api.nordvpn.com/v1/servers?limit=0 (or from a local csv file).<p>
     * Second, the VPN Server list is generated from 2(3) "sources":
     * <ul>
-    * <li>the server list stored in user preferences, or</it>
-    * <it>updated over network direct from NordVPN 'https://api.nordvpn.com/v1/servers/countries'</it>
-    * <it>...as fallback from "nordvpn country..' commands (slowly)</it>
+    * <li>the server list stored in user preferences, or</li>
+    * <li>updated over network direct from NordVPN 'https://api.nordvpn.com/v1/servers/countries'</li>
+    * <li>...as fallback from "nordvpn country..' commands (slowly)</li>
     * </ul>
     * For initialization of the GUI, the list must be retrieved over network direct from NordVPN.<br>
     * To refresh the server list over network from NordVPN, the update flag must be set to true! The server list is
@@ -119,6 +118,9 @@ public class NvpnServers
          // ...also update the time stamp
          long timestamp = System.currentTimeMillis();
          UtilPrefs.setServerListTimestamp(StringFormat.long2String(timestamp, null));
+         
+         // ...and export the data to a local file
+         UtilLocations.export2file();
       }
 
       Starter.setCursorCanChange(true);

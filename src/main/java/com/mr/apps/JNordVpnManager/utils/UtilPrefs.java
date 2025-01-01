@@ -36,7 +36,6 @@ public class UtilPrefs
 {
    private static final String                     AUTOCONNECTMODE                          = "AUTOCONNECTMODE";
    private static final String                     AUTODISCONNECTMODE                       = "AUTODISCONNECTMODE";
-//   private static final String                     COMPACTMODE                              = "COMPACTMODE";
    private static final String                     COMMAND_TIMEOUT                          = "COMMAND_TIMEOUT";
    private static final String                     CONSOLE_ACTIVE                           = "CONSOLE_ACTIVE";
    private static final String                     LOGFILE_ACTIVE                           = "LOGFILE_ACTIVE";
@@ -44,16 +43,19 @@ public class UtilPrefs
    private static final String                     LOGFILE_TRACEINIT                        = "TRACEINIT";
    private static final String                     LOGFILE_TRACECMD                         = "TRACECMD";
    private static final String                     LOGFILE_TRACEDEBUG                       = "TRACEDEBUG";
-   private static final String                     MESSAGE_AUTOCLOSE                  = "MESSAGEDIALOG_AUTOCLOSE";
+   private static final String                     MESSAGE_AUTOCLOSE                        = "MESSAGEDIALOG_AUTOCLOSE";
    private static final String                     RECENTSERVER_LIST_LENGTH                 = "RECENTSERVER_LIST_LENGTH";
    private static final String                     RECENTSERVER_LIST                        = "RECENTSERVER_LIST";
    private static final String                     RECENTSERVER_COUNTRY                     = "RECENTSERVER_COUNTRY";
    private static final String                     RECENTSERVER_CITY                        = "RECENTSERVER_CITY";
-//   private static final String                     RECENTSERVER_REGION                      = "RECENTSERVER_REGION";
-//   private static final String                     RECENTSERVER_GROUP                       = "RECENTSERVER_GROUP";
    private static final String                     SERVERLIST_TIMESTAMP                     = "SERVERLIST_TIMESTAMP";
    private static final String                     SERVERLIST_DATA                          = "SERVERLIST_DATA";
    private static final String                     SERVERLIST_AUTOUPDATE                    = "SERVERLIST_AUTOUPDATE";
+
+   // hidden options
+   // private static final String                     COMPACTMODE                              = "COMPACTMODE";
+   // private static final String                     RECENTSERVER_REGION                      = "RECENTSERVER_REGION";
+   // private static final String                     RECENTSERVER_GROUP                       = "RECENTSERVER_GROUP";
 
    // Internal Defaults
    private static String DEFAULT_PREF_RECENTSERVER_CITY           = "";
@@ -71,7 +73,7 @@ public class UtilPrefs
    private static int    DEFAULT_PREF_SETTINGS_TRACEDEBUG         = 0;
    private static int    DEFAULT_PREF_SETTINGS_TRACECMD           = 0;
    private static int    DEFAULT_PREF_SETTINGS_TRACEINIT          = 0;
-   private static String DEFAULT_PREF_SETTINGS_LOGFILE_NAME       = "~/JNordVpnManager.log";
+   private static String DEFAULT_PREF_SETTINGS_LOGFILE_NAME       = "~/.local/share/JNordVpnManager/JNordVpnManager.log";
    private static int    DEFAULT_PREF_SETTINGS_LOGFILE_ACTIVE     = 0;
    private static int    DEFAULT_PREF_SETTINGS_CONSOLE_ACTIVE     = 0;
    private static int    DEFAULT_PREF_SETTINGS_COMMAMD_TIMEOUT    = 30;
@@ -114,7 +116,7 @@ public class UtilPrefs
 //      settingsPanelFieldsMap.put(RECENTSERVER_GROUP, new JSettingsPanelField("Recent Servers Group", "B", -1, 1, StringFormat.int2String(DEFAULT_PREF_RECENTSERVER_GROUP, "#")));
       settingsPanelFieldsMap.put(RECENTSERVER_LIST, new JSettingsPanelField("Recent Servers List", "T", -1, 20, DEFAULT_PREF_RECENTSERVER_LIST));
       settingsPanelFieldsMap.put(RECENTSERVER_LIST_LENGTH, new JSettingsPanelField("Recent Servers List Size", "N[1,10]", -1, 2, StringFormat.int2String(DEFAULT_PREF_RECENTSERVER_LIST_LENGTH, "#")));
-      settingsPanelFieldsMap.put(SERVERLIST_AUTOUPDATE, new JSettingsPanelField("Auto Update Server Data on Program Start", "B", KeyEvent.VK_U, 1, StringFormat.int2String(DEFAULT_PREF_SERVERLIST_AUTOUPDATE, "#")));
+      settingsPanelFieldsMap.put(SERVERLIST_AUTOUPDATE, new JSettingsPanelField("Auto Update Server Data on Program Start", "N[0,99]", KeyEvent.VK_U, 2, StringFormat.int2String(DEFAULT_PREF_SERVERLIST_AUTOUPDATE, "#")));
       settingsPanelFieldsMap.put(SERVERLIST_DATA, new JSettingsPanelField("Server Data", "T", KeyEvent.VK_D, 20, DEFAULT_PREF_SERVERLIST_DATA));
       settingsPanelFieldsMap.put(SERVERLIST_TIMESTAMP, new JSettingsPanelField("Sync. Data Timestamp", "T", KeyEvent.VK_T, 10, DEFAULT_PREF_SERVERLIST_TIMESTAMP));
 
