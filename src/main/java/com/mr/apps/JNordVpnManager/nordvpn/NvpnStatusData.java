@@ -235,9 +235,9 @@ public class NvpnStatusData
       this.m_statusText = statusText;
    }
 
-   public String getStatusLineMessage()
+   public String getStatusLineMessage(String sPrefix)
    {
-      return m_statusLineMessage;
+      return sPrefix + m_statusLineMessage;
    }
 
    public void setStatusLineMessage(String statusLineMessage)

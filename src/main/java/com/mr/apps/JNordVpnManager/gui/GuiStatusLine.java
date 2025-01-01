@@ -145,6 +145,7 @@ public class GuiStatusLine
 
          NvpnSettingsData settingsData = Starter.getCurrentSettingsData();
          int iconId = 0;
+         String sPrefix = "";
          if (false == settingsData.getTechnology(false).equals(statusData.getTechnology()))
          {
             // reconnect required - settings technology <> current technology
@@ -152,9 +153,11 @@ public class GuiStatusLine
             Starter._m_logError.LoggingError(10905,
                   "Server Connection Settings Mismatch",
                   "The current server connection uses '" + statusData.getTechnology() + "' but settings are set to '" + settingsData.getTechnology(false) + "'.");
+            sPrefix = "[Technology mismatch] ";
          }
-         else if (true == statusData.getTechnology().equals("OPENVPN"))
+         if (true == statusData.getTechnology().equals("OPENVPN"))
          {
+            // .. in case of OPENVPN
             if (false == settingsData.getProtocol(false).equals(statusData.getProtocol()))
             {
                // reconnect required - settings OPENVPN protocol <> current OPENVPN protocol
@@ -162,6 +165,7 @@ public class GuiStatusLine
                Starter._m_logError.LoggingError(10905,
                      "Server Connection Settings Mismatch",
                      "The current server connection uses '" + statusData.getProtocol() + "' but settings are set to '" + settingsData.getProtocol(false) + "'.");
+               sPrefix = "[Protocol mismatch] ";
             }
             else if ((StringFormat.string2boolean(settingsData.getObfuscate(false)) == true) && (false == ret_loc.hasGroup(NordVPNEnumGroups.legacy_obfuscated_servers)))
             {
@@ -170,9 +174,10 @@ public class GuiStatusLine
                Starter._m_logError.LoggingError(10905,
                      "Server Connection Settings Mismatch",
                      "The current server does not support obfuscation. Please manually reconnect to a server that supports obfuscation.");
+               sPrefix = "[No obfuscation] ";
             }
          }
-         updateStatusLine(iconId, statusData.getStatusLineMessage());
+         updateStatusLine(iconId, statusData.getStatusLineMessage(sPrefix));
       }
       else
       {
@@ -189,7 +194,7 @@ public class GuiStatusLine
          else
          {
             // Status: Disconnected (or error message...)
-            updateStatusLine(2, statusData.getStatusLineMessage());
+            updateStatusLine(2, statusData.getStatusLineMessage(""));
          }
       }
 
