@@ -195,7 +195,7 @@ public class Location
 
    public void setCountryCode(String countryCode)
    {
-      this.m_countryCode = countryCode;
+      this.m_countryCode = countryCode.toLowerCase();
    }
    
    /**
@@ -248,6 +248,6 @@ public class Location
 
    public String exportAsCsvData()
    {
-      return m_latitude + "," + m_longitude + "," + m_cityName + "," + m_countryName + "," + m_cityId + "," + m_groups.toStringId() + "," + m_technologies.toStringId();
+      return m_latitude + "," + m_longitude + "," + m_cityName + "," + m_countryName + ","  + m_countryCode + "," + m_cityId + "," + m_groups.toStringId() + "," + m_technologies.toStringId();
    }
 }

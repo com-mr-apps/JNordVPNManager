@@ -361,14 +361,12 @@ public class JServerTreePanel extends JPanel implements TreeSelectionListener
             m_tree.expandRow(r);
          }
       }
-      else
+
+      // (try to) navigate tree to current server
+      CurrentLocation loc = Starter.getCurrentServer();
+      if (null != loc)
       {
-         // no filter - navigate tree to current server
-         CurrentLocation loc = Starter.getCurrentServer();
-         if (null != loc)
-         {
-            JServerTreePanel.activateTreeNode(loc);            
-         }
+         JServerTreePanel.activateTreeNode(loc);            
       }
 
       // if settings changed we need to reconnect
@@ -540,7 +538,7 @@ public class JServerTreePanel extends JPanel implements TreeSelectionListener
                   String country = saCountryCities[0];
                   String cities = saCountryCities[1];
 
-                  DefaultMutableTreeNode countryNode = null;
+                  JCountryNode countryNode = null;
                   boolean matchCountry = false;
                   if (m_filterText.isBlank() || country.toLowerCase().contains(m_filterText))
                   {
@@ -563,7 +561,7 @@ public class JServerTreePanel extends JPanel implements TreeSelectionListener
                            {
                               if (null == countryNode)
                               {
-                                 countryNode = new DefaultMutableTreeNode(country);
+                                 countryNode = new JCountryNode(loc);
                                  root.add(countryNode);
                                  ++nbCountries;
                               }
@@ -689,7 +687,7 @@ public class JServerTreePanel extends JPanel implements TreeSelectionListener
                return new TreePath(node.getPath());
             }
          }
-         else
+         else if (node instanceof JCountryNode)
          {
             // country node
             if (node.toString().equalsIgnoreCase(p))
@@ -727,9 +725,9 @@ public class JServerTreePanel extends JPanel implements TreeSelectionListener
             TreeNode[] path = serverNode.getPath();
             System.out.println((serverNode.isLeaf() ? "  - " : "+ ") + path[path.length - 1]);
          }
-         else
+         else if (node instanceof JCountryNode)
          {
-            DefaultMutableTreeNode countryNode = (DefaultMutableTreeNode) node;
+            JCountryNode countryNode = (JCountryNode) node;
             TreeNode[] path = countryNode.getPath();
             System.out.println((countryNode.isLeaf() ? "  - " : "+ ") + path[path.length - 1]);
          }
@@ -750,7 +748,7 @@ public class JServerTreePanel extends JPanel implements TreeSelectionListener
             NvpnCallbacks.executeConnect(loc, "NordVPN Connect", "NordVPN Connect");
          }
       }
-      else
+      else if (m_tree.getLastSelectedPathComponent() instanceof JCountryNode)
       {
          // TODO: do nothing (country selected)
       }

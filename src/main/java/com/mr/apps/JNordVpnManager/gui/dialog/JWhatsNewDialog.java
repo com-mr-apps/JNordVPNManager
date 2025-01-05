@@ -34,6 +34,7 @@ public class JWhatsNewDialog
          + "<li><strong>Obfuscated Server Connections</strong>: Added support of the NordVPN setting <code>Obfuscated</code> for OPENVPN technology. If <em>enabled</em>, the server treelist filters servers, available for obfuscated VPN connections. For more information see: <a href=\"https://support.nordvpn.com/hc/en-us/articles/19479130821521-Different-NordVPN-server-categories-explained#h_01HGTG79DQP0NW71K286YDW061\">Obfuscated Servers Explained [NordVPN Support]</a></p></li>"
          + "<li><strong>Application Preferences</strong>: Added new setting <code>Auto Close Message Dialogs</code>. This setting defines for some dialogs an auto close countdown. Valid values are:<ul><li><em>-1</em>: Auto close disabled</li><li><em>=0</em>: Don't show the dialog</li><li><em>&gt;0</em>: Close countdown in seconds</li></ul></p></li>"
          + "<li><strong>Speed Up Application Launch Time</strong>: Increased performance for server list access by keeping a local copy of the required data. The local server list must be updated manually with the <code>Refresh</code> button regulary. The setting <code>Auto Update Server Data on Program Start</code> defines now the number of days for an update on program start.</p></li>"
+         + "<li><strong>Server List Tree Icons</strong>: Set Server List Tree icons to the country flags.</p></li>"
          + "</ul>"
          + "<h3>What's Next:</h3>"
          + "<ul>"

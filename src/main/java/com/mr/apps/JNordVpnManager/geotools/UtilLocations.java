@@ -288,6 +288,7 @@ public class UtilLocations
     * <li>LON - the server location longitude</li>
     * <li>CITY - the server city location</li>
     * <li>COUNTRY - the server country location</li>
+    * <li>FLAG - the flag (country) code</li>
     * <li>NUM - the server identifier</li>
     * <li>GRP - (optional) the server supported groups list (semicolon separated integers)</li>
     * <li>TECH - (optional) the server supported technology list (semicolon separated integers)</li>
@@ -316,6 +317,7 @@ public class UtilLocations
             String sLongitude = locations.get("LON");
             String sCity = locations.get("CITY");
             String sCountry = locations.get("COUNTRY");
+            String sFlag = locations.get("FLAG");
             String sNumber = locations.get("NUM");
             String sGroups = locations.get("GRP");
             String sTechs = locations.get("TECH");
@@ -327,6 +329,9 @@ public class UtilLocations
 
             // create location 
             Location newLocation = new Location(sCity, sCountry, longitude, latitude, number);
+
+            // Flag (country) code
+            if (null != sFlag) newLocation.setCountryCode(sFlag);
 
             // add groups (if exist)
             String[] saGroups = (null == sGroups) ? null : sGroups.split(";");
@@ -420,7 +425,7 @@ public class UtilLocations
          bwExportfile = new BufferedWriter(osw);
 
          // CSV Columns header
-         bwExportfile.write("LAT,LON,CITY,COUNTRY,NUM,GRP,TECH\n");
+         bwExportfile.write("LAT,LON,CITY,COUNTRY,FLAG,NUM,GRP,TECH\n");
 
          // export data
          int nbCountries = 0;
