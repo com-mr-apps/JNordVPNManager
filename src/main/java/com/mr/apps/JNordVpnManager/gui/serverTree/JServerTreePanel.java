@@ -10,7 +10,6 @@ package com.mr.apps.JNordVpnManager.gui.serverTree;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
@@ -40,6 +39,9 @@ import com.mr.apps.JNordVpnManager.geotools.Location;
 import com.mr.apps.JNordVpnManager.geotools.UtilLocations;
 import com.mr.apps.JNordVpnManager.geotools.UtilMapGeneration;
 import com.mr.apps.JNordVpnManager.gui.GuiMenuBar;
+import com.mr.apps.JNordVpnManager.gui.components.JResizedIcon;
+import com.mr.apps.JNordVpnManager.gui.components.JResizedIcon.IconSize;
+import com.mr.apps.JNordVpnManager.gui.components.JResizedIcon.IconUrls;
 import com.mr.apps.JNordVpnManager.gui.dialog.JAccelerateDialog;
 import com.mr.apps.JNordVpnManager.gui.dialog.JModalDialog;
 import com.mr.apps.JNordVpnManager.nordvpn.NvpnCallbacks;
@@ -256,9 +258,9 @@ public class JServerTreePanel extends JPanel implements TreeSelectionListener
       filterPanel.add(filterPanelGroups, BorderLayout.PAGE_START);
 
       // Text Search Filter
-      ImageIcon imageLabel = new ImageIcon(Starter.class.getResource("resources/icons/search_in_tree_32.png"));
+      ImageIcon imageLabel = JResizedIcon.getIcon(IconUrls.ICON_SERVER_SEARCH_FILTER, IconSize.MEDIUM);
       JLabel filterLabel = new JLabel(imageLabel);
-      filterLabel.setToolTipText("Filter for VPN Servers");
+      filterLabel.setToolTipText("Text Filter for VPN Servers");
       filterPanel.add(filterLabel, BorderLayout.LINE_START);
       m_filterTextField = new JTextField();
       m_filterTextField.setToolTipText("<html><font face=\"sansserif\" color=\"black\">Filter requires min. " + MIN_CHARS_FOR_FILTER + " characters!<br>Press Right Mouse Button to reset.</font></html>");
@@ -324,6 +326,8 @@ public class JServerTreePanel extends JPanel implements TreeSelectionListener
       // ---------------------------------------------------------------------------------------------
       JScrollPane jsp = initTree();
       this.add(jsp, BorderLayout.CENTER); // jsp in 'CENTER': automatic resize!!! ;)
+
+//      this.setPreferredSize(new Dimension(260, 400));
    }
 
    /**
@@ -404,7 +408,6 @@ public class JServerTreePanel extends JPanel implements TreeSelectionListener
       m_tree.setShowsRootHandles(true);
 
       JScrollPane jsp = new JScrollPane(m_tree);
-      jsp.setPreferredSize(new Dimension(200,500));
 
       return jsp;
    }

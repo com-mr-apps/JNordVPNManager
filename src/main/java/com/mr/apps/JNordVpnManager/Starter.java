@@ -13,6 +13,7 @@ import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Image;
 import java.awt.Taskbar;
+import java.awt.Toolkit;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowFocusListener;
@@ -70,8 +71,9 @@ public class Starter
    public static final int         STATUS_CONNECTED           = 0;
    public static final int         STATUS_PAUSED              = 1;
    public static final int         STATUS_DISCONNECTED        = 2;
+   public static final int         STATUS_LOGGEDOUT           = 4;
 
-   private static final String     APPLICATION_ICON_IMAGE     = "resources/icons/icon.svg";
+   private static final String     APPLICATION_ICON_IMAGE     = "resources/icons/icon.png";
 
    private static JFrame           m_mainFrame                = null;
    private static JServerTreePanel m_serverListPanel          = null;
@@ -226,7 +228,7 @@ public class Starter
                CurrentLocation loc = getCurrentServer();
                if ((null != loc) && loc.isConnected())
                {
-                  NvpnCallbacks.executeDisConnect();
+                  NvpnCallbacks.executeDisConnect(null, null);
                }
             }
 
@@ -275,7 +277,6 @@ public class Starter
       m_mainFrame.setLayout(new BorderLayout());
       m_mainFrame.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
       m_mainFrame.setTitle("JNordVPN Manager [Copyright Ⓒ 2024 - written by com.mr.apps]");
-      m_mainFrame.setLocationRelativeTo(null);
 
       // Close Window with "X"
       m_mainFrame.addWindowListener(new WindowAdapter()
@@ -331,9 +332,20 @@ public class Starter
       URL appIconUrl = Starter.class.getResource(APPLICATION_ICON_IMAGE);
       ImageIcon imageIcon = new ImageIcon(appIconUrl);
       Image appImage = imageIcon.getImage();
-      if (true == Taskbar.isTaskbarSupported())
+      try
       {
-         Taskbar.getTaskbar().setIconImage(appImage);
+         if (true == Taskbar.isTaskbarSupported())
+         {
+            Taskbar.getTaskbar().setIconImage(appImage);
+         }
+         else
+         {
+            _m_logError.TraceDebug("The current platform does not support the Taskbar.Feature.ICON_IMAGE feature!");
+         }
+      }
+      catch (Exception e)
+      {
+         _m_logError.TraceDebug("Exception from set application taskbar icon!");
       }
       m_mainFrame.setIconImage(appImage);
 
@@ -518,7 +530,6 @@ public class Starter
       // Server Location Selection Tree
       //-------------------------------------------------------------------------------
       m_serverListPanel = new JServerTreePanel();
-      m_serverListPanel.setPreferredSize(new Dimension(255, 400));
 
       m_splashScreen.setProgress(60);
       m_splashScreen.setStatus("Create Layout...");
@@ -561,9 +572,15 @@ public class Starter
       //-------------------------------------------------------------------------------
       int compactMode = (m_installMode) ? 1 : UtilPrefs.getCompactMode();
       switchCompactMode(compactMode); // calls pack() and sets minimum size
+
+      // Center the Frame
+      Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+      Dimension panelSize = m_mainFrame.getSize();
+      m_mainFrame.setLocation((screenSize.width / 2) - (panelSize.width / 2), (screenSize.height / 2) - (panelSize.height / 2));
+
       m_mainFrame.setVisible(true);
 
-      m_splashScreen.setProgress(100); // ..and close the splash screen (Important: AFTER setVisible of main frame, else the application icon disappears!)
+      m_splashScreen.setProgress(100); // ..and close the splash screen
       updateCurrentServer();
 
       _m_logError.TraceIni("**********************************************************************************\n"
@@ -577,6 +594,9 @@ public class Starter
     */
    public static CurrentLocation getCurrentServer()
    {
+      // first check, if we are logged in
+      if (null == m_nvpnAccountData || false == m_nvpnAccountData.isLoggedIn()) return null;
+
       if (null == m_currentServer)
       {
          String city = UtilPrefs.getRecentCity();

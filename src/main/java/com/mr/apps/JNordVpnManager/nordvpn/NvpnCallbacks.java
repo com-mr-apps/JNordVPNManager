@@ -21,43 +21,17 @@ import javax.swing.JOptionPane;
 import com.mr.apps.JNordVpnManager.Starter;
 import com.mr.apps.JNordVpnManager.geotools.CurrentLocation;
 import com.mr.apps.JNordVpnManager.geotools.Location;
-import com.mr.apps.JNordVpnManager.gui.GuiMenuBar;
 import com.mr.apps.JNordVpnManager.gui.dialog.JAutoCloseLoginDialog;
 import com.mr.apps.JNordVpnManager.gui.dialog.JModalDialog;
 import com.mr.apps.JNordVpnManager.utils.UtilPrefs;
 import com.mr.apps.JNordVpnManager.utils.UtilSystem;
+import com.mr.apps.JNordVpnManager.utils.String.StringFormat;
 
 public class NvpnCallbacks
 {
-
-   private static String m_lastErrorMessage = null;
-
-   /**
-    * Check error condition of last executed command
-    * @return true if there is an active error, else false
-    */
-   public static boolean isLastError()
-   {
-      return (null == m_lastErrorMessage) ? false : true;
-   }
-
-   /**
-    * Get the last error
-    * <p>
-    * This method resets the error.
-    * @return the last error string (null if there was no error)
-    */
-   public static String getLastError()
-   {
-      String message = m_lastErrorMessage;
-      m_lastErrorMessage = null;
-      return message;
-   }
-
    public static String executeConnect(Location loc, String titleOk, String titleKo)
    {
       String msg = "no message...";
-      m_lastErrorMessage = null;
       if (null != loc)
       {
          Starter._m_logError.LoggingInfo("Change Server: " + loc.toString());
@@ -68,42 +42,58 @@ public class NvpnCallbacks
          if (UtilSystem.isLastError())
          {
             // KO
+            String errMsg = "";
             if(null != msg && msg.contains("You are not logged in"))
             {
-               m_lastErrorMessage = msg;
+               errMsg = msg;
             }
             else
             {
-               m_lastErrorMessage = UtilSystem.getLastError() + "\n" + msg;
+               errMsg = UtilSystem.getLastError() + "\n" + StringFormat.printString(msg, "");
             }
             if (null != titleKo)
             {
-               JModalDialog.showError(titleKo, msg);
+               JModalDialog.showError(titleKo, errMsg);
+            }
+            else
+            {
+               Starter._m_logError.LoggingError(10904,
+                     "Execute Connect Failed",
+                     errMsg);
             }
          }
          else
          {
             // OK
             Starter.updateCurrentServer();
-            GuiMenuBar.addToMenuRecentServerListItems(loc);
-         }
-         if (null != titleOk)
-         {
-            JModalDialog.showMessageAutoClose(titleOk, msg);
+
+            if (null != titleOk)
+            {
+               JModalDialog.showMessageAutoClose(titleOk, msg);
+            }
          }
       }
 
       return msg;
    }
    
-   public static String executeDisConnect()
+   public static String executeDisConnect(String titleOk, String titleKo)
    {
-      m_lastErrorMessage = null;
       String msg = NvpnCommands.disconnect();
       if (UtilSystem.isLastError())
       {
          //KO
-         m_lastErrorMessage = UtilSystem.getLastError();
+         String errMsg = UtilSystem.getLastError();
+         if (null != titleKo)
+         {
+            JModalDialog.showError(titleKo, errMsg);
+         }
+         else
+         {
+            Starter._m_logError.LoggingError(10904,
+                  "Execute Disconnect Failed",
+                  errMsg);
+         }
       }
       else
       {
@@ -116,6 +106,11 @@ public class NvpnCallbacks
          {
             msg = msgLines[0];
          }
+
+         if (null != titleOk)
+         {
+            JModalDialog.showMessageAutoClose(titleOk, msg);
+         }
       }
 
       return msg;
@@ -123,12 +118,13 @@ public class NvpnCallbacks
    
    private static String executeLogin()
    {
-      m_lastErrorMessage = null;
       String msg = NvpnCommands.login();
       if (UtilSystem.isLastError())
       {
          //KO
-         m_lastErrorMessage = UtilSystem.getLastError();
+         Starter._m_logError.LoggingError(10904,
+               "Execute Login Failed",
+               UtilSystem.getLastError());
       }
       else
       {
@@ -153,7 +149,6 @@ public class NvpnCallbacks
                catch (URISyntaxException e)
                {
                   Starter._m_logError.LoggingExceptionAbend(10903, e);
-                  m_lastErrorMessage = "Could not launch web page URL=" + matcher.group(1);
                }
             }
             else
@@ -161,8 +156,6 @@ public class NvpnCallbacks
                // Parsing Error
                Starter._m_logError.LoggingError(10100, "Parsing NordVPN Login Information", msg);
                Starter._m_logError.TraceDebug("NordVPN login Pattern=" + pattern.toString());
-
-               m_lastErrorMessage = "'nordvpn login' information cannot be parsed.";
             }
          }
       }
@@ -172,16 +165,11 @@ public class NvpnCallbacks
    
    /**
     * Execute Login/Logout Callback
-    * <p>
-    * This Callback gets the real status from the command 'nordvpn account'. The current real status may not be the same as the panel status -
-    * e.g. in case of manual login/logout during the GUI is open. Remark: should be fixed with WindowGained Event...<br>
     */
    public static void executeLogInOut()
    {
-      m_lastErrorMessage = null;
       String msg = null;
-      Starter._m_logError.TraceDebug("(execute Logout): Check, if we are still logged in...");
-      NvpnAccountData accountData = new NvpnAccountData();
+      NvpnAccountData accountData = Starter.getCurrentAccountData();
       boolean currentStatus = accountData.isLoggedIn();
       if (true == currentStatus)
       {
@@ -189,31 +177,15 @@ public class NvpnCallbacks
          if (JModalDialog.showConfirm("Are you sure you want to logout?") == JOptionPane.YES_OPTION)
          {
             msg = NvpnCommands.logout();
-            if (UtilSystem.isLastError()) m_lastErrorMessage = UtilSystem.getLastError();
          }
       }
       else
       {
          // Logout -> Login
          msg = NvpnCallbacks.executeLogin();
-         if (NvpnCallbacks.isLastError()) m_lastErrorMessage = NvpnCallbacks.getLastError();
       }
 
-      if (null != m_lastErrorMessage)
-      {
-         // KO
-         if (true == currentStatus)
-         {
-            // Logout KO
-            JModalDialog.showError("NordVPN Logout", m_lastErrorMessage);
-         }
-         else
-         {
-            // Login KO
-            JModalDialog.showError("NordVPN Login", m_lastErrorMessage);
-         }         
-      }
-      else if (null != msg) // msg is null in case of cancel Logout
+      if (null != msg) // msg is null in case of cancel Logout
       {
          // OK
          if (true == currentStatus)

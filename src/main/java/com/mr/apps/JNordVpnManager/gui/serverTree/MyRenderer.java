@@ -10,14 +10,14 @@ package com.mr.apps.JNordVpnManager.gui.serverTree;
 
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.Image;
-
 import javax.swing.ImageIcon;
 import javax.swing.JTree;
 import javax.swing.border.LineBorder;
 import javax.swing.tree.DefaultTreeCellRenderer;
 
-import com.mr.apps.JNordVpnManager.Starter;
+import com.mr.apps.JNordVpnManager.gui.components.JResizedIcon;
+import com.mr.apps.JNordVpnManager.gui.components.JResizedIcon.IconSize;
+import com.mr.apps.JNordVpnManager.gui.components.JResizedIcon.IconUrls;
 
 @SuppressWarnings("serial")
 public class MyRenderer extends DefaultTreeCellRenderer
@@ -28,17 +28,7 @@ public class MyRenderer extends DefaultTreeCellRenderer
    {
       setTextSelectionColor(new Color(120, 120, 120));
       setOpaque(true);
-      try
-      {
-         ImageIcon myImageIcon = new ImageIcon(Starter.class.getResource("resources/icons/mpLocation.png"));
-         Image myImage = myImageIcon.getImage();
-         Image resizedImage = myImage.getScaledInstance(12, 12, java.awt.Image.SCALE_SMOOTH);
-         m_serverImage = new ImageIcon(resizedImage);
-      }
-      catch (Exception e)
-      {
-         
-      }
+      m_serverImage = JResizedIcon.getIcon(IconUrls.ICON_TREE_LOCATION, IconSize.SMALL);
    }
 
    public Component getTreeCellRendererComponent(JTree tree, Object value, boolean sel, boolean expanded, boolean leaf, int row, boolean hasFocus)

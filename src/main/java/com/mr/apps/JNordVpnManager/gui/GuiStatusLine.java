@@ -9,7 +9,6 @@
 package com.mr.apps.JNordVpnManager.gui;
 
 import java.awt.BorderLayout;
-import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
@@ -25,6 +24,9 @@ import com.mr.apps.JNordVpnManager.gui.connectLine.JPauseSlider;
 import com.mr.apps.JNordVpnManager.nordvpn.NvpnGroups.NordVPNEnumGroups;
 import com.mr.apps.JNordVpnManager.nordvpn.NvpnSettingsData;
 import com.mr.apps.JNordVpnManager.nordvpn.NvpnStatusData;
+import com.mr.apps.JNordVpnManager.gui.components.JResizedIcon;
+import com.mr.apps.JNordVpnManager.gui.components.JResizedIcon.IconSize;
+import com.mr.apps.JNordVpnManager.gui.components.JResizedIcon.IconUrls;
 import com.mr.apps.JNordVpnManager.utils.UtilPrefs;
 import com.mr.apps.JNordVpnManager.utils.String.StringFormat;
 
@@ -34,7 +36,6 @@ public class GuiStatusLine
    private static JLabel               m_statusText           = null;
    private JButton                     m_minMaxButton         = null;
 
-   private static final int            ICON_SIZE              = 32;
    private static ArrayList<ImageIcon> m_statusImages         = new ArrayList<>();
    private ArrayList<ImageIcon>        m_collapseExpandImages = new ArrayList<>();
 
@@ -45,31 +46,13 @@ public class GuiStatusLine
    public GuiStatusLine()
    {
       // Connected / Paused / Disconnected
-      ImageIcon myImageIcon = new ImageIcon(Starter.class.getResource("resources/icons/connected_48.png"));
-      Image myImage = myImageIcon.getImage();
-      Image resizedImage = myImage.getScaledInstance(ICON_SIZE, ICON_SIZE, java.awt.Image.SCALE_SMOOTH);
-      m_statusImages.add(new ImageIcon(resizedImage));
-
-      myImageIcon = new ImageIcon(Starter.class.getResource("resources/icons/paused_48.png"));
-      myImage = myImageIcon.getImage();
-      resizedImage = myImage.getScaledInstance(ICON_SIZE, ICON_SIZE, java.awt.Image.SCALE_SMOOTH);
-      m_statusImages.add(new ImageIcon(resizedImage));
-
-      myImageIcon = new ImageIcon(Starter.class.getResource("resources/icons/disconnected_48.png"));
-      myImage = myImageIcon.getImage();
-      resizedImage = myImage.getScaledInstance(ICON_SIZE, ICON_SIZE, java.awt.Image.SCALE_SMOOTH);
-      m_statusImages.add(new ImageIcon(resizedImage));
+      m_statusImages.add(JResizedIcon.getIcon(IconUrls.ICON_STATUS_CONNECTED, IconSize.MEDIUM));
+      m_statusImages.add(JResizedIcon.getIcon(IconUrls.ICON_STATUS_PAUSED, IconSize.MEDIUM));
+      m_statusImages.add(JResizedIcon.getIcon(IconUrls.ICON_STATUS_DISCONNECTED, IconSize.MEDIUM));
 
       // Collapse / Expand
-      myImageIcon = new ImageIcon(Starter.class.getResource("resources/icons/window_collapse_32.png"));
-      myImage = myImageIcon.getImage();
-      resizedImage = myImage.getScaledInstance(ICON_SIZE, ICON_SIZE, java.awt.Image.SCALE_SMOOTH);
-      m_collapseExpandImages.add(new ImageIcon(resizedImage));
-
-      myImageIcon = new ImageIcon(Starter.class.getResource("resources/icons/window_expand_32.png"));
-      myImage = myImageIcon.getImage();
-      resizedImage = myImage.getScaledInstance(ICON_SIZE, ICON_SIZE, java.awt.Image.SCALE_SMOOTH);
-      m_collapseExpandImages.add(new ImageIcon(resizedImage));
+      m_collapseExpandImages.add(JResizedIcon.getIcon(IconUrls.ICON_WINDOW_COLLAPSE, IconSize.MEDIUM));
+      m_collapseExpandImages.add(JResizedIcon.getIcon(IconUrls.ICON_WINDOW_EXPAND, IconSize.MEDIUM));
    }
 
    /**
@@ -142,6 +125,7 @@ public class GuiStatusLine
 
          ret_loc = new CurrentLocation(UtilLocations.getLocation(statusData.getCity(), statusData.getCountry()));
          ret_loc.setConnected(true);
+         GuiMenuBar.addToMenuRecentServerListItems(ret_loc);
 
          NvpnSettingsData settingsData = Starter.getCurrentSettingsData();
          int iconId = 0;
@@ -182,10 +166,11 @@ public class GuiStatusLine
       else
       {
          /*
-          *  disconnected
+          *  disconnected or not logged in
           */
          // check if paused and update pause slider
-         String pauseMsg = JPauseSlider.syncStatusForPause(Starter.STATUS_DISCONNECTED);
+         int iStatus = (true == Starter.getCurrentAccountData().isLoggedIn()) ? Starter.STATUS_LOGGEDOUT : Starter.STATUS_DISCONNECTED;
+         String pauseMsg = JPauseSlider.syncStatusForPause(iStatus);
          if (null != pauseMsg)
          {
             // Status: Paused
