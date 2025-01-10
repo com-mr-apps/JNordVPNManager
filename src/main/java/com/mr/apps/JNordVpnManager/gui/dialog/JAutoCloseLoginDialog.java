@@ -72,8 +72,7 @@ public class JAutoCloseLoginDialog extends JDialog implements ActionListener
          public void actionPerformed(ActionEvent e)
          {
             NvpnAccountData accountData = new NvpnAccountData();
-            boolean loginStatus =  accountData.isLoggedIn();
-            if (true == loginStatus)
+            if ((true == accountData.isLoggedIn()) || (accountData.isFailed()))
             {
                setVisible(false);
                dispose();

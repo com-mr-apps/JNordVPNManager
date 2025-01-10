@@ -13,6 +13,7 @@ import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Image;
 import java.awt.Taskbar;
+import java.awt.Toolkit;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowFocusListener;
@@ -32,7 +33,6 @@ import javax.swing.WindowConstants;
 import org.geotools.swing.JMapFrame;
 
 import com.mr.apps.JNordVpnManager.geotools.CurrentLocation;
-import com.mr.apps.JNordVpnManager.geotools.Location;
 import com.mr.apps.JNordVpnManager.geotools.UtilLocations;
 import com.mr.apps.JNordVpnManager.geotools.UtilMapGeneration;
 import com.mr.apps.JNordVpnManager.gui.GuiMapArea;
@@ -48,6 +48,8 @@ import com.mr.apps.JNordVpnManager.gui.serverTree.JServerTreePanel;
 import com.mr.apps.JNordVpnManager.nordvpn.NvpnAccountData;
 import com.mr.apps.JNordVpnManager.nordvpn.NvpnCallbacks;
 import com.mr.apps.JNordVpnManager.nordvpn.NvpnCommands;
+import com.mr.apps.JNordVpnManager.nordvpn.NvpnGroups;
+import com.mr.apps.JNordVpnManager.nordvpn.NvpnGroups.NordVPNEnumGroups;
 import com.mr.apps.JNordVpnManager.nordvpn.NvpnSettingsData;
 import com.mr.apps.JNordVpnManager.nordvpn.NvpnStatusData;
 import com.mr.apps.JNordVpnManager.utils.UtilLogErr;
@@ -64,13 +66,15 @@ import com.mr.apps.JNordVpnManager.utils.String.StringFormat;
 public class Starter
 {
    public static final UtilLogErr  _m_logError                = new UtilLogErr(UtilPrefs.getLogfileName(), null, null);
+   public static final String      APPLICATION_DATA_DIR       = "/.local/share/.JNordVpnManager"; // ..added to $HOME directory
 
    public static final int         STATUS_UNKNOWN             = -1;
    public static final int         STATUS_CONNECTED           = 0;
    public static final int         STATUS_PAUSED              = 1;
    public static final int         STATUS_DISCONNECTED        = 2;
+   public static final int         STATUS_LOGGEDOUT           = 4;
 
-   private static final String     APPLICATION_ICON_IMAGE     = "resources/icons/icon.svg";
+   private static final String     APPLICATION_ICON_IMAGE     = "resources/icons/icon.png";
 
    private static JFrame           m_mainFrame                = null;
    private static JServerTreePanel m_serverListPanel          = null;
@@ -83,7 +87,7 @@ public class Starter
 
    private static String           m_nordvpnVersion;
    private static Cursor           m_applicationDefaultCursor = null;
-   private static boolean          m_cursorChangeAllowed      = true;
+   private static int              m_cursorChangeAllowed      = 0;  // counter for nested calls - 0 is allow
    private static boolean          m_skipWindowGainedFocus    = false;
    private static boolean          m_forceWindowGainedFocus   = false;
    private static boolean          m_installMode              = false;
@@ -99,9 +103,9 @@ public class Starter
     */
    public static void main(String[] args) throws Exception
    {
-      _m_logError.LoggingInfo("JNordVPN Manager launched...");
- 
      splashScreenInit();
+     consoleWindowInit();
+      _m_logError.LoggingInfo("JNordVPN Manager launched...");
      SwingUtilities.invokeLater(() -> new Starter());
    }
 
@@ -124,6 +128,15 @@ public class Starter
       m_splashScreen = new JSplashScreen("JNordVPN Manager loading...");
       m_splashScreen.show();
    }
+
+   /**
+    * Create the Console output Window
+    */
+   public static void consoleWindowInit()
+   {
+      m_consoleWindow = new JCustomConsole();
+   }
+
 
    /**
     * Method to set the flag to skip "WindowGainedFocus" event for main application<p>
@@ -149,11 +162,13 @@ public class Starter
     * Allow/Deny wait cursor change.
     * <p>
     * If we execute commands in a row, we want to change the cursor only once at beginning and back once at end.
-    * @param allow is true [default] to allow a cursor change
+    * 
+    * @param allow
+    *           is true [default] to allow a cursor change
     */
    public static void setCursorCanChange(boolean allow)
    {
-      m_cursorChangeAllowed = allow;
+      m_cursorChangeAllowed = (allow) ? --m_cursorChangeAllowed : ++m_cursorChangeAllowed;
    }
 
    /**
@@ -161,7 +176,7 @@ public class Starter
     */
    public static void setWaitCursor()
    {
-      if (!m_cursorChangeAllowed) return;
+      if (0 != m_cursorChangeAllowed) return;
       if (null == m_applicationDefaultCursor)
       {
          m_applicationDefaultCursor = m_mainFrame.getCursor();
@@ -175,7 +190,7 @@ public class Starter
     */
    public static void resetWaitCursor()
    {
-      if (!m_cursorChangeAllowed) return;
+      if (0 != m_cursorChangeAllowed) return;
       if (null == m_applicationDefaultCursor)
       {
          m_applicationDefaultCursor = Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR);
@@ -216,7 +231,7 @@ public class Starter
                CurrentLocation loc = getCurrentServer();
                if ((null != loc) && loc.isConnected())
                {
-                  NvpnCallbacks.executeDisConnect();
+                  NvpnCallbacks.executeDisConnect(null, null);
                }
             }
 
@@ -242,9 +257,7 @@ public class Starter
       // delete temporary map files
       UtilMapGeneration.cleanUp();
       
-      // TODO: save current UtilPrefs settings
-
-      updateCurrentServer(); // update recent server settings
+//      updateCurrentServer(); // update recent server settings
       
       if (m_splashScreen.getProgress() < 100)
       {
@@ -258,12 +271,13 @@ public class Starter
     */
    private void init(String version)
    {
+      _m_logError.LoggingInfo("GUI Version: " + version);
+
       // main frame
       m_mainFrame = new JFrame();
       m_mainFrame.setLayout(new BorderLayout());
       m_mainFrame.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
       m_mainFrame.setTitle("JNordVPN Manager [Copyright Ⓒ 2024 - written by com.mr.apps]");
-      m_mainFrame.setLocationRelativeTo(null);
 
       // Close Window with "X"
       m_mainFrame.addWindowListener(new WindowAdapter()
@@ -293,6 +307,9 @@ public class Starter
                   if (false == m_installMode)
                   {
                      _m_logError.TraceDebug("windowGainedFocus launched");
+                     setWaitCursor();
+                     setCursorCanChange(false);
+
                      m_nvpnSettingsData = new NvpnSettingsData();
                      // update account data and dependent GUI elements
                      updateAccountData(new NvpnAccountData());
@@ -300,6 +317,9 @@ public class Starter
                      updateCurrentServer();
                      // update the server tree (and world map all servers layer)
                      m_serverListPanel.updateFilterTreeCB();
+
+                     Starter.setCursorCanChange(true);
+                     Starter.resetWaitCursor();
                   }
                }
             }
@@ -319,9 +339,20 @@ public class Starter
       URL appIconUrl = Starter.class.getResource(APPLICATION_ICON_IMAGE);
       ImageIcon imageIcon = new ImageIcon(appIconUrl);
       Image appImage = imageIcon.getImage();
-      if (true == Taskbar.isTaskbarSupported())
+      try
       {
-         Taskbar.getTaskbar().setIconImage(appImage);
+         if (true == Taskbar.isTaskbarSupported())
+         {
+            Taskbar.getTaskbar().setIconImage(appImage);
+         }
+         else
+         {
+            _m_logError.TraceDebug("The current platform does not support the Taskbar.Feature.ICON_IMAGE feature!");
+         }
+      }
+      catch (Exception e)
+      {
+         _m_logError.TraceDebug("Exception from set application taskbar icon!");
       }
       m_mainFrame.setIconImage(appImage);
 
@@ -336,11 +367,9 @@ public class Starter
                "'nordvpn' command not found.\nCheck installation of NordVPN!\n\nExit program.");
       }
 
-      // activate console
-      m_consoleWindow = new JCustomConsole();
-      _m_logError.LoggingInfo("GUI Version: " + version);
       m_splashScreen.setProgress(10);
 
+      // activate console
       int iConsoleActive = UtilPrefs.isConsoleActive();
       if (1 == iConsoleActive)
       {
@@ -463,6 +492,10 @@ public class Starter
          m_nvpnAccountData = new NvpnAccountData();
          m_nvpnSettingsData = new NvpnSettingsData();
          m_nvpnStatusData = new NvpnStatusData();
+
+         // initialize current group and region from User Preferences
+         NvpnGroups.setCurrentGroup(NordVPNEnumGroups.get(UtilPrefs.getRecentServerGroup()));
+         NvpnGroups.setCurrentRegion(NordVPNEnumGroups.get(UtilPrefs.getRecentServerRegion()));
       }
 
       //-------------------------------------------------------------------------------
@@ -480,7 +513,7 @@ public class Starter
             CurrentLocation loc = getCurrentServer();
             if (null != loc)
             {
-               m_splashScreen.setStatus("GUI Auto Connect to " + ((Location)loc).getServerId());
+               m_splashScreen.setStatus("GUI Auto Connect to " + loc.getServerId());
                NvpnCallbacks.executeConnect(loc, null, "JNordVPN Manager Auto Connect");
             }
          }
@@ -508,7 +541,6 @@ public class Starter
       // Server Location Selection Tree
       //-------------------------------------------------------------------------------
       m_serverListPanel = new JServerTreePanel();
-      m_serverListPanel.setPreferredSize(new Dimension(255, 400));
 
       m_splashScreen.setProgress(60);
       m_splashScreen.setStatus("Create Layout...");
@@ -551,9 +583,15 @@ public class Starter
       //-------------------------------------------------------------------------------
       int compactMode = (m_installMode) ? 1 : UtilPrefs.getCompactMode();
       switchCompactMode(compactMode); // calls pack() and sets minimum size
+
+      // Center the Frame
+      Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+      Dimension panelSize = m_mainFrame.getSize();
+      m_mainFrame.setLocation((screenSize.width / 2) - (panelSize.width / 2), (screenSize.height / 2) - (panelSize.height / 2));
+
       m_mainFrame.setVisible(true);
 
-      m_splashScreen.setProgress(100); // ..and close the splash screen (Important: AFTER setVisible of main frame, else the application icon disappears!)
+      m_splashScreen.setProgress(100); // ..and close the splash screen
       updateCurrentServer();
 
       _m_logError.TraceIni("**********************************************************************************\n"
@@ -567,10 +605,13 @@ public class Starter
     */
    public static CurrentLocation getCurrentServer()
    {
+      // first check, if we are logged in
+      if (null == m_nvpnAccountData || false == m_nvpnAccountData.isLoggedIn()) return null;
+
       if (null == m_currentServer)
       {
-         String city = UtilPrefs.getRecentCity();
-         String country = UtilPrefs.getRecentCountry();
+         String city = UtilPrefs.getRecentServerCity();
+         String country = UtilPrefs.getRecentServerCountry();
          CurrentLocation loc = new CurrentLocation(UtilLocations.getLocation(city, country));
          loc.setConnected(false);
          // return only a "real" location
@@ -604,11 +645,11 @@ public class Starter
       if (null != m_currentServer && m_currentServer.isConnected())
       {
          // Connected
-         _m_logError.TraceDebug("Update Current active Server=" + m_currentServer.toString() + "<.");
+         _m_logError.TraceDebug("Update Current active Server: " + m_currentServer.toString());
 
          // Update preferences with current connected server
-         UtilPrefs.setRecentCountry(m_currentServer.getCountryName());
-         UtilPrefs.setRecentCity(m_currentServer.getCityName());
+         UtilPrefs.setRecentServerCountry(m_currentServer.getCountryName());
+         UtilPrefs.setRecentServerCity(m_currentServer.getCityName());
 
          // Update the current server map layer and zoom there
          UtilMapGeneration.changeCurrentServerMapLayer(m_currentServer);
@@ -671,6 +712,11 @@ public class Starter
          m_mainFrame.setMinimumSize(new Dimension (800, 80));
          m_mainFrame.pack();
       }
+   }
+
+   public static void setTreeFilterGroup(NordVPNEnumGroups group)
+   {
+      m_serverListPanel.setTreeFilterGroup(group);
    }
 
    public static void showAboutScreen()

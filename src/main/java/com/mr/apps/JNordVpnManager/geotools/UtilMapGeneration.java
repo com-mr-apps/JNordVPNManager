@@ -34,6 +34,7 @@ import org.geotools.map.MapContent;
 import org.geotools.referencing.crs.DefaultGeographicCRS;
 import org.geotools.styling.SLD;
 import org.geotools.swing.JMapFrame;
+import org.geotools.swing.JMapFrame.Tool;
 import org.geotools.swing.JMapPane;
 import org.geotools.swing.tool.InfoToolResult;
 import org.locationtech.jts.geom.Coordinate;
@@ -109,6 +110,7 @@ public class UtilMapGeneration
          Starter._m_logError.TraceDebug("Create World Map Frame...");
          mapFrame = new JMapFrame(m_map);
          mapFrame.enableToolBar(true);
+         mapFrame.enableTool(Tool.POINTER, Tool.PAN, Tool.RESET, Tool.ZOOM , Tool.SCROLLWHEEL);
          mapFrame.enableStatusBar(false);
          //mapFrame.enableLayerTable(true);
          //mapFrame.setSize(800, 400);
@@ -169,7 +171,7 @@ public class UtilMapGeneration
          m_map.addLayer(m_currentServerMapLayer);
          m_currentServerMapLayer.updated();
          zoomIn(loc);
-         Starter._m_logError.TraceDebug("Changed VPN Server to map location=" + loc.toString() + "<.");
+         Starter._m_logError.LoggingInfo("Changed VPN Server on map: " + loc.toString());
       }
    }
    
@@ -388,9 +390,7 @@ public class UtilMapGeneration
             Starter._m_logError.LoggingInfo("VPN Server selected: " + info.toString());
             Map<String, Object> data = info.getFeatureData(0);
             String serverId = (String) data.get("Name");
-
             loc = UtilLocations.getLocation(serverId);
-//            loc = new Location(serverId, pos.getX(), pos.getY(), 1);
          }
          else
          {
@@ -410,9 +410,7 @@ public class UtilMapGeneration
                // name mappings for geo-map country selections to NordVPN names
                if (serverId.equalsIgnoreCase("Laos")) serverId = "Lao People's Democratic Republic";
                if (serverId.startsWith("United States of")) serverId = "United States";
-
                loc = UtilLocations.getLocation(serverId);
-//               loc = new Location(serverId, pos.getX(), pos.getY(), 1);
             }
          }
       }

@@ -9,7 +9,6 @@
 package com.mr.apps.JNordVpnManager.gui;
 
 import java.awt.BorderLayout;
-import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
@@ -22,9 +21,14 @@ import com.mr.apps.JNordVpnManager.Starter;
 import com.mr.apps.JNordVpnManager.geotools.CurrentLocation;
 import com.mr.apps.JNordVpnManager.geotools.UtilLocations;
 import com.mr.apps.JNordVpnManager.gui.connectLine.JPauseSlider;
+import com.mr.apps.JNordVpnManager.gui.dialog.JModalDialog;
 import com.mr.apps.JNordVpnManager.nordvpn.NvpnGroups.NordVPNEnumGroups;
+import com.mr.apps.JNordVpnManager.nordvpn.NvpnCallbacks;
 import com.mr.apps.JNordVpnManager.nordvpn.NvpnSettingsData;
 import com.mr.apps.JNordVpnManager.nordvpn.NvpnStatusData;
+import com.mr.apps.JNordVpnManager.gui.components.JResizedIcon;
+import com.mr.apps.JNordVpnManager.gui.components.JResizedIcon.IconSize;
+import com.mr.apps.JNordVpnManager.gui.components.JResizedIcon.IconUrls;
 import com.mr.apps.JNordVpnManager.utils.UtilPrefs;
 import com.mr.apps.JNordVpnManager.utils.String.StringFormat;
 
@@ -34,7 +38,6 @@ public class GuiStatusLine
    private static JLabel               m_statusText           = null;
    private JButton                     m_minMaxButton         = null;
 
-   private static final int            ICON_SIZE              = 32;
    private static ArrayList<ImageIcon> m_statusImages         = new ArrayList<>();
    private ArrayList<ImageIcon>        m_collapseExpandImages = new ArrayList<>();
 
@@ -45,31 +48,13 @@ public class GuiStatusLine
    public GuiStatusLine()
    {
       // Connected / Paused / Disconnected
-      ImageIcon myImageIcon = new ImageIcon(Starter.class.getResource("resources/icons/connected_48.png"));
-      Image myImage = myImageIcon.getImage();
-      Image resizedImage = myImage.getScaledInstance(ICON_SIZE, ICON_SIZE, java.awt.Image.SCALE_SMOOTH);
-      m_statusImages.add(new ImageIcon(resizedImage));
-
-      myImageIcon = new ImageIcon(Starter.class.getResource("resources/icons/paused_48.png"));
-      myImage = myImageIcon.getImage();
-      resizedImage = myImage.getScaledInstance(ICON_SIZE, ICON_SIZE, java.awt.Image.SCALE_SMOOTH);
-      m_statusImages.add(new ImageIcon(resizedImage));
-
-      myImageIcon = new ImageIcon(Starter.class.getResource("resources/icons/disconnected_48.png"));
-      myImage = myImageIcon.getImage();
-      resizedImage = myImage.getScaledInstance(ICON_SIZE, ICON_SIZE, java.awt.Image.SCALE_SMOOTH);
-      m_statusImages.add(new ImageIcon(resizedImage));
+      m_statusImages.add(JResizedIcon.getIcon(IconUrls.ICON_STATUS_CONNECTED, IconSize.MEDIUM));
+      m_statusImages.add(JResizedIcon.getIcon(IconUrls.ICON_STATUS_PAUSED, IconSize.MEDIUM));
+      m_statusImages.add(JResizedIcon.getIcon(IconUrls.ICON_STATUS_DISCONNECTED, IconSize.MEDIUM));
 
       // Collapse / Expand
-      myImageIcon = new ImageIcon(Starter.class.getResource("resources/icons/window_collapse_32.png"));
-      myImage = myImageIcon.getImage();
-      resizedImage = myImage.getScaledInstance(ICON_SIZE, ICON_SIZE, java.awt.Image.SCALE_SMOOTH);
-      m_collapseExpandImages.add(new ImageIcon(resizedImage));
-
-      myImageIcon = new ImageIcon(Starter.class.getResource("resources/icons/window_expand_32.png"));
-      myImage = myImageIcon.getImage();
-      resizedImage = myImage.getScaledInstance(ICON_SIZE, ICON_SIZE, java.awt.Image.SCALE_SMOOTH);
-      m_collapseExpandImages.add(new ImageIcon(resizedImage));
+      m_collapseExpandImages.add(JResizedIcon.getIcon(IconUrls.ICON_WINDOW_COLLAPSE, IconSize.MEDIUM));
+      m_collapseExpandImages.add(JResizedIcon.getIcon(IconUrls.ICON_WINDOW_EXPAND, IconSize.MEDIUM));
    }
 
    /**
@@ -122,6 +107,7 @@ public class GuiStatusLine
    public CurrentLocation update(NvpnStatusData statusData)
    {
       CurrentLocation ret_loc = null;
+      Starter._m_logError.TraceDebug("### Launched Update Statusline...");
 
       if (null == statusData.getStatus())
       {
@@ -145,6 +131,17 @@ public class GuiStatusLine
 
          NvpnSettingsData settingsData = Starter.getCurrentSettingsData();
          int iconId = 0;
+         String sPrefix = "";
+         if (true == NvpnSettingsData.reconnectRequired())
+         {
+            // reconnect required - settings changed
+            iconId = 1;
+            Starter._m_logError.LoggingError(10905,
+                  "NordVPN Settings changed",
+                  "NordVPN Settings were changed which need a reconnect. Please manually reconnect to activate the new settings.");
+            sPrefix = "[Changed Settings] ";
+         }
+
          if (false == settingsData.getTechnology(false).equals(statusData.getTechnology()))
          {
             // reconnect required - settings technology <> current technology
@@ -152,9 +149,12 @@ public class GuiStatusLine
             Starter._m_logError.LoggingError(10905,
                   "Server Connection Settings Mismatch",
                   "The current server connection uses '" + statusData.getTechnology() + "' but settings are set to '" + settingsData.getTechnology(false) + "'.");
+            sPrefix = "[Technology mismatch] ";
          }
-         else if (true == statusData.getTechnology().equals("OPENVPN"))
+
+         if (true == settingsData.getTechnology(false).equals("OPENVPN"))
          {
+            // .. in case of OPENVPN
             if (false == settingsData.getProtocol(false).equals(statusData.getProtocol()))
             {
                // reconnect required - settings OPENVPN protocol <> current OPENVPN protocol
@@ -162,6 +162,7 @@ public class GuiStatusLine
                Starter._m_logError.LoggingError(10905,
                      "Server Connection Settings Mismatch",
                      "The current server connection uses '" + statusData.getProtocol() + "' but settings are set to '" + settingsData.getProtocol(false) + "'.");
+               sPrefix = "[Protocol mismatch] ";
             }
             else if ((StringFormat.string2boolean(settingsData.getObfuscate(false)) == true) && (false == ret_loc.hasGroup(NordVPNEnumGroups.legacy_obfuscated_servers)))
             {
@@ -170,17 +171,45 @@ public class GuiStatusLine
                Starter._m_logError.LoggingError(10905,
                      "Server Connection Settings Mismatch",
                      "The current server does not support obfuscation. Please manually reconnect to a server that supports obfuscation.");
+               sPrefix = "[No obfuscation] ";
             }
          }
-         updateStatusLine(iconId, statusData.getStatusLineMessage());
+
+         if (iconId == 1)
+         {
+            JModalDialog dlg = JModalDialog.JOptionDialog("Reconnect Required",
+                  "To establish the VPN connection with the changed settings, a reconnect or a manual server change is required.\n"
+                + "Do you want to reconnect now (may fail if the server does not support the changed settings)?",
+                  "Reconnect,Cancel");
+            int rc = dlg.getResult();
+            if (rc == 0)
+            {
+               // Reconnect
+               if (false == NvpnCallbacks.executeConnect(ret_loc, "NordVPN Reconnect", "NordVPN Reconnect"))
+               {
+                  rc = 1; // error
+               }
+            }
+            if (rc != 0)
+            {
+               // requires manual reconnect
+               updateStatusLine(iconId, statusData.getStatusLineMessage(sPrefix));
+            }
+         }
+         else
+         {
+            // connected
+            updateStatusLine(0, statusData.getStatusLineMessage(""));
+         }
       }
       else
       {
          /*
-          *  disconnected
+          *  disconnected or not logged in
           */
          // check if paused and update pause slider
-         String pauseMsg = JPauseSlider.syncStatusForPause(Starter.STATUS_DISCONNECTED);
+         int iStatus = (true == Starter.getCurrentAccountData().isLoggedIn()) ? Starter.STATUS_LOGGEDOUT : Starter.STATUS_DISCONNECTED;
+         String pauseMsg = JPauseSlider.syncStatusForPause(iStatus);
          if (null != pauseMsg)
          {
             // Status: Paused
@@ -189,10 +218,11 @@ public class GuiStatusLine
          else
          {
             // Status: Disconnected (or error message...)
-            updateStatusLine(2, statusData.getStatusLineMessage());
+            updateStatusLine(2, statusData.getStatusLineMessage(""));
          }
       }
 
+      Starter._m_logError.TraceDebug("### ... Exit Update Statusline.");
       return ret_loc;
    }
    

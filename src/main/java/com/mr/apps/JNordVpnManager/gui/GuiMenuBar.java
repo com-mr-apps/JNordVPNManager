@@ -27,22 +27,23 @@ import com.mr.apps.JNordVpnManager.nordvpn.NvpnAccountData;
 import com.mr.apps.JNordVpnManager.nordvpn.NvpnCallbacks;
 import com.mr.apps.JNordVpnManager.nordvpn.NvpnCommands;
 import com.mr.apps.JNordVpnManager.nordvpn.NvpnGroups;
+import com.mr.apps.JNordVpnManager.nordvpn.NvpnGroups.NordVPNEnumGroups;
 import com.mr.apps.JNordVpnManager.nordvpn.NvpnSettingsData;
 import com.mr.apps.JNordVpnManager.utils.UtilPrefs;
 import com.mr.apps.JNordVpnManager.utils.UtilSystem;
 
 public class GuiMenuBar
 {
-   private static JMenuItem        m_menuItemReConnect            = null;
-   private static JMenuItem        m_menuItemDisConnect           = null;
-   private static JMenuItem        m_menuItemQuickConnect         = null;
-   private static JMenuItem        m_menuItemLogInOut             = null;
-   private static JMenuItem        m_menuItemconsole              = null;
+   private static JMenuItem               m_menuItemReConnect            = null;
+   private static JMenuItem               m_menuItemDisConnect           = null;
+   private static JMenuItem               m_menuItemQuickConnect         = null;
+   private static JMenuItem               m_menuItemLogInOut             = null;
+   private static JMenuItem               m_menuItemconsole              = null;
 
    // "Recent Server" menu
-   private static JMenuItem        m_menuItemRecentServer         = null;
-   private static JMenuItem[]      m_menuItemRecentServerMenuList = null;
-   private static Vector<Location> m_recentServerIdList           = new Vector<Location>();
+   private static JMenuItem               m_menuItemRecentServer         = null;
+   private static JMenuItem[]             m_menuItemRecentServerMenuList = null;
+   private static Vector<CurrentLocation> m_recentServerIdList           = new Vector<CurrentLocation>();
 
    /**
     * Menu Bar Layout definition.
@@ -70,17 +71,7 @@ public class GuiMenuBar
          }
       });
       fileMenu.add(fileSettings);
-/*
-      JMenuItem test = new JMenuItem("Test");
-      test.addActionListener(new ActionListener()
-      {
-         public void actionPerformed(ActionEvent e)
-         {
-            //
-         }
-      });
-      fileMenu.add(test);
-*/
+
       m_menuItemconsole = new JMenuItem("Console on/off");
       m_menuItemconsole.addActionListener(new ActionListener()
       {
@@ -133,8 +124,7 @@ public class GuiMenuBar
          public void actionPerformed(ActionEvent e)
          {
             String msg = NvpnCommands.getAccountInfo();
-            if (UtilSystem.isLastError()) msg = UtilSystem.getLastError();
-            JModalDialog.showMessage("NordVPN Account", msg);
+            UtilSystem.showResultDialog("NordVPN Account", msg, false);
          }
       });
       nordvpnMenu.add(menuItemAccount);
@@ -145,8 +135,7 @@ public class GuiMenuBar
          public void actionPerformed(ActionEvent e)
          {
             String msg = NvpnCommands.getStatus();
-            if (UtilSystem.isLastError()) msg = UtilSystem.getLastError();
-            JModalDialog.showMessage("NordVPN Status", msg);
+            UtilSystem.showResultDialog("NordVPN Status", msg, false);
          }
       });
       nordvpnMenu.add(menuItemStatus);
@@ -157,8 +146,7 @@ public class GuiMenuBar
          public void actionPerformed(ActionEvent e)
          {
             String msg = NvpnCommands.getSettings();
-            if (UtilSystem.isLastError()) msg = UtilSystem.getLastError();
-            JModalDialog.showMessage("NordVPN Settings", msg);
+            UtilSystem.showResultDialog("NordVPN Settings", msg, false);
          }
       });
       nordvpnMenu.add(menuItemSettings);
@@ -175,16 +163,6 @@ public class GuiMenuBar
       });
       nordvpnMenu.add(menuItemEditSettings);
 
-      JMenuItem menuItemTestTimeout = new JMenuItem("Test Timeout");
-      menuItemTestTimeout.addActionListener(new ActionListener()
-      {
-         public void actionPerformed(ActionEvent e)
-         {
-            UtilSystem.runCommand("sleep", "50");
-         }
-      });
-//      nordvpnMenu.add(menuItemTestTimeout);
-
       // -------------------------------------------------------------------------------------
       // Menu --- Connect ---
       JMenu connectMenu = new JMenu("Connect");
@@ -194,9 +172,7 @@ public class GuiMenuBar
       m_menuItemRecentServerMenuList = null;
       connectMenu.add(m_menuItemRecentServer);
       // Initialize the recent serverIds list
-      initRecentServerIdsList();
-      // ...and set the "Recent Server" menu list items
-      setMenuRecentServerListItems();
+      addToMenuRecentServerListItems(null);
 
       connectMenu.addSeparator();
 
@@ -239,18 +215,7 @@ public class GuiMenuBar
       {
          public void actionPerformed(ActionEvent e)
          {
-            String msg = NvpnCallbacks.executeDisConnect();
-            if (UtilSystem.isLastError())
-            {
-               // KO
-               msg = UtilSystem.getLastError();
-               JModalDialog.showError("NordVPN Disconnect", msg);
-            }
-            else
-            {
-               // OK
-               JModalDialog.showMessage("NordVPN Disconnect", msg);
-            }
+            NvpnCallbacks.executeDisConnect("NordVPN Disconnect", "NordVPN Disconnect");
          }
       });
       connectMenu.add(m_menuItemDisConnect);
@@ -396,10 +361,19 @@ public class GuiMenuBar
       String[] saRecentServers = savedRecentServers.split(Location.SERVERID_LIST_SEPARATOR);
       for (String recentServerId : saRecentServers)
       {
-         if (!recentServerId.isBlank() && false == recentServerId.startsWith("nowhere"))
+         String[] saParts = recentServerId.split(",");
+         String serverId = (saParts.length == 4) ? saParts[0] : recentServerId;
+         if (!serverId.isBlank() && false == serverId.startsWith("nowhere"))
          {
-            Location loc = UtilLocations.getLocation(recentServerId);
-            m_recentServerIdList.addElement((Location)loc);
+            CurrentLocation loc = new CurrentLocation(UtilLocations.getLocation(serverId));
+            if (saParts.length == 4)
+            {
+               // get (optional) connection data from preferences 'server@country,group,technology,protocol' and add them to loc
+               loc.setFilterGroup(Integer.valueOf(saParts[1]));
+               loc.setVpnTechnology(saParts[2]);
+               loc.setVpnProtocol(saParts[3]);
+            }
+            m_recentServerIdList.addElement((CurrentLocation)loc);
          }
       }
    }
@@ -418,11 +392,12 @@ public class GuiMenuBar
       for (int i = 0; i < m_recentServerIdList.size(); i++)
       {
          final int nn = i;
-         Location loc = m_recentServerIdList.get(i);
+         CurrentLocation loc = m_recentServerIdList.get(i);
 
          if (null != loc)
          {
             m_menuItemRecentServerMenuList[i] = new JMenuItem(loc.getCountryName() + " " + loc.getCityName());
+            m_menuItemRecentServerMenuList[i].setToolTipText(loc.getToolTip());
             m_menuItemRecentServerMenuList[i].addActionListener(new java.awt.event.ActionListener()
             {
                public void actionPerformed(ActionEvent e)
@@ -432,9 +407,15 @@ public class GuiMenuBar
             });
             m_menuItemRecentServer.add(m_menuItemRecentServerMenuList[i]);
 
-            // String for user preferences
+            // String for user preferences 'server@country,group,technology,protocol'
             if (recentServerIds.length() > 0) recentServerIds.append(Location.SERVERID_LIST_SEPARATOR);
             recentServerIds.append(loc.getServerId());
+            recentServerIds.append(",");
+            recentServerIds.append(loc.getFilterGroup());
+            recentServerIds.append(",");
+            recentServerIds.append(loc.getVpnTechnology());
+            recentServerIds.append(",");
+            recentServerIds.append(loc.getVpnProtocol());
          }
       }
       if (recentServerIds.length() > 0)
@@ -461,34 +442,71 @@ public class GuiMenuBar
     */
    private static void recentServerSelectedCB(ActionEvent e, int which)
    {
-      Location loc = m_recentServerIdList.get(which);
+      CurrentLocation loc = m_recentServerIdList.get(which);
+      Starter._m_logError.LoggingInfo("Selected Recent Server: " + loc.getToolTip());
+
+      // get and set additional (optional) connection data from location and set Group/Tech/Protocol
+      Starter.getCurrentSettingsData().setTechnology(loc.getVpnTechnology(), false);
+      Starter.getCurrentSettingsData().setProtocol(loc.getVpnProtocol(), false);
+      if (NordVPNEnumGroups.get(loc.getFilterGroup()).equals(NordVPNEnumGroups.legacy_obfuscated_servers))
+      {
+         Starter.getCurrentSettingsData().setObfuscate("enabled", false);
+      }
+      else
+      {
+         Starter.getCurrentSettingsData().setObfuscate("disabled", false);
+      }
+      Starter.setTreeFilterGroup(NordVPNEnumGroups.get(loc.getFilterGroup()));
+
       NvpnCallbacks.executeConnect(loc, "NordVPN Connect", "NordVPN Connect");
    }
 
    /**
     * Add a location on the top of the recent Servers menu items list
-    * @param loc is the new location 
+    * 
+    * @param loc
+    *           is the new location. If <code>null</code>, Initialization with User Preferences.
     */
-   public static void addToMenuRecentServerListItems(Location loc)
+   public static void addToMenuRecentServerListItems(CurrentLocation loc)
    {
       if (null == m_menuItemRecentServer) return;
 
-      for (int n = 0; n < m_recentServerIdList.size(); n++)
+      boolean foundAtFirstPos = false;
+      if (null == loc)
       {
-         if (m_recentServerIdList.get(n).getServerId().equals(loc.getServerId()) == true)
+         // init recent list from User Preferences
+         initRecentServerIdsList();
+      }
+      else
+      {
+         for (int n = 0; n < m_recentServerIdList.size(); n++)
          {
-            m_recentServerIdList.removeElementAt(n);
-            Starter._m_logError.TraceDebug("Remove " + loc.getServerId() + " at position " + n + " from Recentlist.");
-            break;
+            if (m_recentServerIdList.get(n).isEqualConnection(loc) == true)
+            {
+               if (n == 0)
+               {
+                  // we don't need an update
+                  foundAtFirstPos = true;
+               }
+               else
+               {
+                  m_recentServerIdList.removeElementAt(n);
+                  Starter._m_logError.TraceDebug("Remove " + loc.getServerId() + " at position " + n + " from Recentlist.");
+               }
+               break;
+            }
+         }
+         if (false == foundAtFirstPos)
+         {
+            m_recentServerIdList.insertElementAt(loc, 0);
+            Starter._m_logError.TraceDebug("Add " + loc.getServerId() + " to Recentlist.");
+
+            while (m_recentServerIdList.size() > UtilPrefs.getRecentServerListLength())
+            {
+               m_recentServerIdList.removeElementAt(m_recentServerIdList.size() - 1);
+            }
          }
       }
-      m_recentServerIdList.insertElementAt(loc, 0);
-      Starter._m_logError.TraceDebug("Add " + loc.getServerId() + " to Recentlist.");
-
-      while (m_recentServerIdList.size() > UtilPrefs.getRecentServerListLength())
-      {
-         m_recentServerIdList.removeElementAt(m_recentServerIdList.size() - 1);
-      }
-      setMenuRecentServerListItems();
+      if (false == foundAtFirstPos) setMenuRecentServerListItems();
    }
 }

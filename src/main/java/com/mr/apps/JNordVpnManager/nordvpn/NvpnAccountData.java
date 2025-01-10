@@ -39,7 +39,7 @@ public class NvpnAccountData
          else
          {
             setFailed(true);
-            msg = UtilSystem.getLastError();
+            msg = UtilSystem.getLastError() + "\n" + StringFormat.printString (msg, "<empty message>", "<null mwssage>");
             if (Starter.isInstallMode())
             {
                Starter._m_logError.TraceCmd(msg);

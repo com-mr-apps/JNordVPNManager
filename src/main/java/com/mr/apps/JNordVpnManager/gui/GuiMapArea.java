@@ -27,8 +27,11 @@ import org.geotools.swing.event.MapMouseEvent;
 import org.geotools.swing.tool.CursorTool;
 
 import com.mr.apps.JNordVpnManager.Starter;
-import com.mr.apps.JNordVpnManager.geotools.Location;
+import com.mr.apps.JNordVpnManager.geotools.CurrentLocation;
 import com.mr.apps.JNordVpnManager.geotools.UtilMapGeneration;
+import com.mr.apps.JNordVpnManager.gui.components.JResizedIcon;
+import com.mr.apps.JNordVpnManager.gui.components.JResizedIcon.IconSize;
+import com.mr.apps.JNordVpnManager.gui.components.JResizedIcon.IconUrls;
 import com.mr.apps.JNordVpnManager.gui.dialog.JModalDialog;
 import com.mr.apps.JNordVpnManager.nordvpn.NvpnCallbacks;
 
@@ -39,7 +42,7 @@ public class GuiMapArea
 
    public GuiMapArea()
    {
-      ImageIcon myImageIcon = new ImageIcon(Starter.class.getResource("resources/icons/mpLocation.png"));
+      ImageIcon myImageIcon = JResizedIcon.getIcon(IconUrls.ICON_MOUSE_POINTER_LOCATION, null);
       Image customImage = myImageIcon.getImage();
       m_selectCursor = Toolkit.getDefaultToolkit().createCustomCursor(customImage, new Point(12, 31), "selectLocation");
    }
@@ -51,7 +54,7 @@ public class GuiMapArea
       JToolBar toolbar = m_mapFrame.getToolBar();
       toolbar.addSeparator();
 
-      ImageIcon imageZoomCurrent = new ImageIcon(Starter.class.getResource("resources/icons/zoom_current_location_32.png"));
+      ImageIcon imageZoomCurrent = JResizedIcon.getIcon(IconUrls.ICON_MAP_ZOOM_CURRENT, IconSize.MEDIUM);
       JButton showCurrent = new JButton(imageZoomCurrent);
       showCurrent.setToolTipText("Display current server location");
       showCurrent.addActionListener(new ActionListener() {
@@ -62,7 +65,7 @@ public class GuiMapArea
       });
       toolbar.add(showCurrent);
 
-      ImageIcon imageZoomAll = new ImageIcon(Starter.class.getResource("resources/icons/zoom_all_tree_locations_32.png"));
+      ImageIcon imageZoomAll = JResizedIcon.getIcon(IconUrls.ICON_MAP_ZOOM_ALL, IconSize.MEDIUM);
       JButton showServers = new JButton(imageZoomAll);
       showServers.setToolTipText("Display all [filtered] server locations");
       showServers.addActionListener(new ActionListener() {
@@ -73,7 +76,7 @@ public class GuiMapArea
       });
       toolbar.add(showServers);
 
-      ImageIcon imageConnectMap = new ImageIcon(Starter.class.getResource("resources/icons/connectMap_32.png"));
+      ImageIcon imageConnectMap = JResizedIcon.getIcon(IconUrls.ICON_MAP_CONNECT, IconSize.MEDIUM);
       JButton pickServer = new JButton(imageConnectMap);
       pickServer.setToolTipText("Select a VPN Server [city or country]. LMB-direct/RMB-confirm");
       pickServer.addActionListener(e -> m_mapFrame.getMapPane().setCursorTool(
@@ -82,7 +85,7 @@ public class GuiMapArea
             public void onMouseClicked(MapMouseEvent e)
             {
                Point2D actPos = ((MapMouseEvent) e).getWorldPos();
-               Location loc = UtilMapGeneration.getPickedServer(actPos);
+               CurrentLocation loc = new CurrentLocation(UtilMapGeneration.getPickedServer(actPos));
                if (e.getButton() == MouseEvent.BUTTON1)
                {
                   if (null != loc)

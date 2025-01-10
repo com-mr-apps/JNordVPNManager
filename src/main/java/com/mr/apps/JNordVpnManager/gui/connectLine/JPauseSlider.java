@@ -10,7 +10,6 @@ package com.mr.apps.JNordVpnManager.gui.connectLine;
 
 
 import java.awt.Font;
-import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
@@ -30,6 +29,9 @@ import javax.swing.event.ChangeListener;
 import com.mr.apps.JNordVpnManager.Starter;
 import com.mr.apps.JNordVpnManager.geotools.CurrentLocation;
 import com.mr.apps.JNordVpnManager.gui.GuiStatusLine;
+import com.mr.apps.JNordVpnManager.gui.components.JResizedIcon;
+import com.mr.apps.JNordVpnManager.gui.components.JResizedIcon.IconSize;
+import com.mr.apps.JNordVpnManager.gui.components.JResizedIcon.IconUrls;
 import com.mr.apps.JNordVpnManager.nordvpn.NvpnCallbacks;
 
 @SuppressWarnings("serial")
@@ -39,7 +41,6 @@ public class JPauseSlider extends JPanel
    private static final int       TIMER_UPDATE_INTERVALL = 3000;                   // 30 seconds
    private static final int       TIMER_MAX_VALUE        = 3600;                   // 60 minutes
 
-   private static final int ICON_SIZE = 32;
    private static ArrayList<ImageIcon> m_timerStartStopImages = new ArrayList<>();
 
    private static Timer           m_timer;
@@ -49,15 +50,8 @@ public class JPauseSlider extends JPanel
    public JPauseSlider()
    {
       // Disconnect/Connect
-      ImageIcon myImageIcon = new ImageIcon(Starter.class.getResource("resources/icons/disconnectTimer_32.png"));
-      Image myImage = myImageIcon.getImage();
-      Image resizedImage = myImage.getScaledInstance(ICON_SIZE, ICON_SIZE, java.awt.Image.SCALE_SMOOTH);
-      m_timerStartStopImages.add(new ImageIcon(resizedImage));
-
-      myImageIcon = new ImageIcon(Starter.class.getResource("resources/icons/connectTimer_32.png"));
-      myImage = myImageIcon.getImage();
-      resizedImage = myImage.getScaledInstance(ICON_SIZE, ICON_SIZE, java.awt.Image.SCALE_SMOOTH);
-      m_timerStartStopImages.add(new ImageIcon(resizedImage));
+      m_timerStartStopImages.add(JResizedIcon.getIcon(IconUrls.ICON_TIMER_DISCONNECT, IconSize.MEDIUM));
+      m_timerStartStopImages.add(JResizedIcon.getIcon(IconUrls.ICON_TIMER_CONNECT, IconSize.MEDIUM));
 
       JPopupMenu timeSliderPopup = new JPopupMenu();
       JMenuItem m5 = new JMenuItem("5 min.");
@@ -248,7 +242,7 @@ public class JPauseSlider extends JPanel
       m_startStopButton.setIcon(m_timerStartStopImages.get(1));
       m_startStopButton.setToolTipText("Reconnect.");
       CurrentLocation loc = Starter.getCurrentServer();
-      if (null == loc || true == loc.isConnected()) NvpnCallbacks.executeDisConnect();
+      if (null == loc || true == loc.isConnected()) NvpnCallbacks.executeDisConnect(null, null);
    }
 
    /**
@@ -279,26 +273,32 @@ public class JPauseSlider extends JPanel
 
       if (true == m_timer.isRunning())
       {
-         if (iStatus == Starter.STATUS_CONNECTED)
+         if ((iStatus == Starter.STATUS_CONNECTED) || (iStatus == Starter.STATUS_LOGGEDOUT))
          {
-            // VPN was connected manually
+            // VPN was connected outside of GUI or User logged out outside of GUI
             stopTheTimer();
             return null;
          }
          return "VPN will be reconnected in " + timeSliderValueToText(m_timeSlider.getValue()) + ".";
       }
-      else
+      else // Timer is not running
       {
-         // Timer is not running
-         if (iStatus == Starter.STATUS_CONNECTED)
+         if (iStatus == Starter.STATUS_PAUSED)
          {
-            m_startStopButton.setToolTipText("Pause VPN connection for " + timeSliderValueToText(m_timeSlider.getValue()) + ".");
-         }
-         else
-         {
+            m_startStopButton.setEnabled(true);
             m_startStopButton.setToolTipText("Start VPN connection in " + timeSliderValueToText(m_timeSlider.getValue()) + ".");
          }
-         return null;
+         else if (iStatus == Starter.STATUS_CONNECTED)
+         {
+            m_startStopButton.setEnabled(true);
+         }
+         else // Starter.STATUS_LOGGEDOUT
+         {
+            // not logged in
+            m_startStopButton.setEnabled(false);
+         }
+         m_startStopButton.setToolTipText("Pause VPN connection for " + timeSliderValueToText(m_timeSlider.getValue()) + ".");
       }
+      return null;
    }
 }

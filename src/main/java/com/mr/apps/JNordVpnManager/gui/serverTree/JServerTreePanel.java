@@ -10,7 +10,6 @@ package com.mr.apps.JNordVpnManager.gui.serverTree;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
@@ -40,6 +39,9 @@ import com.mr.apps.JNordVpnManager.geotools.Location;
 import com.mr.apps.JNordVpnManager.geotools.UtilLocations;
 import com.mr.apps.JNordVpnManager.geotools.UtilMapGeneration;
 import com.mr.apps.JNordVpnManager.gui.GuiMenuBar;
+import com.mr.apps.JNordVpnManager.gui.components.JResizedIcon;
+import com.mr.apps.JNordVpnManager.gui.components.JResizedIcon.IconSize;
+import com.mr.apps.JNordVpnManager.gui.components.JResizedIcon.IconUrls;
 import com.mr.apps.JNordVpnManager.gui.dialog.JAccelerateDialog;
 import com.mr.apps.JNordVpnManager.gui.dialog.JModalDialog;
 import com.mr.apps.JNordVpnManager.nordvpn.NvpnCallbacks;
@@ -170,7 +172,8 @@ public class JServerTreePanel extends JPanel implements TreeSelectionListener
             if ((newIndex == idxObfuscatedGroup) && (!bObfuscate))
             {
                // require to change setting 'obfuscate enabled' (only available for technology OPENVPN!)
-               JModalDialog dlg = JModalDialog.JOptionDialog("Obfuscated Servers", "Setting 'Obfuscate' is disabled. To connect to VPN servers with obfuscation,\nit must be activated in NordVPN settings and the protocol type must be OPENVPN.\n"
+               JModalDialog dlg = JModalDialog.JOptionDialog("Obfuscated Servers",
+                     "To connect to VPN servers with obfuscation, the Setting 'Obfuscate' must be enabled in NordVPN settings and the protocol type must be OPENVPN.\n"
                      + "\n Please choose the OPENVPN protocol to enable obfuscation, or choose Cancel.",
                      "OPENVPN TCP,OPENVPN UDP,Cancel");
                int rc = dlg.getResult();
@@ -256,9 +259,9 @@ public class JServerTreePanel extends JPanel implements TreeSelectionListener
       filterPanel.add(filterPanelGroups, BorderLayout.PAGE_START);
 
       // Text Search Filter
-      ImageIcon imageLabel = new ImageIcon(Starter.class.getResource("resources/icons/search_in_tree_32.png"));
+      ImageIcon imageLabel = JResizedIcon.getIcon(IconUrls.ICON_SERVER_SEARCH_FILTER, IconSize.MEDIUM);
       JLabel filterLabel = new JLabel(imageLabel);
-      filterLabel.setToolTipText("Filter for VPN Servers");
+      filterLabel.setToolTipText("Text Filter for VPN Servers");
       filterPanel.add(filterLabel, BorderLayout.LINE_START);
       m_filterTextField = new JTextField();
       m_filterTextField.setToolTipText("<html><font face=\"sansserif\" color=\"black\">Filter requires min. " + MIN_CHARS_FOR_FILTER + " characters!<br>Press Right Mouse Button to reset.</font></html>");
@@ -324,6 +327,8 @@ public class JServerTreePanel extends JPanel implements TreeSelectionListener
       // ---------------------------------------------------------------------------------------------
       JScrollPane jsp = initTree();
       this.add(jsp, BorderLayout.CENTER); // jsp in 'CENTER': automatic resize!!! ;)
+
+//      this.setPreferredSize(new Dimension(260, 400));
    }
 
    /**
@@ -361,30 +366,35 @@ public class JServerTreePanel extends JPanel implements TreeSelectionListener
             m_tree.expandRow(r);
          }
       }
-      else
-      {
-         // no filter - navigate tree to current server
-         CurrentLocation loc = Starter.getCurrentServer();
-         if (null != loc)
-         {
-            JServerTreePanel.activateTreeNode(loc);            
-         }
-      }
 
-      // if settings changed we need to reconnect
-      NvpnSettingsData.reconnectIfRequired();
+      // (try to) navigate tree to current server
+      CurrentLocation loc = Starter.getCurrentServer();
+      if (null != loc)
+      {
+         JServerTreePanel.activateTreeNode(loc);            
+      }
 
       m_lockUpdate = false;
    }
 
    /**
-    * Initialize the server tree
+    * Initialize the server tree (on program start)
     * @return the created tree ScrollPane
     */
    private JScrollPane initTree()
    {
-      // create the server tree dependent on auto update option from NordVPN (init/empty or from user prefs)
-      boolean update = (UtilPrefs.getServerListAutoUpdate() == 0) ? false : true;
+      // create the server tree from NordVPN (update=true) or from [existing] local data (update=false) - dependent on auto update option(s)
+      boolean update = false;
+      int autoUpdateIntervall = UtilPrefs.getServerListAutoUpdate();
+      if (autoUpdateIntervall > 0)
+      {
+         // calculate the days between last update and now
+         String timestamp = UtilPrefs.getServerListTimestamp();
+         long lTimestamp = Long.parseLong(timestamp);
+         long days = UtilSystem.getDaysUntilNow(lTimestamp);
+         // check with defined auto update interval
+         update = (days >= autoUpdateIntervall) ? true : false;
+      }
       Starter._m_logError.TraceIni("Auto Update Server List [from Application Preferences]: " + update);
 
       DefaultMutableTreeNode root = createServerTree(update);
@@ -396,7 +406,6 @@ public class JServerTreePanel extends JPanel implements TreeSelectionListener
       m_tree.setShowsRootHandles(true);
 
       JScrollPane jsp = new JScrollPane(m_tree);
-      jsp.setPreferredSize(new Dimension(200,500));
 
       return jsp;
    }
@@ -485,7 +494,7 @@ public class JServerTreePanel extends JPanel implements TreeSelectionListener
             {
                // OPENVNP / UDP / not Obfuscated
                iTechFilter = NvpnTechnologies.openvpn_udp;
-               if (!filterGroup.equals(NordVPNEnumGroups.legacy_obfuscated_servers))
+               if (filterGroup.equals(NordVPNEnumGroups.legacy_obfuscated_servers))
                {
                   // this should not happen!
                   Starter._m_logError.LoggingError(90500,
@@ -530,7 +539,7 @@ public class JServerTreePanel extends JPanel implements TreeSelectionListener
                   String country = saCountryCities[0];
                   String cities = saCountryCities[1];
 
-                  DefaultMutableTreeNode countryNode = null;
+                  JCountryNode countryNode = null;
                   boolean matchCountry = false;
                   if (m_filterText.isBlank() || country.toLowerCase().contains(m_filterText))
                   {
@@ -553,7 +562,7 @@ public class JServerTreePanel extends JPanel implements TreeSelectionListener
                            {
                               if (null == countryNode)
                               {
-                                 countryNode = new DefaultMutableTreeNode(country);
+                                 countryNode = new JCountryNode(loc);
                                  root.add(countryNode);
                                  ++nbCountries;
                               }
@@ -679,7 +688,7 @@ public class JServerTreePanel extends JPanel implements TreeSelectionListener
                return new TreePath(node.getPath());
             }
          }
-         else
+         else if (node instanceof JCountryNode)
          {
             // country node
             if (node.toString().equalsIgnoreCase(p))
@@ -717,13 +726,20 @@ public class JServerTreePanel extends JPanel implements TreeSelectionListener
             TreeNode[] path = serverNode.getPath();
             System.out.println((serverNode.isLeaf() ? "  - " : "+ ") + path[path.length - 1]);
          }
-         else
+         else if (node instanceof JCountryNode)
          {
-            DefaultMutableTreeNode countryNode = (DefaultMutableTreeNode) node;
+            JCountryNode countryNode = (JCountryNode) node;
             TreeNode[] path = countryNode.getPath();
             System.out.println((countryNode.isLeaf() ? "  - " : "+ ") + path[path.length - 1]);
          }
       }
+   }
+
+   public void setTreeFilterGroup(NordVPNEnumGroups group)
+   {
+      if (NvpnGroups.getCurrentGroup().equals(group)) return;
+      int idxGroup = NvpnGroups.getFieldIndex(group, m_iaGroups, 0);
+      m_filterGroups.setSelectedIndex(idxGroup);
    }
 
    @Override
@@ -736,11 +752,11 @@ public class JServerTreePanel extends JPanel implements TreeSelectionListener
          JServerNode node = (JServerNode) m_tree.getLastSelectedPathComponent();
          if (node != m_tree.getModel().getRoot() && node != null)
          {
-            Location loc = ((JServerNode) node).getLocation();
+            CurrentLocation loc = new CurrentLocation(((JServerNode) node).getLocation());
             NvpnCallbacks.executeConnect(loc, "NordVPN Connect", "NordVPN Connect");
          }
       }
-      else
+      else if (m_tree.getLastSelectedPathComponent() instanceof JCountryNode)
       {
          // TODO: do nothing (country selected)
       }

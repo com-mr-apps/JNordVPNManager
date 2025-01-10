@@ -86,16 +86,18 @@ public class Location
       if (cityId == 1)
       {
          // internal generated temporary location
-         Starter._m_logError.TraceDebug("Location=" + this.toString() + "<.");         
+         Starter._m_logError.TraceDebug("Location: " + this.toString());         
       }
       else if (cityId == -1)
       {
-         Starter._m_logError.LoggingError(10200, "Location Definition Error", "Location=" + this.toString() + "< cannot be defined!");         
+         Starter._m_logError.LoggingError(10200,
+               "Location Definition Error",
+               "Location: " + this.toString() + " cannot be defined!");         
       }
       else
       {
          // from CSV
-         //JNordVpnManager._m_logError.TraceDebug("Add location=" + this.toString() + "<.");
+         //JNordVpnManager._m_logError.TraceDebug("Add location: " + this.toString());
       }
      
    }
@@ -195,7 +197,7 @@ public class Location
 
    public void setCountryCode(String countryCode)
    {
-      this.m_countryCode = countryCode;
+      this.m_countryCode = countryCode.toLowerCase();
    }
    
    /**
@@ -231,6 +233,11 @@ public class Location
       m_groups.addGroup(id);
    }
 
+   public void addGroup(int id)
+   {
+      m_groups.addGroup(id);
+   }
+
    public boolean hasGroup(NordVPNEnumGroups m_filterRegion)
    {
       return m_groups.hasGroup(m_filterRegion);
@@ -238,6 +245,11 @@ public class Location
 
    public String toString()
    {
-      return m_cityName + "/" + m_countryName + " [" + m_longitude + "," + m_latitude + "] (id=" + m_cityId + ") Groups=" + m_groups.toString() + " / Technologies=" + m_technologies.toString();
+      return m_serverId + " [" + m_longitude + "," + m_latitude + "] (id=" + m_cityId + ") Groups=" + m_groups.toString() + " / Technologies=" + m_technologies.toString();
+   }
+
+   public String exportAsCsvData()
+   {
+      return m_latitude + "," + m_longitude + "," + m_cityName + "," + m_countryName + ","  + m_countryCode + "," + m_cityId + "," + m_groups.toStringId() + "," + m_technologies.toStringId();
    }
 }

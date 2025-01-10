@@ -74,4 +74,15 @@ public class NvpnTechnologies
       return StringFormat.int2String(m_techIds, null);
    }
 
+   public String toStringId()
+   {
+      if (null == m_techIds) return "";
+      StringBuffer sb = new StringBuffer(); 
+      for (int iTechId : m_techIds)
+      {
+         if (sb.length() > 0) sb.append(";");
+         sb.append(iTechId);
+      }
+      return sb.toString();
+   }
 }

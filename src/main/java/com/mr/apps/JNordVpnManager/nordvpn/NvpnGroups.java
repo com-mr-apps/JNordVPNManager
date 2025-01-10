@@ -108,7 +108,7 @@ public class NvpnGroups
 
    public void addGroup(int id)
    {
-      m_groups.add(NordVPNEnumGroups.get(id));
+      addGroup(NordVPNEnumGroups.get(id));
    }
 
    public boolean hasGroup(NordVPNEnumGroups idGroup)
@@ -161,13 +161,24 @@ public class NvpnGroups
    public String toString()
    {
       if (null == m_groups) return "";
-      StringBuffer sb = new StringBuffer("["); 
+      StringBuffer sb = new StringBuffer(); 
       for (NordVPNEnumGroups iGroup : m_groups)
       {
-         if (sb.length() > 1) sb.append(",");
+         if (sb.length() > 0) sb.append(";");
          sb.append(NordVPNEnumGroups.get(iGroup.getId()));
       }
-      sb.append("]");
+      return sb.toString();
+   }
+
+   public String toStringId()
+   {
+      if (null == m_groups) return "";
+      StringBuffer sb = new StringBuffer(); 
+      for (NordVPNEnumGroups iGroup : m_groups)
+      {
+         if (sb.length() > 0) sb.append(";");
+         sb.append(iGroup.getId());
+      }
       return sb.toString();
    }
 }
