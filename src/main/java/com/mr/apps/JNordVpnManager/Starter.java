@@ -33,7 +33,6 @@ import javax.swing.WindowConstants;
 import org.geotools.swing.JMapFrame;
 
 import com.mr.apps.JNordVpnManager.geotools.CurrentLocation;
-import com.mr.apps.JNordVpnManager.geotools.Location;
 import com.mr.apps.JNordVpnManager.geotools.UtilLocations;
 import com.mr.apps.JNordVpnManager.geotools.UtilMapGeneration;
 import com.mr.apps.JNordVpnManager.gui.GuiMapArea;
@@ -514,7 +513,7 @@ public class Starter
             CurrentLocation loc = getCurrentServer();
             if (null != loc)
             {
-               m_splashScreen.setStatus("GUI Auto Connect to " + ((Location)loc).getServerId());
+               m_splashScreen.setStatus("GUI Auto Connect to " + loc.getServerId());
                NvpnCallbacks.executeConnect(loc, null, "JNordVPN Manager Auto Connect");
             }
          }
@@ -646,7 +645,7 @@ public class Starter
       if (null != m_currentServer && m_currentServer.isConnected())
       {
          // Connected
-         _m_logError.TraceDebug("Update Current active Server=" + m_currentServer.toString() + "<.");
+         _m_logError.TraceDebug("Update Current active Server: " + m_currentServer.toString());
 
          // Update preferences with current connected server
          UtilPrefs.setRecentServerCountry(m_currentServer.getCountryName());

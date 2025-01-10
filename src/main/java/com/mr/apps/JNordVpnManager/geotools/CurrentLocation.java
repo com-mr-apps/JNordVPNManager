@@ -113,6 +113,6 @@ public class CurrentLocation extends Location
 
    public String toString()
    {
-       return super.toString() + " " + ((isConnected == true) ? "connected" : "disconnected") + "; Group=" + getFilterGroup() + ", Technology=" + getVpnTechnology() + "/" + getVpnProtocol();
+       return super.toString() + " " + ((isConnected == true) ? "connected" : "disconnected") + "; Group=" + NordVPNEnumGroups.get(getFilterGroup()) + " (" + getFilterGroup() + "), Technology=" + getVpnTechnology() + "/" + getVpnProtocol();
    }
 }

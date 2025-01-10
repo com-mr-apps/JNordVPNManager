@@ -35,28 +35,28 @@ import com.mr.apps.JNordVpnManager.utils.String.StringFormat;
  */
 public class UtilPrefs
 {
-   private static final String                     AUTOCONNECTMODE                          = "AUTOCONNECTMODE";
-   private static final String                     AUTODISCONNECTMODE                       = "AUTODISCONNECTMODE";
-   private static final String                     COMMAND_TIMEOUT                          = "COMMAND_TIMEOUT";
-   private static final String                     CONSOLE_ACTIVE                           = "CONSOLE_ACTIVE";
-   private static final String                     LOGFILE_ACTIVE                           = "LOGFILE_ACTIVE";
-   private static final String                     LOGFILE_NAME                             = "LOGFILE_NAME";
-   private static final String                     LOGFILE_TRACEINIT                        = "TRACEINIT";
-   private static final String                     LOGFILE_TRACECMD                         = "TRACECMD";
-   private static final String                     LOGFILE_TRACEDEBUG                       = "TRACEDEBUG";
-   private static final String                     MESSAGE_AUTOCLOSE                        = "MESSAGEDIALOG_AUTOCLOSE";
-   private static final String                     RECENTSERVER_LIST_LENGTH                 = "RECENTSERVER_LIST_LENGTH";
-   private static final String                     RECENTSERVER_LIST                        = "RECENTSERVER_LIST";
-   private static final String                     RECENTSERVER_COUNTRY                     = "RECENTSERVER_COUNTRY";
-   private static final String                     RECENTSERVER_CITY                        = "RECENTSERVER_CITY";
-   private static final String                     SERVERLIST_TIMESTAMP                     = "SERVERLIST_TIMESTAMP";
-   private static final String                     SERVERLIST_DATA                          = "SERVERLIST_DATA";
-   private static final String                     SERVERLIST_AUTOUPDATE                    = "SERVERLIST_AUTOUPDATE";
+   private static final String AUTOCONNECTMODE                          = "AUTOCONNECTMODE";
+   private static final String AUTODISCONNECTMODE                       = "AUTODISCONNECTMODE";
+   private static final String COMMAND_TIMEOUT                          = "COMMAND_TIMEOUT";
+   private static final String CONSOLE_ACTIVE                           = "CONSOLE_ACTIVE";
+   private static final String LOGFILE_ACTIVE                           = "LOGFILE_ACTIVE";
+   private static final String LOGFILE_NAME                             = "LOGFILE_NAME";
+   private static final String LOGFILE_TRACEINIT                        = "TRACEINIT";
+   private static final String LOGFILE_TRACECMD                         = "TRACECMD";
+   private static final String LOGFILE_TRACEDEBUG                       = "TRACEDEBUG";
+   private static final String MESSAGE_AUTOCLOSE                        = "MESSAGEDIALOG_AUTOCLOSE";
+   private static final String RECENTSERVER_LIST_LENGTH                 = "RECENTSERVER_LIST_LENGTH";
+   private static final String RECENTSERVER_LIST                        = "RECENTSERVER_LIST";
+   private static final String RECENTSERVER_COUNTRY                     = "RECENTSERVER_COUNTRY";
+   private static final String RECENTSERVER_CITY                        = "RECENTSERVER_CITY";
+   private static final String SERVERLIST_TIMESTAMP                     = "SERVERLIST_TIMESTAMP";
+   private static final String SERVERLIST_DATA                          = "SERVERLIST_DATA";
+   private static final String SERVERLIST_AUTOUPDATE                    = "SERVERLIST_AUTOUPDATE";
 
    // hidden options
-   // private static final String                     COMPACTMODE                              = "COMPACTMODE";
-   // private static final String                     RECENTSERVER_REGION                      = "RECENTSERVER_REGION";
-   // private static final String                     RECENTSERVER_GROUP                       = "RECENTSERVER_GROUP";
+   // private static final String COMPACTMODE                              = "COMPACTMODE";
+   // private static final String RECENTSERVER_REGION                      = "RECENTSERVER_REGION";
+   // private static final String RECENTSERVER_GROUP                       = "RECENTSERVER_GROUP";
 
    // Internal Defaults
    private static String DEFAULT_PREF_RECENTSERVER_CITY           = "";
@@ -78,7 +78,7 @@ public class UtilPrefs
    private static int    DEFAULT_PREF_SETTINGS_LOGFILE_ACTIVE     = 0;
    private static int    DEFAULT_PREF_SETTINGS_CONSOLE_ACTIVE     = 0;
    private static int    DEFAULT_PREF_SETTINGS_COMMAMD_TIMEOUT    = 30;
-   private static int    DEFAULT_PREF_SETTINGS_MESSAGE_AUTOCLOSE  = 0;
+   private static int    DEFAULT_PREF_SETTINGS_MESSAGE_AUTOCLOSE  = 2;
 
    /**
     * Dataset defining the UserPreference values.

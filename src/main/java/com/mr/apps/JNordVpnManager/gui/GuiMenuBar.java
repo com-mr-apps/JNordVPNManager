@@ -443,6 +443,8 @@ public class GuiMenuBar
    private static void recentServerSelectedCB(ActionEvent e, int which)
    {
       CurrentLocation loc = m_recentServerIdList.get(which);
+      Starter._m_logError.LoggingInfo("Selected Recent Server: " + loc.getToolTip());
+
       // get and set additional (optional) connection data from location and set Group/Tech/Protocol
       Starter.getCurrentSettingsData().setTechnology(loc.getVpnTechnology(), false);
       Starter.getCurrentSettingsData().setProtocol(loc.getVpnProtocol(), false);
@@ -456,7 +458,6 @@ public class GuiMenuBar
       }
       Starter.setTreeFilterGroup(NordVPNEnumGroups.get(loc.getFilterGroup()));
 
-      NvpnSettingsData.resetRequiresReconnect(); // suppress standard reconnect dialog
       NvpnCallbacks.executeConnect(loc, "NordVPN Connect", "NordVPN Connect");
    }
 

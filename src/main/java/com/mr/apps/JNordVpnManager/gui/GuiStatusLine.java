@@ -107,6 +107,7 @@ public class GuiStatusLine
    public CurrentLocation update(NvpnStatusData statusData)
    {
       CurrentLocation ret_loc = null;
+      Starter._m_logError.TraceDebug("### Launched Update Statusline...");
 
       if (null == statusData.getStatus())
       {
@@ -131,6 +132,16 @@ public class GuiStatusLine
          NvpnSettingsData settingsData = Starter.getCurrentSettingsData();
          int iconId = 0;
          String sPrefix = "";
+         if (true == NvpnSettingsData.reconnectRequired())
+         {
+            // reconnect required - settings changed
+            iconId = 1;
+            Starter._m_logError.LoggingError(10905,
+                  "NordVPN Settings changed",
+                  "NordVPN Settings were changed which need a reconnect. Please manually reconnect to activate the new settings.");
+            sPrefix = "[Changed Settings] ";
+         }
+
          if (false == settingsData.getTechnology(false).equals(statusData.getTechnology()))
          {
             // reconnect required - settings technology <> current technology
@@ -140,6 +151,7 @@ public class GuiStatusLine
                   "The current server connection uses '" + statusData.getTechnology() + "' but settings are set to '" + settingsData.getTechnology(false) + "'.");
             sPrefix = "[Technology mismatch] ";
          }
+
          if (true == settingsData.getTechnology(false).equals("OPENVPN"))
          {
             // .. in case of OPENVPN
@@ -160,15 +172,6 @@ public class GuiStatusLine
                      "Server Connection Settings Mismatch",
                      "The current server does not support obfuscation. Please manually reconnect to a server that supports obfuscation.");
                sPrefix = "[No obfuscation] ";
-            }
-            else if (true == NvpnSettingsData.reconnectRequired())
-            {
-               // reconnect required - settings changed
-               iconId = 1;
-               Starter._m_logError.LoggingError(10905,
-                     "NordVPN Settings changed",
-                     "NordVPN Settings were changed which need a reconnect. Please manually reconnect to activate the new settings.");
-               sPrefix = "[Changed Settings] ";
             }
          }
 
@@ -219,6 +222,7 @@ public class GuiStatusLine
          }
       }
 
+      Starter._m_logError.TraceDebug("### ... Exit Update Statusline.");
       return ret_loc;
    }
    

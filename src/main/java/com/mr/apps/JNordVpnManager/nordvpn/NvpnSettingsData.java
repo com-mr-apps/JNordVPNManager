@@ -1178,7 +1178,11 @@ public class NvpnSettingsData
 
    public static void resetRequiresReconnect()
    {
-      m_requiresReconnect = false;      
+      if (true == m_requiresReconnect)
+      {
+         Starter._m_logError.TraceDebug("Reset RequiresReconnect Flag.");
+         m_requiresReconnect = false;      
+      }
    }
 
    /**

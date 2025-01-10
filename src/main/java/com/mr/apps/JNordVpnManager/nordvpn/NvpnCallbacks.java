@@ -68,7 +68,13 @@ public class NvpnCallbacks
          {
             // OK
             rc = true;
+            NvpnSettingsData.resetRequiresReconnect(); // successfully connected with current settings
             Starter.updateCurrentServer();
+            // overwrite possible "current" (null) values with the for this connection used ones
+            loc.setFilterGroup(loc.getFilterGroup());
+            loc.setVpnTechnology(loc.getVpnTechnology());
+            loc.setVpnProtocol(loc.getVpnProtocol());
+            // now we can add the location to the recent list
             GuiMenuBar.addToMenuRecentServerListItems(loc);
 
             if (null != titleOk)

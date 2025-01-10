@@ -86,16 +86,18 @@ public class Location
       if (cityId == 1)
       {
          // internal generated temporary location
-         Starter._m_logError.TraceDebug("Location=" + this.toString() + "<.");         
+         Starter._m_logError.TraceDebug("Location: " + this.toString());         
       }
       else if (cityId == -1)
       {
-         Starter._m_logError.LoggingError(10200, "Location Definition Error", "Location=" + this.toString() + "< cannot be defined!");         
+         Starter._m_logError.LoggingError(10200,
+               "Location Definition Error",
+               "Location: " + this.toString() + " cannot be defined!");         
       }
       else
       {
          // from CSV
-         //JNordVpnManager._m_logError.TraceDebug("Add location=" + this.toString() + "<.");
+         //JNordVpnManager._m_logError.TraceDebug("Add location: " + this.toString());
       }
      
    }
