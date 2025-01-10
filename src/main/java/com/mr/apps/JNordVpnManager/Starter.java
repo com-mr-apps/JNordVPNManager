@@ -49,6 +49,8 @@ import com.mr.apps.JNordVpnManager.gui.serverTree.JServerTreePanel;
 import com.mr.apps.JNordVpnManager.nordvpn.NvpnAccountData;
 import com.mr.apps.JNordVpnManager.nordvpn.NvpnCallbacks;
 import com.mr.apps.JNordVpnManager.nordvpn.NvpnCommands;
+import com.mr.apps.JNordVpnManager.nordvpn.NvpnGroups;
+import com.mr.apps.JNordVpnManager.nordvpn.NvpnGroups.NordVPNEnumGroups;
 import com.mr.apps.JNordVpnManager.nordvpn.NvpnSettingsData;
 import com.mr.apps.JNordVpnManager.nordvpn.NvpnStatusData;
 import com.mr.apps.JNordVpnManager.utils.UtilLogErr;
@@ -86,7 +88,7 @@ public class Starter
 
    private static String           m_nordvpnVersion;
    private static Cursor           m_applicationDefaultCursor = null;
-   private static boolean          m_cursorChangeAllowed      = true;
+   private static int              m_cursorChangeAllowed      = 0;  // counter for nested calls - 0 is allow
    private static boolean          m_skipWindowGainedFocus    = false;
    private static boolean          m_forceWindowGainedFocus   = false;
    private static boolean          m_installMode              = false;
@@ -161,11 +163,13 @@ public class Starter
     * Allow/Deny wait cursor change.
     * <p>
     * If we execute commands in a row, we want to change the cursor only once at beginning and back once at end.
-    * @param allow is true [default] to allow a cursor change
+    * 
+    * @param allow
+    *           is true [default] to allow a cursor change
     */
    public static void setCursorCanChange(boolean allow)
    {
-      m_cursorChangeAllowed = allow;
+      m_cursorChangeAllowed = (allow) ? --m_cursorChangeAllowed : ++m_cursorChangeAllowed;
    }
 
    /**
@@ -173,7 +177,7 @@ public class Starter
     */
    public static void setWaitCursor()
    {
-      if (!m_cursorChangeAllowed) return;
+      if (0 != m_cursorChangeAllowed) return;
       if (null == m_applicationDefaultCursor)
       {
          m_applicationDefaultCursor = m_mainFrame.getCursor();
@@ -187,7 +191,7 @@ public class Starter
     */
    public static void resetWaitCursor()
    {
-      if (!m_cursorChangeAllowed) return;
+      if (0 != m_cursorChangeAllowed) return;
       if (null == m_applicationDefaultCursor)
       {
          m_applicationDefaultCursor = Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR);
@@ -254,9 +258,7 @@ public class Starter
       // delete temporary map files
       UtilMapGeneration.cleanUp();
       
-      // TODO: save current UtilPrefs settings
-
-      updateCurrentServer(); // update recent server settings
+//      updateCurrentServer(); // update recent server settings
       
       if (m_splashScreen.getProgress() < 100)
       {
@@ -306,6 +308,9 @@ public class Starter
                   if (false == m_installMode)
                   {
                      _m_logError.TraceDebug("windowGainedFocus launched");
+                     setWaitCursor();
+                     setCursorCanChange(false);
+
                      m_nvpnSettingsData = new NvpnSettingsData();
                      // update account data and dependent GUI elements
                      updateAccountData(new NvpnAccountData());
@@ -313,6 +318,9 @@ public class Starter
                      updateCurrentServer();
                      // update the server tree (and world map all servers layer)
                      m_serverListPanel.updateFilterTreeCB();
+
+                     Starter.setCursorCanChange(true);
+                     Starter.resetWaitCursor();
                   }
                }
             }
@@ -485,6 +493,10 @@ public class Starter
          m_nvpnAccountData = new NvpnAccountData();
          m_nvpnSettingsData = new NvpnSettingsData();
          m_nvpnStatusData = new NvpnStatusData();
+
+         // initialize current group and region from User Preferences
+         NvpnGroups.setCurrentGroup(NordVPNEnumGroups.get(UtilPrefs.getRecentServerGroup()));
+         NvpnGroups.setCurrentRegion(NordVPNEnumGroups.get(UtilPrefs.getRecentServerRegion()));
       }
 
       //-------------------------------------------------------------------------------
@@ -599,8 +611,8 @@ public class Starter
 
       if (null == m_currentServer)
       {
-         String city = UtilPrefs.getRecentCity();
-         String country = UtilPrefs.getRecentCountry();
+         String city = UtilPrefs.getRecentServerCity();
+         String country = UtilPrefs.getRecentServerCountry();
          CurrentLocation loc = new CurrentLocation(UtilLocations.getLocation(city, country));
          loc.setConnected(false);
          // return only a "real" location
@@ -637,8 +649,8 @@ public class Starter
          _m_logError.TraceDebug("Update Current active Server=" + m_currentServer.toString() + "<.");
 
          // Update preferences with current connected server
-         UtilPrefs.setRecentCountry(m_currentServer.getCountryName());
-         UtilPrefs.setRecentCity(m_currentServer.getCityName());
+         UtilPrefs.setRecentServerCountry(m_currentServer.getCountryName());
+         UtilPrefs.setRecentServerCity(m_currentServer.getCityName());
 
          // Update the current server map layer and zoom there
          UtilMapGeneration.changeCurrentServerMapLayer(m_currentServer);
@@ -701,6 +713,11 @@ public class Starter
          m_mainFrame.setMinimumSize(new Dimension (800, 80));
          m_mainFrame.pack();
       }
+   }
+
+   public static void setTreeFilterGroup(NordVPNEnumGroups group)
+   {
+      m_serverListPanel.setTreeFilterGroup(group);
    }
 
    public static void showAboutScreen()

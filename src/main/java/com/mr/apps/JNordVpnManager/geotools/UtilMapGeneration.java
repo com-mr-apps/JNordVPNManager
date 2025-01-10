@@ -388,9 +388,7 @@ public class UtilMapGeneration
             Starter._m_logError.LoggingInfo("VPN Server selected: " + info.toString());
             Map<String, Object> data = info.getFeatureData(0);
             String serverId = (String) data.get("Name");
-
             loc = UtilLocations.getLocation(serverId);
-//            loc = new Location(serverId, pos.getX(), pos.getY(), 1);
          }
          else
          {
@@ -410,9 +408,7 @@ public class UtilMapGeneration
                // name mappings for geo-map country selections to NordVPN names
                if (serverId.equalsIgnoreCase("Laos")) serverId = "Lao People's Democratic Republic";
                if (serverId.startsWith("United States of")) serverId = "United States";
-
                loc = UtilLocations.getLocation(serverId);
-//               loc = new Location(serverId, pos.getX(), pos.getY(), 1);
             }
          }
       }

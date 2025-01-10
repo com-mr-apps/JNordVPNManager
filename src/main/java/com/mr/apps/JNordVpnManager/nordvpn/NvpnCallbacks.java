@@ -20,7 +20,7 @@ import javax.swing.JOptionPane;
 
 import com.mr.apps.JNordVpnManager.Starter;
 import com.mr.apps.JNordVpnManager.geotools.CurrentLocation;
-import com.mr.apps.JNordVpnManager.geotools.Location;
+import com.mr.apps.JNordVpnManager.gui.GuiMenuBar;
 import com.mr.apps.JNordVpnManager.gui.dialog.JAutoCloseLoginDialog;
 import com.mr.apps.JNordVpnManager.gui.dialog.JModalDialog;
 import com.mr.apps.JNordVpnManager.utils.UtilPrefs;
@@ -29,12 +29,13 @@ import com.mr.apps.JNordVpnManager.utils.String.StringFormat;
 
 public class NvpnCallbacks
 {
-   public static String executeConnect(Location loc, String titleOk, String titleKo)
+   public static boolean executeConnect(CurrentLocation loc, String titleOk, String titleKo)
    {
+      boolean rc = false;
       String msg = "no message...";
       if (null != loc)
       {
-         Starter._m_logError.LoggingInfo("Change Server: " + loc.toString());
+         Starter._m_logError.LoggingInfo("Connect to Server: " + loc.toString());
 
          String city = loc.getCityNordVPN();
          String country = loc.getCountryNordVPN();
@@ -42,6 +43,7 @@ public class NvpnCallbacks
          if (UtilSystem.isLastError())
          {
             // KO
+            rc = false;
             String errMsg = "";
             if(null != msg && msg.contains("You are not logged in"))
             {
@@ -65,7 +67,9 @@ public class NvpnCallbacks
          else
          {
             // OK
+            rc = true;
             Starter.updateCurrentServer();
+            GuiMenuBar.addToMenuRecentServerListItems(loc);
 
             if (null != titleOk)
             {
@@ -74,7 +78,7 @@ public class NvpnCallbacks
          }
       }
 
-      return msg;
+      return rc;
    }
    
    public static String executeDisConnect(String titleOk, String titleKo)
@@ -121,10 +125,18 @@ public class NvpnCallbacks
       String msg = NvpnCommands.login();
       if (UtilSystem.isLastError())
       {
-         //KO
-         Starter._m_logError.LoggingError(10904,
-               "Execute Login Failed",
-               UtilSystem.getLastError());
+         if (false == msg.contains("You are already logged in."))
+         {
+            //KO
+            Starter._m_logError.LoggingError(10904,
+                  "Execute Login Failed",
+                  UtilSystem.getLastError());
+         }
+         else
+         {
+            // OK - already logged in
+            msg = null;
+         }
       }
       else
       {

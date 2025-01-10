@@ -31,9 +31,10 @@ import java.util.concurrent.TimeUnit;
 
 import com.mr.apps.JNordVpnManager.Starter;
 import com.mr.apps.JNordVpnManager.gui.dialog.JModalDialog;
+import com.mr.apps.JNordVpnManager.utils.String.StringFormat;
 
 /**
- * Some common utilities
+ * Some common system related utilities
  */
 public class UtilSystem
 {
@@ -67,11 +68,49 @@ public class UtilSystem
       return message;
    }
 
+   /**
+    * Set the last error
+    * <p>
+    * This method sets the last error.
+    * 
+    * @param msg
+    *           is the last error message (null if there was no error)
+    * @param rc
+    *           is the last error return code
+    */
    public static void setLastError(String msg, int rc)
    {
       m_lastErrorMessage = msg;
       m_lastExitCode = rc;
    }
+
+   /**
+    * Utility to display a dialog with a command success or error return message
+    * 
+    * @param shortMsg
+    *           is the dialog short message
+    * @param msg
+    *           is the dialog message
+    * @return the last error code, 0 for ok
+    */
+   public static int showResultDialog(String shortMsg, String msg, boolean autoClose)
+   {
+      if (UtilSystem.isLastError())
+      {
+         JModalDialog.showError(shortMsg, UtilSystem.getLastError() + "\n" + StringFormat.printString (msg, "<empty message>", "<null mwssage>"));
+         return m_lastExitCode;
+      }
+      else if (autoClose)
+      {
+         JModalDialog.showMessageAutoClose(shortMsg, StringFormat.printString(msg, "<empty message>", "<null mwssage>"));
+      }
+      else
+      {
+         JModalDialog.showMessage(shortMsg, StringFormat.printString(msg, "<empty message>", "<null mwssage>"));
+      }
+      return 0;
+   }
+
    /**
     * Get the last command exit code
     * @return the last command exit

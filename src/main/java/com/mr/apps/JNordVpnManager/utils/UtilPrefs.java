@@ -24,6 +24,7 @@ import java.util.stream.Stream;
 import com.mr.apps.JNordVpnManager.Starter;
 import com.mr.apps.JNordVpnManager.gui.settings.JUserPrefsDialog;
 import com.mr.apps.JNordVpnManager.nordvpn.NvpnGroups.NordVPNEnumGroups;
+import com.mr.apps.JNordVpnManager.gui.GuiMenuBar;
 import com.mr.apps.JNordVpnManager.gui.settings.JSettingsPanelField;
 import com.mr.apps.JNordVpnManager.utils.String.StringFormat;
 
@@ -242,7 +243,7 @@ public class UtilPrefs
       return;
    }
 
-   public static String getRecentCity()
+   public static String getRecentServerCity()
    {
       Preferences nordVpnRecentServer = Preferences.userRoot().node("com/mr/apps/JNordVpnManager");
       String city = nordVpnRecentServer.get("RecentServer.City", DEFAULT_PREF_RECENTSERVER_CITY);
@@ -250,7 +251,7 @@ public class UtilPrefs
       return city;
    }
 
-   public static void setRecentCity(String city)
+   public static void setRecentServerCity(String city)
    {
       Preferences nordVpnRecentServer = Preferences.userRoot().node("com/mr/apps/JNordVpnManager");
       nordVpnRecentServer.put("RecentServer.City", city);
@@ -258,7 +259,7 @@ public class UtilPrefs
       return;
    }
 
-   public static String getRecentCountry()
+   public static String getRecentServerCountry()
    {
       Preferences nordVpnRecentServer = Preferences.userRoot().node("com/mr/apps/JNordVpnManager");
       String country = nordVpnRecentServer.get("RecentServer.Country", DEFAULT_PREF_RECENTSERVER_COUNTRY);
@@ -266,7 +267,7 @@ public class UtilPrefs
       return country;
    }
 
-   public static void setRecentCountry(String country)
+   public static void setRecentServerCountry(String country)
    {
       Preferences nordVpnRecentServer = Preferences.userRoot().node("com/mr/apps/JNordVpnManager");
       nordVpnRecentServer.put("RecentServer.Country", country);
@@ -276,7 +277,7 @@ public class UtilPrefs
 
    public static int getRecentServerRegion()
    {
-      Preferences settingsRecentServerRegion = Preferences.userRoot().node("com/mr/apps/JNordVpnManager/Settings");
+      Preferences settingsRecentServerRegion = Preferences.userRoot().node("com/mr/apps/JNordVpnManager");
       int recentServerRegion = settingsRecentServerRegion.getInt("RecentServer.Region", DEFAULT_PREF_RECENTSERVER_REGION);
 
       return recentServerRegion;
@@ -284,7 +285,7 @@ public class UtilPrefs
 
    public static void setRecentServerRegion(int recentServerRegion)
    {
-      Preferences settingsRecentServerRegion = Preferences.userRoot().node("com/mr/apps/JNordVpnManager/Settings");
+      Preferences settingsRecentServerRegion = Preferences.userRoot().node("com/mr/apps/JNordVpnManager");
       settingsRecentServerRegion.putInt("RecentServer.Region", recentServerRegion);
 
       return;
@@ -292,7 +293,7 @@ public class UtilPrefs
 
    public static int getRecentServerGroup()
    {
-      Preferences settingsRecentServerGroup = Preferences.userRoot().node("com/mr/apps/JNordVpnManager/Settings");
+      Preferences settingsRecentServerGroup = Preferences.userRoot().node("com/mr/apps/JNordVpnManager");
       int recentServerGroup = settingsRecentServerGroup.getInt("RecentServer.Group", DEFAULT_PREF_RECENTSERVER_GROUP);
 
       return recentServerGroup;
@@ -300,7 +301,7 @@ public class UtilPrefs
 
    public static void setRecentServerGroup(int recentServerGroup)
    {
-      Preferences settingsRecentServerGroup = Preferences.userRoot().node("com/mr/apps/JNordVpnManager/Settings");
+      Preferences settingsRecentServerGroup = Preferences.userRoot().node("com/mr/apps/JNordVpnManager");
       settingsRecentServerGroup.putInt("RecentServer.Group", recentServerGroup);
 
       return;
@@ -522,8 +523,8 @@ public class UtilPrefs
    {
       HashMap <String,String> hm = new HashMap <String,String>();
       
-      hm.put(RECENTSERVER_CITY, getRecentCity());
-      hm.put(RECENTSERVER_COUNTRY, getRecentCountry());
+      hm.put(RECENTSERVER_CITY, getRecentServerCity());
+      hm.put(RECENTSERVER_COUNTRY, getRecentServerCountry());
 //      hm.put(RECENTSERVER_REGION, StringFormat.int2String(getRecentServerRegion(), "#"));
 //      hm.put(RECENTSERVER_GROUP, StringFormat.int2String(getRecentServerGroup(), "#"));
       hm.put(RECENTSERVER_LIST, getRecentServerList());
@@ -568,14 +569,13 @@ public class UtilPrefs
       setServerListData(hm.get(SERVERLIST_DATA));
       setServerListTimestamp(hm.get(SERVERLIST_TIMESTAMP));
       setServerListAutoUpdate(Integer.valueOf(hm.get(SERVERLIST_AUTOUPDATE)));
-      setRecentCity(hm.get(RECENTSERVER_CITY));
-      setRecentCountry(hm.get(RECENTSERVER_COUNTRY));
+      setRecentServerCity(hm.get(RECENTSERVER_CITY));
+      setRecentServerCountry(hm.get(RECENTSERVER_COUNTRY));
 //      setRecentServerRegion(Integer.valueOf(hm.get(RECENTSERVER_REGION)));
 //      setRecentServerGroup(Integer.valueOf(hm.get(RECENTSERVER_GROUP)));
 //      setCompactMode(Integer.valueOf(hm.get(COMPACTMODE)));
       setAutoConnectMode(Integer.valueOf(hm.get(AUTOCONNECTMODE)));
       setAutoDisConnectMode(Integer.valueOf(hm.get(AUTODISCONNECTMODE)));
-      setRecentServerList(hm.get(RECENTSERVER_LIST));
       setRecentServerListLength(Integer.valueOf(hm.get(RECENTSERVER_LIST_LENGTH)));
       setTraceDebug(Integer.valueOf(hm.get(LOGFILE_TRACEDEBUG)));
       setTraceInit(Integer.valueOf(hm.get(LOGFILE_TRACEINIT)));
@@ -585,6 +585,15 @@ public class UtilPrefs
       setCommandTimeout(Integer.valueOf(hm.get(COMMAND_TIMEOUT)));
       setConsoleActive(Integer.valueOf(hm.get(CONSOLE_ACTIVE)));
       setMessageAutoclose(Integer.valueOf(hm.get(MESSAGE_AUTOCLOSE)));
+
+      // GUI Updates
+      String sCurrentList = getRecentServerList();
+      String sNewList = hm.get(RECENTSERVER_LIST);
+      if (false == sCurrentList.equals(sNewList))
+      {
+         setRecentServerList(sNewList);
+         GuiMenuBar.addToMenuRecentServerListItems(null);
+      }
    }
 
    /**
@@ -597,8 +606,8 @@ public class UtilPrefs
       setServerListAutoUpdate(DEFAULT_PREF_SERVERLIST_AUTOUPDATE);
       setServerListData(DEFAULT_PREF_SERVERLIST_DATA);
       setServerListTimestamp(DEFAULT_PREF_SERVERLIST_TIMESTAMP);
-      setRecentCity(DEFAULT_PREF_RECENTSERVER_CITY);
-      setRecentCountry(DEFAULT_PREF_RECENTSERVER_COUNTRY);
+      setRecentServerCity(DEFAULT_PREF_RECENTSERVER_CITY);
+      setRecentServerCountry(DEFAULT_PREF_RECENTSERVER_COUNTRY);
       setRecentServerRegion(DEFAULT_PREF_RECENTSERVER_REGION);
       setRecentServerGroup(DEFAULT_PREF_RECENTSERVER_GROUP);
       setCompactMode(DEFAULT_PREF_SETTINGS_COMPACTMODE);

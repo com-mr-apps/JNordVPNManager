@@ -27,7 +27,7 @@ import org.geotools.swing.event.MapMouseEvent;
 import org.geotools.swing.tool.CursorTool;
 
 import com.mr.apps.JNordVpnManager.Starter;
-import com.mr.apps.JNordVpnManager.geotools.Location;
+import com.mr.apps.JNordVpnManager.geotools.CurrentLocation;
 import com.mr.apps.JNordVpnManager.geotools.UtilMapGeneration;
 import com.mr.apps.JNordVpnManager.gui.components.JResizedIcon;
 import com.mr.apps.JNordVpnManager.gui.components.JResizedIcon.IconSize;
@@ -85,7 +85,7 @@ public class GuiMapArea
             public void onMouseClicked(MapMouseEvent e)
             {
                Point2D actPos = ((MapMouseEvent) e).getWorldPos();
-               Location loc = UtilMapGeneration.getPickedServer(actPos);
+               CurrentLocation loc = new CurrentLocation(UtilMapGeneration.getPickedServer(actPos));
                if (e.getButton() == MouseEvent.BUTTON1)
                {
                   if (null != loc)

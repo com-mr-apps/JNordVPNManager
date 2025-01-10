@@ -172,7 +172,8 @@ public class JServerTreePanel extends JPanel implements TreeSelectionListener
             if ((newIndex == idxObfuscatedGroup) && (!bObfuscate))
             {
                // require to change setting 'obfuscate enabled' (only available for technology OPENVPN!)
-               JModalDialog dlg = JModalDialog.JOptionDialog("Obfuscated Servers", "Setting 'Obfuscate' is disabled. To connect to VPN servers with obfuscation,\nit must be activated in NordVPN settings and the protocol type must be OPENVPN.\n"
+               JModalDialog dlg = JModalDialog.JOptionDialog("Obfuscated Servers",
+                     "To connect to VPN servers with obfuscation, the Setting 'Obfuscate' must be enabled in NordVPN settings and the protocol type must be OPENVPN.\n"
                      + "\n Please choose the OPENVPN protocol to enable obfuscation, or choose Cancel.",
                      "OPENVPN TCP,OPENVPN UDP,Cancel");
                int rc = dlg.getResult();
@@ -373,9 +374,6 @@ public class JServerTreePanel extends JPanel implements TreeSelectionListener
          JServerTreePanel.activateTreeNode(loc);            
       }
 
-      // if settings changed we need to reconnect
-      NvpnSettingsData.reconnectIfRequired();
-
       m_lockUpdate = false;
    }
 
@@ -496,7 +494,7 @@ public class JServerTreePanel extends JPanel implements TreeSelectionListener
             {
                // OPENVNP / UDP / not Obfuscated
                iTechFilter = NvpnTechnologies.openvpn_udp;
-               if (!filterGroup.equals(NordVPNEnumGroups.legacy_obfuscated_servers))
+               if (filterGroup.equals(NordVPNEnumGroups.legacy_obfuscated_servers))
                {
                   // this should not happen!
                   Starter._m_logError.LoggingError(90500,
@@ -737,6 +735,13 @@ public class JServerTreePanel extends JPanel implements TreeSelectionListener
       }
    }
 
+   public void setTreeFilterGroup(NordVPNEnumGroups group)
+   {
+      if (NvpnGroups.getCurrentGroup().equals(group)) return;
+      int idxGroup = NvpnGroups.getFieldIndex(group, m_iaGroups, 0);
+      m_filterGroups.setSelectedIndex(idxGroup);
+   }
+
    @Override
    public void valueChanged(TreeSelectionEvent e)
    {
@@ -747,7 +752,7 @@ public class JServerTreePanel extends JPanel implements TreeSelectionListener
          JServerNode node = (JServerNode) m_tree.getLastSelectedPathComponent();
          if (node != m_tree.getModel().getRoot() && node != null)
          {
-            Location loc = ((JServerNode) node).getLocation();
+            CurrentLocation loc = new CurrentLocation(((JServerNode) node).getLocation());
             NvpnCallbacks.executeConnect(loc, "NordVPN Connect", "NordVPN Connect");
          }
       }

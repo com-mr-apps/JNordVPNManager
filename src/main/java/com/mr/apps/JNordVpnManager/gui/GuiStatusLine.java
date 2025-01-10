@@ -21,7 +21,9 @@ import com.mr.apps.JNordVpnManager.Starter;
 import com.mr.apps.JNordVpnManager.geotools.CurrentLocation;
 import com.mr.apps.JNordVpnManager.geotools.UtilLocations;
 import com.mr.apps.JNordVpnManager.gui.connectLine.JPauseSlider;
+import com.mr.apps.JNordVpnManager.gui.dialog.JModalDialog;
 import com.mr.apps.JNordVpnManager.nordvpn.NvpnGroups.NordVPNEnumGroups;
+import com.mr.apps.JNordVpnManager.nordvpn.NvpnCallbacks;
 import com.mr.apps.JNordVpnManager.nordvpn.NvpnSettingsData;
 import com.mr.apps.JNordVpnManager.nordvpn.NvpnStatusData;
 import com.mr.apps.JNordVpnManager.gui.components.JResizedIcon;
@@ -125,7 +127,6 @@ public class GuiStatusLine
 
          ret_loc = new CurrentLocation(UtilLocations.getLocation(statusData.getCity(), statusData.getCountry()));
          ret_loc.setConnected(true);
-         GuiMenuBar.addToMenuRecentServerListItems(ret_loc);
 
          NvpnSettingsData settingsData = Starter.getCurrentSettingsData();
          int iconId = 0;
@@ -139,7 +140,7 @@ public class GuiStatusLine
                   "The current server connection uses '" + statusData.getTechnology() + "' but settings are set to '" + settingsData.getTechnology(false) + "'.");
             sPrefix = "[Technology mismatch] ";
          }
-         if (true == statusData.getTechnology().equals("OPENVPN"))
+         if (true == settingsData.getTechnology(false).equals("OPENVPN"))
          {
             // .. in case of OPENVPN
             if (false == settingsData.getProtocol(false).equals(statusData.getProtocol()))
@@ -160,8 +161,43 @@ public class GuiStatusLine
                      "The current server does not support obfuscation. Please manually reconnect to a server that supports obfuscation.");
                sPrefix = "[No obfuscation] ";
             }
+            else if (true == NvpnSettingsData.reconnectRequired())
+            {
+               // reconnect required - settings changed
+               iconId = 1;
+               Starter._m_logError.LoggingError(10905,
+                     "NordVPN Settings changed",
+                     "NordVPN Settings were changed which need a reconnect. Please manually reconnect to activate the new settings.");
+               sPrefix = "[Changed Settings] ";
+            }
          }
-         updateStatusLine(iconId, statusData.getStatusLineMessage(sPrefix));
+
+         if (iconId == 1)
+         {
+            JModalDialog dlg = JModalDialog.JOptionDialog("Reconnect Required",
+                  "To establish the VPN connection with the changed settings, a reconnect or a manual server change is required.\n"
+                + "Do you want to reconnect now (may fail if the server does not support the changed settings)?",
+                  "Reconnect,Cancel");
+            int rc = dlg.getResult();
+            if (rc == 0)
+            {
+               // Reconnect
+               if (false == NvpnCallbacks.executeConnect(ret_loc, "NordVPN Reconnect", "NordVPN Reconnect"))
+               {
+                  rc = 1; // error
+               }
+            }
+            if (rc != 0)
+            {
+               // requires manual reconnect
+               updateStatusLine(iconId, statusData.getStatusLineMessage(sPrefix));
+            }
+         }
+         else
+         {
+            // connected
+            updateStatusLine(0, statusData.getStatusLineMessage(""));
+         }
       }
       else
       {

@@ -76,7 +76,7 @@ public class JNordVpnSettingsDialog extends JDialog implements ActionListener
       JPanel headerPanel = new JPanel();
       headerPanel.setLayout(new FlowLayout(FlowLayout.CENTER));
 
-      JButton jbSave = new JButton("Save UserPrefs");
+      JButton jbSave = new JButton("Save User Defaults");
       jbSave.setToolTipText("Save current shown NordVPN Settings to local User Preferences.");
       jbSave.addActionListener(new ActionListener()
       {
@@ -91,7 +91,7 @@ public class JNordVpnSettingsDialog extends JDialog implements ActionListener
       });
       headerPanel.add(jbSave);
 
-      JButton jbLoad = new JButton("Load UserPrefs");
+      JButton jbLoad = new JButton("Load User Defaults");
       jbLoad.setToolTipText("Load current shown NordVPN Settings from local User Preferences.");
       jbLoad.addActionListener(new ActionListener()
       {
@@ -103,7 +103,7 @@ public class JNordVpnSettingsDialog extends JDialog implements ActionListener
             JModalDialog.showMessage("Load", "NordVPN Settings successfully loaded from User Preferences.");
           }
       });
-      headerPanel.add(jbSave);
+      headerPanel.add(jbLoad);
 
       JButton jbImport = new JButton("Import");
       jbImport.setToolTipText("Import NordVPN Settings from a file.");

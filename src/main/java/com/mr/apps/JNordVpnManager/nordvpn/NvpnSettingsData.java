@@ -14,8 +14,6 @@ import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 import com.mr.apps.JNordVpnManager.Starter;
-import com.mr.apps.JNordVpnManager.geotools.CurrentLocation;
-import com.mr.apps.JNordVpnManager.gui.GuiStatusLine;
 import com.mr.apps.JNordVpnManager.gui.dialog.JModalDialog;
 import com.mr.apps.JNordVpnManager.gui.settings.JNordVpnSettingsDialog;
 import com.mr.apps.JNordVpnManager.gui.settings.JSettingsPanelField;
@@ -769,14 +767,9 @@ public class NvpnSettingsData
             {
                m_obfuscate = data;
                String msg = NvpnCommands.obfuscateSettings(StringFormat.string2boolean(data));
-               if (UtilSystem.isLastError())
+               if (0 == UtilSystem.showResultDialog("NordVPN Set Obfuscate", msg, true))
                {
-                  msg = UtilSystem.getLastError();
-                  JModalDialog.showError("NordVPN Set Obfuscate", msg);
-               }
-               else
-               {
-                  JModalDialog.showMessage("NordVPN Set Obfuscate", msg);
+                  // ok
                   m_requiresReconnect = true;
                   return true;
                }
@@ -852,16 +845,9 @@ public class NvpnSettingsData
             // call set command
             m_technology = data;
             String msg = NvpnCommands.technologySettings(data);
-            if (UtilSystem.isLastError())
+            if (0 == UtilSystem.showResultDialog("NordVPN Set Technology", msg, true))
             {
-               msg = UtilSystem.getLastError();
-               JModalDialog.showError("NordVPN Set Technology", msg);
-            }
-            else
-            {
-               JModalDialog.showMessage("NordVPN Set Technology", msg);
-
-               // we need to re-read the settings
+               // ok -> we need to re-read the settings
                getNordVPNSettings();
                m_requiresReconnect = true;
                return true;
@@ -1062,14 +1048,8 @@ public class NvpnSettingsData
             // call set command
             m_protocol = data;
             String msg = NvpnCommands.protocolSettings(data);
-            if (UtilSystem.isLastError())
+            if (0 == UtilSystem.showResultDialog("NordVPN Set Protocol", msg, true))
             {
-               msg = UtilSystem.getLastError();
-               JModalDialog.showError("NordVPN Set Protocol", msg);
-            }
-            else
-            {
-               JModalDialog.showMessage("NordVPN Set Protocol", msg);
                m_requiresReconnect = true;
                return true;
             }
@@ -1183,23 +1163,22 @@ public class NvpnSettingsData
       getNordVPNSettings();
    }
 
-   public static void reconnectIfRequired()
+   public static boolean reconnectRequired()
    {
       if (true == m_requiresReconnect)
       {
          m_requiresReconnect = false;
-         GuiStatusLine.updateStatusLine(1, null); // set the Icon to warning(pause)
-         JModalDialog dlg = JModalDialog.JOptionDialog("Reconnect Required", "To establish the VPN connection with the changed settings, a reconnect or a manual server change is required.\n"
-               + "Do you want to reconnect now (may fail if the server does not support the changed settings)?",
-               "Reconnect,Cancel");
-         int rc = dlg.getResult();
-         if (rc == 0)
-         {
-            // Reconnect
-            CurrentLocation loc = Starter.getCurrentServer();
-            NvpnCallbacks.executeConnect(loc, "NordVPN Reconnect", "NordVPN Reconnect");
-         }
+         return true;
       }
+      else
+      {
+         return false;
+      }
+   }
+
+   public static void resetRequiresReconnect()
+   {
+      m_requiresReconnect = false;      
    }
 
    /**

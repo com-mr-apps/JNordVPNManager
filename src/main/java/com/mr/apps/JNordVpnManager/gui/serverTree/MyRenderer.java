@@ -39,11 +39,13 @@ public class MyRenderer extends DefaultTreeCellRenderer
       {
          // server (city)
          this.setForeground(Color.BLUE);
+         this.setBackground(null);
          this.setIcon(m_serverImage);
       }
       else if (value instanceof JCountryNode)
       {
          // country
+         this.setForeground(Color.BLACK);
          this.setBackground(null);
          this.setIcon(((JCountryNode)value).getFlag());
       }
@@ -51,6 +53,7 @@ public class MyRenderer extends DefaultTreeCellRenderer
       if (sel)
       {
          // selected server
+         this.setForeground(Color.BLUE);
          this.setBackground(Color.ORANGE);
          this.setBorder(new LineBorder(Color.GREEN));
       }
