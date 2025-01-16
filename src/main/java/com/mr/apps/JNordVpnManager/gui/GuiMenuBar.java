@@ -10,15 +10,23 @@ package com.mr.apps.JNordVpnManager.gui;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.Vector;
 
+import javax.swing.Box;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
+import javax.swing.event.MenuEvent;
+import javax.swing.event.MenuListener;
+
 import com.mr.apps.JNordVpnManager.Starter;
 import com.mr.apps.JNordVpnManager.geotools.CurrentLocation;
 import com.mr.apps.JNordVpnManager.geotools.Location;
 import com.mr.apps.JNordVpnManager.geotools.UtilLocations;
+import com.mr.apps.JNordVpnManager.gui.components.JResizedIcon;
+import com.mr.apps.JNordVpnManager.gui.components.JResizedIcon.IconSize;
 import com.mr.apps.JNordVpnManager.gui.dialog.JModalDialog;
 import com.mr.apps.JNordVpnManager.gui.dialog.JSystemInfoDialog;
 import com.mr.apps.JNordVpnManager.gui.dialog.JWhatsNewDialog;
@@ -243,8 +251,8 @@ public class GuiMenuBar
       {
          public void actionPerformed(ActionEvent e)
          {
-            JSplashScreen splashScreen = new JSplashScreen();
-            splashScreen.show();
+            JSplashScreen welcomeScreen = new JSplashScreen();
+            welcomeScreen.setVisible(true);
          }
       });
       infoMenu.add(welcomeMenu);
@@ -283,6 +291,39 @@ public class GuiMenuBar
          }
       });
       infoMenu.add(infoMenuItem);
+
+      menuBar.add(Box.createHorizontalGlue());
+
+      JMenu sponsorMenu = new JMenu("");
+      sponsorMenu.setIcon(JResizedIcon.getIcon("mrLogoGitHub.png", IconSize.MEDIUM));
+      sponsorMenu.addMenuListener(new MenuListener()
+      {
+         @Override
+         public void menuCanceled(MenuEvent arg0)
+         {
+         }
+
+         @Override
+         public void menuDeselected(MenuEvent arg0)
+         {
+         }
+
+         @Override
+         public void menuSelected(MenuEvent arg0)
+         {
+            try
+            {
+               UtilSystem.openWebpage(new URI("https://github.com/sponsors/com-mr-apps"));
+            }
+            catch (URISyntaxException e)
+            {
+               Starter._m_logError.LoggingExceptionAbend(10903, e);
+            }
+            menuBar.setSelected(null);
+         }
+      });
+      menuBar.add(sponsorMenu);
+
 
       return menuBar;
    }

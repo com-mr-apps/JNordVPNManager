@@ -21,12 +21,13 @@ import javax.swing.*;
 import com.mr.apps.JNordVpnManager.Starter;
 import com.mr.apps.JNordVpnManager.utils.UtilSystem;
 
-public class JSplashScreen
+@SuppressWarnings("serial")
+public class JSplashScreen extends JFrame
 {
    private static final String SPLASH_IMAGE = "resources/SplashScreen.png";
    private static final String BUYMEACOFFEE_IMAGE = "resources/bmc_qr.png";
    private static final String MRLOGO_IMAGE = "resources/mrLogo.png";
-   private static final String COPYRIGHT_STRING = "Copyright Ⓒ 2024 - written by com.mr.apps";
+   private static final String COPYRIGHT_STRING = "Copyright Ⓒ 2025 - written by com.mr.apps";
 
    protected static String _m_versionText; // set at program start and reused for "About" window
 
@@ -37,7 +38,7 @@ public class JSplashScreen
    protected JLabel       m_version;
 
    /**
-    * Initiates a new About Screen
+    * Initiates a new Welcome Screen
     */
    public JSplashScreen()
    {
@@ -52,7 +53,8 @@ public class JSplashScreen
     */
    public JSplashScreen(String status)
    {
-      m_splashFrame = new JFrame();
+      super();
+      m_splashFrame = this;
       m_splashFrame.setLayout(new BoxLayout(m_splashFrame.getContentPane(), BoxLayout.Y_AXIS));
 
       ImageIcon imageIcon = new ImageIcon(Starter.class.getResource(SPLASH_IMAGE));
@@ -142,7 +144,7 @@ public class JSplashScreen
          
          m_progressBar = new JProgressBar(0, 100);
          m_splashFrame.add(m_progressBar);
-         m_splashFrame.setPreferredSize(new Dimension(imageIcon.getIconWidth(), imageIcon.getIconHeight() + 40));
+         m_splashFrame.setPreferredSize(new Dimension(imageIcon.getIconWidth()+10, imageIcon.getIconHeight() + 40));
          Starter._m_logError.setCurStartTime();
       }
 
@@ -153,14 +155,6 @@ public class JSplashScreen
       Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
       Dimension panelSize = m_splashFrame.getSize();
       m_splashFrame.setLocation((screenSize.width / 2) - (panelSize.width / 2), (screenSize.height / 2) - (panelSize.height / 2));
-   }
-
-   /**
-    * Show the Splash/Welcome Screen
-    */
-   public void show()
-   {
-      m_splashFrame.setVisible(true);
    }
 
    /**

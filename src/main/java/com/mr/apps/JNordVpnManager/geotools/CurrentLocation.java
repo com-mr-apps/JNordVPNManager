@@ -41,8 +41,10 @@ public class CurrentLocation extends Location
       this.m_serverId = loc.m_serverId;
       this.m_cityName = loc.m_cityName;
       this.m_countryName = loc.m_countryName;
+      this.m_countryCode = loc.m_countryCode;
       this.m_longitude = loc.m_longitude;
       this.m_latitude = loc.m_latitude;
+      this.m_countryId = loc.m_countryId;
       this.m_cityId = loc.m_cityId;
       this.m_groups = loc.m_groups;
       this.m_technologies = loc.m_technologies;

@@ -16,7 +16,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.geom.Point2D;
-
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JOptionPane;
@@ -28,6 +27,7 @@ import org.geotools.swing.tool.CursorTool;
 
 import com.mr.apps.JNordVpnManager.Starter;
 import com.mr.apps.JNordVpnManager.geotools.CurrentLocation;
+import com.mr.apps.JNordVpnManager.geotools.Location;
 import com.mr.apps.JNordVpnManager.geotools.UtilMapGeneration;
 import com.mr.apps.JNordVpnManager.gui.components.JResizedIcon;
 import com.mr.apps.JNordVpnManager.gui.components.JResizedIcon.IconSize;
@@ -85,20 +85,29 @@ public class GuiMapArea
             public void onMouseClicked(MapMouseEvent e)
             {
                Point2D actPos = ((MapMouseEvent) e).getWorldPos();
-               CurrentLocation loc = new CurrentLocation(UtilMapGeneration.getPickedServer(actPos));
-               if (e.getButton() == MouseEvent.BUTTON1)
+               Location locSel = UtilMapGeneration.getPickedServer(actPos);
+               if (null != locSel)
                {
-                  if (null != loc)
+                  CurrentLocation loc = new CurrentLocation(locSel);
+                  if (e.getButton() == MouseEvent.BUTTON1)
                   {
-                     NvpnCallbacks.executeConnect(loc, "NordVPN Connect", "NordVPN Connect");
+                     if (null != loc)
+                     {
+                        NvpnCallbacks.executeConnect(loc, "NordVPN Connect", "NordVPN Connect");
+                     }
+                  }
+                  else if (e.getButton() == MouseEvent.BUTTON3)
+                  {
+                     String sFlagName = (loc.getCountryCode().isBlank()) ? null : loc.getFlagImageFileName();
+                     if (JModalDialog.showYesNoDialog("Connect to", sFlagName, loc.getCountryName() + " " + loc.getCityName()) == JOptionPane.YES_OPTION)
+                     {
+                        NvpnCallbacks.executeConnect(loc, "NordVPN Connect", "NordVPN Connect");
+                     }
                   }
                }
-               else if (e.getButton() == MouseEvent.BUTTON3)
+               else
                {
-                  if (JModalDialog.showYesNoDialog("Connect to", loc.getCountryName() + " " + loc.getCityName()) == JOptionPane.YES_OPTION)
-                 {
-                     NvpnCallbacks.executeConnect(loc, "NordVPN Connect", "NordVPN Connect");
-                 }
+                  // Ocean selected...
                }
             }
 /*

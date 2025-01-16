@@ -63,7 +63,8 @@ import com.mr.apps.JNordVpnManager.utils.String.StringFormat;
  * <p>
  * This is a user interface for the NordVPN software.
  */
-public class Starter
+@SuppressWarnings("serial")
+public class Starter extends JFrame 
 {
    public static final UtilLogErr  _m_logError                = new UtilLogErr(UtilPrefs.getLogfileName(), null, null);
    public static final String      APPLICATION_DATA_DIR       = "/.local/share/.JNordVpnManager"; // ..added to $HOME directory
@@ -74,6 +75,7 @@ public class Starter
    public static final int         STATUS_DISCONNECTED        = 2;
    public static final int         STATUS_LOGGEDOUT           = 4;
 
+   private static final String     APPLICATION_TITLE          = "JNordVPN Manager [Copyright Ⓒ 2025 - written by com.mr.apps]";
    private static final String     APPLICATION_ICON_IMAGE     = "resources/icons/icon.png";
 
    private static JFrame           m_mainFrame                = null;
@@ -85,15 +87,15 @@ public class Starter
    private static GuiConnectLine   m_connectLine              = null;
    private static JCustomConsole   m_consoleWindow            = null;
 
-   private static String           m_nordvpnVersion;
+   private static String           m_nordvpnVersion           = "n/a";
    private static Cursor           m_applicationDefaultCursor = null;
    private static int              m_cursorChangeAllowed      = 0;  // counter for nested calls - 0 is allow
    private static boolean          m_skipWindowGainedFocus    = false;
    private static boolean          m_forceWindowGainedFocus   = false;
    private static boolean          m_installMode              = false;
 
-   private static NvpnStatusData   m_nvpnStatusData           = null;
    private static CurrentLocation  m_currentServer            = null;
+   private static NvpnStatusData   m_nvpnStatusData           = null;
    private static NvpnSettingsData m_nvpnSettingsData         = null;
    private static NvpnAccountData  m_nvpnAccountData          = null;
 
@@ -111,6 +113,8 @@ public class Starter
 
    public Starter()
    {
+      super();
+
       // get the application implementation version from jar manifest file
       Package p = getClass().getPackage();
       String version = StringFormat.printString(p.getImplementationVersion(), "n/a", "n/a");
@@ -126,7 +130,7 @@ public class Starter
    public static void splashScreenInit()
    {
       m_splashScreen = new JSplashScreen("JNordVPN Manager loading...");
-      m_splashScreen.show();
+      m_splashScreen.setVisible(true);
    }
 
    /**
@@ -274,10 +278,10 @@ public class Starter
       _m_logError.LoggingInfo("GUI Version: " + version);
 
       // main frame
-      m_mainFrame = new JFrame();
+      m_mainFrame = this;
       m_mainFrame.setLayout(new BorderLayout());
       m_mainFrame.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
-      m_mainFrame.setTitle("JNordVPN Manager [Copyright Ⓒ 2024 - written by com.mr.apps]");
+      m_mainFrame.setTitle(APPLICATION_TITLE);
 
       // Close Window with "X"
       m_mainFrame.addWindowListener(new WindowAdapter()
@@ -589,6 +593,7 @@ public class Starter
       Dimension panelSize = m_mainFrame.getSize();
       m_mainFrame.setLocation((screenSize.width / 2) - (panelSize.width / 2), (screenSize.height / 2) - (panelSize.height / 2));
 
+//      m_mainFrame.setExtendedState(Frame.ICONIFIED);
       m_mainFrame.setVisible(true);
 
       m_splashScreen.setProgress(100); // ..and close the splash screen

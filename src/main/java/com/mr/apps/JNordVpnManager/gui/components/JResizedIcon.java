@@ -71,7 +71,7 @@ public class JResizedIcon extends ImageIcon
    /**
     * Constructor to generate a resized ImageIcon from an icon resource name.
     * <p>
-    * Icon resources are located in the <code>resource/icons</code> and should be of type <code>png</code>
+    * Icon resources are located in the <code>resources/</code> and should be of type <code>png</code>
     * 
     * @param iconName
     *           is the name of the icon resource
@@ -80,9 +80,24 @@ public class JResizedIcon extends ImageIcon
     * @param height
     *           is the height of the generated ImageIcon
     */
-   private JResizedIcon(String iconName, int width, int height)
+   private JResizedIcon(String iconName, int width, int height) throws NullPointerException
    {
-      this(Starter.class.getResource("resources/icons/" + iconName), width, height);
+      this(Starter.class.getResource("resources/" + iconName), width, height);
+   }
+
+   /**
+    * Constructor to generate a resized ImageIcon from an icon resource name.
+    * <p>
+    * Icon resources are located in the <code>resources</code> and should be of type <code>png</code>
+    * 
+    * @param iconName
+    *           is the name of the icon resource
+    * @param size
+    *           is the size [SMALL|MEDIUM|LARGE] of the icon
+    */
+   private JResizedIcon(String iconName, IconSize size) throws NullPointerException
+   {
+      this(Starter.class.getResource("resources/" + iconName), size.getSize(), size.getSize());
    }
 
    /**
@@ -145,6 +160,21 @@ public class JResizedIcon extends ImageIcon
    public static ImageIcon getIcon (String iconName, int width, int height)
    {
       new JResizedIcon(iconName, width, height);
+      return m_this;
+   }
+
+   /**
+    * Wrapper to get a customized resized ImageIcon by its name.
+    * 
+    * @param iconName
+    *           is the name of the icon resource
+    * @param size
+    *           is the size [SMALL|MEDIUM|LARGE] of the icon
+    * @return the resized ImageIcon
+    */
+   public static ImageIcon getIcon (String iconName, IconSize size)
+   {
+      new JResizedIcon(iconName, size);
       return m_this;
    }
 

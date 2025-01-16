@@ -651,6 +651,11 @@ public class JServerTreePanel extends JPanel implements TreeSelectionListener
                mySetSelectionPath(null);
             }
          }
+         else
+         {
+            // reset selection (no active server)
+            mySetSelectionPath(null);
+         }
          /* TODO: keep focus on current server (Preferences?)
          if (loc.isActive() && m_filterText.isBlank())
          {

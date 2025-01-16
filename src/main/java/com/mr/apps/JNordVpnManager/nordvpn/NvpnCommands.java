@@ -16,6 +16,7 @@ import com.mr.apps.JNordVpnManager.utils.UtilSystem;
 public class NvpnCommands {
 
    private static final String CMD_WHICH            = "which";
+   private static final String CMD_PING             = "ping";
    private static final String CMD_NORDVPN          = "nordvpn";
    private static final String ARG_VERSION          = "--version";
    private static final String ARG_DAEMON_VERSION   = "version";
@@ -60,7 +61,6 @@ public class NvpnCommands {
 
    /**
     * Check, if nordvpn is installed
-    * @return 
     * @return true, if nordvpn is installed, else false
     */
    public static boolean isInstalled()
@@ -68,6 +68,17 @@ public class NvpnCommands {
       String retVal = UtilSystem.runCommand(CMD_WHICH, CMD_NORDVPN);
       return !retVal.isEmpty();
    }
+
+   /**
+    * Check, if Internet is connected
+    * @return result of ping to nordvpn server
+    */
+   public static String isConnected()
+   {
+      String retVal = UtilSystem.runCommand(CMD_PING, "-c", "1", "api.nordvpn.com");
+      return retVal;
+   }
+
 
    /**
     * Get nordvpn status information
