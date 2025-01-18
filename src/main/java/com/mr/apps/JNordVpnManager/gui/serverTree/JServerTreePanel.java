@@ -42,7 +42,7 @@ import com.mr.apps.JNordVpnManager.gui.GuiMenuBar;
 import com.mr.apps.JNordVpnManager.gui.components.JResizedIcon;
 import com.mr.apps.JNordVpnManager.gui.components.JResizedIcon.IconSize;
 import com.mr.apps.JNordVpnManager.gui.components.JResizedIcon.IconUrls;
-import com.mr.apps.JNordVpnManager.gui.dialog.JAccelerateDialog;
+import com.mr.apps.JNordVpnManager.gui.dialog.JSupportersDialog;
 import com.mr.apps.JNordVpnManager.gui.dialog.JModalDialog;
 import com.mr.apps.JNordVpnManager.nordvpn.NvpnCallbacks;
 import com.mr.apps.JNordVpnManager.nordvpn.NvpnGroups;
@@ -70,6 +70,23 @@ public class JServerTreePanel extends JPanel implements TreeSelectionListener
    private static boolean             m_skipValueChangedEvent = false;
    private static boolean             m_skipGroupChangedEvent = false;
 
+   NordVPNEnumGroups[]                m_iaRegions             = {
+         NordVPNEnumGroups.all_regions,
+         NordVPNEnumGroups.The_Americas,
+         NordVPNEnumGroups.Africa_The_Middle_East_And_India,
+         NordVPNEnumGroups.Asia_Pacific,
+         NordVPNEnumGroups.Europe,
+         null
+   };
+   String                             m_saRegions[]           = {
+         "All Regions",
+         "America",
+         "Africa/Middle East/India",
+         "Asia/Pacific",
+         "Europe",
+         "[NordVPN Recommanded Servers]"
+   };
+
    private static NordVPNEnumGroups[] m_iaGroups              = {
          NordVPNEnumGroups.Standard_VPN_Servers,
          NordVPNEnumGroups.P2P,
@@ -78,7 +95,7 @@ public class JServerTreePanel extends JPanel implements TreeSelectionListener
          NordVPNEnumGroups.Dedicated_IP,
          NordVPNEnumGroups.legacy_obfuscated_servers
    };
-   private static String              saGroupsText[]          = {
+   private static String              m_saGroupsText[]        = {
          "Standard VPN Servers",
          "P2P",
          "Double VPN",
@@ -107,13 +124,11 @@ public class JServerTreePanel extends JPanel implements TreeSelectionListener
       JPanel filterPanelGroups = new JPanel();
       filterPanelGroups.setLayout(new BorderLayout());
 
-      NordVPNEnumGroups[] iaRegions = { NordVPNEnumGroups.all_regions, NordVPNEnumGroups.The_Americas, NordVPNEnumGroups.Africa_The_Middle_East_And_India, NordVPNEnumGroups.Asia_Pacific, NordVPNEnumGroups.Europe, null };
-      String saRegions[]            = { "All Regions",                 "America",                      "Africa/Middle East/India",                         "Asia/Pacific",                 "Europe",                 "[NordVPN Recommanded Servers]" };
-      m_filterRegions = new JComboBox<Object>(saRegions);
+      m_filterRegions = new JComboBox<Object>(m_saRegions);
 
-      int idxRegion = NvpnGroups.getFieldIndex(NvpnGroups.getCurrentRegion(), iaRegions, 0);
+      int idxRegion = NvpnGroups.getFieldIndex(NvpnGroups.getCurrentRegion(), m_iaRegions, 0);
       m_filterRegions.setSelectedIndex(idxRegion);
-      Starter._m_logError.TraceDebug("Init selected Region Filter with: " + iaRegions[idxRegion]);
+      Starter._m_logError.TraceDebug("Init selected Region Filter with: " + m_iaRegions[idxRegion]);
 
       m_filterRegions.addActionListener(new ActionListener()
       {
@@ -135,8 +150,12 @@ public class JServerTreePanel extends JPanel implements TreeSelectionListener
                   NvpnGroups.setCurrentRegion(NordVPNEnumGroups.Europe);
                   break;
                case 5 :
-                  JAccelerateDialog accelerateDialig = new JAccelerateDialog();
-                  accelerateDialig.show();
+                  new JSupportersDialog(m_saRegions[5]);
+                  // undo selection
+                  int idxCurrentRegion = NvpnGroups.getFieldIndex(NvpnGroups.getCurrentRegion(), m_iaRegions, 0); // list index of the current active region filter
+                  m_skipGroupChangedEvent = true;
+                  m_filterRegions.setSelectedIndex(idxCurrentRegion);
+                  m_skipGroupChangedEvent = false;
                   return;
                default /* 0 */:
                   NvpnGroups.setCurrentRegion(NordVPNEnumGroups.all_regions);
@@ -148,7 +167,7 @@ public class JServerTreePanel extends JPanel implements TreeSelectionListener
       filterPanelGroups.add(m_filterRegions, BorderLayout.PAGE_START);
 
       // Legacy Groups Filter
-      m_filterGroups = new JComboBox<Object>(saGroupsText);
+      m_filterGroups = new JComboBox<Object>(m_saGroupsText);
 
       int idxGroup = NvpnGroups.getFieldIndex(NvpnGroups.getCurrentGroup(), m_iaGroups, 0);
       m_filterGroups.setSelectedIndex(idxGroup);

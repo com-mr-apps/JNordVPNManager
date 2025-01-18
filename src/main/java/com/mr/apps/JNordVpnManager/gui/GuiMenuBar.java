@@ -10,8 +10,6 @@ package com.mr.apps.JNordVpnManager.gui;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.Vector;
 
 import javax.swing.Box;
@@ -31,6 +29,7 @@ import com.mr.apps.JNordVpnManager.gui.dialog.JModalDialog;
 import com.mr.apps.JNordVpnManager.gui.dialog.JSystemInfoDialog;
 import com.mr.apps.JNordVpnManager.gui.dialog.JWhatsNewDialog;
 import com.mr.apps.JNordVpnManager.gui.dialog.JSplashScreen;
+import com.mr.apps.JNordVpnManager.gui.dialog.JSupportersDialog;
 import com.mr.apps.JNordVpnManager.nordvpn.NvpnAccountData;
 import com.mr.apps.JNordVpnManager.nordvpn.NvpnCallbacks;
 import com.mr.apps.JNordVpnManager.nordvpn.NvpnCommands;
@@ -311,14 +310,7 @@ public class GuiMenuBar
          @Override
          public void menuSelected(MenuEvent arg0)
          {
-            try
-            {
-               UtilSystem.openWebpage(new URI("https://github.com/sponsors/com-mr-apps"));
-            }
-            catch (URISyntaxException e)
-            {
-               Starter._m_logError.LoggingExceptionAbend(10903, e);
-            }
+            new JSupportersDialog();
             menuBar.setSelected(null);
          }
       });
