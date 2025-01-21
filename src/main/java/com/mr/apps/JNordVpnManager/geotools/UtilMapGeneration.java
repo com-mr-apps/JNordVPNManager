@@ -161,6 +161,7 @@ public class UtilMapGeneration
    {
       if (null != m_currentServerMapLayer)
       {
+         if (null != loc && m_currentServerMapLayer.getTitle().equals(loc.getServerId())) return; // already current
          m_map.removeLayer(m_currentServerMapLayer);
          m_currentServerMapLayer = null;
       }
@@ -171,7 +172,7 @@ public class UtilMapGeneration
          m_map.addLayer(m_currentServerMapLayer);
          m_currentServerMapLayer.updated();
          zoomIn(loc);
-         Starter._m_logError.LoggingInfo("Changed VPN Server on map: " + loc.toString());
+         Starter._m_logError.TraceDebug("Changed VPN Server on map: " + loc.getServerId());
       }
    }
    
@@ -201,7 +202,7 @@ public class UtilMapGeneration
       // create the layer
       Style style = SLD.createPointStyle("Circle" /*"Star"*/, Color.GREEN, Color.RED, 0.5f, 20);
       UpdatableLayer layer = new UpdatableLayer(DataUtilities.collection(featureCollection), style);
-      layer.setTitle("Current Server");
+      layer.setTitle(loc.getServerId());
       return layer;
    }
 

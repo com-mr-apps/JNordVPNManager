@@ -160,13 +160,15 @@ public class NvpnGroups
 
    public String toString()
    {
-      if (null == m_groups) return "";
+      if (null == m_groups) return "[]";
       StringBuffer sb = new StringBuffer(); 
+      sb.append("[");
       for (NordVPNEnumGroups iGroup : m_groups)
       {
-         if (sb.length() > 0) sb.append(";");
+         if (sb.length() > 0) sb.append(",");
          sb.append(NordVPNEnumGroups.get(iGroup.getId()));
       }
+      sb.append("]");
       return sb.toString();
    }
 

@@ -30,12 +30,21 @@ public class CurrentLocation extends Location
    // Protocol selection in NordVPN Settings (TCP/UDP)
    private String m_vpnProtocol;
 
+   /**
+    * Constructor for Current Location
+    */
    public CurrentLocation()
    {
       super();
       setConnected(false);
    }
 
+   /**
+    * Constructor for Current Location
+    * 
+    * @param loc
+    *           is the location data
+    */
    public CurrentLocation(Location loc)
    {
       this.m_serverId = loc.m_serverId;
@@ -50,64 +59,129 @@ public class CurrentLocation extends Location
       this.m_technologies = loc.m_technologies;
 
       setConnected(false);
-      setFilterGroup(null); // set to null means return the current setting
+      setLegacyGroup(null); // set to null means return the current setting
       setVpnTechnology(null);
       setVpnProtocol(null);
    }
 
+   /**
+    * Get the connection status
+    * @return true if connected, else (disconnected) false
+    */
    public boolean isConnected()
    {
       return isConnected;
    }
 
+   /**
+    * Set the current connection status<p>
+    * In case of connected, set (if not already set) the connection information of group, technology and protocol.
+    * @param isConnected is true for connected, else false
+    */
    public void setConnected(boolean isConnected)
    {
       this.isConnected = isConnected;
-      // set the connection specific attributes
-      this.m_filterGroup = NvpnGroups.getCurrentGroup().getId();
-      this.m_vpnTechnology = Starter.getCurrentSettingsData().getTechnology(false);
-      this.m_vpnProtocol = Starter.getCurrentSettingsData().getProtocol(false);
+      if (true == isConnected)
+      {
+         // set the connection specific attributes
+         this.m_filterGroup = this.getLegacyGroup();
+         this.m_vpnTechnology = this.getVpnTechnology();
+         this.m_vpnProtocol = this.getVpnProtocol();
+      }
    }
 
-   public int getFilterGroup()
+   /**
+    * Get Server Legacy Group for server connection
+    * @return the legacy group of the location (for connection) - in case of null, return the current filter group
+    */
+   public int getLegacyGroup()
    {
       return (null == m_filterGroup) ? NvpnGroups.getCurrentGroup().getId() : m_filterGroup;
    }
 
-   public void setFilterGroup(Integer filterGroup)
+   /**
+    * Set Legacy Group for server connection
+    * 
+    * @param filterGroup
+    *           is the legacy (server tree filter) group
+    */
+   public void setLegacyGroup(Integer filterGroup)
    {
       this.m_filterGroup = filterGroup;
    }
 
+   /**
+    * Get VPN Technology for server connection
+    * @return the VPN Technology of the location (for connection) - in case of null, return the current nordvpn settings data
+    */
    public String getVpnTechnology()
    {
       return (null == m_vpnTechnology) ? Starter.getCurrentSettingsData().getTechnology(false) : m_vpnTechnology;
    }
 
+   /**
+    * Set VPN Technology for server connection
+    * 
+    * @param vpnTechnology
+    *           is the VPN Technology (NORDLYNX or OPENVPN)
+    */
    public void setVpnTechnology(String vpnTechnology)
    {
       this.m_vpnTechnology = vpnTechnology;
    }
 
+   /**
+    * Get VPN Protocol for server connection
+    * @return the VPN Protocol of the location (for connection) - in case of null, return the current nordvpn settings data
+    */
    public String getVpnProtocol()
    {
       return (null == m_vpnProtocol) ? Starter.getCurrentSettingsData().getProtocol(false) : m_vpnProtocol;
    }
 
+   /**
+    * Set VPN Protocol for server connection
+    * 
+    * @param vpnProtocol
+    *           is the VPN Protocol (TCP or UDP)
+    */
    public void setVpnProtocol(String vpnProtocol)
    {
       this.m_vpnProtocol = vpnProtocol;
    }
 
-   public String getToolTip()
+   /**
+    * Get Location Connection Data<p>
+    * Generates a string with required data to establish a connection in form:<br>
+    * countryName,Group,Technology,Protocol<br>
+    * Used e.g. to store information for recent servers list.
+    * @return a string with the connection data 
+    */
+   public String getLocationConnectionData()
    {
-       return m_serverId + " (" + NordVPNEnumGroups.get(getFilterGroup()) + ") [" + getVpnTechnology() + "/" + getVpnProtocol() + "]";
+      return m_countryName + "," + this.getLegacyGroup() + (",") + this.getVpnTechnology() + (",") + this.getVpnProtocol();
    }
 
+   /**
+    * Generate a ToolTip
+    * @return the ToolTip string
+    */
+   public String getToolTip()
+   {
+      return m_serverId + " (" + NordVPNEnumGroups.get(getLegacyGroup()) + ") [" + getVpnTechnology() + "/" + getVpnProtocol() + "]";
+   }
+
+   /**
+    * Check, if a location has the same connection data
+    * 
+    * @param loc
+    *           is another connection location
+    * @return true, if the connection data is equal
+    */
    public boolean isEqualConnection (CurrentLocation loc)
    {
       if (false == this.m_serverId.equals(loc.m_serverId)) return false;
-      if (this.getFilterGroup() != (loc.getFilterGroup())) return false;
+      if (this.getLegacyGroup() != (loc.getLegacyGroup())) return false;
       if (false == this.getVpnTechnology().equals(loc.getVpnTechnology())) return false;
       if (false == this.getVpnProtocol().equals(loc.getVpnProtocol())) return false;
       return true;
@@ -115,6 +189,6 @@ public class CurrentLocation extends Location
 
    public String toString()
    {
-       return super.toString() + " " + ((isConnected == true) ? "connected" : "disconnected") + "; Group=" + NordVPNEnumGroups.get(getFilterGroup()) + " (" + getFilterGroup() + "), Technology=" + getVpnTechnology() + "/" + getVpnProtocol();
+       return super.toString() + " " + ((isConnected == true) ? "connected" : "disconnected") + "; Group=" + NordVPNEnumGroups.get(getLegacyGroup()) + " (" + getLegacyGroup() + "), Technology=" + getVpnTechnology() + "/" + getVpnProtocol();
    }
 }

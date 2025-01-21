@@ -8,8 +8,8 @@
  */
 package com.mr.apps.JNordVpnManager.nordvpn;
 
-import com.mr.apps.JNordVpnManager.geotools.Location;
-import com.mr.apps.JNordVpnManager.geotools.UtilLocations;
+import com.mr.apps.JNordVpnManager.Starter;
+import com.mr.apps.JNordVpnManager.geotools.CurrentLocation;
 import com.mr.apps.JNordVpnManager.nordvpn.NvpnGroups.NordVPNEnumGroups;
 import com.mr.apps.JNordVpnManager.utils.UtilSystem;
 
@@ -441,20 +441,39 @@ public class NvpnCommands {
 
    /**
     * Connect to VPN server
+    * @param loc is the current location to connect to (optional)
     * @param country is the country to connect (optional)
     * @param city is the city to connect (optional)
     * @return the current connection status of nordvpn
     */
-   public static String connect(String country, String city)
+   public static String connect(CurrentLocation loc)
    {
       String status = null;
+      String country = "";
+      String city = "";
+
       NordVPNEnumGroups currentGroup = NvpnGroups.getCurrentGroup();
-      // NvpnSettingsData csd = Starter.getCurrentSettingsData();
-      boolean bObfuscate = currentGroup.equals(NordVPNEnumGroups.legacy_obfuscated_servers); // StringFormat.string2boolean(csd.getObfuscate(false));
-      
-      if (null == city || city.isBlank())
+      boolean bObfuscate = currentGroup.equals(NordVPNEnumGroups.legacy_obfuscated_servers);
+      if (null != loc)
       {
-         if (null == country || country.isBlank())
+         country = loc.getCountryNordVPN();
+         city = loc.getCityNordVPN();
+         currentGroup = NordVPNEnumGroups.get(loc.getLegacyGroup());
+         bObfuscate = (NordVPNEnumGroups.legacy_obfuscated_servers).equals(currentGroup);
+         
+         NvpnSettingsData csd = Starter.getCurrentSettingsData();
+         boolean rc = csd.checkForConnection(loc);
+         if (false == rc)
+         {
+            // Cancel - required settings changes refused
+            UtilSystem.setLastError("Cancelled connection to: " + loc.getServerId(), 1);
+            return status;
+         }
+      }
+
+      if (city.isBlank())
+      {
+         if (country.isBlank())
          {
             // Quick Connect with group - if Region is set, region group, else legacy group (both attributes in the same command are not valid)
             if (NvpnGroups.getCurrentRegion().equals(NvpnGroups.NordVPNEnumGroups.all_regions))
@@ -488,7 +507,7 @@ public class NvpnCommands {
       }
       else
       {
-         if (null == country || country.isBlank())
+         if (country.isBlank())
          {
             // with city only - add legacy group
             if (bObfuscate)
@@ -502,10 +521,9 @@ public class NvpnCommands {
          }
          else
          {
-            // with country and city
+            // with country and city (with valid loc)
             // In some cases (called from auto connect or recent list) we must check, if the current legacy group is valid for that server...
-            // if 'obfuscate' is set (only for OPENVPN), group attribute  is not allowed - in that case, the variable 'legacyGroup' is set to ""
-            Location loc = UtilLocations.getLocation(UtilLocations.getServerId(city, country));
+            // if 'obfuscate' is set (only for OPENVPN), group attribute is not allowed - in that case, the variable 'legacyGroup' is set to ""
             if (loc.hasGroup(currentGroup))
             {
                if (bObfuscate)
@@ -534,6 +552,16 @@ public class NvpnCommands {
             }
          }
       }
+      if (false == UtilSystem.isLastError())
+      {
+         NvpnSettingsData.resetRequiresReconnect(); // successfully connected with current settings
+
+         // ensure that after successful connection the current group (for JServerTree) is updated
+         NvpnGroups.setCurrentGroup(currentGroup);
+         Starter.setTreeFilterGroup();
+      }
+      Starter.updateCurrentServer();
+
       return status;
    }
 

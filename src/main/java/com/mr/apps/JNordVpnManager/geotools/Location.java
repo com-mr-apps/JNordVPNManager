@@ -255,7 +255,7 @@ public class Location
    {
       return Starter.class.getResource("resources/flags/" + this.getCountryCode() + ".png");
    }
-   
+
    public String toString()
    {
       return m_serverId + " [" + m_longitude + "," + m_latitude + "] (id=" + m_cityId + ") Groups=" + m_groups.toString() + " / Technologies=" + m_technologies.toString();

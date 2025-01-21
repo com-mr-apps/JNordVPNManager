@@ -32,6 +32,10 @@ import com.mr.apps.JNordVpnManager.gui.components.JResizedIcon.IconUrls;
 import com.mr.apps.JNordVpnManager.utils.UtilPrefs;
 import com.mr.apps.JNordVpnManager.utils.String.StringFormat;
 
+/**
+ * GUI Status Line<p>
+ * Show current connection status with additional current server information at the bottom of the GUI.
+ */
 public class GuiStatusLine
 {
    private static JLabel               m_statusIndicator      = null;
@@ -42,9 +46,13 @@ public class GuiStatusLine
    private ArrayList<ImageIcon>        m_collapseExpandImages = new ArrayList<>();
 
    private static String[]             m_compactModeToolTip   = {
-         "Switch to Compact view.", "Switch to Expanded view."
+         "Switch to Compact view.",
+         "Switch to Expanded view."
    };
 
+   /**
+    * Constructor for GUI Status Line
+    */
    public GuiStatusLine()
    {
       // Connected / Paused / Disconnected
@@ -102,12 +110,15 @@ public class GuiStatusLine
 
    /**
     * Update the connection status line.
+    * 
+    * @param statusData
+    *           is the current nordvpn status information
     * @return the current city/country location from the status command [in case of connected]
     */
    public CurrentLocation update(NvpnStatusData statusData)
    {
       CurrentLocation ret_loc = null;
-      Starter._m_logError.TraceDebug("### Launched Update Statusline...");
+      Starter._m_logError.TraceDebug("Update Statusline...");
 
       if (null == statusData.getStatus())
       {
@@ -222,7 +233,6 @@ public class GuiStatusLine
          }
       }
 
-      Starter._m_logError.TraceDebug("### ... Exit Update Statusline.");
       return ret_loc;
    }
    

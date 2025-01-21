@@ -50,7 +50,7 @@ public class GuiMenuBar
    // "Recent Server" menu
    private static JMenuItem               m_menuItemRecentServer         = null;
    private static JMenuItem[]             m_menuItemRecentServerMenuList = null;
-   private static Vector<CurrentLocation> m_recentServerIdList           = new Vector<CurrentLocation>();
+   private static Vector<CurrentLocation> m_recentServerIdList           = null;
 
    /**
     * Menu Bar Layout definition.
@@ -199,7 +199,7 @@ public class GuiMenuBar
       {
          public void actionPerformed(ActionEvent e)
          {
-            String msg = NvpnCommands.connect("", "");
+            String msg = NvpnCommands.connect(null);
             if (UtilSystem.isLastError())
             {
                // KO
@@ -209,7 +209,6 @@ public class GuiMenuBar
             else
             {
                // OK
-               Starter.updateCurrentServer();
                JModalDialog.showMessage("NordVPN Connect", msg);
             }
          }
@@ -389,6 +388,8 @@ public class GuiMenuBar
     */
    private static void initRecentServerIdsList()
    {
+      m_recentServerIdList = new Vector<CurrentLocation>();
+
       // get the recent Server list items from User Preferences
       String savedRecentServers = UtilPrefs.getRecentServerList();
       String[] saRecentServers = savedRecentServers.split(Location.SERVERID_LIST_SEPARATOR);
@@ -402,7 +403,7 @@ public class GuiMenuBar
             if (saParts.length == 4)
             {
                // get (optional) connection data from preferences 'server@country,group,technology,protocol' and add them to loc
-               loc.setFilterGroup(Integer.valueOf(saParts[1]));
+               loc.setLegacyGroup(Integer.valueOf(saParts[1]));
                loc.setVpnTechnology(saParts[2]);
                loc.setVpnProtocol(saParts[3]);
             }
@@ -444,7 +445,7 @@ public class GuiMenuBar
             if (recentServerIds.length() > 0) recentServerIds.append(Location.SERVERID_LIST_SEPARATOR);
             recentServerIds.append(loc.getServerId());
             recentServerIds.append(",");
-            recentServerIds.append(loc.getFilterGroup());
+            recentServerIds.append(loc.getLegacyGroup());
             recentServerIds.append(",");
             recentServerIds.append(loc.getVpnTechnology());
             recentServerIds.append(",");
@@ -481,7 +482,7 @@ public class GuiMenuBar
       // get and set additional (optional) connection data from location and set Group/Tech/Protocol
       Starter.getCurrentSettingsData().setTechnology(loc.getVpnTechnology(), false);
       Starter.getCurrentSettingsData().setProtocol(loc.getVpnProtocol(), false);
-      if (NordVPNEnumGroups.get(loc.getFilterGroup()).equals(NordVPNEnumGroups.legacy_obfuscated_servers))
+      if (NordVPNEnumGroups.get(loc.getLegacyGroup()).equals(NordVPNEnumGroups.legacy_obfuscated_servers))
       {
          Starter.getCurrentSettingsData().setObfuscate("enabled", false);
       }
@@ -489,7 +490,6 @@ public class GuiMenuBar
       {
          Starter.getCurrentSettingsData().setObfuscate("disabled", false);
       }
-      Starter.setTreeFilterGroup(NordVPNEnumGroups.get(loc.getFilterGroup()));
 
       NvpnCallbacks.executeConnect(loc, "NordVPN Connect", "NordVPN Connect");
    }
@@ -507,7 +507,7 @@ public class GuiMenuBar
       boolean foundAtFirstPos = false;
       if (null == loc)
       {
-         // init recent list from User Preferences
+         // initialize recent list from User Preferences
          initRecentServerIdsList();
       }
       else

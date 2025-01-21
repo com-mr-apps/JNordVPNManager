@@ -37,9 +37,7 @@ public class NvpnCallbacks
       {
          Starter._m_logError.LoggingInfo("Connect to Server: " + loc.toString());
 
-         String city = loc.getCityNordVPN();
-         String country = loc.getCountryNordVPN();
-         msg = NvpnCommands.connect(country, city);
+         msg = NvpnCommands.connect(loc);
          if (UtilSystem.isLastError())
          {
             // KO
@@ -68,10 +66,8 @@ public class NvpnCallbacks
          {
             // OK
             rc = true;
-            NvpnSettingsData.resetRequiresReconnect(); // successfully connected with current settings
-            Starter.updateCurrentServer();
             // overwrite possible "current" (null) values with the for this connection used ones
-            loc.setFilterGroup(loc.getFilterGroup());
+            loc.setLegacyGroup(loc.getLegacyGroup());
             loc.setVpnTechnology(loc.getVpnTechnology());
             loc.setVpnProtocol(loc.getVpnProtocol());
             // now we can add the location to the recent list

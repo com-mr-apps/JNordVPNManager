@@ -99,6 +99,8 @@ public class Starter extends JFrame
    private static NvpnSettingsData m_nvpnSettingsData         = null;
    private static NvpnAccountData  m_nvpnAccountData          = null;
 
+   private static boolean          m_skipFocusGainedForDebug  = false;
+
    /**
     * NordVPN GUI application.
     * 
@@ -107,6 +109,11 @@ public class Starter extends JFrame
    {
      splashScreenInit();
      consoleWindowInit();
+     if (System.getenv("COM_MR_APPS_DEBUG") != null)
+     {
+        // ..for debug
+        m_skipFocusGainedForDebug = true;
+     }
       _m_logError.LoggingInfo("JNordVPN Manager launched...");
      SwingUtilities.invokeLater(() -> new Starter());
    }
@@ -298,7 +305,7 @@ public class Starter extends JFrame
             if (e.getOppositeWindow()==null)
             {
                // gain focus -> update GUI with current data
-               if (!m_forceWindowGainedFocus && m_skipWindowGainedFocus)
+               if ((!m_forceWindowGainedFocus && m_skipWindowGainedFocus) || m_skipFocusGainedForDebug)
                {
                   // Flag is set from the internal message dialogs. On close [re-enter in main application] I don't need an update
                   m_skipWindowGainedFocus = false;
@@ -320,7 +327,7 @@ public class Starter extends JFrame
                      // update the status line, commands menu and world map current server layer
                      updateCurrentServer();
                      // update the server tree (and world map all servers layer)
-                     m_serverListPanel.updateFilterTreeCB();
+                     m_serverListPanel.updateFilterTreeCB(false);
 
                      Starter.setCursorCanChange(true);
                      Starter.resetWaitCursor();
@@ -517,7 +524,7 @@ public class Starter extends JFrame
             CurrentLocation loc = getCurrentServer();
             if (null != loc)
             {
-               m_splashScreen.setStatus("GUI Auto Connect to " + loc.getServerId());
+               m_splashScreen.setStatus("GUI Auto Connect to " + loc.getToolTip());
                NvpnCallbacks.executeConnect(loc, null, "JNordVPN Manager Auto Connect");
             }
          }
@@ -616,9 +623,19 @@ public class Starter extends JFrame
       if (null == m_currentServer)
       {
          String city = UtilPrefs.getRecentServerCity();
-         String country = UtilPrefs.getRecentServerCountry();
-         CurrentLocation loc = new CurrentLocation(UtilLocations.getLocation(city, country));
+         String country = UtilPrefs.getRecentServerCountry(); // countryName,group,technology,protocol
+         String[] saParts = country.split(",");
+         String countryName = (saParts.length == 4) ? saParts[0] : country;
+         CurrentLocation loc = new CurrentLocation(UtilLocations.getLocation(city, countryName));
+         if (saParts.length == 4)
+         {
+            // get (optional) connection data from preferences 'server@country,group,technology,protocol' and add them to loc
+            loc.setLegacyGroup(Integer.valueOf(saParts[1]));
+            loc.setVpnTechnology(saParts[2]);
+            loc.setVpnProtocol(saParts[3]);
+         }
          loc.setConnected(false);
+
          // return only a "real" location
          return (loc.getCityId() <= 0) ? null : loc;
       }
@@ -653,8 +670,8 @@ public class Starter extends JFrame
          _m_logError.TraceDebug("Update Current active Server: " + m_currentServer.toString());
 
          // Update preferences with current connected server
-         UtilPrefs.setRecentServerCountry(m_currentServer.getCountryName());
          UtilPrefs.setRecentServerCity(m_currentServer.getCityName());
+         UtilPrefs.setRecentServerCountry(m_currentServer.getLocationConnectionData());
 
          // Update the current server map layer and zoom there
          UtilMapGeneration.changeCurrentServerMapLayer(m_currentServer);
@@ -719,9 +736,12 @@ public class Starter extends JFrame
       }
    }
 
-   public static void setTreeFilterGroup(NordVPNEnumGroups group)
+   public static void setTreeFilterGroup()
    {
-      m_serverListPanel.setTreeFilterGroup(group);
+      if (null != m_serverListPanel)
+      {
+         m_serverListPanel.setTreeFilterGroup();
+      }
    }
 
    public static void showAboutScreen()
@@ -741,16 +761,19 @@ public class Starter extends JFrame
 
    public static NvpnStatusData getCurrentStatusData()
    {
+      if (null == m_nvpnStatusData) m_nvpnStatusData = new NvpnStatusData(); 
       return m_nvpnStatusData;
    }
 
    public static NvpnSettingsData getCurrentSettingsData()
    {
+      if (null == m_nvpnSettingsData) m_nvpnSettingsData = new NvpnSettingsData(); 
       return m_nvpnSettingsData;
    }
 
    public static NvpnAccountData getCurrentAccountData()
    {
+      if (null == m_nvpnAccountData) m_nvpnAccountData = new NvpnAccountData(); 
       return m_nvpnAccountData;
    }
 

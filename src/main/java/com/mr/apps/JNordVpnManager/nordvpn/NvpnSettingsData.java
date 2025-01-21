@@ -14,9 +14,11 @@ import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 import com.mr.apps.JNordVpnManager.Starter;
+import com.mr.apps.JNordVpnManager.geotools.CurrentLocation;
 import com.mr.apps.JNordVpnManager.gui.dialog.JModalDialog;
 import com.mr.apps.JNordVpnManager.gui.settings.JNordVpnSettingsDialog;
 import com.mr.apps.JNordVpnManager.gui.settings.JSettingsPanelField;
+import com.mr.apps.JNordVpnManager.nordvpn.NvpnGroups.NordVPNEnumGroups;
 import com.mr.apps.JNordVpnManager.utils.UtilSystem;
 import com.mr.apps.JNordVpnManager.utils.String.StringFormat;
 
@@ -617,7 +619,7 @@ public class NvpnSettingsData
             m_routing = data;
             NvpnCommands.routingSettings(StringFormat.string2boolean(data));
             if (UtilSystem.getLastExitCode() == 0) return true;
-            m_requiresReconnect = true;
+            setRequiresReconnect();
          }
       }
 
@@ -770,7 +772,7 @@ public class NvpnSettingsData
                if (0 == UtilSystem.showResultDialog("NordVPN Set Obfuscate", msg, true))
                {
                   // ok
-                  m_requiresReconnect = true;
+                  setRequiresReconnect();
                   return true;
                }
             }
@@ -849,7 +851,7 @@ public class NvpnSettingsData
             {
                // ok -> we need to re-read the settings
                getNordVPNSettings();
-               m_requiresReconnect = true;
+               setRequiresReconnect();
                return true;
             }
          }
@@ -1050,7 +1052,7 @@ public class NvpnSettingsData
             String msg = NvpnCommands.protocolSettings(data);
             if (0 == UtilSystem.showResultDialog("NordVPN Set Protocol", msg, true))
             {
-               m_requiresReconnect = true;
+               setRequiresReconnect();
                return true;
             }
          }
@@ -1176,6 +1178,12 @@ public class NvpnSettingsData
       }
    }
 
+   public static void setRequiresReconnect()
+   {
+      Starter._m_logError.TraceDebug("Set RequiresReconnect Flag.");
+      m_requiresReconnect = true;      
+   }
+
    public static void resetRequiresReconnect()
    {
       if (true == m_requiresReconnect)
@@ -1183,6 +1191,66 @@ public class NvpnSettingsData
          Starter._m_logError.TraceDebug("Reset RequiresReconnect Flag.");
          m_requiresReconnect = false;      
       }
+   }
+
+   public boolean checkForConnection(CurrentLocation loc)
+   {
+      boolean bObfuscate = StringFormat.string2boolean(m_obfuscate);
+      NordVPNEnumGroups currentGroup = NordVPNEnumGroups.get(loc.getLegacyGroup());
+      Starter._m_logError.TraceDebug("Check Settings for connection: Setting Obfuscate='" + bObfuscate + "' / Current Group='" + currentGroup.name() + "'.");
+
+      if ((true == currentGroup.equals(NordVPNEnumGroups.legacy_obfuscated_servers)) && (!bObfuscate))
+      {
+         // require to change setting 'obfuscate enabled' (only available for technology OPENVPN!)
+         JModalDialog dlg = JModalDialog.JOptionDialog("Obfuscated Servers",
+               "To connect to VPN servers with obfuscation, the Setting 'Obfuscate' must be enabled in NordVPN settings and the technology must be OPENVPN.\n"
+               + "\n Please choose the OPENVPN protocol to enable obfuscation, or choose Cancel.",
+               "OPENVPN TCP,OPENVPN UDP,Cancel");
+         int rc = dlg.getResult();
+         if (rc == 2)
+         {
+            // cancel
+            return false;
+         }
+         else
+         {
+            this.setTechnology("OPENVPN", false);
+            if (rc == 0)
+            {
+               this.setProtocol("TCP", false);
+            }
+            else // rc == 1
+            {
+               this.setProtocol("UDP", false);
+            }
+            this.setObfuscate("Enable", false);
+         }
+      }
+      else if ((false == currentGroup.equals(NordVPNEnumGroups.legacy_obfuscated_servers)) && (bObfuscate))
+      {
+         // require to change setting 'obfuscate disabled'
+         JModalDialog dlg = JModalDialog.JOptionDialog("Change Legacy Group",
+               "Setting 'Obfuscate' is currently enabled. To connect to VPN servers with another legacy group, obfuscation must be deactivated.\n"
+               + "\n Please choose disable obfuscation, change technology to 'NORDLYNX' or choose Cancel.",
+               "Disable Obfuscation,NORDLYNX,Cancel");
+         int rc = dlg.getResult();
+         if (rc == 0)
+         {
+            this.setObfuscate("Disabled", false);
+         }
+         else if (rc == 1)
+         {
+            this.setTechnology("NORDLYNX", false);
+         }
+         else // rc = 2
+         {
+            // Cancel
+            return false;
+         }
+      }
+
+      // ok
+      return true;
    }
 
    /**
