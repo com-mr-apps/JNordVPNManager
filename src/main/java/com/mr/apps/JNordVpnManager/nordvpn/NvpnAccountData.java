@@ -58,7 +58,10 @@ public class NvpnAccountData
             // failed
             setFailed(true);
             JModalDialog.showError("NordVPN Account", "'nordvpn account' information cannot be parsed.");
+            return;
          }
+
+         // Check expiration date
       }
    }
 

@@ -453,6 +453,7 @@ public class NvpnCommands {
       String city = "";
 
       NordVPNEnumGroups currentGroup = NvpnGroups.getCurrentGroup();
+
       boolean bObfuscate = currentGroup.equals(NordVPNEnumGroups.legacy_obfuscated_servers);
       if (null != loc)
       {
@@ -559,8 +560,16 @@ public class NvpnCommands {
          // ensure that after successful connection the current group (for JServerTree) is updated
          NvpnGroups.setCurrentGroup(currentGroup);
          Starter.setTreeFilterGroup();
+         Starter.updateCurrentServer();
       }
-      Starter.updateCurrentServer();
+      else
+      {
+         // Workaround, because updateCurrentServer() overwrites error message (required in calling program!)
+         String sLastError = UtilSystem.getLastError();
+         int iLastError = UtilSystem.getLastExitCode();
+         Starter.updateCurrentServer();
+         UtilSystem.setLastError(sLastError, iLastError);
+      }
 
       return status;
    }

@@ -35,6 +35,7 @@ import com.mr.apps.JNordVpnManager.Starter;
 import com.mr.apps.JNordVpnManager.gui.components.JResizedIcon;
 import com.mr.apps.JNordVpnManager.gui.components.JResizedIcon.IconSize;
 import com.mr.apps.JNordVpnManager.utils.UtilPrefs;
+import com.mr.apps.JNordVpnManager.utils.String.Wrap;
 
 /**
  * Utility class for modal dialog panels.<p>
@@ -122,7 +123,7 @@ public class JModalDialog extends JDialog implements ActionListener
             new Font("SansSerif",Font.BOLD, 12),
             Color.BLACK));
       messageText.setFont(messageText.getFont().deriveFont(Font.ITALIC));
-      messageText.setText(msg);
+      messageText.setText(Wrap.wrap(msg, 200, null, true, null, "   "));
       messageText.setEditable(false);
       m_messagePanel.add(messageText, BorderLayout.CENTER);
 
@@ -159,7 +160,7 @@ public class JModalDialog extends JDialog implements ActionListener
       final Point mousePos = owner.getMousePosition();
       if (mousePos != null)
       {
-        setLocation(parloc.x + mousePos.x- this.getWidth()/2, parloc.y + mousePos.y - this.getHeight() + 20);
+        setLocation(Math.max(0, parloc.x + mousePos.x - this.getWidth()/2), parloc.y + mousePos.y - this.getHeight() + 20);
       }
       else
       {

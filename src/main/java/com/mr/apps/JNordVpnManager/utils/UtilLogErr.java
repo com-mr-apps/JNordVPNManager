@@ -823,7 +823,7 @@ public class UtilLogErr
             if (m_bConsoleOutput == true)
             {
                // additional output to the console
-               System.out.println(formatToHtml(sText));
+               System.out.print(formatToHtml(sText));
             }
             if (m_bwLogfileIsActive && m_bwLogfile != null)
             {
@@ -862,60 +862,55 @@ public class UtilLogErr
       if (sText.startsWith("[Info]"))
       {
          iStartMsg = 7;
-         sPrefix = "<font color=\"black\">";
-         sPostfix = "</font>";
+         sPrefix = "<p class=\"inf\">";
+         sPostfix = "</p>";
       }
       else if (sText.startsWith("[Warning]"))
       {
          iStartMsg = 10;
-         sPrefix = "<font color=\"orange\">";
-         sPostfix = "</font>";
+         sPrefix = "<p class=\"er3\">";
+         sPostfix = "</p>";
       }
       else if (sText.startsWith("[Error]"))
       {
          iStartMsg = 8;
-         sPrefix = "<font color=\"red\">";
-         sPostfix = "</font>";         
+         sPrefix = "<p class=\"er4\">";
+        sPostfix = "</p>";         
       }
       else if (sText.startsWith("[Fatal Error]"))
       {
          iStartMsg = 14;
-         sPrefix = "<font color=\"#ff334f\"><b>";
-         sPostfix = "</b></font>";
+         sPrefix = "<p class=\"er5\">";
+         sPostfix = "</p>";
       }
       else if (sText.startsWith("[Trace::ini]"))
       {
          iStartMsg = 13;
-         sPrefix = "<font color=\"#28b463\">";
-         sPostfix = "</font>";         
+         sPrefix = "<p class=\"ini\">";
+         sPostfix = "</p>";
       }
       else if (sText.startsWith("[Trace::cmd]"))
       {
          iStartMsg = 13;
-         sPrefix = "<font color=\"blue\"><b>";
-         sPostfix = "</b></font>";
+         sPrefix = "<p class=\"cmd\">";
+         sPostfix = "</p>";
       }
       else if (sText.startsWith("[Trace::dbg]"))
       {
          iStartMsg = 13;
-         sPrefix = "<font color=\"#7b7d7d\"><em>";
-         sPostfix = "</em></font>";
+         sPrefix = "<p class=\"dbg\">";
+         sPostfix = "</p>";
       }
 
-      if (!sPrefix.isEmpty())
-      {
-         sPrefix = "<p>" + sPrefix;
-         // the used JEditorPane to display the output seems to support only 'normal' ASCII signs and transforms 'higher' - like '<' - ASCII codes in &xx; :( 
-//         sText = sText.replace("<", "&lt;");
-//         sText = sText.replace(">", "&gt;");
-//         sText = sText.replace("\"", "&quot;");
-//         sText = sText.replace("&", "&amp;");
-         sText = sText.replace("\n$", "");
-         sText = sText.replace("\n", "<br>");
-         sPostfix = sPostfix + "</p>";
-      }
+      // the used JEditorPane to display the output seems to support only 'normal' ASCII signs and transforms 'higher' - like '<' - ASCII codes in &xx; :( 
+//      sText = sText.replace("<", "&lt;");
+//      sText = sText.replace(">", "&gt;");
+//      sText = sText.replace("\"", "&quot;");
+//      sText = sText.replace("&", "&amp;");
+      sText = sText.replace("\n$", "");
+      sText = sText.replace("\n", "<br>");
 
-      return sPrefix + sText.substring(iStartMsg) + sPostfix + "\n";
+      return sPrefix + sText.substring(iStartMsg) + sPostfix;
    }
 
    /**

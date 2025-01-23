@@ -167,7 +167,7 @@ public class JSplashScreen extends JFrame
    {
       Starter._m_logError.getCurElapsedTime("Progress " + progress);
       m_progressBar.setValue(progress);
-      m_splashFrame.update(m_splashFrame.getGraphics());
+      m_progressBar.update(m_progressBar.getGraphics());
       if (progress == 100)
       {
          try
@@ -201,7 +201,8 @@ public class JSplashScreen extends JFrame
     */
    public void setStatus(String status)
    {
-      this.m_splashStatus.setText(status);
+      m_splashStatus.setText(status);
+      m_splashStatus.update(m_splashStatus.getGraphics());
       Starter._m_logError.TraceIni(status);
    }
 

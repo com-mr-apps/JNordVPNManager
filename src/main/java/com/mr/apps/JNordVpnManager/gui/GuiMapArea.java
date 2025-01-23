@@ -99,7 +99,7 @@ public class GuiMapArea
                   else if (e.getButton() == MouseEvent.BUTTON3)
                   {
                      String sFlagName = (loc.getCountryCode().isBlank()) ? null : loc.getFlagImageFileName();
-                     if (JModalDialog.showYesNoDialog("Connect to", sFlagName, loc.getCountryName() + " " + loc.getCityName()) == JOptionPane.YES_OPTION)
+                     if (JModalDialog.showYesNoDialog("Connect to", sFlagName, loc.getToolTip()) == JOptionPane.YES_OPTION)
                      {
                         NvpnCallbacks.executeConnect(loc, "NordVPN Connect", "NordVPN Connect");
                      }

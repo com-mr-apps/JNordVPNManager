@@ -14,12 +14,16 @@ import java.awt.Dimension;
 import java.awt.Image;
 import java.awt.Taskbar;
 import java.awt.Toolkit;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowFocusListener;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -28,7 +32,7 @@ import javax.swing.JFrame;
 import javax.swing.JMenuBar;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import javax.swing.SwingUtilities;
+import javax.swing.Timer;
 import javax.swing.WindowConstants;
 import org.geotools.swing.JMapFrame;
 
@@ -66,7 +70,6 @@ import com.mr.apps.JNordVpnManager.utils.String.StringFormat;
 @SuppressWarnings("serial")
 public class Starter extends JFrame 
 {
-   public static final UtilLogErr  _m_logError                = new UtilLogErr(UtilPrefs.getLogfileName(), null, null);
    public static final String      APPLICATION_DATA_DIR       = "/.local/share/.JNordVpnManager"; // ..added to $HOME directory
 
    public static final int         STATUS_UNKNOWN             = -1;
@@ -78,6 +81,7 @@ public class Starter extends JFrame
    private static final String     APPLICATION_TITLE          = "JNordVPN Manager [Copyright Ⓒ 2025 - written by com.mr.apps]";
    private static final String     APPLICATION_ICON_IMAGE     = "resources/icons/icon.png";
 
+   public static UtilLogErr        _m_logError                = null;
    private static JFrame           m_mainFrame                = null;
    private static JServerTreePanel m_serverListPanel          = null;
    private static JMapFrame        m_mapFrame                 = null;
@@ -93,6 +97,7 @@ public class Starter extends JFrame
    private static boolean          m_skipWindowGainedFocus    = false;
    private static boolean          m_forceWindowGainedFocus   = false;
    private static boolean          m_installMode              = false;
+   private static int              m_iConsoleActive           = 0;
 
    private static CurrentLocation  m_currentServer            = null;
    private static NvpnStatusData   m_nvpnStatusData           = null;
@@ -100,6 +105,7 @@ public class Starter extends JFrame
    private static NvpnAccountData  m_nvpnAccountData          = null;
 
    private static boolean          m_skipFocusGainedForDebug  = false;
+   private static Timer m_timer = null;
 
    /**
     * NordVPN GUI application.
@@ -107,20 +113,40 @@ public class Starter extends JFrame
     */
    public static void main(String[] args) throws Exception
    {
-     splashScreenInit();
-     consoleWindowInit();
-     if (System.getenv("COM_MR_APPS_DEBUG") != null)
-     {
-        // ..for debug
-        m_skipFocusGainedForDebug = true;
-     }
-      _m_logError.LoggingInfo("JNordVPN Manager launched...");
-     SwingUtilities.invokeLater(() -> new Starter());
+      if (System.getenv("COM_MR_APPS_DEBUG") != null)
+      {
+         // ..for debug
+         m_skipFocusGainedForDebug = true;
+      }
+      _m_logError = new UtilLogErr(UtilPrefs.getLogfileName(), null, null);
+
+      ExecutorService processHandlers = Executors.newFixedThreadPool(3);
+      processHandlers.execute(() -> splashScreenInit());
+      processHandlers.execute(() -> consoleWindowInit());
+
+      // wait the two windows to initialize
+      m_timer = new Timer(100, new ActionListener() {
+         @Override
+         public void actionPerformed(ActionEvent e)
+         {
+            if ((null != m_splashScreen) && (null != m_consoleWindow))
+            {
+               processHandlers.execute(() -> new Starter());
+               m_timer.stop();
+            }
+            else
+            {
+               m_timer.start();
+            }
+         }
+      });
+      m_timer.start();
    }
 
    public Starter()
    {
       super();
+      _m_logError.LoggingInfo("JNordVPN Manager launched...");
 
       // get the application implementation version from jar manifest file
       Package p = getClass().getPackage();
@@ -138,6 +164,7 @@ public class Starter extends JFrame
    {
       m_splashScreen = new JSplashScreen("JNordVPN Manager loading...");
       m_splashScreen.setVisible(true);
+//      new Starter();
    }
 
    /**
@@ -146,6 +173,14 @@ public class Starter extends JFrame
    public static void consoleWindowInit()
    {
       m_consoleWindow = new JCustomConsole();
+
+      // activate console
+      m_iConsoleActive = UtilPrefs.isConsoleActive();
+      if (1 == m_iConsoleActive)
+      {
+         // open the console at program start
+         switchConsoleWindow();
+      }
    }
 
 
@@ -380,14 +415,6 @@ public class Starter extends JFrame
 
       m_splashScreen.setProgress(10);
 
-      // activate console
-      int iConsoleActive = UtilPrefs.isConsoleActive();
-      if (1 == iConsoleActive)
-      {
-         // open the console at program start
-         switchConsoleWindow();
-      }
-
       // -------------------------------------------------------------------------------
       // If we are called from snap...: 'strict' doesn't let us execute the 'nordvpn' command outside the snap
       // -> 'Installer mode' to install a local desktop file that runs the jar directly (outside of the snap container)
@@ -404,7 +431,7 @@ public class Starter extends JFrame
          _m_logError.enableTraceFlag(UtilLogErr.TRACE_Cmd);
 
          // open the console window (if not already open)
-         if (0 == iConsoleActive) switchConsoleWindow();
+         if (0 == m_iConsoleActive) switchConsoleWindow();
 
          // check if the local desktop file already exists (in the real home directory!)
          String targetFile = myHome + "/Desktop/JNordVpnManager_Java.desktop";
@@ -503,6 +530,31 @@ public class Starter extends JFrame
          m_nvpnAccountData = new NvpnAccountData();
          m_nvpnSettingsData = new NvpnSettingsData();
          m_nvpnStatusData = new NvpnStatusData();
+      }
+
+      boolean bConnected = false;
+      if ((null != m_nvpnSettingsData) && (null != m_nvpnStatusData))
+      {
+         bConnected = m_nvpnStatusData.isConnected();
+         if (bConnected)
+         {
+            // check settings for obfuscated and correct the server tree legacy group filter
+            NordVPNEnumGroups currentGroup = NordVPNEnumGroups.get(UtilPrefs.getRecentServerGroup());
+            boolean bObfuscate = StringFormat.string2boolean(m_nvpnSettingsData.getObfuscate(false));
+            if (bObfuscate)
+            {
+               // we can switch to legacy group obfuscated
+               UtilPrefs.setRecentServerGroup(NordVPNEnumGroups.legacy_obfuscated_servers.getId());
+            }
+            else if (currentGroup.equals(NordVPNEnumGroups.legacy_obfuscated_servers))
+            {
+               // we don't have information about the correct group for an already connected server 
+               // only for obfuscated we know sure, that the selected group is wrong -> set it to standard..
+               // !!! GUI can confuse, because the displayed legacy group (filter) is maybe (for all) not the one, that one for the current connection
+               // TODO: add a "Select Group" entry in the group filter?
+               UtilPrefs.setRecentServerGroup(NordVPNEnumGroups.Standard_VPN_Servers.getId());
+            }
+         }
 
          // initialize current group and region from User Preferences
          NvpnGroups.setCurrentGroup(NordVPNEnumGroups.get(UtilPrefs.getRecentServerGroup()));
@@ -510,15 +562,12 @@ public class Starter extends JFrame
       }
 
       //-------------------------------------------------------------------------------
-      // If we are logged in, get the status and optionally [auto]connect
+      // If we are logged in, optionally [auto]connect
       //-------------------------------------------------------------------------------
-      boolean bConnected = false;
-      if ((null != m_nvpnAccountData) && (true == m_nvpnAccountData.isLoggedIn()))
+      if (((null != m_nvpnAccountData) && (true == m_nvpnAccountData.isLoggedIn()) && (false == bConnected)))
       {
-         bConnected = m_nvpnStatusData.isConnected();
-
          int iAutoConnect = UtilPrefs.getAutoConnectMode();
-         if (false == bConnected && 1 == iAutoConnect)
+         if (1 == iAutoConnect)
          {
             m_splashScreen.setProgress(30);
             CurrentLocation loc = getCurrentServer();

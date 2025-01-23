@@ -19,7 +19,6 @@ import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
-import java.awt.event.WindowListener;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -30,6 +29,7 @@ import java.io.PipedOutputStream;
 import java.io.PrintStream;
 import java.io.Writer;
 
+import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -52,7 +52,8 @@ import com.mr.apps.JNordVpnManager.Starter;
 import com.mr.apps.JNordVpnManager.utils.UtilLogErr;
 import com.mr.apps.JNordVpnManager.utils.UtilPrefs;
 
-public class JCustomConsole extends WindowAdapter implements WindowListener, ActionListener, Runnable
+@SuppressWarnings("serial")
+public class JCustomConsole extends JFrame implements Runnable
 {
    private static final Color     COLOR_wheat         = new Color(255, 235, 205);
    private static final Color     COLOR_darkGreen     = new Color(40, 180, 99);
@@ -69,8 +70,9 @@ public class JCustomConsole extends WindowAdapter implements WindowListener, Act
 
    public JCustomConsole()
    {
+      super("JNordVPN Manager Console");
       // create all components and add them
-      m_consoleMainFrame = new JFrame("JNordVPN Manager Console");
+      m_consoleMainFrame = this;
       
       // Close Window with "X"
       m_consoleMainFrame.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
@@ -91,8 +93,10 @@ public class JCustomConsole extends WindowAdapter implements WindowListener, Act
  
       JPanel tracesRow = new JPanel();
       tracesRow.setLayout(new BoxLayout(tracesRow, BoxLayout.X_AXIS));
-      JLabel lblTrace = new JLabel("Trace Settings: ");
+      JLabel lblTrace = new JLabel("Console Settings: ");
       tracesRow.add(lblTrace);
+
+      tracesRow.add(Box.createRigidArea(new Dimension(5, 0)));
 
       JCheckBox cbxTraceInit = new JCheckBox("Init");
       cbxTraceInit.setToolTipText("Flag for Trace Init output.");
@@ -127,6 +131,8 @@ public class JCustomConsole extends WindowAdapter implements WindowListener, Act
          }
       });
       tracesRow.add(cbxTraceInit);
+
+      tracesRow.add(Box.createRigidArea(new Dimension(5, 0)));
 
       JCheckBox cbxTraceCommand = new JCheckBox("Command");
       cbxTraceCommand.setToolTipText("Flag for Trace Command output.");
@@ -163,6 +169,8 @@ public class JCustomConsole extends WindowAdapter implements WindowListener, Act
       });
       tracesRow.add(cbxTraceCommand);
 
+      tracesRow.add(Box.createRigidArea(new Dimension(5, 0)));
+
       JCheckBox cbxTraceDebug = new JCheckBox("Debug");
       cbxTraceDebug.setToolTipText("Flag for Trace Debug output.");
       cbxTraceDebug.setForeground(Color.gray);
@@ -198,8 +206,40 @@ public class JCustomConsole extends WindowAdapter implements WindowListener, Act
       });
       tracesRow.add(cbxTraceDebug);
 
-      JCheckBox cbxWriteToLogfile = new JCheckBox("Log File");
-      cbxWriteToLogfile.setToolTipText("Flag for output in the log file.");
+      tracesRow.add(Box.createHorizontalGlue());
+
+      JCheckBox cbxOpenConsole = new JCheckBox("Open Console on Program Startup");
+      cbxOpenConsole.setToolTipText("Change User Settings for Open Console on Program Startup.");
+      int iOpenConsole = UtilPrefs.isConsoleActive();
+      if (1 == iOpenConsole)
+      {
+         cbxOpenConsole.setSelected(true);
+      }
+      else
+      {
+         cbxOpenConsole.setSelected(false);
+      }
+      cbxOpenConsole.addActionListener(new ActionListener() {
+         @Override
+         public void actionPerformed(ActionEvent e)
+         {
+            JCheckBox cb = (JCheckBox) e.getSource();
+            if (cb.isSelected())
+            {
+               UtilPrefs.setConsoleActive(1);
+            }
+            else
+            {
+               UtilPrefs.setConsoleActive(0);
+            }
+         }
+      });
+      tracesRow.add(cbxOpenConsole);
+
+      tracesRow.add(Box.createRigidArea(new Dimension(5, 0)));
+
+      JCheckBox cbxWriteToLogfile = new JCheckBox("Write Log File");
+      cbxWriteToLogfile.setToolTipText("Change User Settings for log file output.");
       int isLogFileActive = UtilPrefs.isLogfileActive();
       if (1 == isLogFileActive || Starter._m_logError.isLogFileActive())
       {
@@ -234,13 +274,20 @@ public class JCustomConsole extends WindowAdapter implements WindowListener, Act
          }
       });
       tracesRow.add(cbxWriteToLogfile);
-
+      
       JEditorPane editorPane = new JEditorPane();
       editorPane.setEditable(false);
       editorPane.setCaretColor(COLOR_wheat); // hide caret
       editorPane.setContentType( "text/html" );
       editorPane.setText("<html><head><style>"
-            + "p {font-family: Monospaced; font-size:14;}"
+            + ".dbg {font-style: italic; color: #7b7d7d;}"
+            + ".cmd {font-weight: bold; color: blue;}"
+            + ".ini {font-weight: normal; color: #28b463;}"
+            + ".er5 {font-weight: bold; color: #ff334f;}"
+            + ".er4 {font-weight: bold; color: red;}"
+            + ".er3 {font-weight: normal; color: orange;}"
+            + ".inf {font-weight: normal; color: black;}"
+            + "p {font-family: Monospaced; font-size:14;margin-top:2px;margin-bottom:2px}"
             + "</style></head>"
             + "<body style=\"background-color:#FFEBCD\" id='body'>Console output start...</body></html>");
 
@@ -266,7 +313,6 @@ public class JCustomConsole extends WindowAdapter implements WindowListener, Act
       m_consoleMainFrame.setVisible(false);
       Starter._m_logError.setConsoleOutput(true);
 
-      m_consoleMainFrame.addWindowListener(this);
       btnSave.addActionListener(new ActionListener() {
          public void actionPerformed(ActionEvent arg0)
          {
@@ -286,7 +332,13 @@ public class JCustomConsole extends WindowAdapter implements WindowListener, Act
          }
       });
 
-      btnClose.addActionListener(this);
+      btnClose.addActionListener(new ActionListener() {
+         public void actionPerformed(ActionEvent arg0)
+         {
+            // Close button
+            setConsoleVisible(false);
+         }
+      });
 
       try
       {
@@ -386,15 +438,6 @@ public class JCustomConsole extends WindowAdapter implements WindowListener, Act
          Starter._m_logError.LoggingExceptionMessage(4, 10901, e);
          Starter._m_logError.setConsoleOutput(true);
       }
-   }
-
-   /**
-    * Action Close Button pressed
-    */
-   public synchronized void actionPerformed(ActionEvent evt)
-   {
-      // Close button
-      setConsoleVisible(false);
    }
 
    /**
