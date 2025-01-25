@@ -208,8 +208,8 @@ public class JCustomConsole extends JFrame implements Runnable
 
       tracesRow.add(Box.createHorizontalGlue());
 
-      JCheckBox cbxOpenConsole = new JCheckBox("Open Console on Program Startup");
-      cbxOpenConsole.setToolTipText("Change User Settings for Open Console on Program Startup.");
+      JCheckBox cbxOpenConsole = new JCheckBox("Open Console on Application Start");
+      cbxOpenConsole.setToolTipText("Change User Settings for Open Console on Application Start.");
       int iOpenConsole = UtilPrefs.isConsoleActive();
       if (1 == iOpenConsole)
       {

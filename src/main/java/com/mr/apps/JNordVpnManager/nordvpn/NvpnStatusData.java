@@ -258,8 +258,12 @@ public class NvpnStatusData
 
    public String toString()
    {
-      return getStatus() + ((isConnected()) ? " to " + getCity() + " [" + getCountry() + "]"
-            + ", IP: " + getIp() + " (" + getHostname() + "), "
-            + getTechnology() + "/" + getProtocol() : ""); 
+      return getStatus() 
+            + ((isConnected()) 
+            ? " to " + getCity() + " [" + getCountry() + "]"
+               + ", IP: " + getIp() + " (" + getHostname() + "), "
+               + getTechnology() + "/" + getProtocol() 
+               + " - Legacy Group: " + (((null != NvpnGroups.getCurrentLegacyGroup())) ? NvpnGroups.getCurrentLegacyGroup().name() : "??")
+            : "");
    }
 }

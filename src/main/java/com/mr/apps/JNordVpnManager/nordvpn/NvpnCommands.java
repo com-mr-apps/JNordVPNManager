@@ -452,7 +452,7 @@ public class NvpnCommands {
       String country = "";
       String city = "";
 
-      NordVPNEnumGroups currentGroup = NvpnGroups.getCurrentGroup();
+      NordVPNEnumGroups currentGroup = NvpnGroups.getCurrentFilterGroup();
 
       boolean bObfuscate = currentGroup.equals(NordVPNEnumGroups.legacy_obfuscated_servers);
       if (null != loc)
@@ -477,7 +477,7 @@ public class NvpnCommands {
          if (country.isBlank())
          {
             // Quick Connect with group - if Region is set, region group, else legacy group (both attributes in the same command are not valid)
-            if (NvpnGroups.getCurrentRegion().equals(NvpnGroups.NordVPNEnumGroups.all_regions))
+            if (NvpnGroups.getCurrentFilterRegion().equals(NvpnGroups.NordVPNEnumGroups.all_regions))
             {
                if (bObfuscate)
                {
@@ -490,7 +490,7 @@ public class NvpnCommands {
             }
             else
             {
-               status = UtilSystem.runCommand(CMD_NORDVPN, ARG_CONNECT, NvpnGroups.getCurrentRegion().name());
+               status = UtilSystem.runCommand(CMD_NORDVPN, ARG_CONNECT, NvpnGroups.getCurrentFilterRegion().name());
             }
          }
          else
@@ -557,8 +557,8 @@ public class NvpnCommands {
       {
          NvpnSettingsData.resetRequiresReconnect(); // successfully connected with current settings
 
-         // ensure that after successful connection the current group (for JServerTree) is updated
-         NvpnGroups.setCurrentGroup(currentGroup);
+         // ensure that after successful connection the current group (for status and JServerTree filter) is updated
+         NvpnGroups.setCurrentLegacyGroup(currentGroup);
          Starter.setTreeFilterGroup();
          Starter.updateCurrentServer();
       }

@@ -96,7 +96,7 @@ public class CurrentLocation extends Location
     */
    public int getLegacyGroup()
    {
-      return (null == m_filterGroup) ? NvpnGroups.getCurrentGroup().getId() : m_filterGroup;
+      return (null == m_filterGroup) ? NvpnGroups.getCurrentFilterGroup().getId() : m_filterGroup;
    }
 
    /**

@@ -42,7 +42,6 @@ import com.mr.apps.JNordVpnManager.gui.GuiMenuBar;
 import com.mr.apps.JNordVpnManager.gui.components.JResizedIcon;
 import com.mr.apps.JNordVpnManager.gui.components.JResizedIcon.IconSize;
 import com.mr.apps.JNordVpnManager.gui.components.JResizedIcon.IconUrls;
-import com.mr.apps.JNordVpnManager.gui.dialog.JSupportersDialog;
 import com.mr.apps.JNordVpnManager.gui.dialog.JModalDialog;
 import com.mr.apps.JNordVpnManager.nordvpn.NvpnCallbacks;
 import com.mr.apps.JNordVpnManager.nordvpn.NvpnGroups;
@@ -75,16 +74,14 @@ public class JServerTreePanel extends JPanel implements TreeSelectionListener
          NordVPNEnumGroups.The_Americas,
          NordVPNEnumGroups.Africa_The_Middle_East_And_India,
          NordVPNEnumGroups.Asia_Pacific,
-         NordVPNEnumGroups.Europe,
-         null
+         NordVPNEnumGroups.Europe
    };
    String                             m_saRegions[]           = {
          "All Regions",
          "America",
          "Africa/Middle East/India",
          "Asia/Pacific",
-         "Europe",
-         "[NordVPN Recommanded Servers]"
+         "Europe"
    };
 
    private static NordVPNEnumGroups[] m_iaGroups              = {
@@ -126,7 +123,7 @@ public class JServerTreePanel extends JPanel implements TreeSelectionListener
 
       m_filterRegions = new JComboBox<Object>(m_saRegions);
 
-      int idxRegion = NvpnGroups.getFieldIndex(NvpnGroups.getCurrentRegion(), m_iaRegions, 0);
+      int idxRegion = NvpnGroups.getFieldIndex(NvpnGroups.getCurrentFilterRegion(), m_iaRegions, 0);
       m_filterRegions.setSelectedIndex(idxRegion);
       Starter._m_logError.TraceDebug("Init selected Region Filter with: " + m_iaRegions[idxRegion]);
 
@@ -135,7 +132,7 @@ public class JServerTreePanel extends JPanel implements TreeSelectionListener
       // Legacy Groups Filter
       m_filterGroups = new JComboBox<Object>(m_saGroupsText);
 
-      int idxGroup = NvpnGroups.getFieldIndex(NvpnGroups.getCurrentGroup(), m_iaGroups, 0);
+      int idxGroup = NvpnGroups.getFieldIndex(NvpnGroups.getCurrentFilterGroup(), m_iaGroups, 0);
       m_filterGroups.setSelectedIndex(idxGroup);
       Starter._m_logError.TraceDebug("Init selected Group Filter with: " + m_iaGroups[idxGroup]);
 
@@ -218,30 +215,23 @@ public class JServerTreePanel extends JPanel implements TreeSelectionListener
          public void actionPerformed(ActionEvent e)
          {
             int index = m_filterRegions.getSelectedIndex();
-            Starter._m_logError.TraceDebug("[Enter Region Filter CB] Current selected Region Filter: " +  NvpnGroups.getCurrentRegion().name());
+            Starter._m_logError.TraceDebug("[Enter Region Filter CB] Current selected Region Filter: " +  NvpnGroups.getCurrentFilterRegion().name());
             switch (index)
             {
                case 1 :
-                  NvpnGroups.setCurrentRegion(NordVPNEnumGroups.The_Americas);
+                  NvpnGroups.setCurrentFilterRegion(NordVPNEnumGroups.The_Americas);
                   break;
                case 2 :
-                  NvpnGroups.setCurrentRegion(NordVPNEnumGroups.Africa_The_Middle_East_And_India);
+                  NvpnGroups.setCurrentFilterRegion(NordVPNEnumGroups.Africa_The_Middle_East_And_India);
                   break;
                case 3 :
-                  NvpnGroups.setCurrentRegion(NordVPNEnumGroups.Asia_Pacific);
+                  NvpnGroups.setCurrentFilterRegion(NordVPNEnumGroups.Asia_Pacific);
                   break;
                case 4 :
-                  NvpnGroups.setCurrentRegion(NordVPNEnumGroups.Europe);
+                  NvpnGroups.setCurrentFilterRegion(NordVPNEnumGroups.Europe);
                   break;
-               case 5 :
-                  // TODO: Accelerated Development Feature
-                  new JSupportersDialog(m_saRegions[5]);
-                  // undo selection
-                  int idxCurrentRegion = NvpnGroups.getFieldIndex(NvpnGroups.getCurrentRegion(), m_iaRegions, 0); // list index of the current active region filter
-                  m_filterRegions.setSelectedIndex(idxCurrentRegion);
-                  return;
                default /* 0 */:
-                  NvpnGroups.setCurrentRegion(NordVPNEnumGroups.all_regions);
+                  NvpnGroups.setCurrentFilterRegion(NordVPNEnumGroups.all_regions);
             }
             updateFilterTreeCB(false);
             UtilMapGeneration.zoomServerLayer();
@@ -253,27 +243,27 @@ public class JServerTreePanel extends JPanel implements TreeSelectionListener
       {
          public void actionPerformed(ActionEvent e)
          {
-            Starter._m_logError.TraceDebug("[Enter Group Filter CB] Current selected Group Filter: " + NvpnGroups.getCurrentGroup().name());
+            Starter._m_logError.TraceDebug("[Enter Group Filter CB] Current selected Group Filter: " + NvpnGroups.getCurrentFilterGroup().name());
             int index = m_filterGroups.getSelectedIndex();
             switch (index)
             {
                case 1 :
-                  NvpnGroups.setCurrentGroup(NordVPNEnumGroups.P2P);
+                  NvpnGroups.setCurrentFilterGroup(NordVPNEnumGroups.P2P);
                   break;
                case 2 :
-                  NvpnGroups.setCurrentGroup(NordVPNEnumGroups.Double_VPN);
+                  NvpnGroups.setCurrentFilterGroup(NordVPNEnumGroups.Double_VPN);
                   break;
                case 3 :
-                  NvpnGroups.setCurrentGroup(NordVPNEnumGroups.Onion_Over_VPN);
+                  NvpnGroups.setCurrentFilterGroup(NordVPNEnumGroups.Onion_Over_VPN);
                   break;
                case 4 :
-                  NvpnGroups.setCurrentGroup(NordVPNEnumGroups.Dedicated_IP);
+                  NvpnGroups.setCurrentFilterGroup(NordVPNEnumGroups.Dedicated_IP);
                   break;
                case 5 :
-                  NvpnGroups.setCurrentGroup(NordVPNEnumGroups.legacy_obfuscated_servers);
+                  NvpnGroups.setCurrentFilterGroup(NordVPNEnumGroups.legacy_obfuscated_servers);
                   break;
                default /* 0 */:
-                  NvpnGroups.setCurrentGroup(NordVPNEnumGroups.Standard_VPN_Servers);
+                  NvpnGroups.setCurrentFilterGroup(NordVPNEnumGroups.Standard_VPN_Servers);
             }
             updateFilterTreeCB(false);
             GuiMenuBar.updateQuickConnectMenuButton();
@@ -376,8 +366,8 @@ public class JServerTreePanel extends JPanel implements TreeSelectionListener
       ArrayList<String> vpnServers = new ArrayList<String>(); 
 
       // Filter from GUI (Region and Legacy Group)
-      NordVPNEnumGroups filterRegion = NvpnGroups.getCurrentRegion();
-      NordVPNEnumGroups filterGroup = NvpnGroups.getCurrentGroup();
+      NordVPNEnumGroups filterRegion = NvpnGroups.getCurrentFilterRegion();
+      NordVPNEnumGroups filterGroup = NvpnGroups.getCurrentFilterGroup();
       boolean bObfuscate = filterGroup.equals(NordVPNEnumGroups.legacy_obfuscated_servers); // current selection obfuscated
       Starter._m_logError.TraceDebug("Create Server Tree: Filter current Region = '" + filterRegion.name() + "' / Filter current Legacy Group = '" + filterGroup.name() + "' / Filter Text = '" + m_filterText + "'.");
 
@@ -665,17 +655,17 @@ public class JServerTreePanel extends JPanel implements TreeSelectionListener
    {
       // check group filter consistency (Settings vs. Current)
       boolean bObfuscateSetting = StringFormat.string2boolean(Starter.getCurrentSettingsData().getObfuscate(false));
-      boolean bObfuscateCurrent = NvpnGroups.getCurrentGroup().equals(NordVPNEnumGroups.legacy_obfuscated_servers);
-      Starter._m_logError.TraceDebug("Set Tree Filter Group: Setting Obfuscated=" + Starter.getCurrentSettingsData().getObfuscate(false) + "', Current Group=" + NvpnGroups.getCurrentGroup() + "'.");
+      boolean bObfuscateCurrent = NvpnGroups.getCurrentFilterGroup().equals(NordVPNEnumGroups.legacy_obfuscated_servers);
+      Starter._m_logError.TraceDebug("Set Tree Filter Group: Setting Obfuscated=" + Starter.getCurrentSettingsData().getObfuscate(false) + "', Current Group=" + NvpnGroups.getCurrentFilterGroup() + "'.");
 
       int idxFilterGroups = m_filterGroups.getSelectedIndex(); // index of selected filter group
-      int idxCurrentGroup = NvpnGroups.getFieldIndex(NvpnGroups.getCurrentGroup(), m_iaGroups, 0); // index of current (required) filter group
+      int idxCurrentGroup = NvpnGroups.getFieldIndex(NvpnGroups.getCurrentFilterGroup(), m_iaGroups, 0); // index of current (required) filter group
       int idxObfuscatedGroup = NvpnGroups.getFieldIndex(NordVPNEnumGroups.legacy_obfuscated_servers, m_iaGroups, 0); // index of filter group obfuscated button
       if ((bObfuscateSetting && (bObfuscateSetting != bObfuscateCurrent)) && (idxFilterGroups != idxObfuscatedGroup))
       {
          // settings Obfuscate=enabled - filter groups selection must be set to 'Obfuscated'
          Starter._m_logError.TraceDebug(
-               "Update of filter group selection required, because obfuscate is enabled but current group is '" + NvpnGroups.getCurrentGroup() + "'.");
+               "Update of filter group selection required, because obfuscate is enabled but current group is '" + NvpnGroups.getCurrentFilterGroup() + "'.");
          m_filterGroups.setSelectedIndex(idxObfuscatedGroup);
       }
       else if ((!bObfuscateSetting && (bObfuscateSetting != bObfuscateCurrent)) && (idxFilterGroups == idxObfuscatedGroup))
@@ -683,7 +673,7 @@ public class JServerTreePanel extends JPanel implements TreeSelectionListener
          // settings Obfuscate=disabled - filter groups selection must be changed from 'Obfuscated' (Default Standard
          // Servers)
          Starter._m_logError.TraceDebug(
-               "Update of filter group selection required, because obfuscate is disabled but current group is '" + NvpnGroups.getCurrentGroup() + "'.");
+               "Update of filter group selection required, because obfuscate is disabled but current group is '" + NvpnGroups.getCurrentFilterGroup() + "'.");
          m_filterGroups.setSelectedIndex(0);
       }
       else if (idxFilterGroups != idxCurrentGroup)

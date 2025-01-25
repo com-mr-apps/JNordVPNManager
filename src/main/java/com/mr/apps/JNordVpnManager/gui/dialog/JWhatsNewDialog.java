@@ -32,6 +32,7 @@ public class JWhatsNewDialog
          + "[Released in January 2025]"
          + "<ul>"
          + "<li><strong>Maintenance</strong>: Simplified server selection/connection workflow by removing NordVPN setting changes required for connections from the selection step to the nordvpn connect step.</p></li>"
+         + "<li><strong>GUI Enhancements</strong>: Renovated Console window and optimized GUI performance.</p></li>"
          + "</ul>"
          + "<p>For further information see: <a href=\"https://github.com/com-mr-apps/JNordVPNManager\">JNordVPN on GitHub</a></p>"
          + "<h3>What's Next:</h3>"

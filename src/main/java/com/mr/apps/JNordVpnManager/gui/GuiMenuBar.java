@@ -358,7 +358,7 @@ public class GuiMenuBar
    public static void updateQuickConnectMenuButton()
    {
       // update Quick connect command Tool tip - display actual command dependent on Region and Group
-      String optGroup = (NvpnGroups.getCurrentRegion().equals(NvpnGroups.NordVPNEnumGroups.all_regions)) ? "--group " + NvpnGroups.getCurrentGroup().name() : NvpnGroups.getCurrentRegion().name();
+      String optGroup = (NvpnGroups.getCurrentFilterRegion().equals(NvpnGroups.NordVPNEnumGroups.all_regions)) ? "--group " + NvpnGroups.getCurrentFilterGroup().name() : NvpnGroups.getCurrentFilterRegion().name();
       String sToolTip = "nordvpn connect " + optGroup;
       m_menuItemQuickConnect.setToolTipText(sToolTip);
    }

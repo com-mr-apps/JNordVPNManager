@@ -535,30 +535,31 @@ public class Starter extends JFrame
       boolean bConnected = false;
       if ((null != m_nvpnSettingsData) && (null != m_nvpnStatusData))
       {
+         // initialize current group from User Preferences
          bConnected = m_nvpnStatusData.isConnected();
          if (bConnected)
          {
+            // we don't have information about the correct group for an already connected server, so we cannot set the current group for sure
+            // only for obfuscated we can assume, that the selected group may be obfuscated..
+            // !!! The GUI can confuse, because the displayed legacy group (filter) may not be correct for the current connection!
+            // !!! OK only, if connection was done in the GUI -> see status line 
+
             // check settings for obfuscated and correct the server tree legacy group filter
             NordVPNEnumGroups currentGroup = NordVPNEnumGroups.get(UtilPrefs.getRecentServerGroup());
             boolean bObfuscate = StringFormat.string2boolean(m_nvpnSettingsData.getObfuscate(false));
-            if (bObfuscate)
+            if (bObfuscate && (false == currentGroup.equals(NordVPNEnumGroups.legacy_obfuscated_servers)))
             {
                // we can switch to legacy group obfuscated
                UtilPrefs.setRecentServerGroup(NordVPNEnumGroups.legacy_obfuscated_servers.getId());
-            }
-            else if (currentGroup.equals(NordVPNEnumGroups.legacy_obfuscated_servers))
-            {
-               // we don't have information about the correct group for an already connected server 
-               // only for obfuscated we know sure, that the selected group is wrong -> set it to standard..
-               // !!! GUI can confuse, because the displayed legacy group (filter) is maybe (for all) not the one, that one for the current connection
-               // TODO: add a "Select Group" entry in the group filter?
-               UtilPrefs.setRecentServerGroup(NordVPNEnumGroups.Standard_VPN_Servers.getId());
+               // NvpnGroups.setCurrentGroup(NordVPNEnumGroups.legacy_obfuscated_servers); ! not sure, if settings were changed w/o reconnect before GUI start
             }
          }
 
-         // initialize current group and region from User Preferences
-         NvpnGroups.setCurrentGroup(NordVPNEnumGroups.get(UtilPrefs.getRecentServerGroup()));
-         NvpnGroups.setCurrentRegion(NordVPNEnumGroups.get(UtilPrefs.getRecentServerRegion()));
+         // initialize current region from (corrected) User Preferences
+         NvpnGroups.setCurrentFilterGroup(NordVPNEnumGroups.get(UtilPrefs.getRecentServerGroup()));
+
+         // initialize current region from User Preferences
+         NvpnGroups.setCurrentFilterRegion(NordVPNEnumGroups.get(UtilPrefs.getRecentServerRegion()));
       }
 
       //-------------------------------------------------------------------------------
