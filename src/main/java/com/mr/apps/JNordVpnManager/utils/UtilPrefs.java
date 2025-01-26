@@ -35,6 +35,7 @@ import com.mr.apps.JNordVpnManager.utils.String.StringFormat;
  */
 public class UtilPrefs
 {
+   private static final String ACCOUNTREMINDER                          = "ACCOUNTREMINDER";
    private static final String AUTOCONNECTMODE                          = "AUTOCONNECTMODE";
    private static final String AUTODISCONNECTMODE                       = "AUTODISCONNECTMODE";
    private static final String COMMAND_TIMEOUT                          = "COMMAND_TIMEOUT";
@@ -79,6 +80,7 @@ public class UtilPrefs
    private static int    DEFAULT_PREF_SETTINGS_CONSOLE_ACTIVE     = 0;
    private static int    DEFAULT_PREF_SETTINGS_COMMAMD_TIMEOUT    = 30;
    private static int    DEFAULT_PREF_SETTINGS_MESSAGE_AUTOCLOSE  = 2;
+   private static int    DEFAULT_PREF_SETTINGS_ACCOUNTREMINDER   = 31;
 
    /**
     * Dataset defining the UserPreference values.
@@ -100,6 +102,7 @@ public class UtilPrefs
    {
       Map<String, JSettingsPanelField> settingsPanelFieldsMap  = new HashMap<String, JSettingsPanelField>();
 
+      settingsPanelFieldsMap.put(ACCOUNTREMINDER, new JSettingsPanelField("Account Expiration Warning Days", "N[1,90]", -1, 2, StringFormat.int2String(DEFAULT_PREF_SETTINGS_ACCOUNTREMINDER, "#")));
       settingsPanelFieldsMap.put(AUTOCONNECTMODE, new JSettingsPanelField("Auto Connect on Program Start", "B", KeyEvent.VK_S, 1, StringFormat.int2String(DEFAULT_PREF_SETTINGS_AUTOCONNECTMODE, "#")));
       settingsPanelFieldsMap.put(AUTODISCONNECTMODE, new JSettingsPanelField("Auto Disconnect on Program Exit", "B", KeyEvent.VK_E, 1, StringFormat.int2String(DEFAULT_PREF_SETTINGS_AUTODISCONNECTMODE, "#")));
       settingsPanelFieldsMap.put(COMMAND_TIMEOUT, new JSettingsPanelField("Command Timeout (in seconds)", "N[5,99]", -1, 2, StringFormat.int2String(DEFAULT_PREF_SETTINGS_COMMAMD_TIMEOUT, "#")));
@@ -515,6 +518,26 @@ public class UtilPrefs
       return;
    }
 
+   public static int getAccountReminder()
+   {
+      Preferences settingsAccountReminder = Preferences.userRoot().node("com/mr/apps/JNordVpnManager/Settings");
+      int accountReminder = settingsAccountReminder.getInt("Account.Reminder", DEFAULT_PREF_SETTINGS_ACCOUNTREMINDER);
+
+      return accountReminder;
+   }
+
+   public static void setAccountReminder(int accountReminder)
+   {
+      Preferences settingsAccountReminder = Preferences.userRoot().node("com/mr/apps/JNordVpnManager/Settings");
+      settingsAccountReminder.putInt("Account.Reminder", accountReminder);
+
+      return;
+   }
+   public static void resetAccountReminder()
+   {
+      setAccountReminder(DEFAULT_PREF_SETTINGS_ACCOUNTREMINDER);
+   }
+
    /**
     * Get a data set with all User Preferences data
     * @return the dataset with all user preferences data.
@@ -543,6 +566,7 @@ public class UtilPrefs
       hm.put(COMMAND_TIMEOUT, StringFormat.int2String(getCommandTimeout(), "#"));
       hm.put(CONSOLE_ACTIVE, StringFormat.int2String(isConsoleActive(), "#"));
       hm.put(MESSAGE_AUTOCLOSE, StringFormat.int2String(getMessageAutoclose(), "#"));
+      hm.put(ACCOUNTREMINDER, StringFormat.int2String(getAccountReminder(), "#"));
 
       return hm;
    }
@@ -594,6 +618,14 @@ public class UtilPrefs
          setRecentServerList(sNewList);
          GuiMenuBar.addToMenuRecentServerListItems(null);
       }
+      int sCurrentAccountReminder = getAccountReminder();
+      int iNewAccountReminder = Integer.valueOf(hm.get(ACCOUNTREMINDER));
+      if (sCurrentAccountReminder != iNewAccountReminder)
+      {
+         setAccountReminder(iNewAccountReminder);
+         GuiMenuBar.updateAccountReminder();
+      }
+
    }
 
    /**

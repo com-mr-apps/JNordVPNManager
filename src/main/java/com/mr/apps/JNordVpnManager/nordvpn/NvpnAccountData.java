@@ -8,24 +8,28 @@
  */
 package com.mr.apps.JNordVpnManager.nordvpn;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import com.mr.apps.JNordVpnManager.Starter;
 import com.mr.apps.JNordVpnManager.gui.dialog.JModalDialog;
+import com.mr.apps.JNordVpnManager.utils.UtilPrefs;
 import com.mr.apps.JNordVpnManager.utils.UtilSystem;
 import com.mr.apps.JNordVpnManager.utils.String.StringFormat;
 
 public class NvpnAccountData
 {
-   private boolean m_failed                 = false;
-   private boolean m_loggedIn               = false;
-   private String  m_email                  = null;
-   private boolean m_vpnServiceIsActive     = false;
-   private String  m_vpnServiceExpDate      = null;
-   private boolean m_vpnDedicatedIdIsActive = false;
-   private boolean m_mfaIsEnabled           = false;
+   private boolean m_failed                   = false;
+   private boolean m_loggedIn                 = false;
+   private String  m_email                    = null;
+   private boolean m_vpnServiceIsActive       = false;
+   private String  m_vpnServiceExpDate        = null;
+   private boolean m_vpnDedicatedIdIsActive   = false;
+   private boolean m_mfaIsEnabled             = false;
+   private int     m_nordAccountRemainingDays = 9999;
 
    public NvpnAccountData()
    {
@@ -58,6 +62,7 @@ public class NvpnAccountData
             // failed
             setFailed(true);
             JModalDialog.showError("NordVPN Account", "'nordvpn account' information cannot be parsed.");
+            return;
          }
       }
    }
@@ -92,7 +97,7 @@ public class NvpnAccountData
 
       // data line 'VPN Service' contains two information
       String value = values.get("VPN Service");
-      Pattern pattern = Pattern.compile("\\s*([^( ]+)[ (]([^)]+)\\)\\s*",
+      Pattern pattern = Pattern.compile("\\s*([^( ]+)[ (]+([^)]+)\\)\\s*",
             Pattern.CASE_INSENSITIVE);
       Matcher matcher = pattern.matcher(value);
       boolean matchFound = matcher.find();
@@ -100,7 +105,28 @@ public class NvpnAccountData
       {
          // Parsing OK
          this.setVpnServiceIsActive(matcher.group(1));
-         this.setVpnServiceExpDate(matcher.group(2)); // TODO: extract date
+         this.setVpnServiceExpDate(matcher.group(2));
+         try
+         {
+            pattern = Pattern.compile("Expires on\\s+([A-Z]+)+\\s+(\\d\\d)+th,\\s+(\\d\\d\\d\\d)+",
+                  Pattern.CASE_INSENSITIVE);
+            matcher = pattern.matcher(matcher.group(2));
+            matchFound = matcher.find();
+            if (matchFound)
+            {
+               SimpleDateFormat format = new SimpleDateFormat("yyyy-MMM-dd");
+               Date date = format.parse(matcher.group(3) + "-" + matcher.group(1) + "-" + matcher.group(2));
+               long lTime = date.getTime();
+               long daysUntilNow = UtilSystem.getDaysUntilNow(lTime) * (-1);
+               Starter._m_logError.LoggingInfo("NordVPN License expires in " + daysUntilNow + " days.");
+               m_nordAccountRemainingDays = (int)daysUntilNow;
+               if (m_nordAccountRemainingDays > 180) UtilPrefs.resetAccountReminder(); // reset the settings to keep the reminder at the default days (after a subscription renew)
+            }
+         }
+         catch (Exception e)
+         {
+            Starter._m_logError.TraceDebug("### (NvpnAccountData) NordVPN License expiration date could not be parsed.");
+         }    
       }
       else
       {
@@ -116,6 +142,20 @@ public class NvpnAccountData
       this.setMfaIsEnabled(values.get("Multi-factor Authentication"));
 
       return true;
+   }
+
+
+   /**
+    * Check remaining days of NordVPN Account subscription
+    * @return true if the remaining days reach the reminder days
+    */
+   public boolean warnNordAccountExpires()
+   {
+      return (UtilPrefs.getAccountReminder() >= m_nordAccountRemainingDays);
+   }
+   public int getRemainingDays()
+   {
+      return m_nordAccountRemainingDays;
    }
 
    public boolean isLoggedIn()

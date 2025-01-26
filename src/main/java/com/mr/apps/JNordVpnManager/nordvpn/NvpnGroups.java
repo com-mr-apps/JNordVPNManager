@@ -13,11 +13,14 @@ public class NvpnGroups
    public static final int legacy_group_category = 3;
    public static final int regions = 5;
 
-   // Current region (current selection in server tree filter panel)
-   private static NordVPNEnumGroups m_currentRegion = NordVPNEnumGroups.get(UtilPrefs.getRecentServerRegion());
+   // Current filter region (current selection in server tree filter panel)
+   private static NordVPNEnumGroups m_currentFilterRegion = NordVPNEnumGroups.get(UtilPrefs.getRecentServerRegion());
 
-   // Current group (current selection in server tree filter panel)
-   private static NordVPNEnumGroups m_currentGroup = NordVPNEnumGroups.get(UtilPrefs.getRecentServerGroup());
+   // Current filter group (current selection in server tree filter panel)
+   private static NordVPNEnumGroups m_currentFilterGroup = NordVPNEnumGroups.get(UtilPrefs.getRecentServerGroup());
+
+   // Current (by the application) connected legacy group 
+   private static NordVPNEnumGroups m_currentLegacyGroup = null;
 
    // Storage for groups per location
    private ArrayList<NordVPNEnumGroups> m_groups = null;
@@ -31,7 +34,8 @@ public class NvpnGroups
       The_Americas                     (21),
       Asia_Pacific                     (23),
       Africa_The_Middle_East_And_India (25),
-      
+
+      legacy_group_unknown             (-1),
       Double_VPN                        (1),
       Onion_Over_VPN                    (3),
       legacy_ultra_fast_tv              (5),
@@ -122,28 +126,39 @@ public class NvpnGroups
       m_groups = null;      
    }
 
-   public static NordVPNEnumGroups getCurrentRegion()
+   public static NordVPNEnumGroups getCurrentFilterRegion()
    {
-      return m_currentRegion;
+      return m_currentFilterRegion;
    }
 
-   public static void setCurrentRegion(NordVPNEnumGroups currentRegion)
+   public static void setCurrentFilterRegion(NordVPNEnumGroups currentRegion)
    {
-      NvpnGroups.m_currentRegion = currentRegion;
+      NvpnGroups.m_currentFilterRegion = currentRegion;
       Starter._m_logError.TraceDebug("Set current Region Filter to: " + currentRegion);
       UtilPrefs.setRecentServerRegion(currentRegion.getId());
    }
 
-   public static NordVPNEnumGroups getCurrentGroup()
+   public static NordVPNEnumGroups getCurrentFilterGroup()
    {
-      return m_currentGroup;
+      return m_currentFilterGroup;
    }
 
-   public static void setCurrentGroup(NordVPNEnumGroups currentGroup)
+   public static void setCurrentFilterGroup(NordVPNEnumGroups currentGroup)
    {
-      NvpnGroups.m_currentGroup = currentGroup;
+      NvpnGroups.m_currentFilterGroup = currentGroup;
       Starter._m_logError.TraceDebug("Set current Group Filter to: " + currentGroup);
       UtilPrefs.setRecentServerGroup(currentGroup.getId());
+   }
+
+   public static NordVPNEnumGroups getCurrentLegacyGroup()
+   {
+      return m_currentLegacyGroup;
+   }
+
+   public static void setCurrentLegacyGroup(NordVPNEnumGroups currentGroup)
+   {
+      NvpnGroups.m_currentLegacyGroup = currentGroup;
+      setCurrentFilterGroup(currentGroup);
    }
 
    public static int getFieldIndex(NordVPNEnumGroups idGroup, NordVPNEnumGroups[] listGroups, int iDefault)
@@ -160,13 +175,15 @@ public class NvpnGroups
 
    public String toString()
    {
-      if (null == m_groups) return "";
+      if (null == m_groups) return "[]";
       StringBuffer sb = new StringBuffer(); 
+      sb.append("[");
       for (NordVPNEnumGroups iGroup : m_groups)
       {
-         if (sb.length() > 0) sb.append(";");
+         if (sb.length() > 0) sb.append(",");
          sb.append(NordVPNEnumGroups.get(iGroup.getId()));
       }
+      sb.append("]");
       return sb.toString();
    }
 

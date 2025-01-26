@@ -62,6 +62,9 @@ public class JSystemInfoDialog extends JDialog implements ActionListener
 
       Object[][] systemTableData = {
             {
+                  "app.userdata", Starter.APPLICATION_DATA_DIR
+            },
+            {
                   "os.name", System.getProperty("os.name")
             },
             {

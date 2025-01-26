@@ -1,3 +1,11 @@
+/* Copyright (C) 2025 com.mr.apps - All Rights Reserved
+ * You may use, distribute and modify this code under the
+ * terms of the “Commons Clause” License Condition v1.0 and the
+ * Common Development and Distribution License 1.0.
+ *
+ * You should have received a copy of the “Commons Clause” license with
+ * this file. If not, please visit: https://github.com/com.mr.apps/JNordVpnManager
+ */
 package com.mr.apps.JNordVpnManager.gui.components;
 
 import java.awt.Image;
@@ -24,6 +32,7 @@ public class JResizedIcon extends ImageIcon
       ICON_TIMER_DISCONNECT       ("disconnectTimer_32.png"),
       ICON_TIMER_CONNECT          ("connectTimer_32.png"),
       ICON_TREE_LOCATION          ("mpLocation.png"),
+      ICON_WARNING                ("paused_48.png"), // TODO
       ICON_WINDOW_COLLAPSE        ("window_collapse_32.png"),
       ICON_WINDOW_EXPAND          ("window_expand_32.png");
     
@@ -47,7 +56,8 @@ public class JResizedIcon extends ImageIcon
    {
       SMALL             (12),
       MEDIUM            (24),
-      LARGE             (36);
+      LARGE             (36),
+      LOGO              (80);
     
        private int size;
     
@@ -71,7 +81,7 @@ public class JResizedIcon extends ImageIcon
    /**
     * Constructor to generate a resized ImageIcon from an icon resource name.
     * <p>
-    * Icon resources are located in the <code>resource/icons</code> and should be of type <code>png</code>
+    * Icon resources are located in the <code>resources/</code> and should be of type <code>png</code>
     * 
     * @param iconName
     *           is the name of the icon resource
@@ -80,9 +90,24 @@ public class JResizedIcon extends ImageIcon
     * @param height
     *           is the height of the generated ImageIcon
     */
-   private JResizedIcon(String iconName, int width, int height)
+   private JResizedIcon(String iconName, int width, int height) throws NullPointerException
    {
-      this(Starter.class.getResource("resources/icons/" + iconName), width, height);
+      this(Starter.class.getResource("resources/" + iconName), width, height);
+   }
+
+   /**
+    * Constructor to generate a resized ImageIcon from an icon resource name.
+    * <p>
+    * Icon resources are located in the <code>resources</code> and should be of type <code>png</code>
+    * 
+    * @param iconName
+    *           is the name of the icon resource
+    * @param size
+    *           is the size [SMALL|MEDIUM|LARGE] of the icon
+    */
+   private JResizedIcon(String iconName, IconSize size) throws NullPointerException
+   {
+      this(Starter.class.getResource("resources/" + iconName), size.getSize(), size.getSize());
    }
 
    /**
@@ -145,6 +170,21 @@ public class JResizedIcon extends ImageIcon
    public static ImageIcon getIcon (String iconName, int width, int height)
    {
       new JResizedIcon(iconName, width, height);
+      return m_this;
+   }
+
+   /**
+    * Wrapper to get a customized resized ImageIcon by its name.
+    * 
+    * @param iconName
+    *           is the name of the icon resource
+    * @param size
+    *           is the size [SMALL|MEDIUM|LARGE] of the icon
+    * @return the resized ImageIcon
+    */
+   public static ImageIcon getIcon (String iconName, IconSize size)
+   {
+      new JResizedIcon(iconName, size);
       return m_this;
    }
 

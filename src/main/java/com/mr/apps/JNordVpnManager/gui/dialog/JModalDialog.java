@@ -22,6 +22,7 @@ import java.util.StringTokenizer;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JDialog;
+import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextArea;
@@ -31,7 +32,10 @@ import javax.swing.border.LineBorder;
 import javax.swing.border.TitledBorder;
 
 import com.mr.apps.JNordVpnManager.Starter;
+import com.mr.apps.JNordVpnManager.gui.components.JResizedIcon;
+import com.mr.apps.JNordVpnManager.gui.components.JResizedIcon.IconSize;
 import com.mr.apps.JNordVpnManager.utils.UtilPrefs;
+import com.mr.apps.JNordVpnManager.utils.String.Wrap;
 
 /**
  * Utility class for modal dialog panels.<p>
@@ -65,6 +69,8 @@ public class JModalDialog extends JDialog implements ActionListener
     *           is the dialog owner (application main frame)
     * @param title
     *           is the dialog message title
+    * @param iconName
+    *           is the name of the (optional) icon
     * @param msg
     *           is the dialog message
     * @param buttons
@@ -72,7 +78,7 @@ public class JModalDialog extends JDialog implements ActionListener
     * @param color
     *           is the dialog background color
     */
-   public JModalDialog(Frame owner, String title, String msg, String buttons, Color color)
+   public JModalDialog(Frame owner, String title, String iconName, String msg, String buttons, Color color)
    {
       super(owner, title, true);
 //      Starter._m_logError.TraceDebug("(JModalDialog) " + title + " / Buttons=" + buttons + " / Message=\n" + msg);
@@ -84,9 +90,6 @@ public class JModalDialog extends JDialog implements ActionListener
       getContentPane().setLayout(new BorderLayout());
       setUndecorated(true);
       setResizable(false);
-      Point parloc = owner.getLocation();
-      setLocation(parloc.x + 30, parloc.y + 30);
-      setMinimumSize(new Dimension(120, 20));
 
       // Dialog Panel
       JPanel dialogPanel = new JPanel(new BorderLayout());
@@ -94,6 +97,19 @@ public class JModalDialog extends JDialog implements ActionListener
       dialogPanel.setBorder(BorderFactory.createCompoundBorder(BorderFactory.
             createBevelBorder(BevelBorder.RAISED),BorderFactory.createBevelBorder(BevelBorder.LOWERED)));
       getContentPane().add(dialogPanel, BorderLayout.CENTER);
+
+      if (null != iconName)
+      {
+         try
+         {
+            JLabel jl = new JLabel(JResizedIcon.getIcon(iconName, IconSize.SMALL));
+            dialogPanel.add(jl, BorderLayout.LINE_START);
+         }
+         catch (NullPointerException e)
+         {
+            // Icon not found
+         }
+      }
 
       // Messages Panel
       m_messagePanel = new JPanel(new BorderLayout());
@@ -107,7 +123,7 @@ public class JModalDialog extends JDialog implements ActionListener
             new Font("SansSerif",Font.BOLD, 12),
             Color.BLACK));
       messageText.setFont(messageText.getFont().deriveFont(Font.ITALIC));
-      messageText.setText(msg);
+      messageText.setText(Wrap.wrap(msg, 200, null, true, null, "   "));
       messageText.setEditable(false);
       m_messagePanel.add(messageText, BorderLayout.CENTER);
 
@@ -125,6 +141,7 @@ public class JModalDialog extends JDialog implements ActionListener
 
       if (null != color)
       {
+         dialogPanel.setBackground(color);
          messageText.setBackground(color);
          messageText.setCaretColor(color);
          m_messagePanel.setBackground(color);
@@ -135,7 +152,25 @@ public class JModalDialog extends JDialog implements ActionListener
          messageText.setCaretColor(Color.white);
       }
 
+      setMinimumSize(new Dimension(120, 20));
       pack();
+
+      // place the dialog [buttons] in the near of the mouse pointer
+      Point parloc = owner.getLocation();
+      final Point mousePos = owner.getMousePosition();
+      if (mousePos != null)
+      {
+        setLocation(Math.max(0, parloc.x + mousePos.x - this.getWidth()/2), parloc.y + mousePos.y - this.getHeight() + 20);
+      }
+      else
+      {
+         setLocation(parloc.x + 30, parloc.y + 30);
+      }
+   }
+
+   public JModalDialog(Frame owner, String title, String msg, String buttons, Color color)
+   {
+      this(owner, title, null, msg, buttons, color);
    }
 
    /**
@@ -223,12 +258,17 @@ public class JModalDialog extends JDialog implements ActionListener
       return dlg.getResult();
    }
 
-   public static int showYesNoDialog(String title, String msg)
+   public static int showYesNoDialog(String title, String iconName, String msg)
    {
-      JModalDialog dlg = new JModalDialog(Starter.getMainFrame(), title, msg, "Yes,No", new Color(51,153,255));
+      JModalDialog dlg = new JModalDialog(Starter.getMainFrame(), title, iconName, msg, "Yes,No", new Color(51,153,255));
       dlg.repaint();
       dlg.setVisible(true);
       return (dlg.getResult() == 0) ? JOptionPane.YES_OPTION : JOptionPane.NO_OPTION;
+   }
+
+   public static int showYesNoDialog(String title, String msg)
+   {
+      return showYesNoDialog(title, null, msg);
    }
    
    public static int showConfirm(String msg)
@@ -326,4 +366,13 @@ public class JModalDialog extends JDialog implements ActionListener
       jmd.setVisible(true);
       return JOptionPane.CLOSED_OPTION;
    }
+
+   public static int showMessage(String title, String msg, String iconName)
+   {
+      JModalDialog dlg = new JModalDialog(Starter.getMainFrame(), title, iconName, msg, "Close", null);
+      dlg.repaint();
+      dlg.setVisible(true);
+      return JOptionPane.CLOSED_OPTION;
+   }
+
 }

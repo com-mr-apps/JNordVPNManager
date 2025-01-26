@@ -37,9 +37,7 @@ public class NvpnCallbacks
       {
          Starter._m_logError.LoggingInfo("Connect to Server: " + loc.toString());
 
-         String city = loc.getCityNordVPN();
-         String country = loc.getCountryNordVPN();
-         msg = NvpnCommands.connect(country, city);
+         msg = NvpnCommands.connect(loc);
          if (UtilSystem.isLastError())
          {
             // KO
@@ -68,10 +66,8 @@ public class NvpnCallbacks
          {
             // OK
             rc = true;
-            NvpnSettingsData.resetRequiresReconnect(); // successfully connected with current settings
-            Starter.updateCurrentServer();
             // overwrite possible "current" (null) values with the for this connection used ones
-            loc.setFilterGroup(loc.getFilterGroup());
+            loc.setLegacyGroup(loc.getLegacyGroup());
             loc.setVpnTechnology(loc.getVpnTechnology());
             loc.setVpnProtocol(loc.getVpnProtocol());
             // now we can add the location to the recent list
@@ -187,7 +183,7 @@ public class NvpnCallbacks
    public static void executeLogInOut()
    {
       String msg = null;
-      NvpnAccountData accountData = Starter.getCurrentAccountData();
+      NvpnAccountData accountData = Starter.getCurrentAccountData(false);
       boolean currentStatus = accountData.isLoggedIn();
       if (true == currentStatus)
       {
@@ -218,8 +214,8 @@ public class NvpnCallbacks
          }
       }
 
-      // get the current status
-      accountData = new NvpnAccountData();
+      // get the new current status
+      accountData = Starter.getCurrentAccountData(true);
       boolean newStatus = accountData.isLoggedIn();
       if (newStatus != currentStatus)
       {
@@ -241,7 +237,7 @@ public class NvpnCallbacks
          }
       }
 
-      // update current account data and dependent GUI elements
-      Starter.updateAccountData(accountData);
+      // update current account data dependent GUI elements
+      Starter.updateAccountData(false);
    }
 }

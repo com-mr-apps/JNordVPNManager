@@ -8,12 +8,9 @@
  */
 package com.mr.apps.JNordVpnManager.gui.serverTree;
 
-import java.net.URL;
-
 import javax.swing.ImageIcon;
 import javax.swing.tree.DefaultMutableTreeNode;
 
-import com.mr.apps.JNordVpnManager.Starter;
 import com.mr.apps.JNordVpnManager.geotools.Location;
 
 @SuppressWarnings("serial")
@@ -39,8 +36,7 @@ public class JCountryNode extends DefaultMutableTreeNode
    {
       try
       {
-         URL flagIconUrl = Starter.class.getResource("resources/flags/" + loc.getCountryCode() + ".png");
-         ImageIcon myImageIcon = new ImageIcon(flagIconUrl);
+         ImageIcon myImageIcon = new ImageIcon(loc.getFlagUrl());
          return myImageIcon;
       }
       catch (Exception e)

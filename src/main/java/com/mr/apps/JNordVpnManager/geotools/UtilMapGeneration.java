@@ -110,7 +110,7 @@ public class UtilMapGeneration
          Starter._m_logError.TraceDebug("Create World Map Frame...");
          mapFrame = new JMapFrame(m_map);
          mapFrame.enableToolBar(true);
-         mapFrame.enableTool(Tool.POINTER, Tool.PAN, Tool.RESET, Tool.ZOOM , Tool.SCROLLWHEEL);
+         mapFrame.enableTool(Tool.POINTER, Tool.PAN, Tool.RESET, Tool.ZOOM , Tool.SCROLLWHEEL /*, Tool.INFO */);
          mapFrame.enableStatusBar(false);
          //mapFrame.enableLayerTable(true);
          //mapFrame.setSize(800, 400);
@@ -161,6 +161,7 @@ public class UtilMapGeneration
    {
       if (null != m_currentServerMapLayer)
       {
+         if (null != loc && m_currentServerMapLayer.getTitle().equals(loc.getServerId())) return; // already current
          m_map.removeLayer(m_currentServerMapLayer);
          m_currentServerMapLayer = null;
       }
@@ -171,7 +172,7 @@ public class UtilMapGeneration
          m_map.addLayer(m_currentServerMapLayer);
          m_currentServerMapLayer.updated();
          zoomIn(loc);
-         Starter._m_logError.LoggingInfo("Changed VPN Server on map: " + loc.toString());
+         Starter._m_logError.TraceDebug("Changed VPN Server on map: " + loc.getServerId());
       }
    }
    
@@ -201,7 +202,7 @@ public class UtilMapGeneration
       // create the layer
       Style style = SLD.createPointStyle("Circle" /*"Star"*/, Color.GREEN, Color.RED, 0.5f, 20);
       UpdatableLayer layer = new UpdatableLayer(DataUtilities.collection(featureCollection), style);
-      layer.setTitle("Current Server");
+      layer.setTitle(loc.getServerId());
       return layer;
    }
 
@@ -387,7 +388,7 @@ public class UtilMapGeneration
          if (nb > 0)
          {
             // got a match
-            Starter._m_logError.LoggingInfo("VPN Server selected: " + info.toString());
+            Starter._m_logError.LoggingInfo("VPN Server city selected: " + info.toString());
             Map<String, Object> data = info.getFeatureData(0);
             String serverId = (String) data.get("Name");
             loc = UtilLocations.getLocation(serverId);
@@ -406,11 +407,13 @@ public class UtilMapGeneration
                Starter._m_logError.LoggingInfo("VPN Server country selected: " + info.toString().substring(0, 80) + "...");  
                Map<String, Object> data = info.getFeatureData(0);
                String serverId = (String) data.get("NAME");
+               String countryCode = (String) data.get("ISO_A2_EH");
 
                // name mappings for geo-map country selections to NordVPN names
                if (serverId.equalsIgnoreCase("Laos")) serverId = "Lao People's Democratic Republic";
                if (serverId.startsWith("United States of")) serverId = "United States";
                loc = UtilLocations.getLocation(serverId);
+               loc.setCountryCode(countryCode.toLowerCase());
             }
          }
       }

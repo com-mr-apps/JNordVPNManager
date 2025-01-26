@@ -8,6 +8,9 @@
  */
 package com.mr.apps.JNordVpnManager.geotools;
 
+import java.io.File;
+import java.net.URL;
+
 import com.mr.apps.JNordVpnManager.Starter;
 import com.mr.apps.JNordVpnManager.nordvpn.NvpnGroups;
 import com.mr.apps.JNordVpnManager.nordvpn.NvpnGroups.NordVPNEnumGroups;
@@ -241,6 +244,16 @@ public class Location
    public boolean hasGroup(NordVPNEnumGroups m_filterRegion)
    {
       return m_groups.hasGroup(m_filterRegion);
+   }
+
+   public String getFlagImageFileName()
+   {
+      return "flags" + File.separator + this.getCountryCode() + ".png";
+   }
+
+   public URL getFlagUrl()
+   {
+      return Starter.class.getResource("resources/flags/" + this.getCountryCode() + ".png");
    }
 
    public String toString()
