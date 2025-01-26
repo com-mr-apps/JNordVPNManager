@@ -183,7 +183,7 @@ public class NvpnCallbacks
    public static void executeLogInOut()
    {
       String msg = null;
-      NvpnAccountData accountData = Starter.getCurrentAccountData();
+      NvpnAccountData accountData = Starter.getCurrentAccountData(false);
       boolean currentStatus = accountData.isLoggedIn();
       if (true == currentStatus)
       {
@@ -214,8 +214,8 @@ public class NvpnCallbacks
          }
       }
 
-      // get the current status
-      accountData = new NvpnAccountData();
+      // get the new current status
+      accountData = Starter.getCurrentAccountData(true);
       boolean newStatus = accountData.isLoggedIn();
       if (newStatus != currentStatus)
       {
@@ -237,7 +237,7 @@ public class NvpnCallbacks
          }
       }
 
-      // update current account data and dependent GUI elements
-      Starter.updateAccountData(accountData);
+      // update current account data dependent GUI elements
+      Starter.updateAccountData(false);
    }
 }

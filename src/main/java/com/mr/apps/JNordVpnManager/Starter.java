@@ -357,8 +357,8 @@ public class Starter extends JFrame
                      setCursorCanChange(false);
 
                      m_nvpnSettingsData = new NvpnSettingsData();
-                     // update account data and dependent GUI elements
-                     updateAccountData(new NvpnAccountData());
+                     // update dependent GUI elements based on current account data and 
+                     updateAccountData(true);
                      // update the status line, commands menu and world map current server layer
                      updateCurrentServer();
                      // update the server tree (and world map all servers layer)
@@ -622,9 +622,9 @@ public class Starter extends JFrame
       JPanel connectPanel = m_connectLine.create(m_nvpnAccountData);
 
       //-------------------------------------------------------------------------------
-      // initialize data dependent GUI elements
+      // initialize data dependent GUI elements based on current (valid) account data
       //-------------------------------------------------------------------------------
-      updateAccountData(null);
+      updateAccountData(false);
 
       //-------------------------------------------------------------------------------
       // main frame layout
@@ -750,14 +750,16 @@ public class Starter extends JFrame
    }
 
    /**
-    * Update GUI elements Login/Logout information.
+    * Update the current valid account data and depending GUI elements.
     * 
-    * @param is
-    *           the current account data (if null, we use the previous set data)
+    * @param update
+    *           is true, if the current account data is not valid and needs to be updated.
     */
-   public static void updateAccountData(NvpnAccountData accountData)
+   public static void updateAccountData(boolean update)
    {
-      if (null != accountData) m_nvpnAccountData = accountData;
+      if (null == m_nvpnAccountData || update) getCurrentAccountData(update);
+
+      GuiMenuBar.updateAccountReminder();
       GuiMenuBar.updateLoginLogout(m_nvpnAccountData);
       GuiConnectLine.updateLoginLogout(m_nvpnAccountData);
    }
@@ -821,9 +823,9 @@ public class Starter extends JFrame
       return m_nvpnSettingsData;
    }
 
-   public static NvpnAccountData getCurrentAccountData()
+   public static NvpnAccountData getCurrentAccountData(boolean update)
    {
-      if (null == m_nvpnAccountData) m_nvpnAccountData = new NvpnAccountData(); 
+      if (null == m_nvpnAccountData || update) m_nvpnAccountData = new NvpnAccountData(); 
       return m_nvpnAccountData;
    }
 

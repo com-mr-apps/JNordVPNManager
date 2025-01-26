@@ -10,6 +10,8 @@ package com.mr.apps.JNordVpnManager.gui;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.Vector;
 
 import javax.swing.Box;
@@ -25,6 +27,7 @@ import com.mr.apps.JNordVpnManager.geotools.Location;
 import com.mr.apps.JNordVpnManager.geotools.UtilLocations;
 import com.mr.apps.JNordVpnManager.gui.components.JResizedIcon;
 import com.mr.apps.JNordVpnManager.gui.components.JResizedIcon.IconSize;
+import com.mr.apps.JNordVpnManager.gui.components.JResizedIcon.IconUrls;
 import com.mr.apps.JNordVpnManager.gui.dialog.JModalDialog;
 import com.mr.apps.JNordVpnManager.gui.dialog.JSystemInfoDialog;
 import com.mr.apps.JNordVpnManager.gui.dialog.JWhatsNewDialog;
@@ -41,6 +44,8 @@ import com.mr.apps.JNordVpnManager.utils.UtilSystem;
 
 public class GuiMenuBar
 {
+   private static JMenu                   m_nordvpnMenu                  = null;
+   private static JMenuItem               m_menuItemAccount              = null;
    private static JMenuItem               m_menuItemReConnect            = null;
    private static JMenuItem               m_menuItemDisConnect           = null;
    private static JMenuItem               m_menuItemQuickConnect         = null;
@@ -101,8 +106,8 @@ public class GuiMenuBar
       
       // -------------------------------------------------------------------------------------
       // Menu --- NordVPN ---
-      JMenu nordvpnMenu = new JMenu("NordVPN");
-      menuBar.add(nordvpnMenu);
+      m_nordvpnMenu = new JMenu("NordVPN");
+      menuBar.add(m_nordvpnMenu);
 
       JMenuItem menuItemVersion = new JMenuItem("Version");
       menuItemVersion.addActionListener(new ActionListener()
@@ -123,18 +128,44 @@ public class GuiMenuBar
             JModalDialog.showMessage("NordVPN Version", msg);
          }
       });
-      nordvpnMenu.add(menuItemVersion);
+      m_nordvpnMenu.add(menuItemVersion);
 
-      JMenuItem menuItemAccount = new JMenuItem("Account Info");
-      menuItemAccount.addActionListener(new ActionListener()
+      m_menuItemAccount = new JMenuItem("Account Info");
+      m_menuItemAccount.addActionListener(new ActionListener()
       {
          public void actionPerformed(ActionEvent e)
          {
             String msg = NvpnCommands.getAccountInfo();
             UtilSystem.showResultDialog("NordVPN Account", msg, false);
+            if (Starter.getCurrentAccountData(false).warnNordAccountExpires())
+            {
+               int iRemainingDays = Starter.getCurrentAccountData(false).getRemainingDays();
+               int iRememberMe = Math.max(1, iRemainingDays-10);
+               JModalDialog dlg = JModalDialog.JOptionDialog("NordVPN Account Expires",
+                     "Your NordVPN Subscription expires in " + iRemainingDays + " days.\n"
+                     + "The button 'Renew Subscription' will open the web browser with my affiliate link where you get free months added to your subscription.\n\n"
+                     + "(You can configure this reminder in the application user preferences.)",
+                     "Renew Subscription,Set Reminder to " + iRememberMe + " days,Cancel");
+               int rc = dlg.getResult();
+               if (rc == 0)
+               {
+                  try
+                  {
+                     UtilSystem.openWebpage(new URI("https://refer-nordvpn.com/ArNNOfynXcu"));
+                  }
+                  catch (URISyntaxException ex)
+                  {
+                     Starter._m_logError.LoggingExceptionAbend(10903, ex);
+                  }
+               }
+               else if (rc == 1)
+               {
+                  UtilPrefs.setAccountReminder(iRememberMe);
+               }
+            }
          }
       });
-      nordvpnMenu.add(menuItemAccount);
+      m_nordvpnMenu.add(m_menuItemAccount);
 
       JMenuItem menuItemStatus = new JMenuItem("Status");
       menuItemStatus.addActionListener(new ActionListener()
@@ -145,7 +176,7 @@ public class GuiMenuBar
             UtilSystem.showResultDialog("NordVPN Status", msg, false);
          }
       });
-      nordvpnMenu.add(menuItemStatus);
+      m_nordvpnMenu.add(menuItemStatus);
 
       JMenuItem menuItemSettings = new JMenuItem("Settings");
       menuItemSettings.addActionListener(new ActionListener()
@@ -156,9 +187,9 @@ public class GuiMenuBar
             UtilSystem.showResultDialog("NordVPN Settings", msg, false);
          }
       });
-      nordvpnMenu.add(menuItemSettings);
+      m_nordvpnMenu.add(menuItemSettings);
 
-      nordvpnMenu.addSeparator();
+      m_nordvpnMenu.addSeparator();
 
       JMenuItem menuItemEditSettings = new JMenuItem("Edit Settings");
       menuItemEditSettings.addActionListener(new ActionListener()
@@ -168,7 +199,7 @@ public class GuiMenuBar
             NvpnSettingsData.showNordVpnSettingsPanel();
          }
       });
-      nordvpnMenu.add(menuItemEditSettings);
+      m_nordvpnMenu.add(menuItemEditSettings);
 
       // -------------------------------------------------------------------------------------
       // Menu --- Connect ---
@@ -314,7 +345,6 @@ public class GuiMenuBar
          }
       });
       menuBar.add(sponsorMenu);
-
 
       return menuBar;
    }
@@ -541,5 +571,20 @@ public class GuiMenuBar
          }
       }
       if (false == foundAtFirstPos) setMenuRecentServerListItems();
+   }
+   
+   public static void updateAccountReminder()
+   {
+      if (null == m_nordvpnMenu) return;
+      if (Starter.getCurrentAccountData(false).warnNordAccountExpires())
+      {
+         m_nordvpnMenu.setIcon(JResizedIcon.getIcon(IconUrls.ICON_WARNING, IconSize.SMALL));
+         m_menuItemAccount.setIcon(JResizedIcon.getIcon(IconUrls.ICON_WARNING, IconSize.SMALL));
+      }
+      else
+      {
+         m_nordvpnMenu.setIcon(null);
+         m_menuItemAccount.setIcon(null);
+      }
    }
 }

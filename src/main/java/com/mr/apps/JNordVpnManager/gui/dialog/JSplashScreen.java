@@ -9,24 +9,18 @@
 package com.mr.apps.JNordVpnManager.gui.dialog;
 
 import java.awt.Color;
-import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Font;
-import java.awt.Image;
 import java.awt.Toolkit;
-import java.net.URI;
-import java.net.URISyntaxException;
 import javax.swing.*;
 
 import com.mr.apps.JNordVpnManager.Starter;
-import com.mr.apps.JNordVpnManager.utils.UtilSystem;
+import com.mr.apps.JNordVpnManager.gui.components.JLogo;
 
 @SuppressWarnings("serial")
 public class JSplashScreen extends JFrame
 {
    private static final String SPLASH_IMAGE = "resources/SplashScreen.png";
-   private static final String BUYMEACOFFEE_IMAGE = "resources/bmc_qr.png";
-   private static final String MRLOGO_IMAGE = "resources/mrLogo.png";
    private static final String COPYRIGHT_STRING = "Copyright Ⓒ 2025 - written by com.mr.apps";
 
    protected static String _m_versionText; // set at program start and reused for "About" window
@@ -75,53 +69,19 @@ public class JSplashScreen extends JFrame
       copyright.setForeground(new Color(97, 206, 255));
       this.m_splashImageIcon.add(copyright);
 
-      ImageIcon imageLogo = new ImageIcon(Starter.class.getResource(MRLOGO_IMAGE));
-      Image myImage = imageLogo.getImage();
-      Image resizedImage = myImage.getScaledInstance(80, 80, java.awt.Image.SCALE_SMOOTH);
-      JLabel mrLogo =  new JLabel(new ImageIcon(resizedImage));
-      mrLogo.setToolTipText("<html><font face=\"sansserif\" color=\"black\">Press the Mouse Button to go to GitHub Repository:<br>https://github.com/com-mr-apps</font></html>");
+      JLogo mrLogo = new JLogo(JLogo.Logos.LOGO_MR);
+      mrLogo.setSize(new Dimension(80,80));
+      mrLogo.setLocation(20, 300);
       mrLogo.setSize(new Dimension(80,80));
       mrLogo.setLocation(20, 20);
-      mrLogo.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-      mrLogo.addMouseListener(new java.awt.event.MouseAdapter() {
-         public void mousePressed(java.awt.event.MouseEvent evt)
-         {
-            try
-            {
-               UtilSystem.openWebpage(new URI("https://github.com/com-mr-apps"));
-            }
-            catch (URISyntaxException e)
-            {
-               Starter._m_logError.LoggingExceptionAbend(10903, e);
-            }
-         }
-      });
       this.m_splashImageIcon.add(mrLogo);
 
       if (null == status)
       {
          // Welcome screen
-         ImageIcon imageBmc = new ImageIcon(Starter.class.getResource(BUYMEACOFFEE_IMAGE));
-         myImage = imageBmc.getImage();
-         resizedImage = myImage.getScaledInstance(80, 80, java.awt.Image.SCALE_SMOOTH);
-         JLabel buymeacoffee =  new JLabel(new ImageIcon(resizedImage));
-         buymeacoffee.setToolTipText("<html><font face=\"sansserif\" color=\"black\">If you like to support my work,<br>you can press the Mouse Button and buy me a coffee here:<br>https://buymeacoffee.com/3dprototyping</font></html>");
+         JLogo buymeacoffee = new JLogo(JLogo.Logos.LOGO_BUYMEACOFFEE);
          buymeacoffee.setSize(new Dimension(80,80));
          buymeacoffee.setLocation(500, 20);
-         buymeacoffee.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-         buymeacoffee.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mousePressed(java.awt.event.MouseEvent evt)
-            {
-               try
-               {
-                  UtilSystem.openWebpage(new URI("https://buymeacoffee.com/3dprototyping"));
-               }
-               catch (URISyntaxException e)
-               {
-                  Starter._m_logError.LoggingExceptionAbend(10903, e);
-               }
-            }
-         });
          this.m_splashImageIcon.add(buymeacoffee);
 
          m_splashFrame.setPreferredSize(new Dimension(imageIcon.getIconWidth(), imageIcon.getIconHeight()));

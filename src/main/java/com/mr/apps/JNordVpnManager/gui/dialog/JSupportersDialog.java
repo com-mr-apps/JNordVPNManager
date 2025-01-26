@@ -12,8 +12,12 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.event.WindowAdapter;
+
+import javax.swing.Box;
+import javax.swing.BoxLayout;
 import javax.swing.JEditorPane;
 import javax.swing.JFrame;
+import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.WindowConstants;
@@ -21,6 +25,7 @@ import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
 
 import com.mr.apps.JNordVpnManager.Starter;
+import com.mr.apps.JNordVpnManager.gui.components.JLogo;
 import com.mr.apps.JNordVpnManager.utils.UtilSystem;
 
 @SuppressWarnings("serial")
@@ -44,11 +49,11 @@ public class JSupportersDialog extends JFrame
          + "<p>Your contributions will directly support the development of new features, bug fixes, and documentation for my open-source projects. This will help me allocate more time for creating innovative solutions, rather than focusing on administrative tasks.</p>"
 
          + "<h3>What Are The JNordVPN Manager Supporters Features</h3>"
-         + "<h4>Here is a list of features which will be / are available for my supporters:</h4>"
+         + "<h4>Here is a list of features which will be available for <em>my supporters</em>:</h4>"
          + "<ul>"
-         + "<li><strong>Support NordVPN Recommended Servers</strong>: Filter Servers by load index (speed) from NordVPN recommended servers list. <a href=\"https://github.com/com-mr-apps/JNordVPNManager/issues/16\">[GitHub Issue #16]</a>.</li>"
-         + "<li><strong>Support Allow-, Whitelist</strong>: Manage allowlist for ports and subnets. <a href=\"https://github.com/com-mr-apps/JNordVPNManager/issues/17\">[GitHub Issue #17]</a>.</li>"
-         + "<li><strong>Support Meshnet</strong>: NordVPN Meshnet Settings/Management. <a href=\"https://github.com/com-mr-apps/JNordVPNManager/issues/18\">[GitHub Issue #18]</a>.</li>"
+         + "<li><strong>NordVPN Recommended Servers</strong>: Filter Servers by load index (speed) from NordVPN recommended servers list. <a href=\"https://github.com/com-mr-apps/JNordVPNManager/issues/16\">[GitHub Issue #16]</a>.</li>"
+         + "<li><strong>Allow-, Whitelist</strong>: Manage allowlist for ports and subnets. <a href=\"https://github.com/com-mr-apps/JNordVPNManager/issues/17\">[GitHub Issue #17]</a>.</li>"
+         + "<li><strong>Meshnet</strong>: NordVPN Meshnet Settings/Management. <a href=\"https://github.com/com-mr-apps/JNordVPNManager/issues/18\">[GitHub Issue #18]</a>.</li>"
          + "<li><strong>Cycle Connections</strong>: Time-based automatic connect (cycle) through a configurable list of servers.</li>"
          + "<li><strong>Speedtest</strong>: check/show connection speeds.</li>"
          + "<li><em>...further suggestions are welcome...</em>"
@@ -59,8 +64,8 @@ public class JSupportersDialog extends JFrame
 
          + "<h3>Where you can support me:</h3>"
          + "<ul>"
-         + "<li><a href=\"https://github.com/sponsors/com-mr-apps\">GitHub Sponsorship</a></li>"
          + "<li><a href=\"https://buymeacoffee.com/3dprototyping\">Donations at Buy Me A Coffee</a></li>"
+         + "<li><a href=\"https://github.com/sponsors/com-mr-apps\">GitHub Sponsorship</a> (comming soon...)</li>"
          + "</ul>";
          
    /**
@@ -93,6 +98,18 @@ public class JSupportersDialog extends JFrame
             close();
          }
       });
+
+      JPanel jp = new JPanel();
+      jp.setLayout(new BoxLayout(jp, BoxLayout.X_AXIS));
+      jp.setBackground(new Color(247, 217, 146));
+      JLogo coffeeLogo = new JLogo(JLogo.Logos.LOGO_BUYMEACOFFEE);
+      JLogo mrLogo = new JLogo(JLogo.Logos.LOGO_MR);
+      jp.add(Box.createRigidArea(new Dimension(20, 0)));
+      jp.add(coffeeLogo);
+      jp.add(Box.createHorizontalGlue());
+      jp.add(mrLogo);
+      jp.add(Box.createRigidArea(new Dimension(20, 0)));
+      this.add(jp, BorderLayout.PAGE_START);
 
       JEditorPane editorTextPane = new JEditorPane();
       editorTextPane.setEditable(false);

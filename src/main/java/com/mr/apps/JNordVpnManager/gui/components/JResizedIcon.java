@@ -1,3 +1,11 @@
+/* Copyright (C) 2025 com.mr.apps - All Rights Reserved
+ * You may use, distribute and modify this code under the
+ * terms of the “Commons Clause” License Condition v1.0 and the
+ * Common Development and Distribution License 1.0.
+ *
+ * You should have received a copy of the “Commons Clause” license with
+ * this file. If not, please visit: https://github.com/com.mr.apps/JNordVpnManager
+ */
 package com.mr.apps.JNordVpnManager.gui.components;
 
 import java.awt.Image;
@@ -24,6 +32,7 @@ public class JResizedIcon extends ImageIcon
       ICON_TIMER_DISCONNECT       ("disconnectTimer_32.png"),
       ICON_TIMER_CONNECT          ("connectTimer_32.png"),
       ICON_TREE_LOCATION          ("mpLocation.png"),
+      ICON_WARNING                ("paused_48.png"), // TODO
       ICON_WINDOW_COLLAPSE        ("window_collapse_32.png"),
       ICON_WINDOW_EXPAND          ("window_expand_32.png");
     
@@ -47,7 +56,8 @@ public class JResizedIcon extends ImageIcon
    {
       SMALL             (12),
       MEDIUM            (24),
-      LARGE             (36);
+      LARGE             (36),
+      LOGO              (80);
     
        private int size;
     

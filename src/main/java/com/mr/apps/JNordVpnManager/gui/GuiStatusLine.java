@@ -219,7 +219,7 @@ public class GuiStatusLine
           *  disconnected or not logged in
           */
          // check if paused and update pause slider
-         int iStatus = (true == Starter.getCurrentAccountData().isLoggedIn()) ? Starter.STATUS_LOGGEDOUT : Starter.STATUS_DISCONNECTED;
+         int iStatus = (true == Starter.getCurrentAccountData(false).isLoggedIn()) ? Starter.STATUS_LOGGEDOUT : Starter.STATUS_DISCONNECTED;
          String pauseMsg = JPauseSlider.syncStatusForPause(iStatus);
          if (null != pauseMsg)
          {
