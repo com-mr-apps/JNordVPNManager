@@ -542,7 +542,7 @@ public class Starter extends JFrame
             // we don't have information about the correct group for an already connected server, so we cannot set the current group for sure
             // only for obfuscated we can assume, that the selected group may be obfuscated..
             // !!! The GUI can confuse, because the displayed legacy group (filter) may not be correct for the current connection!
-            // !!! OK only, if connection was done in the GUI -> see status line 
+            // !!! OK only, after [re]connection in the GUI -> check status line text message 
 
             // check settings for obfuscated and correct the server tree legacy group filter
             NordVPNEnumGroups currentGroup = NordVPNEnumGroups.get(UtilPrefs.getRecentServerGroup());
@@ -553,6 +553,8 @@ public class Starter extends JFrame
                UtilPrefs.setRecentServerGroup(NordVPNEnumGroups.legacy_obfuscated_servers.getId());
                // NvpnGroups.setCurrentGroup(NordVPNEnumGroups.legacy_obfuscated_servers); ! not sure, if settings were changed w/o reconnect before GUI start
             }
+            _m_logError.TraceIni("Existing connection to server: " + m_nvpnStatusData.getServer());
+            _m_logError.TraceDebug("GUI doesn't has information about the legacy_group until a [re]connection in the application!");
          }
 
          // initialize current region from (corrected) User Preferences
@@ -680,7 +682,8 @@ public class Starter extends JFrame
          if (saParts.length == 4)
          {
             // get (optional) connection data from preferences 'server@country,group,technology,protocol' and add them to loc
-            loc.setLegacyGroup(Integer.valueOf(saParts[1]));
+            int legacyGroup = Integer.valueOf(saParts[1]);
+            if (legacyGroup != NordVPNEnumGroups.legacy_group_unknown.getId()) loc.setLegacyGroup(legacyGroup);
             loc.setVpnTechnology(saParts[2]);
             loc.setVpnProtocol(saParts[3]);
          }

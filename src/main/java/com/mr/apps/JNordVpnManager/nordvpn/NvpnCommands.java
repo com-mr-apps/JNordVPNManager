@@ -542,13 +542,13 @@ public class NvpnCommands {
                {
                   UtilSystem.setLastError(UtilSystem.joinCommand(CMD_NORDVPN, ARG_CONNECT, city) + 
                         "\nServer '" + country + "/" + city + "' does not support group: " + currentGroup.name() +
-                        "\nPlease select a correct legacy group or change the server.", -1);
+                        "\nPlease check legacy group setting and reconnect or change the server.", -1);
                }
                else
                {
                   UtilSystem.setLastError(UtilSystem.joinCommand(CMD_NORDVPN, ARG_CONNECT, OPT_GROUP, currentGroup.name(), city) + 
                         "\nServer '" + country + "/" + city + "' does not support group: " + currentGroup.name() +
-                        "\nPlease select a correct legacy group or change the server.", -1);
+                        "\nPlease check legacy group setting and reconnect or change the server.", -1);
                }
             }
          }

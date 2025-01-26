@@ -58,16 +58,17 @@ public class JSettingsPanel extends JPanel
 
       int iFieldNb = 0;
       SortedSet<String> keys = new TreeSet<>(hmSettingsFields.keySet());
-      for (String key : keys) { 
+      for (String key : keys)
+      {
          JSettingsPanelField settingsField = hmSettingsFields.get(key);
          String valueField = hmSettingValues.get(key);
          if (null == valueField)
          {
-            Starter._m_logError.TraceDebug("Skip Panel Field (no value): " + settingsField.toString());
+//            Starter._m_logError.TraceDebug("Skip Panel Field (no value): " + settingsField.toString());
             continue;
          }
 
-         Starter._m_logError.TraceDebug("Create Panel Field: " + settingsField.toString());
+//         Starter._m_logError.TraceDebug("Create Panel Field: " + settingsField.toString());
 
          JLabel label = new JLabel(settingsField.getLabel() + ":", JLabel.LEFT);
          gbc = createGbc(0, iFieldNb);

@@ -34,7 +34,8 @@ public class NvpnGroups
       The_Americas                     (21),
       Asia_Pacific                     (23),
       Africa_The_Middle_East_And_India (25),
-      
+
+      legacy_group_unknown             (-1),
       Double_VPN                        (1),
       Onion_Over_VPN                    (3),
       legacy_ultra_fast_tv              (5),

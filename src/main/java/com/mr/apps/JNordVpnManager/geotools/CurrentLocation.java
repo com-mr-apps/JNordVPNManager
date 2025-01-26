@@ -22,7 +22,7 @@ public class CurrentLocation extends Location
    private boolean isConnected;
 
    // Group selection in server tree filter panel
-   private Integer m_filterGroup;
+   private Integer m_legacyGroup;
 
    // Technology selection in NordVPN Settings (OPENVPN/NORDLYNX)
    private String m_vpnTechnology;
@@ -84,7 +84,8 @@ public class CurrentLocation extends Location
       if (true == isConnected)
       {
          // set the connection specific attributes
-         this.m_filterGroup = this.getLegacyGroup();
+         NordVPNEnumGroups legacyGroup = NvpnGroups.getCurrentLegacyGroup();
+         if (null != legacyGroup) this.m_legacyGroup = NvpnGroups.getCurrentLegacyGroup().getId();
          this.m_vpnTechnology = this.getVpnTechnology();
          this.m_vpnProtocol = this.getVpnProtocol();
       }
@@ -96,18 +97,18 @@ public class CurrentLocation extends Location
     */
    public int getLegacyGroup()
    {
-      return (null == m_filterGroup) ? NvpnGroups.getCurrentFilterGroup().getId() : m_filterGroup;
+      return (null == m_legacyGroup) ? NvpnGroups.getCurrentFilterGroup().getId() : m_legacyGroup;
    }
 
    /**
     * Set Legacy Group for server connection
     * 
-    * @param filterGroup
+    * @param legacyGroup
     *           is the legacy (server tree filter) group
     */
-   public void setLegacyGroup(Integer filterGroup)
+   public void setLegacyGroup(Integer legacyGroup)
    {
-      this.m_filterGroup = filterGroup;
+      this.m_legacyGroup = legacyGroup;
    }
 
    /**
@@ -159,7 +160,8 @@ public class CurrentLocation extends Location
     */
    public String getLocationConnectionData()
    {
-      return m_countryName + "," + this.getLegacyGroup() + (",") + this.getVpnTechnology() + (",") + this.getVpnProtocol();
+      int legacyGroup = (null == m_legacyGroup) ? NordVPNEnumGroups.legacy_group_unknown.getId() : m_legacyGroup;
+      return m_countryName + "," + legacyGroup + (",") + this.getVpnTechnology() + (",") + this.getVpnProtocol();
    }
 
    /**

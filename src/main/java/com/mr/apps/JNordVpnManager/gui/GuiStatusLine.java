@@ -118,7 +118,6 @@ public class GuiStatusLine
    public CurrentLocation update(NvpnStatusData statusData)
    {
       CurrentLocation ret_loc = null;
-      Starter._m_logError.TraceDebug("Update Statusline...");
 
       if (null == statusData.getStatus())
       {
@@ -244,6 +243,14 @@ public class GuiStatusLine
    public static void updateStatusLine(int iStatus, String msg)
    {
       m_statusIndicator.setIcon(m_statusImages.get(iStatus));
-      if (null != msg) m_statusText.setText(msg);
+      if (null != msg)
+      {
+         Starter._m_logError.TraceDebug("Update Statusline: [" + iStatus + "] " + msg);
+         m_statusText.setText(msg);
+      }
+      else
+      {
+         Starter._m_logError.TraceDebug("Update Statusline: [" + iStatus + "]");
+      }
    }
 }
