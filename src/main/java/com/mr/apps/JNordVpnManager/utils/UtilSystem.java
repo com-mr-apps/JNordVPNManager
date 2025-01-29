@@ -421,4 +421,29 @@ public class UtilSystem
          }
       }
    }
+
+   private static String m_jarFile = null;
+   public static boolean addClasspath (String path, String jarFile)
+   {
+      if (null == jarFile)
+      {
+         jarFile = m_jarFile;
+      }
+      else
+      {
+         m_jarFile = jarFile;
+      }
+
+      try
+      {
+         DynamicClassLoader dcl = (DynamicClassLoader) ClassLoader.getSystemClassLoader();
+         dcl.add(new URL("file://" + new File (path,jarFile).getName()));
+      }
+      catch (Exception e)
+      {
+         Starter._m_logError.LoggingExceptionMessage(4, 10901, e);
+         return false;
+      }
+      return true;
+   }
 }

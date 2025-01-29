@@ -319,6 +319,9 @@ public class Starter extends JFrame
    {
       _m_logError.LoggingInfo("GUI Version: " + version);
 
+      // add addons classpath
+      UtilSystem.addClasspath(UtilPrefs.getAddonsPath(), "/JNordVpnManager.addons-" + version + ".jar");
+
       // main frame
       m_mainFrame = this;
       m_mainFrame.setLayout(new BorderLayout());
