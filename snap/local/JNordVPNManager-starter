@@ -3,4 +3,4 @@
 # This script is a wrapper which runs the Java application in a bash script with the needed options
 #
 export PATH=$PATH:/snap/bin/
-exec $SNAP/bin/java -jar $SNAP/jar/JNordVpnManager-2025.2.0.jar "$@"
+exec $SNAP/bin/java -jar $SNAP/jar/JNordVpnManager-2025.2.1.jar "$@"

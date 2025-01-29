@@ -5,7 +5,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.mr.apps.JNordVpnManager</groupId>
 	<artifactId>JNordVpnManager</artifactId>
-	<version>2025.2.0</version>
+	<version>2025.2.1</version>
 	<name>JNordVpnManager</name>
 	<url>http://maven.apache.org</url>
 	<properties>
@@ -13,7 +13,41 @@
 		<geotools.version>32-SNAPSHOT</geotools.version>
 		<maven.deploy.skip>true</maven.deploy.skip>
 	</properties>
+	<repositories>
+		<repository>
+			<id>j-nordvpn-manager-addons</id>
+			<name>JNordVPN Manager AddOns</name>
+			<url>file:/${project.basedir}/libs</url>
+		</repository>
+		<repository>
+			<id>osgeo</id>
+			<name>OSGeo Release Repository</name>
+			<url>https://repo.osgeo.org/repository/release/</url>
+			<snapshots>
+				<enabled>false</enabled>
+			</snapshots>
+			<releases>
+				<enabled>true</enabled>
+			</releases>
+		</repository>
+		<repository>
+			<id>osgeo-snapshot</id>
+			<name>OSGeo Snapshot Repository</name>
+			<url>https://repo.osgeo.org/repository/snapshot/</url>
+			<snapshots>
+				<enabled>true</enabled>
+			</snapshots>
+			<releases>
+				<enabled>false</enabled>
+			</releases>
+		</repository>
+	</repositories>
 	<dependencies>
+		<!--dependency>
+			<groupId>j-nordvpn-manager</groupId>
+			<artifactId>JNordVpnManager.addons</artifactId>
+			<version>2025.2.1</version>
+		</dependency-->
 		<dependency>
 			<groupId>org.junit.jupiter</groupId>
 			<artifactId>junit-jupiter-engine</artifactId>
@@ -43,21 +77,21 @@
 			<artifactId>gt-swing</artifactId>
 			<version>${geotools.version}</version>
 		</dependency>
-		        <dependency>
-            <groupId>org.geotools</groupId>
-            <artifactId>gt-geotiff</artifactId>
-            <version>${geotools.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.geotools</groupId>
-            <artifactId>gt-image</artifactId>
-            <version>${geotools.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.geotools</groupId>
-            <artifactId>gt-wms</artifactId>
-            <version>${geotools.version}</version>
-        </dependency>
+		<dependency>
+			<groupId>org.geotools</groupId>
+			<artifactId>gt-geotiff</artifactId>
+			<version>${geotools.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.geotools</groupId>
+			<artifactId>gt-image</artifactId>
+			<version>${geotools.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.geotools</groupId>
+			<artifactId>gt-wms</artifactId>
+			<version>${geotools.version}</version>
+		</dependency>
 		<dependency>
 			<groupId>net.sourceforge.javacsv</groupId>
 			<artifactId>javacsv</artifactId>
@@ -69,30 +103,6 @@
 			<version>20240303</version>
 		</dependency>
 	</dependencies>
-	<repositories>
-		<repository>
-			<id>osgeo</id>
-			<name>OSGeo Release Repository</name>
-			<url>https://repo.osgeo.org/repository/release/</url>
-			<snapshots>
-				<enabled>false</enabled>
-			</snapshots>
-			<releases>
-				<enabled>true</enabled>
-			</releases>
-		</repository>
-		<repository>
-			<id>osgeo-snapshot</id>
-			<name>OSGeo Snapshot Repository</name>
-			<url>https://repo.osgeo.org/repository/snapshot/</url>
-			<snapshots>
-				<enabled>true</enabled>
-			</snapshots>
-			<releases>
-				<enabled>false</enabled>
-			</releases>
-		</repository>
-	</repositories>
 	<build>
 		<plugins>
 			<plugin>
@@ -110,42 +120,46 @@
 				<version>3.6.3</version>
 			</plugin>
 			<plugin>
-              <groupId>org.apache.maven.plugins</groupId>
-              <artifactId>maven-shade-plugin</artifactId>
-              <version>3.6.0</version>
-              <executions>
-                  <execution>
-                      <phase>package</phase>
-                      <goals>
-                          <goal>shade</goal>
-                      </goals>
-                      <configuration>
-                          <filters>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-shade-plugin</artifactId>
+				<version>3.6.0</version>
+				<executions>
+					<execution>
+						<phase>package</phase>
+						<goals>
+							<goal>shade</goal>
+						</goals>
+						<configuration>
+							<filters>
 								<!-- filter signed jars in the dependencies -->
-                              <filter>
-                                  <artifact>*:*</artifact>
-                                  <excludes>
-                                      <exclude>META-INF/*.SF</exclude>
-                                      <exclude>META-INF/*.DSA</exclude>
-                                      <exclude>META-INF/*.RSA</exclude>
-                                  </excludes>
-                              </filter>
-                          </filters>
-                          <shadedArtifactAttached>false</shadedArtifactAttached>
-                          <shadedClassifierName></shadedClassifierName>
-                          <transformers>
-								<transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-								<manifestEntries>
-									<Main-Class>com.mr.apps.JNordVpnManager.Starter</Main-Class>
-									<Implementation-Version>${project.version}</Implementation-Version>
-								</manifestEntries>
-                              </transformer>
-                          </transformers>
-                      </configuration>
-                  </execution>
-              </executions>
+								<filter>
+									<artifact>*:*</artifact>
+									<excludes>
+										<exclude>META-INF/*.SF</exclude>
+										<exclude>META-INF/*.DSA</exclude>
+										<exclude>META-INF/*.RSA</exclude>
+									</excludes>
+								</filter>
+							</filters>
+							<shadedArtifactAttached>false</shadedArtifactAttached>
+							<shadedClassifierName></shadedClassifierName>
+							<transformers>
+								<transformer
+									implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+									<manifestEntries>
+										<Main-Class>
+											com.mr.apps.JNordVpnManager.Starter</Main-Class>
+										<Implementation-Version>
+											${project.version}</Implementation-Version>
+									</manifestEntries>
+								</transformer>
+							</transformers>
+						</configuration>
+					</execution>
+				</executions>
 			</plugin>
-			<!-- create lib directory with dependencies and the jar with classpath
+			<!-- create lib directory with dependencies and the jar with
+			classpath
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-dependency-plugin</artifactId>
@@ -198,9 +212,11 @@
 				<version>3.6.3</version>
 				<configuration>
 					<source>11</source>
-					<!-- Specifies whether or not the version text is included.-->
+					<!-- Specifies whether or not the version text is
+					included.-->
 					<version>false</version>
-					<!-- Omit qualifying package name before class names in output.-->
+					<!-- Omit qualifying package name before class names in
+					output.-->
 					<noqualifier>all</noqualifier>
 					<!-- Shuts off non-error and non-warning messages.-->
 					<quiet>true</quiet>
@@ -213,8 +229,10 @@
 					<breakiterator>true</breakiterator>
 					<excludePackageNames>
 						org.geotools.resources:org.geotools.maven:com:net.opengis:org.w3:javax:it.geosolutions</excludePackageNames>
-					<!-- Enables the Javadoc tool to interpret a simple, one-argument -->
-					<!-- custom block tag tagname in doc comments. Note: <placement/> -->
+					<!-- Enables the Javadoc tool to interpret a simple,
+					one-argument -->
+					<!-- custom block tag tagname in doc comments. Note:
+					<placement/> -->
 					<!-- should be a combination of the letters Xaoptcmf.             -->
 					<tags>
 						<tag>
@@ -270,7 +288,8 @@
 						<link>https://locationtech.github.io/jts/javadoc/</link>
 					</links>
 				</configuration>
-				<!-- only works with package javadoc:aggregate for use of META-INF/MANIFEST.MF Automatic-Module-Name -->
+				<!-- only works with package javadoc:aggregate for use of
+				META-INF/MANIFEST.MF Automatic-Module-Name -->
 				<reportSets>
 					<reportSet>
 						<id>aggregate</id>
