@@ -462,7 +462,7 @@ public class UtilPrefs
       Preferences settingsLogfileName = Preferences.userRoot().node("com/mr/apps/JNordVpnManager/Settings");
       String logfileName = settingsLogfileName.get("Logfile.Name", DEFAULT_PREF_SETTINGS_LOGFILE_NAME);
 
-      return logfileName;
+      return logfileName.replaceFirst("^~", System.getProperty("user.home"));
    }
 
    public static void setLogfileName(String logfileName)
@@ -546,7 +546,7 @@ public class UtilPrefs
       Preferences settingsAddonsPath = Preferences.userRoot().node("com/mr/apps/JNordVpnManager/Settings");
       String addonsPath = settingsAddonsPath.get("Addons.Path", DEFAULT_PREF_SETTINGS_ADDONS_PATH);
 
-      return addonsPath;
+      return addonsPath.replaceFirst("^~", System.getProperty("user.home"));
    }
 
    public static void setAddonsPath(String addonsPath)
