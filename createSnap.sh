@@ -1,10 +1,16 @@
 #!/bin/bash
 
-sudo snap remove j-nordvpn-manager
-
-snapcraft clean #force build from GitHub
+# 1 - build snap
+cd ~/writable/projekte/GitHub/com-mr-apps/JNordVPNManager
+snapcraft clean j-nordvpn-manager
 snapcraft
 
-sudo snap install j-nordvpn-manager_2024.1.1_amd64.snap --devmode --dangerous
+# 2 - install/test snap
+sudo snap remove j-nordvpn-manager
+sudo snap install j-nordvpn-manager_2025.2.0_amd64.snap --dangerous
+j-nordvpn-manager
 
-snapcraft upload --release=stable j-nordvpn-manager_2024.1.1_amd64.snap
+# 3 - upload snap [candidate|stable]
+snapcraft upload --release=candidate j-nordvpn-manager_2025.2.0_amd64.snap
+
+# 4 - install snap via snapstore

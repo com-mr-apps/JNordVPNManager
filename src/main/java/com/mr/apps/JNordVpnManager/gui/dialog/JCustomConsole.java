@@ -55,24 +55,34 @@ import com.mr.apps.JNordVpnManager.utils.UtilPrefs;
 @SuppressWarnings("serial")
 public class JCustomConsole extends JFrame implements Runnable
 {
-   private static final Color     COLOR_wheat         = new Color(255, 235, 205);
-   private static final Color     COLOR_darkGreen     = new Color(40, 180, 99);
+   private static final Color     COLOR_wheat           = new Color(255, 235, 205);
+   private static final Color     COLOR_darkGreen       = new Color(40, 180, 99);
 
-   private boolean                m_isVisible         = false;
+   private static final String    EMPTY_TEXT            = "<html><head><style>"
+         + ".dbg {font-style: italic; color: #7b7d7d;}"
+         + ".cmd {font-weight: bold; color: blue;}"
+         + ".ini {font-weight: normal; color: #28b463;}"
+         + ".er5 {font-weight: bold; color: #ff334f;}"
+         + ".er4 {font-weight: bold; color: red;}"
+         + ".er3 {font-weight: normal; color: orange;}"
+         + ".inf {font-weight: normal; color: black;}"
+         + "p {font-family: Monospaced; font-size:14;margin-top:2px;margin-bottom:2px}"
+         + "</style></head>"
+         + "<body style=\"background-color:#FFEBCD\" id='body'>Console output start...</body></html>";
+
+   private boolean                m_isVisible           = false;
    private JFrame                 m_consoleMainFrame;
-//   private JEditorPane            m_consoleOutputEditorPane;
    private JScrollPane            m_consoleOutputScrollPane;
    private Thread                 m_readerThreadOut;
    private Thread                 m_readerThreadErr;
    private boolean                m_quitFlag;
-   private final PipedInputStream m_pipedInputStreamOut  = new PipedInputStream();
+   private final PipedInputStream m_pipedInputStreamOut = new PipedInputStream();
    private final PipedInputStream m_pipedInputStreamErr = new PipedInputStream();
 
    public JCustomConsole()
    {
       super("JNordVPN Manager Console");
-      // create all components and add them
-      m_consoleMainFrame = this;
+       m_consoleMainFrame = this;
       
       // Close Window with "X"
       m_consoleMainFrame.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
@@ -91,6 +101,7 @@ public class JCustomConsole extends JFrame implements Runnable
       int y = (int) (frameSize.height / 3);
       m_consoleMainFrame.setBounds(x, y, frameSize.width, frameSize.height/2);
  
+      // Content
       JPanel tracesRow = new JPanel();
       tracesRow.setLayout(new BoxLayout(tracesRow, BoxLayout.X_AXIS));
       JLabel lblTrace = new JLabel("Console Settings: ");
@@ -279,17 +290,7 @@ public class JCustomConsole extends JFrame implements Runnable
       editorPane.setEditable(false);
       editorPane.setCaretColor(COLOR_wheat); // hide caret
       editorPane.setContentType( "text/html" );
-      editorPane.setText("<html><head><style>"
-            + ".dbg {font-style: italic; color: #7b7d7d;}"
-            + ".cmd {font-weight: bold; color: blue;}"
-            + ".ini {font-weight: normal; color: #28b463;}"
-            + ".er5 {font-weight: bold; color: #ff334f;}"
-            + ".er4 {font-weight: bold; color: red;}"
-            + ".er3 {font-weight: normal; color: orange;}"
-            + ".inf {font-weight: normal; color: black;}"
-            + "p {font-family: Monospaced; font-size:14;margin-top:2px;margin-bottom:2px}"
-            + "</style></head>"
-            + "<body style=\"background-color:#FFEBCD\" id='body'>Console output start...</body></html>");
+      editorPane.setText(EMPTY_TEXT);
 
       m_consoleOutputScrollPane = new JScrollPane(editorPane, 
             ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED,
@@ -400,7 +401,7 @@ public class JCustomConsole extends JFrame implements Runnable
          {
             try
             {
-               this.wait(100);
+               this.wait(50);
             }
             catch (InterruptedException ie)
             {
@@ -418,7 +419,7 @@ public class JCustomConsole extends JFrame implements Runnable
          {
             try
             {
-               this.wait(100);
+               this.wait(50);
             }
             catch (InterruptedException ie)
             {
@@ -501,7 +502,7 @@ public class JCustomConsole extends JFrame implements Runnable
    {
       JViewport viewport = m_consoleOutputScrollPane.getViewport(); 
       JEditorPane editorPane = (JEditorPane)viewport.getView(); 
-      editorPane.setText("");
+      editorPane.setText(EMPTY_TEXT);
    }
 
 
@@ -549,10 +550,11 @@ public class JCustomConsole extends JFrame implements Runnable
          int available = in.available();
          if (available == 0)
             break;
-         nbRead = in.read(b);
-         if (b[0] != '\n') line.append((char)b[0]);
+         nbRead = in.read(b, 0, 1);
+         if (nbRead != -1) line.append((char)b[0]);
+         if (line.toString().endsWith("</p>")) break;
       }
-      while (nbRead != 0 && b[0] != '\n' && !m_quitFlag);
+      while ((nbRead == 1) && (b[0] != '\n') && (!m_quitFlag));
 
       return line.toString();
    }
@@ -563,8 +565,9 @@ public class JCustomConsole extends JFrame implements Runnable
     * @param msg
     *           is the message to add
     */
-   private void appendText(String msg)
+   private synchronized void appendText(String msg)
    {
+      if (msg.isBlank()) return;
       try
       {
          JViewport viewport = m_consoleOutputScrollPane.getViewport(); 

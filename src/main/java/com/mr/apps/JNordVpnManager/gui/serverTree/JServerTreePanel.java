@@ -373,40 +373,47 @@ public class JServerTreePanel extends JPanel implements TreeSelectionListener
 
       // Filter from Settings (Technology/Protocol)
       String sTechnology = "NORDLYNX";
+      int iTechFilter = NvpnTechnologies.ikev2; // NORDLYNX,NORDWHISPER
       String sTechnologyAndProtocol = "NORDLYNX/UDP";
       NvpnSettingsData csd = Starter.getCurrentSettingsData();
-      if (null != csd) sTechnology = csd.getTechnology(false);
-      int iTechFilter = NvpnTechnologies.ikev2; // NORDLYNX
-      if ((null != csd) && (sTechnology.equalsIgnoreCase("OPENVPN")))
+      if (null != csd)
       {
-         String sProtocol = csd.getProtocol(false);
-         if (sProtocol.equalsIgnoreCase("TCP"))
+         sTechnology = csd.getTechnology(false);
+         if (sTechnology.equalsIgnoreCase("OPENVPN"))
          {
-            if (bObfuscate)
+            String sProtocol = csd.getProtocol(false);
+            if (sProtocol.equalsIgnoreCase("TCP"))
             {
-               // OPENVNP / TCP / Obfuscated
-               iTechFilter = NvpnTechnologies.openvpn_xor_tcp;
-             }
-            else
-            {
-               // OPENVNP / TCP / not Obfuscated
-               iTechFilter = NvpnTechnologies.openvpn_tcp;
-            }
-         }
-         else
-         {
-            if (bObfuscate)
-            {
-               // OPENVNP / UDP / Obfuscated
-               iTechFilter = NvpnTechnologies.openvpn_xor_udp;
+               if (bObfuscate)
+               {
+                  // OPENVNP / TCP / Obfuscated
+                  iTechFilter = NvpnTechnologies.openvpn_xor_tcp;
+                }
+               else
+               {
+                  // OPENVNP / TCP / not Obfuscated
+                  iTechFilter = NvpnTechnologies.openvpn_tcp;
+               }
             }
             else
             {
-               // OPENVNP / UDP / not Obfuscated
-               iTechFilter = NvpnTechnologies.openvpn_udp;
+               if (bObfuscate)
+               {
+                  // OPENVNP / UDP / Obfuscated
+                  iTechFilter = NvpnTechnologies.openvpn_xor_udp;
+               }
+               else
+               {
+                  // OPENVNP / UDP / not Obfuscated
+                  iTechFilter = NvpnTechnologies.openvpn_udp;
+               }
             }
+            sTechnologyAndProtocol = "OPENVPN/" + sProtocol; 
          }
-         sTechnologyAndProtocol = "OPENVPN/" + sProtocol; 
+         else if (sTechnology.equalsIgnoreCase("NORDWHISPER"))
+         {
+            sTechnologyAndProtocol = "NORDWHISPER/UDP"; 
+         }
       }
       Starter._m_logError.TraceDebug("...Filter Technology (dependent from Settings) = '" + iTechFilter + "' (" + sTechnologyAndProtocol + ").");
       String sFilterText = filterRegion.name() + " & " + filterGroup.name() + " (Obfuscate " + ((bObfuscate) ? "yes) & " : "no) & ") + sTechnologyAndProtocol;

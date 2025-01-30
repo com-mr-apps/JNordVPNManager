@@ -158,7 +158,7 @@ public class NvpnSettingsData
       m_settingsPanelFieldsMap.put(POST_QUANTUM, new JSettingsPanelField("Enable Post-Quantum Encryption", "B", KeyEvent.VK_Q, 1, this.getPostQuantum(true)));
       m_settingsPanelFieldsMap.put(PROTOCOL, new JSettingsPanelField("Protocol (OPENVPN)", "L[TCP,UDP]", KeyEvent.VK_P, 1, this.getProtocol(true)));
       m_settingsPanelFieldsMap.put(ROUTING, new JSettingsPanelField("Enable traffic routing", "B", KeyEvent.VK_R, 1, this.getRouting(true)));
-      m_settingsPanelFieldsMap.put(TECHNOLOGY, new JSettingsPanelField("Technology", "L[NORDLYNX,OPENVPN]", KeyEvent.VK_T, 1, this.getTechnology(true)));
+      m_settingsPanelFieldsMap.put(TECHNOLOGY, new JSettingsPanelField("Technology", "L[NORDLYNX,OPENVPN,NORDWHISPER]", KeyEvent.VK_T, 1, this.getTechnology(true)));
       m_settingsPanelFieldsMap.put(TPLITE, new JSettingsPanelField("Threat Protection Lite", "B", -1, 1, this.getTplite(true)));
       m_settingsPanelFieldsMap.put(TRAY, new JSettingsPanelField("Enable Tray Icon", "B", -1, 1, this.getTray(true)));
       m_settingsPanelFieldsMap.put(VIRTUAL_LOCATION, new JSettingsPanelField("Enable Virtual Locations", "B", KeyEvent.VK_V, 1, this.getVirtualLocation(true)));
@@ -245,7 +245,7 @@ public class NvpnSettingsData
       this.m_postQuantum = values.get("Post-quantum VPN");
       this.m_protocol = values.get("Protocol");
 
-      // initialize settings - in case of NORDLYNX they are not set
+      // initialize settings - in case of NORDLYNX/NORDWHISPER they are not set
       if (null == this.m_protocol) this.m_protocol = "UDP";
       if (null == this.m_obfuscate) this.m_obfuscate = "disabled";
 
@@ -761,7 +761,7 @@ public class NvpnSettingsData
          if (!equalBoolean(m_obfuscate, data))
          {
             // call set command
-            if (m_technology.equals("NORDLYNX"))
+            if (false == m_technology.equals("OPENVPN"))
             {
                m_obfuscate = "disabled";
             }
@@ -1010,9 +1010,9 @@ public class NvpnSettingsData
 
    public String getProtocol(boolean def)
    {
-      if (m_technology.equals("NORDLYNX"))
+      if (false == m_technology.equals("OPENVPN"))
       {
-         // NORDLYNX protocol is fix UDP - only OPENVPN supports TCP
+         // NORDLYNX/NORDWHISPER protocol is fix UDP - only OPENVPN supports TCP
          return "UDP";
       }
 
@@ -1031,9 +1031,9 @@ public class NvpnSettingsData
    {
       if (null == data) return false;
 
-      if (m_technology.equals("NORDLYNX"))
+      if (false == m_technology.equals("OPENVPN"))
       {
-         // NORDLYNX protocol is fix UDP - only OPENVPN supports TCP
+         // NORDLYNX/NORDWHISPER protocol is fix UDP - only OPENVPN supports TCP
          m_protocol = "UDP";
          return false;
       }
@@ -1231,8 +1231,8 @@ public class NvpnSettingsData
          // require to change setting 'obfuscate disabled'
          JModalDialog dlg = JModalDialog.JOptionDialog("Change Legacy Group",
                "Setting 'Obfuscate' is currently enabled. To connect to VPN servers with another legacy group, obfuscation must be deactivated.\n"
-               + "\n Please choose disable obfuscation, change technology to 'NORDLYNX' or choose Cancel.",
-               "Disable Obfuscation,NORDLYNX,Cancel");
+               + "\n Please choose disable obfuscation, change technology to 'NORDLYNX' or 'NORDWHISPER' or choose Cancel.",
+               "Disable Obfuscation,NORDLYNX,NORDWHISPER,Cancel");
          int rc = dlg.getResult();
          if (rc == 0)
          {
@@ -1242,7 +1242,11 @@ public class NvpnSettingsData
          {
             this.setTechnology("NORDLYNX", false);
          }
-         else // rc = 2
+         else if (rc == 2)
+         {
+            this.setTechnology("NORDWHISPER", false);
+         }
+         else // rc = 3
          {
             // Cancel
             return false;

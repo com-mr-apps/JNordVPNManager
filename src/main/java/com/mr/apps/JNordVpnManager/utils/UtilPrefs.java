@@ -53,6 +53,7 @@ public class UtilPrefs
    private static final String SERVERLIST_TIMESTAMP                     = "SERVERLIST_TIMESTAMP";
    private static final String SERVERLIST_DATA                          = "SERVERLIST_DATA";
    private static final String SERVERLIST_AUTOUPDATE                    = "SERVERLIST_AUTOUPDATE";
+   private static final String ADDON_PATH                               = "ADDON_PATH";
 
    // hidden options
    // private static final String COMPACTMODE                              = "COMPACTMODE";
@@ -76,11 +77,12 @@ public class UtilPrefs
    private static int    DEFAULT_PREF_SETTINGS_TRACECMD           = 0;
    private static int    DEFAULT_PREF_SETTINGS_TRACEINIT          = 0;
    private static String DEFAULT_PREF_SETTINGS_LOGFILE_NAME       = "~/.local/share/JNordVpnManager/JNordVpnManager.log";
+   private static String DEFAULT_PREF_SETTINGS_ADDONS_PATH         = "~/.local/share/JNordVpnManager/addons";
    private static int    DEFAULT_PREF_SETTINGS_LOGFILE_ACTIVE     = 0;
    private static int    DEFAULT_PREF_SETTINGS_CONSOLE_ACTIVE     = 0;
    private static int    DEFAULT_PREF_SETTINGS_COMMAMD_TIMEOUT    = 30;
    private static int    DEFAULT_PREF_SETTINGS_MESSAGE_AUTOCLOSE  = 2;
-   private static int    DEFAULT_PREF_SETTINGS_ACCOUNTREMINDER   = 31;
+   private static int    DEFAULT_PREF_SETTINGS_ACCOUNTREMINDER    = 31;
 
    /**
     * Dataset defining the UserPreference values.
@@ -103,6 +105,7 @@ public class UtilPrefs
       Map<String, JSettingsPanelField> settingsPanelFieldsMap  = new HashMap<String, JSettingsPanelField>();
 
       settingsPanelFieldsMap.put(ACCOUNTREMINDER, new JSettingsPanelField("Account Expiration Warning Days", "N[1,90]", -1, 2, StringFormat.int2String(DEFAULT_PREF_SETTINGS_ACCOUNTREMINDER, "#")));
+      settingsPanelFieldsMap.put(ADDON_PATH, new JSettingsPanelField("Addons", "T", -1, 20, DEFAULT_PREF_SETTINGS_ADDONS_PATH));
       settingsPanelFieldsMap.put(AUTOCONNECTMODE, new JSettingsPanelField("Auto Connect on Program Start", "B", KeyEvent.VK_S, 1, StringFormat.int2String(DEFAULT_PREF_SETTINGS_AUTOCONNECTMODE, "#")));
       settingsPanelFieldsMap.put(AUTODISCONNECTMODE, new JSettingsPanelField("Auto Disconnect on Program Exit", "B", KeyEvent.VK_E, 1, StringFormat.int2String(DEFAULT_PREF_SETTINGS_AUTODISCONNECTMODE, "#")));
       settingsPanelFieldsMap.put(COMMAND_TIMEOUT, new JSettingsPanelField("Command Timeout (in seconds)", "N[5,99]", -1, 2, StringFormat.int2String(DEFAULT_PREF_SETTINGS_COMMAMD_TIMEOUT, "#")));
@@ -459,13 +462,13 @@ public class UtilPrefs
       Preferences settingsLogfileName = Preferences.userRoot().node("com/mr/apps/JNordVpnManager/Settings");
       String logfileName = settingsLogfileName.get("Logfile.Name", DEFAULT_PREF_SETTINGS_LOGFILE_NAME);
 
-      return logfileName;
+      return logfileName.replaceFirst("^~", System.getProperty("user.home"));
    }
 
    public static void setLogfileName(String logfileName)
    {
       Preferences settingsLogfileName = Preferences.userRoot().node("com/mr/apps/JNordVpnManager/Settings");
-      settingsLogfileName.put("Logfile.Name", logfileName);
+      settingsLogfileName.put("Logfile.Name", logfileName.replaceFirst("^~", System.getProperty("user.home")));
 
       return;
    }
@@ -538,6 +541,22 @@ public class UtilPrefs
       setAccountReminder(DEFAULT_PREF_SETTINGS_ACCOUNTREMINDER);
    }
 
+   public static String getAddonsPath()
+   {
+      Preferences settingsAddonsPath = Preferences.userRoot().node("com/mr/apps/JNordVpnManager/Settings");
+      String addonsPath = settingsAddonsPath.get("Addons.Path", DEFAULT_PREF_SETTINGS_ADDONS_PATH);
+
+      return addonsPath.replaceFirst("^~", System.getProperty("user.home"));
+   }
+
+   public static void setAddonsPath(String addonsPath)
+   {
+      Preferences settingsAddonsPath = Preferences.userRoot().node("com/mr/apps/JNordVpnManager/Settings");
+      settingsAddonsPath.put("Addons.Path", addonsPath.replaceFirst("^~", System.getProperty("user.home")));
+
+      return;
+   }
+
    /**
     * Get a data set with all User Preferences data
     * @return the dataset with all user preferences data.
@@ -567,6 +586,7 @@ public class UtilPrefs
       hm.put(CONSOLE_ACTIVE, StringFormat.int2String(isConsoleActive(), "#"));
       hm.put(MESSAGE_AUTOCLOSE, StringFormat.int2String(getMessageAutoclose(), "#"));
       hm.put(ACCOUNTREMINDER, StringFormat.int2String(getAccountReminder(), "#"));
+      hm.put(ADDON_PATH, getAddonsPath());
 
       return hm;
    }
@@ -625,7 +645,16 @@ public class UtilPrefs
          setAccountReminder(iNewAccountReminder);
          GuiMenuBar.updateAccountReminder();
       }
-
+      String sCurrentAddonPath = getAddonsPath();
+      String sNewAddonPath = hm.get(ADDON_PATH);
+      if (false == sCurrentAddonPath.equals(sNewAddonPath))
+      {
+         // add changed addons classpath
+         if (true == UtilSystem.addClasspath(sNewAddonPath, null))
+         {
+            setAddonsPath(sNewAddonPath);
+         }
+      }
    }
 
    /**

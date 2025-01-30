@@ -4,7 +4,7 @@
   <groupId>com.mr.apps.JNordVpnManager</groupId>
   <artifactId>JNordVpnManager</artifactId>
   <name>JNordVpnManager</name>
-  <version>2025.2.0</version>
+  <version>2025.2.1</version>
   <url>http://maven.apache.org</url>
   <build>
     <resources>
@@ -64,6 +64,11 @@
     </plugins>
   </build>
   <repositories>
+    <repository>
+      <id>j-nordvpn-manager-addons</id>
+      <name>JNordVPN Manager AddOns</name>
+      <url>file:/${project.basedir}/libs</url>
+    </repository>
     <repository>
       <releases />
       <snapshots>

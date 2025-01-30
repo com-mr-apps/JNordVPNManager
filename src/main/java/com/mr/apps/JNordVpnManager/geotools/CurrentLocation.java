@@ -124,7 +124,7 @@ public class CurrentLocation extends Location
     * Set VPN Technology for server connection
     * 
     * @param vpnTechnology
-    *           is the VPN Technology (NORDLYNX or OPENVPN)
+    *           is the VPN Technology (NORDLYNX, NORDWHISPER or OPENVPN)
     */
    public void setVpnTechnology(String vpnTechnology)
    {
