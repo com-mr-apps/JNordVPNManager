@@ -192,7 +192,7 @@ public class JServerTreePanel extends JPanel implements TreeSelectionListener
          {
             if (true == m_statusInitServerList || JModalDialog.showConfirm("Update of the server list may take some time.\nDo you want to continue?") == JOptionPane.YES_OPTION)
             {
-               updateFilterTreeCB(false);
+               updateFilterTreeCB(true);
             }
          }
       });
