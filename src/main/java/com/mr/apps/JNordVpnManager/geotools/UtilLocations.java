@@ -183,7 +183,7 @@ public class UtilLocations
                for (int iGrp = 0; iGrp < nGrp; ++iGrp)
                {
                   JSONObject jsonObjGroup = jsonArrGroups.getJSONObject(iGrp);
-                  if ((sCountry.startsWith("United States")) && (jsonObjGroup.getInt("id") == 19))
+                  if ((sCountry.startsWith("United States")  || sCountry.startsWith("Canada")) && (jsonObjGroup.getInt("id") == 19))
                   {
                      // skip invalid group entry "Europe" for Kansas City - Record nb. 6390 (03.12.2024)
                      // ...and other cities in US
