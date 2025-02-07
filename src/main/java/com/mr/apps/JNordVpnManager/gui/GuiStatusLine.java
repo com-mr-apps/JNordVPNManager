@@ -12,6 +12,8 @@ import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
+
+import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JLabel;
@@ -46,8 +48,8 @@ public class GuiStatusLine
    private ArrayList<ImageIcon>        m_collapseExpandImages = new ArrayList<>();
 
    private static String[]             m_compactModeToolTip   = {
-         "Switch to Compact view.",
-         "Switch to Expanded view."
+         "Click here to switch to Compact view.",
+         "Click here to switch to Expanded view."
    };
 
    /**
@@ -88,6 +90,8 @@ public class GuiStatusLine
       // Compact/Expand mode switch
       int compactMode = UtilPrefs.getCompactMode();
       m_minMaxButton = new JButton(m_collapseExpandImages.get(compactMode));
+      m_minMaxButton.setBorder(BorderFactory.createRaisedSoftBevelBorder());
+
       m_minMaxButton.setToolTipText(m_compactModeToolTip[compactMode]);
       m_minMaxButton.addActionListener(new ActionListener()
       {
@@ -218,7 +222,7 @@ public class GuiStatusLine
           *  disconnected or not logged in
           */
          // check if paused and update pause slider
-         int iStatus = (true == Starter.getCurrentAccountData(false).isLoggedIn()) ? Starter.STATUS_LOGGEDOUT : Starter.STATUS_DISCONNECTED;
+         int iStatus = (true == Starter.getCurrentAccountData(false).isLoggedIn()) ? Starter.STATUS_DISCONNECTED : Starter.STATUS_LOGGEDOUT;
          String pauseMsg = JPauseSlider.syncStatusForPause(iStatus);
          if (null != pauseMsg)
          {

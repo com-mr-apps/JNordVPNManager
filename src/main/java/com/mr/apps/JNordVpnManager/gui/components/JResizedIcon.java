@@ -21,20 +21,25 @@ public class JResizedIcon extends ImageIcon
    // definitions for resource icons
    public static enum IconUrls
    {
-      ICON_STATUS_CONNECTED       ("connected_48.png"),
-      ICON_STATUS_PAUSED          ("paused_48.png"),
-      ICON_STATUS_DISCONNECTED    ("disconnected_48.png"),
-      ICON_MOUSE_POINTER_LOCATION ("mpLocation.png"),
-      ICON_MAP_ZOOM_CURRENT       ("zoom_current_location_32.png"),
-      ICON_MAP_ZOOM_ALL           ("zoom_all_tree_locations_32.png"),
-      ICON_MAP_CONNECT            ("connectMap_32.png"),
-      ICON_SERVER_SEARCH_FILTER   ("search_in_tree_32.png"),
-      ICON_TIMER_DISCONNECT       ("disconnectTimer_32.png"),
-      ICON_TIMER_CONNECT          ("connectTimer_32.png"),
-      ICON_TREE_LOCATION          ("mpLocation.png"),
-      ICON_WARNING                ("paused_48.png"), // TODO
-      ICON_WINDOW_COLLAPSE        ("window_collapse_32.png"),
-      ICON_WINDOW_EXPAND          ("window_expand_32.png");
+      ICON_MOUSE_POINTER_MAP_LOCATION  ("mp_MapSelectLocation.png"),
+      ICON_STATUS_CONNECTED            ("i_StatusOk.png"),
+      ICON_STATUS_WARNING              ("i_StatusWarning.png"),
+      ICON_STATUS_DISCONNECTED         ("i_StatusKo.png"),
+      ICON_STATUS_PAUSED               ("i_StatusPause.png"),
+      ICON_LOGGED_IN_TO_NORDVPN        ("i_LoggedInToNordVPN.png"),
+      ICON_LOGGED_OUT_FROM_NORDVPN     ("i_LoggedOutFromNordVPN.png"),
+      ICON_MAP_ZOOM_CURRENT            ("i_MapZoomCurrentLocation.png"),
+      ICON_MAP_ZOOM_ALL                ("i_MapZoomAllTreeLocations.png"),
+      ICON_MAP_CONNECT                 ("i_MapConnectToVPN.png"),
+      ICON_TIMER_PAUSE                 ("i_TimerPauseVPN.png"),
+      ICON_TIMER_CONNECT               ("i_TimerConnectToVPN.png"),
+      ICON_SERVER_SEARCH_FILTER        ("i_SearchInTree.png"),
+      ICON_TREE_LOCATION               ("i_TreeLocation.png"),
+      ICON_WINDOW_COLLAPSE             ("i_WindowCollapse.png"),
+      ICON_WINDOW_EXPAND               ("i_WindowExpand.png"),
+      ICON_CMD_AUTOCONNECT_ON_START    ("i_AutoConnectOnProgramStart.png"),
+      ICON_CMD_AUTODISCONNECT_ON_EXIT  ("i_AutoDisconnectOnProgramExit.png"),
+      ICON_SETTINGS_RESET              ("i_SettingsReset.png");
     
        private String iconName;
     
@@ -217,6 +222,22 @@ public class JResizedIcon extends ImageIcon
    public static ImageIcon getIcon (IconUrls iconUrl, IconSize size)
    {
       return getIcon(iconUrl.getIconUrl(), size);
+   }
+
+   /**
+    * Wrapper to get a predefined resized ImageIcon by its URL.
+    * 
+    * @param urlIcon
+    *           is the URL of the icon resource
+    * @param width
+    *           is the width of the generated ImageIcon
+    * @param height
+    *           is the height of the generated ImageIcon
+    * @return the resized ImageIcon
+    */
+   public static ImageIcon getIcon (IconUrls iconUrl, int width, int height)
+   {
+      return getIcon(iconUrl.getIconUrl(), width, height);
    }
 
 }

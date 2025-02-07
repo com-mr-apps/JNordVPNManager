@@ -578,8 +578,8 @@ public class GuiMenuBar
       if (null == m_nordvpnMenu) return;
       if (Starter.getCurrentAccountData(false).warnNordAccountExpires())
       {
-         m_nordvpnMenu.setIcon(JResizedIcon.getIcon(IconUrls.ICON_WARNING, IconSize.SMALL));
-         m_menuItemAccount.setIcon(JResizedIcon.getIcon(IconUrls.ICON_WARNING, IconSize.SMALL));
+         m_nordvpnMenu.setIcon(JResizedIcon.getIcon(IconUrls.ICON_STATUS_WARNING, IconSize.SMALL));
+         m_menuItemAccount.setIcon(JResizedIcon.getIcon(IconUrls.ICON_STATUS_WARNING, IconSize.SMALL));
       }
       else
       {

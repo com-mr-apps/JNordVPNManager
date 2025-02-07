@@ -15,6 +15,7 @@ import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.Hashtable;
 
+import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JLabel;
@@ -38,7 +39,7 @@ import com.mr.apps.JNordVpnManager.nordvpn.NvpnCallbacks;
 public class JPauseSlider extends JPanel
 {
    private static final int       DEFAULT_START_TIME     = 5;                      // ..in minutes  TODO: settings
-   private static final int       TIMER_UPDATE_INTERVALL = 3000;                   // 30 seconds
+   private static final int       TIMER_UPDATE_INTERVALL = 15000;                  // 15 seconds
    private static final int       TIMER_MAX_VALUE        = 3600;                   // 60 minutes
 
    private static ArrayList<ImageIcon> m_timerStartStopImages = new ArrayList<>();
@@ -50,7 +51,7 @@ public class JPauseSlider extends JPanel
    public JPauseSlider()
    {
       // Disconnect/Connect
-      m_timerStartStopImages.add(JResizedIcon.getIcon(IconUrls.ICON_TIMER_DISCONNECT, IconSize.MEDIUM));
+      m_timerStartStopImages.add(JResizedIcon.getIcon(IconUrls.ICON_TIMER_PAUSE, IconSize.MEDIUM));
       m_timerStartStopImages.add(JResizedIcon.getIcon(IconUrls.ICON_TIMER_CONNECT, IconSize.MEDIUM));
 
       JPopupMenu timeSliderPopup = new JPopupMenu();
@@ -152,6 +153,7 @@ public class JPauseSlider extends JPanel
       });
 
       m_startStopButton = new JButton(m_timerStartStopImages.get(0));
+      m_startStopButton.setBorder(BorderFactory.createRaisedSoftBevelBorder());
       CurrentLocation loc = Starter.getCurrentServer();
       if (null == loc || loc.isConnected() == false)
       {
@@ -226,9 +228,13 @@ public class JPauseSlider extends JPanel
     * Disconnect from VPN.
     * @param iTime is the start time in minutes
     */
-   private void startTheTimer(int iTime)
+   private static void startTheTimer(int iTime)
    {
       if (m_timer.isRunning()) m_timer.stop();
+
+      CurrentLocation loc = Starter.getCurrentServer();
+      if (null == loc || true == loc.isConnected()) NvpnCallbacks.executeDisConnect(null, null);
+
       if (0 == iTime)
       {
          setTimeSlider(DEFAULT_START_TIME);
@@ -239,10 +245,10 @@ public class JPauseSlider extends JPanel
       }
       Starter._m_logError.LoggingInfo("Start Pause: Disconnect from VPN for " + timeSliderValueToText(m_timeSlider.getValue()) + ".");
       m_timer.start();
+      GuiStatusLine.updateStatusLine(Starter.STATUS_PAUSED, syncStatusForPause(Starter.STATUS_PAUSED));
+
       m_startStopButton.setIcon(m_timerStartStopImages.get(1));
       m_startStopButton.setToolTipText("Reconnect.");
-      CurrentLocation loc = Starter.getCurrentServer();
-      if (null == loc || true == loc.isConnected()) NvpnCallbacks.executeDisConnect(null, null);
    }
 
    /**
@@ -252,10 +258,11 @@ public class JPauseSlider extends JPanel
     */
    private static void stopTheTimer()
    {
-      Starter._m_logError.LoggingInfo("Stop Pause.");
+      Starter._m_logError.LoggingInfo("Stop Pause (Reconnect to VPN).");
       m_timer.stop();
       m_startStopButton.setIcon(m_timerStartStopImages.get(0));
       m_startStopButton.setToolTipText("Pause VPN connection for " + timeSliderValueToText(m_timeSlider.getValue()) + ".");
+
       CurrentLocation loc = Starter.getCurrentServer();
       if (null != loc && false == loc.isConnected()) NvpnCallbacks.executeConnect(loc, null, null);
       setTimeSlider(DEFAULT_START_TIME);
@@ -264,7 +271,11 @@ public class JPauseSlider extends JPanel
    /**
     * Get the status line message for the pause timer
     * <p>
-    * And sync the status, if VPN was activated manually in time of timer is running.
+    * And sync the status, if VPN was activated manually in time of timer is running or
+    * logged out manually (outside of the application).
+    * 
+    * @param iStatus
+    *           is the timer/pause status
     * @return the message with remaining minutes or null if the timer is not running
     */
    public static String syncStatusForPause(int iStatus)
@@ -285,19 +296,21 @@ public class JPauseSlider extends JPanel
       {
          if (iStatus == Starter.STATUS_PAUSED)
          {
+            // we can use this to start pause VPN
             m_startStopButton.setEnabled(true);
-            m_startStopButton.setToolTipText("Start VPN connection in " + timeSliderValueToText(m_timeSlider.getValue()) + ".");
+            startTheTimer((m_timeSlider.getValue()+59)/60);
          }
-         else if (iStatus == Starter.STATUS_CONNECTED)
+         else if ((iStatus == Starter.STATUS_CONNECTED) || (iStatus == Starter.STATUS_DISCONNECTED))
          {
             m_startStopButton.setEnabled(true);
+            m_startStopButton.setToolTipText("Pause VPN connection for " + timeSliderValueToText(m_timeSlider.getValue()) + ".");
          }
          else // Starter.STATUS_LOGGEDOUT
          {
             // not logged in
             m_startStopButton.setEnabled(false);
+            m_startStopButton.setToolTipText("Not logged in.");
          }
-         m_startStopButton.setToolTipText("Pause VPN connection for " + timeSliderValueToText(m_timeSlider.getValue()) + ".");
       }
       return null;
    }

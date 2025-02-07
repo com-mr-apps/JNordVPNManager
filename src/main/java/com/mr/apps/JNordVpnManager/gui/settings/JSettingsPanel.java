@@ -132,7 +132,7 @@ public class JSettingsPanel extends JPanel
          }
 
          // Reset button
-         JButton jbReset = new JButton(JResizedIcon.getIcon("icons/settingsUndo.png", 15, 10));
+         JButton jbReset = new JButton(JResizedIcon.getIcon(JResizedIcon.IconUrls.ICON_SETTINGS_RESET, JResizedIcon.IconSize.SMALL));
          jbReset.setToolTipText("Reset the field to its default value.");
          jbReset.addActionListener(new ActionListener()
          {

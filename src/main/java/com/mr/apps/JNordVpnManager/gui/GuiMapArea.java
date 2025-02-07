@@ -42,9 +42,9 @@ public class GuiMapArea
 
    public GuiMapArea()
    {
-      ImageIcon myImageIcon = JResizedIcon.getIcon(IconUrls.ICON_MOUSE_POINTER_LOCATION, null);
+      ImageIcon myImageIcon = JResizedIcon.getIcon(IconUrls.ICON_MOUSE_POINTER_MAP_LOCATION, null);
       Image customImage = myImageIcon.getImage();
-      m_selectCursor = Toolkit.getDefaultToolkit().createCustomCursor(customImage, new Point(12, 31), "selectLocation");
+      m_selectCursor = Toolkit.getDefaultToolkit().createCustomCursor(customImage, new Point(10, 28), "mp_MapSelectLocation");
    }
    
    public JMapFrame create()
@@ -56,7 +56,7 @@ public class GuiMapArea
 
       ImageIcon imageZoomCurrent = JResizedIcon.getIcon(IconUrls.ICON_MAP_ZOOM_CURRENT, IconSize.MEDIUM);
       JButton showCurrent = new JButton(imageZoomCurrent);
-      showCurrent.setToolTipText("Display current server location");
+      showCurrent.setToolTipText("Click here to display the current server location");
       showCurrent.addActionListener(new ActionListener() {
          public void actionPerformed(ActionEvent e)
          {
@@ -67,7 +67,7 @@ public class GuiMapArea
 
       ImageIcon imageZoomAll = JResizedIcon.getIcon(IconUrls.ICON_MAP_ZOOM_ALL, IconSize.MEDIUM);
       JButton showServers = new JButton(imageZoomAll);
-      showServers.setToolTipText("Display all [filtered] server locations");
+      showServers.setToolTipText("Click here to display all [filtered] server locations");
       showServers.addActionListener(new ActionListener() {
          public void actionPerformed(ActionEvent e)
          {
@@ -78,7 +78,7 @@ public class GuiMapArea
 
       ImageIcon imageConnectMap = JResizedIcon.getIcon(IconUrls.ICON_MAP_CONNECT, IconSize.MEDIUM);
       JButton pickServer = new JButton(imageConnectMap);
-      pickServer.setToolTipText("Select a VPN Server [city or country]. LMB-direct/RMB-confirm");
+      pickServer.setToolTipText("Click here to select a VPN Server [city or country]. LMB-direct/RMB-confirm");
       pickServer.addActionListener(e -> m_mapFrame.getMapPane().setCursorTool(
          new CursorTool() {
             @Override
