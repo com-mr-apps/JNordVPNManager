@@ -447,7 +447,7 @@ public class UtilSystem
             Starter._m_logError.LoggingWarning(10901,
                   "DynamicClassLoader Error",
                   "Addon jarfile (optional) does not exist:\n" + fpJarFile.getAbsolutePath());
-
+            return false;
          }
       }
       catch (Exception e)

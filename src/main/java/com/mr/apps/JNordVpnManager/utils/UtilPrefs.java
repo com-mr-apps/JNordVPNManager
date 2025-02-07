@@ -22,9 +22,11 @@ import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 import com.mr.apps.JNordVpnManager.Starter;
+import com.mr.apps.JNordVpnManager.commandInterfaces.Command;
 import com.mr.apps.JNordVpnManager.gui.settings.JUserPrefsDialog;
 import com.mr.apps.JNordVpnManager.nordvpn.NvpnGroups.NordVPNEnumGroups;
 import com.mr.apps.JNordVpnManager.gui.GuiMenuBar;
+import com.mr.apps.JNordVpnManager.gui.connectLine.GuiCommandsToolBar;
 import com.mr.apps.JNordVpnManager.gui.settings.JSettingsPanelField;
 import com.mr.apps.JNordVpnManager.utils.String.StringFormat;
 
@@ -83,6 +85,7 @@ public class UtilPrefs
    private static int    DEFAULT_PREF_SETTINGS_COMMAMD_TIMEOUT    = 30;
    private static int    DEFAULT_PREF_SETTINGS_MESSAGE_AUTOCLOSE  = 2;
    private static int    DEFAULT_PREF_SETTINGS_ACCOUNTREMINDER    = 31;
+   private static String DEFAULT_PREF_SETTINGS_COMMANDS_TOOLBAR   = Command.APP_PREF_AUTOCONNECT + ";" + Command.APP_PREF_AUTODISCONNECT + ";" + Command.VPN_CMD_RECONNECT;
 
    /**
     * Dataset defining the UserPreference values.
@@ -357,6 +360,7 @@ public class UtilPrefs
    {
       Preferences settingsAutoConnectMode = Preferences.userRoot().node("com/mr/apps/JNordVpnManager/Settings");
       settingsAutoConnectMode.putInt("AutoConnectMode", autoConnectMode);
+      GuiCommandsToolBar.updateCommand(Command.APP_PREF_AUTOCONNECT);
 
       return;
    }
@@ -373,6 +377,7 @@ public class UtilPrefs
    {
       Preferences settingsAutoDisConnectMode = Preferences.userRoot().node("com/mr/apps/JNordVpnManager/Settings");
       settingsAutoDisConnectMode.putInt("AutoDisConnectMode", autoDisConnectMode);
+      GuiCommandsToolBar.updateCommand(Command.APP_PREF_AUTODISCONNECT);
 
       return;
    }
@@ -553,6 +558,22 @@ public class UtilPrefs
    {
       Preferences settingsAddonsPath = Preferences.userRoot().node("com/mr/apps/JNordVpnManager/Settings");
       settingsAddonsPath.put("Addons.Path", addonsPath.replaceFirst("^~", System.getProperty("user.home")));
+
+      return;
+   }
+
+   public static String getCommandsToolbarIds()
+   {
+      Preferences settingsCommandsToolbar = Preferences.userRoot().node("com/mr/apps/JNordVpnManager/Settings");
+      String commandsToolbar = settingsCommandsToolbar.get("CommandsToolbar", DEFAULT_PREF_SETTINGS_COMMANDS_TOOLBAR);
+
+      return commandsToolbar;
+   }
+
+   public static void setCommandsToolbarIds(String commandsToolbar)
+   {
+      Preferences settingsCommandsToolbar = Preferences.userRoot().node("com/mr/apps/JNordVpnManager/Settings");
+      settingsCommandsToolbar.put("CommandsToolbar", commandsToolbar);
 
       return;
    }
