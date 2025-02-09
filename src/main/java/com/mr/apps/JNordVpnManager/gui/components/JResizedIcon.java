@@ -22,6 +22,8 @@ public class JResizedIcon extends ImageIcon
    public static enum IconUrls
    {
       ICON_MOUSE_POINTER_MAP_LOCATION  ("mp_MapSelectLocation.png"),
+      ICON_CUSTOMIZE_ADD_COMMAND_BAR   ("i_CustomizeAddCommandBar.png"),
+      ICON_CUSTOMIZE_DEL_COMMAND_BAR   ("i_CustomizeDelCommandBar.png"),
       ICON_STATUS_CONNECTED            ("i_StatusOk.png"),
       ICON_STATUS_WARNING              ("i_StatusWarning.png"),
       ICON_STATUS_DISCONNECTED         ("i_StatusKo.png"),
@@ -33,8 +35,10 @@ public class JResizedIcon extends ImageIcon
       ICON_MAP_CONNECT                 ("i_MapConnectToVPN.png"),
       ICON_TIMER_PAUSE                 ("i_TimerPauseVPN.png"),
       ICON_TIMER_CONNECT               ("i_TimerConnectToVPN.png"),
+      ICON_RECONNECT                   ("i_ReConnectToVPN.png"),
       ICON_SERVER_SEARCH_FILTER        ("i_SearchInTree.png"),
       ICON_TREE_LOCATION               ("i_TreeLocation.png"),
+      ICON_VPN_SET_KILLSWITCH          ("i_VpnSetKillswitch.png"),
       ICON_WINDOW_COLLAPSE             ("i_WindowCollapse.png"),
       ICON_WINDOW_EXPAND               ("i_WindowExpand.png"),
       ICON_CMD_AUTOCONNECT_ON_START    ("i_AutoConnectOnProgramStart.png"),

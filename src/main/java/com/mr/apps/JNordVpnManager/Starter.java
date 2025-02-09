@@ -580,16 +580,20 @@ public class Starter extends JFrame
             if (null != loc)
             {
                m_splashScreen.setStatus("GUI Auto Connect to " + loc.getToolTip());
-               NvpnCallbacks.executeConnect(loc, null, "JNordVPN Manager Auto Connect");
+               if (true == NvpnCallbacks.executeConnect(loc, null, "JNordVPN Manager Auto Connect"))
+               {
+                  // successfully connected
+                  bConnected = true;
+               }
             }
          }
       }
-
+/*
       if (!bConnected)
       {
          GuiStatusLine.updateStatusLine(STATUS_DISCONNECTED, "Not logged in to NordVPN Service.");
       }
-
+*/
       m_splashScreen.setProgress(40);
       m_splashScreen.setStatus("Create World Map...");
 

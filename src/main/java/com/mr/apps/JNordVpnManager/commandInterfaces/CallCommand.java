@@ -18,9 +18,9 @@ import com.mr.apps.JNordVpnManager.Starter;
 public class CallCommand
 {
 
-   public static Object invokeComponentMethod(Command cmd, String methodName, Component e)
+   public static Object invokeComponentMethod(Command cmd, String methodName, Component component)
    {
-      return invokeMethod("com.mr.apps.JNordVpnManager.commandInterfaces." + cmd.getCommand(), methodName, new Object[]{e}, new Class<?>[]{java.awt.Component.class});
+      return invokeMethod("com.mr.apps.JNordVpnManager.commandInterfaces." + cmd.getCommand(), methodName, new Object[]{component}, new Class<?>[]{java.awt.Component.class});
    }
 
    public static Object invokeEventMethod(Command cmd, String methodName, ActionEvent e)
@@ -67,7 +67,7 @@ public class CallCommand
       {
          Starter._m_logError.LoggingError(10900,
                "Method not found or missmatched arguments.",
-               "A method with the name=" + methodName + "< - and the supplied arguments could not be found.");
+               "A method with the name=" + methodName + " - and the supplied arguments could not be found.");
          callResult = null;
       }
       catch (InvocationTargetException e)

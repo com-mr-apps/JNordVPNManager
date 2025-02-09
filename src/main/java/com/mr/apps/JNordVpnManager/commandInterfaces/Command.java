@@ -9,6 +9,9 @@
 package com.mr.apps.JNordVpnManager.commandInterfaces;
 
 import java.awt.Component;
+import java.awt.event.ActionEvent;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Vector;
@@ -24,16 +27,16 @@ import com.mr.apps.JNordVpnManager.utils.UtilPrefs;
 public class Command
 {
    // Supported GUI Types
-   public static final int TYPE_SEPARATOR = 1;
+   public static final int TYPE_CUSTOMIZE = 1;
    public static final int TYPE_BUTTON    = 2;
    public static final int TYPE_CHECKBOX  = 3;
 
    // Declaration of the available Command UId's (HashMap key)
-   public static final String VPN_CMD_RECONNECT    = "VPN_CMD_RECONNECT";
-   public static final String VPN_CMD_PAUSE        = "VPN_CMD_PAUSE";
-   public static final String APP_PREF_AUTOCONNECT = "APP_PREF_AUTOCONNECT";
-   public static final String APP_PREF_AUTODISCONNECT = "APP_PREF_AUTODISCONNECT";
-   public static final String SEPARATOR            = "SEPARATOR";
+   public static final String          VPN_CMD_RECONNECT       = "VPN_CMD_RECONNECT";
+   public static final String          VPN_CMD_PAUSE           = "VPN_CMD_PAUSE";
+   public static final String          VPN_SET_KILLSWITCH      = "VPN_SET_KILLSWITCH";
+   public static final String          APP_PREF_AUTOCONNECT    = "APP_PREF_AUTOCONNECT";
+   public static final String          APP_PREF_AUTODISCONNECT = "APP_PREF_AUTODISCONNECT";
 
    // class members
    private Component             m_component = null;
@@ -45,9 +48,21 @@ public class Command
 
    // list of all available commands
    private static Map<String, Command> m_allCommandsMap  = null;
+   private static ArrayList<String> m_allCommandKeysSorted = null;
 
    // list with current commands in the ToolBar
    private static Vector<Command> m_CommandsToolbarList = null;
+
+   /**
+    * Constructor of the customize toolBar menu Command object
+    * 
+    */
+   public Command()
+   {
+      m_iType = TYPE_CUSTOMIZE;
+      m_toolTip = "Click RMB to add a command to the Commands ToolBar";
+      m_iconUrl = JResizedIcon.IconUrls.ICON_CUSTOMIZE_ADD_COMMAND_BAR;
+   }
 
    /**
     * Constructor of the Command object
@@ -79,11 +94,40 @@ public class Command
       {
          // initialize all available commands (ONCE per program lifetime)
          m_allCommandsMap  = new HashMap<String, Command>();
-         m_allCommandsMap.put(VPN_CMD_RECONNECT, new Command(VPN_CMD_RECONNECT, TYPE_BUTTON,JResizedIcon.IconUrls.ICON_TIMER_CONNECT, "Click here to Reconnect to VPN Server", "VpnReconnect"));
-         m_allCommandsMap.put(VPN_CMD_PAUSE, new Command(VPN_CMD_PAUSE, TYPE_BUTTON, JResizedIcon.IconUrls.ICON_TIMER_PAUSE, "Click here to Pause the Connection to VPN Server", "VpnPause"));
-         m_allCommandsMap.put(APP_PREF_AUTOCONNECT, new Command(APP_PREF_AUTOCONNECT, TYPE_CHECKBOX, JResizedIcon.IconUrls.ICON_CMD_AUTOCONNECT_ON_START, "Click here to set User Preferences for Auto Connect to VPN on Application Start", "AppPrefAutoConnect"));
-         m_allCommandsMap.put(APP_PREF_AUTODISCONNECT, new Command(APP_PREF_AUTODISCONNECT, TYPE_CHECKBOX, JResizedIcon.IconUrls.ICON_CMD_AUTODISCONNECT_ON_EXIT, "Click here to set User Preferences for Auto Disconnect from VPN on Application Exit", "AppPrefAutoDisconnect"));
-         m_allCommandsMap.put(SEPARATOR, new Command(SEPARATOR, TYPE_SEPARATOR, null, null, "no.command"));
+
+         m_allCommandsMap.put(VPN_CMD_RECONNECT, 
+               new Command(VPN_CMD_RECONNECT, 
+                     TYPE_BUTTON,JResizedIcon.IconUrls.ICON_RECONNECT,
+                     "Click here to Reconnect the VPN Server",
+                     "VpnReconnect"));
+         m_allCommandsMap.put(VPN_CMD_PAUSE,
+               new Command(VPN_CMD_PAUSE, TYPE_BUTTON,
+                     JResizedIcon.IconUrls.ICON_TIMER_PAUSE,
+                     "Click here to Pause the Connection to the VPN Server",
+                     "VpnPause"));
+
+         m_allCommandsMap.put(VPN_SET_KILLSWITCH,
+               new Command(VPN_SET_KILLSWITCH, TYPE_CHECKBOX,
+                     JResizedIcon.IconUrls.ICON_VPN_SET_KILLSWITCH,
+                     "Click here to change the VPN Setting for Killswitch",
+                     "VpnSetKillswitch"));
+
+         m_allCommandsMap.put(APP_PREF_AUTOCONNECT,
+               new Command(APP_PREF_AUTOCONNECT,
+                     TYPE_CHECKBOX,
+                     JResizedIcon.IconUrls.ICON_CMD_AUTOCONNECT_ON_START,
+                     "Click here to change User Preferences for Auto Connect to VPN on Application Start",
+                     "AppPrefAutoConnect"));
+         m_allCommandsMap.put(APP_PREF_AUTODISCONNECT,
+               new Command(APP_PREF_AUTODISCONNECT,
+                     TYPE_CHECKBOX,
+                     JResizedIcon.IconUrls.ICON_CMD_AUTODISCONNECT_ON_EXIT,
+                     "Click here to change User Preferences for Auto Disconnect from VPN on Application Exit",
+                     "AppPrefAutoDisconnect"));
+         
+         m_allCommandKeysSorted = new ArrayList<String>(m_allCommandsMap.keySet());
+         Collections.sort(m_allCommandKeysSorted);
+
       }
 
       // initialize the current available commands in the ToolBar
@@ -104,7 +148,20 @@ public class Command
 
    }
 
-   public Component getComponent(String cmdId)
+   public static Vector<Command> getListOfUnusedCommands()
+   {
+      Vector<Command> listOfUnusedCommands = new Vector<Command>();
+
+      for (String x : m_allCommandKeysSorted)
+      {
+         Command cmd = m_allCommandsMap.get(x);
+         if (m_CommandsToolbarList.contains(cmd)) continue;
+         listOfUnusedCommands.add(cmd);
+      }
+      return listOfUnusedCommands;
+   }
+   
+   public Component getComponent()
    {
       return m_component;
    }
@@ -143,13 +200,7 @@ public class Command
       return (null == m_allCommandsMap) ? null : m_allCommandsMap.get(cmdId);
    }
 
-   public Object getValue()
-   {
-      
-      return CallCommand.invokeBasisMethod(this, "get", null, null);
-   }
-
-   public static Vector<Command> getCommandsToolbarList()
+  public static Vector<Command> getCommandsToolbarList()
    {
       return m_CommandsToolbarList;
    }
@@ -162,7 +213,7 @@ public class Command
    /**
     * Save the "Commands ToolBar List Items" in the User Preferences.
     */
-   public void saveCommandsToolbarListItems()
+   public static void saveCommandsToolbarListItems()
    {
       StringBuffer commandToolbarItemsIds = new StringBuffer();
 
@@ -182,9 +233,57 @@ public class Command
       }
    }
 
+   /**
+    * Insert a command in the Commands ToolBar List
+    * 
+    * @param addCmd
+    *           is the Command to add
+    * @param iPos
+    *           is the position
+    */
+   public static void insertCommandAt(Command addCmd, int iPos)
+   {
+      m_CommandsToolbarList.insertElementAt(addCmd, iPos);
+   }
+
+   public boolean removeCommandFromToolbarList()
+   {
+      return m_CommandsToolbarList.remove(this);
+   }
+
+   /**
+    * Invoke the Method to get the Command value
+    * @return the command specific value
+    */
+   public Object getValue()
+   {
+      
+      return CallCommand.invokeBasisMethod(this, CoreCommandClass.METHOD_GET, null, null);
+   }
+
+   /**
+    * Invoke the Method to update the Command specific GUI element (e.g. CheckBox status)
+    * @return the command specific return value (boolean)
+    */
+   public Object updateUI()
+   {
+      
+      return CallCommand.invokeComponentMethod(this, CoreCommandClass.METHOD_UPDATE_UI, m_component);
+   }
+
+   /**
+    * Invoke the Method to execute the Command
+    * @return the command specific return value (boolean)
+    */
+   public Object execute(ActionEvent e)
+   {
+      
+      return CallCommand.invokeEventMethod(this, CoreCommandClass.METHOD_EXECUTE, e);
+   }
+
    public String toString()
    {
-      return m_id + m_command;
+      return m_id + " " + m_command;
    }
 }
 

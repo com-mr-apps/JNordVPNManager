@@ -127,6 +127,7 @@ public class JSplashScreen extends JFrame
    {
       Starter._m_logError.getCurElapsedTime("Progress " + progress);
       m_progressBar.setValue(progress);
+      m_progressBar.revalidate();
       m_progressBar.update(m_progressBar.getGraphics());
       if (progress == 100)
       {

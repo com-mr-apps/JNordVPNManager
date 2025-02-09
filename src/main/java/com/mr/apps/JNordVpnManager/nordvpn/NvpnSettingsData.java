@@ -14,7 +14,9 @@ import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 import com.mr.apps.JNordVpnManager.Starter;
+import com.mr.apps.JNordVpnManager.commandInterfaces.Command;
 import com.mr.apps.JNordVpnManager.geotools.CurrentLocation;
+import com.mr.apps.JNordVpnManager.gui.connectLine.GuiCommandsToolBar;
 import com.mr.apps.JNordVpnManager.gui.dialog.JModalDialog;
 import com.mr.apps.JNordVpnManager.gui.settings.JNordVpnSettingsDialog;
 import com.mr.apps.JNordVpnManager.gui.settings.JSettingsPanelField;
@@ -689,9 +691,13 @@ public class NvpnSettingsData
          if (!equalBoolean(m_killswitch, data))
          {
             // call set command
-            m_killswitch = data;
             NvpnCommands.killswitchSettings(StringFormat.string2boolean(data));
-            if (UtilSystem.getLastExitCode() == 0) return true;
+            if (UtilSystem.getLastExitCode() == 0)
+            {
+               m_killswitch = data;
+               GuiCommandsToolBar.updateCommand(Command.VPN_SET_KILLSWITCH);
+               return true;
+            }
          }
       }
 

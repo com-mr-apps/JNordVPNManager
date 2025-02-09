@@ -25,10 +25,10 @@ import com.mr.apps.JNordVpnManager.Starter;
 import com.mr.apps.JNordVpnManager.commandInterfaces.Command;
 import com.mr.apps.JNordVpnManager.gui.settings.JUserPrefsDialog;
 import com.mr.apps.JNordVpnManager.nordvpn.NvpnGroups.NordVPNEnumGroups;
+import com.mr.apps.JNordVpnManager.utils.String.StringFormat;
 import com.mr.apps.JNordVpnManager.gui.GuiMenuBar;
 import com.mr.apps.JNordVpnManager.gui.connectLine.GuiCommandsToolBar;
 import com.mr.apps.JNordVpnManager.gui.settings.JSettingsPanelField;
-import com.mr.apps.JNordVpnManager.utils.String.StringFormat;
 
 /**
  * Class to manage the application User Preferences.<p>
@@ -85,7 +85,7 @@ public class UtilPrefs
    private static int    DEFAULT_PREF_SETTINGS_COMMAMD_TIMEOUT    = 30;
    private static int    DEFAULT_PREF_SETTINGS_MESSAGE_AUTOCLOSE  = 2;
    private static int    DEFAULT_PREF_SETTINGS_ACCOUNTREMINDER    = 31;
-   private static String DEFAULT_PREF_SETTINGS_COMMANDS_TOOLBAR   = Command.APP_PREF_AUTOCONNECT + ";" + Command.APP_PREF_AUTODISCONNECT + ";" + Command.VPN_CMD_RECONNECT;
+   private static String DEFAULT_PREF_SETTINGS_COMMANDS_TOOLBAR   = Command.APP_PREF_AUTOCONNECT + ";" + Command.APP_PREF_AUTODISCONNECT + ";" + Command.VPN_CMD_RECONNECT + ";" + Command.VPN_SET_KILLSWITCH;
 
    /**
     * Dataset defining the UserPreference values.

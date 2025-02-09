@@ -7,6 +7,10 @@ import com.mr.apps.JNordVpnManager.Starter;
 
 public class CoreCommandClass
 {
+   public static final String METHOD_GET       = "get";
+   public static final String METHOD_EXECUTE   = "execute";
+   public static final String METHOD_UPDATE_UI = "updateUI";
+
    public static Object get()
    {
       Starter._m_logError.TraceDebug("Get Method not implemented.");
