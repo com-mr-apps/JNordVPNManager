@@ -11,15 +11,20 @@ package com.mr.apps.JNordVpnManager.commandInterfaces;
 import java.awt.event.ActionEvent;
 
 import com.mr.apps.JNordVpnManager.Starter;
+import com.mr.apps.JNordVpnManager.gui.GuiStatusLine;
 import com.mr.apps.JNordVpnManager.gui.connectLine.JPauseSlider;
 
 public class VpnPause extends CoreCommandClass
 {
    public static boolean execute(ActionEvent e)
    {
-      JPauseSlider.syncStatusForPause(Starter.STATUS_CONNECTED);
-      JPauseSlider.syncStatusForPause(Starter.STATUS_PAUSED);
+      JPauseSlider.syncStatusForTimer(Starter.STATUS_CONNECTED);
+      GuiStatusLine.setStatusLine(Starter.STATUS_PAUSED, JPauseSlider.syncStatusForTimer(Starter.STATUS_PAUSED));
       return true;
    }
 
+   public static boolean updateUI(Command cmd)
+   {
+      return true;
+   }
 }

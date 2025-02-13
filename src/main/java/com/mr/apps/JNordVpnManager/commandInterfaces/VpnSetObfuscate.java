@@ -16,13 +16,13 @@ import com.mr.apps.JNordVpnManager.Starter;
 import com.mr.apps.JNordVpnManager.utils.String.StringFormat;
 
 /**
- * Command VPN Settings - KillSwitch
+ * Command VPN Settings - Obfuscate
  */
-public class VpnSetKillswitch extends CoreCommandClass
+public class VpnSetObfuscate extends CoreCommandClass
 {
    public static Object get()
    {
-      return (StringFormat.string2boolean(Starter.getCurrentSettingsData().getKillswitch(false)));
+      return (StringFormat.string2boolean(Starter.getCurrentSettingsData().getObfuscate(false)));
    }
 
    public static boolean execute(ActionEvent e)
@@ -32,12 +32,14 @@ public class VpnSetKillswitch extends CoreCommandClass
       {
          if (cb.isSelected())
          {
-            Starter.getCurrentSettingsData().setKillswitch("true", false);
+            Starter.getCurrentSettingsData().setObfuscate("true", false);
          }
          else
          {
-            Starter.getCurrentSettingsData().setKillswitch("false", false);
+            Starter.getCurrentSettingsData().setObfuscate("false", false);
          }
+         Starter.updateStatusLine();
+         Starter.setTreeFilterGroup();
       }
       return true;
    }
@@ -47,7 +49,18 @@ public class VpnSetKillswitch extends CoreCommandClass
       JCheckBox cb = (JCheckBox)cmd.getComponent();
       if (null != cb)
       {
-         cb.setSelected(StringFormat.string2boolean(Starter.getCurrentSettingsData().getKillswitch(false)));
+         if (false == Starter.getCurrentSettingsData().getTechnology(false).equals("OPENVPN"))
+         {
+            cb.setSelected(false);
+            cb.setEnabled(false);
+            cb.setToolTipText("Obfuscated only available for technology 'OPENVPN'");
+         }
+         else
+         {
+            cb.setSelected(StringFormat.string2boolean(Starter.getCurrentSettingsData().getObfuscate(false)));
+            cb.setEnabled(true);
+            cb.setToolTipText(cmd.getToolTip());
+         }
       }
       return true;
    }

@@ -8,7 +8,6 @@
  */
 package com.mr.apps.JNordVpnManager.commandInterfaces;
 
-import java.awt.Component;
 import java.awt.event.ActionEvent;
 
 import javax.swing.JCheckBox;
@@ -39,9 +38,9 @@ public class AppPrefAutoDisconnect extends CoreCommandClass
       return true;
    }
 
-   public static boolean updateUI(Component comp)
+   public static boolean updateUI(Command cmd)
    {
-      JCheckBox cb = (JCheckBox)comp;
+      JCheckBox cb = (JCheckBox)cmd.getComponent();
       int iAutoDisconnect = UtilPrefs.getAutoDisConnectMode();
       if (1 == iAutoDisconnect)
       {

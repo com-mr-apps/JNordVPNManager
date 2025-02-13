@@ -18,9 +18,13 @@ public class VpnReconnect extends CoreCommandClass
 {
    public static boolean execute(ActionEvent e)
    {
-      CurrentLocation loc = Starter.getCurrentServer();
+      CurrentLocation loc = Starter.getCurrentServer(true);
       NvpnCallbacks.executeConnect(loc, "NordVPN Reconnect", "NordVPN Reconnect");
       return true;
    }
 
+   public static boolean updateUI(Command cmd)
+   {
+      return true;
+   }
 }

@@ -1,6 +1,5 @@
 package com.mr.apps.JNordVpnManager.commandInterfaces;
 
-import java.awt.Component;
 import java.awt.event.ActionEvent;
 
 import com.mr.apps.JNordVpnManager.Starter;
@@ -23,9 +22,9 @@ public class CoreCommandClass
       return true;
    }
 
-   public static boolean updateUI(Component comp)
+   public static boolean updateUI(Command cmd)
    {
-      Starter._m_logError.TraceDebug("UpdateUI Method not implemented.");
+      Starter._m_logError.TraceDebug("No UpdateUI Method for command '" + cmd.toString() + "'");
       return true;
    }
 }

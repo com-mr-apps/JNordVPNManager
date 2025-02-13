@@ -8,7 +8,6 @@
  */
 package com.mr.apps.JNordVpnManager.commandInterfaces;
 
-import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -18,29 +17,30 @@ import com.mr.apps.JNordVpnManager.Starter;
 public class CallCommand
 {
 
-   public static Object invokeComponentMethod(Command cmd, String methodName, Component component)
+   public static Object invokeCommandMethod(Command cmd, String methodName)
    {
-      return invokeMethod("com.mr.apps.JNordVpnManager.commandInterfaces." + cmd.getCommand(), methodName, new Object[]{component}, new Class<?>[]{java.awt.Component.class});
+      return invokeMethod(cmd, "com.mr.apps.JNordVpnManager.commandInterfaces." + cmd.getCommand(), methodName, new Object[]{cmd}, new Class<?>[]{com.mr.apps.JNordVpnManager.commandInterfaces.Command.class});
    }
 
    public static Object invokeEventMethod(Command cmd, String methodName, ActionEvent e)
    {
-      return invokeMethod("com.mr.apps.JNordVpnManager.commandInterfaces." + cmd.getCommand(), methodName, new Object[]{e}, new Class<?>[]{java.awt.event.ActionEvent.class});
+      return invokeMethod(cmd, "com.mr.apps.JNordVpnManager.commandInterfaces." + cmd.getCommand(), methodName, new Object[]{e}, new Class<?>[]{java.awt.event.ActionEvent.class});
    }
 
    public static Object invokeBasisMethod(Command cmd, String methodName, String[] arguments, Class<String>[] argTypes)
    {
-      return invokeMethod("com.mr.apps.JNordVpnManager.commandInterfaces." + cmd.getCommand(), methodName, arguments, argTypes);
+      return invokeMethod(cmd, "com.mr.apps.JNordVpnManager.commandInterfaces." + cmd.getCommand(), methodName, arguments, argTypes);
    }
 
    public static Object invokeAddonsMethod(Command cmd, String methodName, String[] arguments, Class<String>[] argTypes)
    {
-      return invokeMethod("com.mr.apps.JNordVpnManager.addons." + cmd.getCommand(), methodName, arguments, argTypes);
+      return invokeMethod(cmd, "com.mr.apps.JNordVpnManager.addons.commandInterfaces." + cmd.getCommand(), methodName, arguments, argTypes);
    }
 
-   private static Object invokeMethod(String className, String methodName, Object[] arguments, Class<?>[] argTypes)
+   private static Object invokeMethod(Command cmd, String className, String methodName, Object[] arguments, Class<?>[] argTypes)
    {
       Object callResult;
+      Starter._m_logError.TraceDebug("invoke method " + cmd.getCommand() + " - " + methodName);
       try
       {
          if (null != arguments)
@@ -74,21 +74,21 @@ public class CallCommand
       {
          Starter._m_logError.LoggingError(10900,
                "Invoke failed.",
-               "Invocation of the method with the name=" + methodName + "< failed - skipping method call.");
+               "Invocation of the method with the name=" + methodName + " failed - skipping method call.");
          callResult = null;
       }
       catch (IllegalAccessException e)
       {
          Starter._m_logError.LoggingError(10900,
                "Illegal access.",
-               "Illegal access for method with the name=" + methodName + "< - skipping method call.");
+               "Illegal access for method with the name=" + methodName + " - skipping method call.");
          callResult = null;
       }
       catch (Exception e)
       {
          Starter._m_logError.LoggingError(10900,
                "Generic exception.",
-               "Exception encountered when trying to invoke method with the name=" + methodName + "< - skipping method call.");
+               "Exception encountered when trying to invoke method with the name=" + methodName + " - skipping method call.");
          callResult = null;
       }
 

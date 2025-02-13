@@ -35,6 +35,7 @@ public class Command
    public static final String          VPN_CMD_RECONNECT       = "VPN_CMD_RECONNECT";
    public static final String          VPN_CMD_PAUSE           = "VPN_CMD_PAUSE";
    public static final String          VPN_SET_KILLSWITCH      = "VPN_SET_KILLSWITCH";
+   public static final String          VPN_SET_OBFUSCATE       = "VPN_SET_OBFUSCATE";
    public static final String          APP_PREF_AUTOCONNECT    = "APP_PREF_AUTOCONNECT";
    public static final String          APP_PREF_AUTODISCONNECT = "APP_PREF_AUTODISCONNECT";
 
@@ -111,6 +112,12 @@ public class Command
                      JResizedIcon.IconUrls.ICON_VPN_SET_KILLSWITCH,
                      "Click here to change the VPN Setting for Killswitch",
                      "VpnSetKillswitch"));
+
+         m_allCommandsMap.put(VPN_SET_OBFUSCATE,
+               new Command(VPN_SET_OBFUSCATE, TYPE_CHECKBOX,
+                     JResizedIcon.IconUrls.ICON_VPN_SET_OBFUSCATE,
+                     "Click here to change the VPN Setting for Obfuscate",
+                     "VpnSetObfuscate"));
 
          m_allCommandsMap.put(APP_PREF_AUTOCONNECT,
                new Command(APP_PREF_AUTOCONNECT,
@@ -268,7 +275,7 @@ public class Command
    public Object updateUI()
    {
       
-      return CallCommand.invokeComponentMethod(this, CoreCommandClass.METHOD_UPDATE_UI, m_component);
+      return CallCommand.invokeCommandMethod(this, CoreCommandClass.METHOD_UPDATE_UI);
    }
 
    /**
