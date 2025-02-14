@@ -60,7 +60,7 @@ public class GuiMapArea
       showCurrent.addActionListener(new ActionListener() {
          public void actionPerformed(ActionEvent e)
          {
-            UtilMapGeneration.zoomIn(Starter.getCurrentServer());
+            UtilMapGeneration.zoomIn(Starter.getCurrentServer(false));
          }
       });
       toolbar.add(showCurrent);

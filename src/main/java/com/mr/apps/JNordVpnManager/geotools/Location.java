@@ -43,7 +43,7 @@ public class Location
       setLongitude(0.0);
       setLatitude(0.0);
       setCountryId(0);
-      setCityId(0);
+      setCityId(-1);
       setCityName("nowhere");
       setCountryName("nowhere");
       setCountryCode("");
@@ -71,7 +71,7 @@ public class Location
          setServerId(city.trim() + SERVERID_SEPARATOR);
          setCityName(city);
          setCountryName("");
-         cityId = -1;  // for error handling!!
+         cityId = 0;
       }
       else
       {
@@ -89,13 +89,11 @@ public class Location
       if (cityId == 1)
       {
          // internal generated temporary location
-         Starter._m_logError.TraceDebug("Location: " + this.toString());         
+         Starter._m_logError.TraceDebug("Temp. Location: " + this.toString());         
       }
-      else if (cityId == -1)
+      else if (cityId == 0)
       {
-         Starter._m_logError.LoggingError(10200,
-               "Location Definition Error",
-               "Location: " + this.toString() + " cannot be defined!");         
+         Starter._m_logError.TraceDebug("Temp. Location w/o city: " + this.toString());         
       }
       else
       {

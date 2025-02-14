@@ -219,7 +219,7 @@ public class GuiMenuBar
       {
          public void actionPerformed(ActionEvent e)
          {
-            CurrentLocation loc = Starter.getCurrentServer();
+            CurrentLocation loc = Starter.getCurrentServer(true);
             NvpnCallbacks.executeConnect(loc, "NordVPN Reconnect", "NordVPN Reconnect");
          }
       });
@@ -520,6 +520,7 @@ public class GuiMenuBar
       {
          Starter.getCurrentSettingsData().setObfuscate("disabled", false);
       }
+      Starter.setTreeFilterGroup();
 
       NvpnCallbacks.executeConnect(loc, "NordVPN Connect", "NordVPN Connect");
    }

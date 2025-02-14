@@ -76,7 +76,9 @@ public class Starter extends JFrame
    public static final int         STATUS_CONNECTED           = 0;
    public static final int         STATUS_PAUSED              = 1;
    public static final int         STATUS_DISCONNECTED        = 2;
+   public static final int         STATUS_RECONNECT           = 3;
    public static final int         STATUS_LOGGEDOUT           = 4;
+   public static final int         STATUS_WORKMODE            = 5;
 
    private static final String     APPLICATION_TITLE          = "JNordVPN Manager [Copyright Ⓒ 2025 - written by com.mr.apps]";
    private static final String     APPLICATION_ICON_IMAGE     = "resources/icons/icon.png";
@@ -255,7 +257,7 @@ public class Starter extends JFrame
       int iAutoDisConnect = UtilPrefs.getAutoDisConnectMode();
 
       // check if paused
-      String pauseMsg = JPauseSlider.syncStatusForPause(Starter.STATUS_DISCONNECTED);
+      String pauseMsg = JPauseSlider.syncStatusForTimer(Starter.STATUS_DISCONNECTED);
       if ((0 == iAutoDisConnect) && (null != pauseMsg))
       {
          // paused
@@ -274,7 +276,7 @@ public class Starter extends JFrame
          {
             if (1 == iAutoDisConnect)
             {
-               CurrentLocation loc = getCurrentServer();
+               CurrentLocation loc = getCurrentServer(false);
                if ((null != loc) && loc.isConnected())
                {
                   NvpnCallbacks.executeDisConnect(null, null);
@@ -343,7 +345,7 @@ public class Starter extends JFrame
             if (e.getOppositeWindow()==null)
             {
                // gain focus -> update GUI with current data
-               if ((!m_forceWindowGainedFocus && m_skipWindowGainedFocus) || m_skipFocusGainedForDebug)
+               if (!m_forceWindowGainedFocus && (m_skipWindowGainedFocus || m_skipFocusGainedForDebug))
                {
                   // Flag is set from the internal message dialogs. On close [re-enter in main application] I don't need an update
                   m_skipWindowGainedFocus = false;
@@ -576,7 +578,7 @@ public class Starter extends JFrame
          if (1 == iAutoConnect)
          {
             m_splashScreen.setProgress(30);
-            CurrentLocation loc = getCurrentServer();
+            CurrentLocation loc = getCurrentServer(true);
             if (null != loc)
             {
                m_splashScreen.setStatus("GUI Auto Connect to " + loc.getToolTip());
@@ -671,35 +673,78 @@ public class Starter extends JFrame
    }
 
    /**
-    * Get the current or recent server location
+    * Get the current or recent server location<p>
+    * For static Connection (recent list, autostart, reconnect) - Filter Group, Technology, Protocol from location object.<br>
+    * For Dynamic connection (Tree/Map selection) - Filter Group, Technology, Protocol from current GUI and VPN settings.
+    * 
+    * @param bStatic
+    *           is <code>true</code> for FilterGroup (Obfuscate handling) and Technology/Protocol set fix (static) in
+    *           the location object
     * @return the current or recent location
     */
-   public static CurrentLocation getCurrentServer()
+   public static CurrentLocation getCurrentServer(boolean bStatic)
    {
       // first check, if we are logged in
       if (null == m_nvpnAccountData || false == m_nvpnAccountData.isLoggedIn()) return null;
 
+      CurrentLocation loc = null;
+
+      int legacyGroup = NordVPNEnumGroups.legacy_group_unknown.getId();
+      String sVpnTechnology = null;
+      String sVpnProtocol = null;
       if (null == m_currentServer)
       {
+         // generate current server location data from user preferences (last valid connection)
          String city = UtilPrefs.getRecentServerCity();
          String country = UtilPrefs.getRecentServerCountry(); // countryName,group,technology,protocol
          String[] saParts = country.split(",");
          String countryName = (saParts.length == 4) ? saParts[0] : country;
-         CurrentLocation loc = new CurrentLocation(UtilLocations.getLocation(city, countryName));
+         loc = new CurrentLocation(UtilLocations.getLocation(city, countryName));
+         loc.setConnected(false);
          if (saParts.length == 4)
          {
             // get (optional) connection data from preferences 'server@country,group,technology,protocol' and add them to loc
-            int legacyGroup = Integer.valueOf(saParts[1]);
-            if (legacyGroup != NordVPNEnumGroups.legacy_group_unknown.getId()) loc.setLegacyGroup(legacyGroup);
-            loc.setVpnTechnology(saParts[2]);
-            loc.setVpnProtocol(saParts[3]);
+            int iLegacyGroup = Integer.valueOf(saParts[1]);
+            legacyGroup = (iLegacyGroup == NordVPNEnumGroups.legacy_group_unknown.getId()) ? NvpnGroups.getCurrentFilterGroup().getId() : iLegacyGroup;
+            sVpnTechnology = saParts[2];
+            sVpnProtocol = saParts[3];
          }
-         loc.setConnected(false);
-
-         // return only a "real" location
-         return (loc.getCityId() <= 0) ? null : loc;
       }
-      return m_currentServer;
+      else
+      {
+         // generate current server location data as copy from current location
+         boolean bIsConnected = m_currentServer.isConnected();
+         loc = new CurrentLocation(m_currentServer);
+         loc.setConnected(bIsConnected);
+         legacyGroup = m_currentServer.getLegacyGroup();
+         sVpnTechnology = m_currentServer.getVpnTechnology();
+         sVpnProtocol = m_currentServer.getVpnProtocol();
+      }
+
+      if (bStatic)
+      {
+         // static (use Data for connection from current location)
+         loc.setLegacyGroup((legacyGroup == NordVPNEnumGroups.legacy_group_unknown.getId()) ? NvpnGroups.getCurrentFilterGroup().getId() : legacyGroup);
+         loc.setVpnTechnology(sVpnTechnology);
+         loc.setVpnProtocol(sVpnProtocol);
+      }
+      else
+      {
+         // dynamic (use Data for connection from current GUI Filter - and - settings)
+         loc.setLegacyGroup(null);
+         loc.setVpnTechnology(null);
+         loc.setVpnProtocol(null);
+      }
+      
+      Starter._m_logError.TraceDebug("(getCurrentServer) loc=" + loc);
+      return loc;
+
+      // return only a "real" location
+   }
+
+   public static void updateStatusLine()
+   {
+      m_currentServer = m_statusLine.update(m_nvpnStatusData);
    }
 
    /**
@@ -722,8 +767,9 @@ public class Starter extends JFrame
 
       // get the current connected server from the "nordvpn status" command
       m_nvpnStatusData = new NvpnStatusData();
-      m_currentServer = m_statusLine.update(m_nvpnStatusData);
- 
+      updateStatusLine();
+      setTreeFilterGroup();
+
       if (null != m_currentServer && m_currentServer.isConnected())
       {
          // Connected
@@ -741,14 +787,13 @@ public class Starter extends JFrame
          // Disconnected
 
          // get the server (not active) from the previous session/connection (preferences) !!! can be null !!!
-         m_currentServer = getCurrentServer();
+         m_currentServer = getCurrentServer(true);
 
          // Update (remove) the current server map layer
          UtilMapGeneration.changeCurrentServerMapLayer(null);
+         // ... and zoom to the last active location
+         UtilMapGeneration.zoomIn(m_currentServer);
       }
-
-      // ... zoom there
-      UtilMapGeneration.zoomIn(m_currentServer);
 
       // .. place the tree to the country
       JServerTreePanel.activateTreeNode(m_currentServer);

@@ -61,6 +61,7 @@ public class UtilPrefs
    // private static final String COMPACTMODE                              = "COMPACTMODE";
    // private static final String RECENTSERVER_REGION                      = "RECENTSERVER_REGION";
    // private static final String RECENTSERVER_GROUP                       = "RECENTSERVER_GROUP";
+   // private static final String TIMER_DEFAULT_VALUE                      = "TIMER_DEFAULT_VALUE";
 
    // Internal Defaults
    private static String DEFAULT_PREF_RECENTSERVER_CITY           = "";
@@ -86,6 +87,7 @@ public class UtilPrefs
    private static int    DEFAULT_PREF_SETTINGS_MESSAGE_AUTOCLOSE  = 2;
    private static int    DEFAULT_PREF_SETTINGS_ACCOUNTREMINDER    = 31;
    private static String DEFAULT_PREF_SETTINGS_COMMANDS_TOOLBAR   = Command.APP_PREF_AUTOCONNECT + ";" + Command.APP_PREF_AUTODISCONNECT + ";" + Command.VPN_CMD_RECONNECT + ";" + Command.VPN_SET_KILLSWITCH;
+   private static int    DEFAULT_PREF_SETTINGS_TIMERDEFAULTVALUE  = 5; // in minutes
 
    /**
     * Dataset defining the UserPreference values.
@@ -574,6 +576,22 @@ public class UtilPrefs
    {
       Preferences settingsCommandsToolbar = Preferences.userRoot().node("com/mr/apps/JNordVpnManager/Settings");
       settingsCommandsToolbar.put("CommandsToolbar", commandsToolbar);
+
+      return;
+   }
+
+   public static int getTimerDefaultValue()
+   {
+      Preferences settingsTimerDefaultValue = Preferences.userRoot().node("com/mr/apps/JNordVpnManager/Settings");
+      int timerDefaultValue = settingsTimerDefaultValue.getInt("Timer.Defaultvalue", DEFAULT_PREF_SETTINGS_TIMERDEFAULTVALUE);
+
+      return timerDefaultValue;
+   }
+
+   public static void setTimerDefaultValue(int timerDefaultValue)
+   {
+      Preferences settingsTimerDefaultValue = Preferences.userRoot().node("com/mr/apps/JNordVpnManager/Settings");
+      settingsTimerDefaultValue.putInt("Timer.Defaultvalue", timerDefaultValue);
 
       return;
    }

@@ -441,10 +441,14 @@ public class NvpnCommands {
 
    /**
     * Connect to VPN server
-    * @param loc is the current location to connect to (optional)
-    * @param country is the country to connect (optional)
-    * @param city is the city to connect (optional)
-    * @return the current connection status of nordvpn
+    * 
+    * @param loc
+    *           is the current location to connect to (optional)
+    * @param country
+    *           is the country to connect (optional)
+    * @param city
+    *           is the city to connect (optional)
+    * @return the current connection status of nordvpn - if <code>null</code>, checkForConnection failed
     */
    public static String connect(CurrentLocation loc)
    {
@@ -453,23 +457,31 @@ public class NvpnCommands {
       String city = "";
 
       NordVPNEnumGroups currentGroup = NvpnGroups.getCurrentFilterGroup();
-
       boolean bObfuscate = currentGroup.equals(NordVPNEnumGroups.legacy_obfuscated_servers);
+
+      Starter._m_logError.LoggingInfo("Connect to Server: " + loc.toString() + " / Obfuscate=" + bObfuscate);
+
       if (null != loc)
       {
-         country = loc.getCountryNordVPN();
-         city = loc.getCityNordVPN();
-         currentGroup = NordVPNEnumGroups.get(loc.getLegacyGroup());
-         bObfuscate = (NordVPNEnumGroups.legacy_obfuscated_servers).equals(currentGroup);
-         
+         // validate group/VPN settings for the connection
          NvpnSettingsData csd = Starter.getCurrentSettingsData();
          boolean rc = csd.checkForConnection(loc);
          if (false == rc)
          {
-            // Cancel - required settings changes refused
-            UtilSystem.setLastError("Cancelled connection to: " + loc.getServerId(), 1);
-            return status;
+            // Required settings changes refused
+            // Connection to the selected server connection cannot established with the current NordVPN settings
+            status = "The selected Server location '" + loc.getServerId() + "' does not fit for the current settings.";
+            Starter._m_logError.LoggingWarning(90500,
+                  "Settings Mismatch",
+                  status);
+            return null;
          }
+
+         // get the connection data from the location object
+         country = loc.getCountryNordVPN();
+         city = loc.getCityNordVPN();
+         currentGroup = NordVPNEnumGroups.get(loc.getLegacyGroup());
+         bObfuscate = (NordVPNEnumGroups.legacy_obfuscated_servers).equals(currentGroup);
       }
 
       if (city.isBlank())
@@ -559,7 +571,6 @@ public class NvpnCommands {
 
          // ensure that after successful connection the current group (for status and JServerTree filter) is updated
          NvpnGroups.setCurrentLegacyGroup(currentGroup);
-         Starter.setTreeFilterGroup();
          Starter.updateCurrentServer();
       }
       else

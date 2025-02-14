@@ -266,6 +266,7 @@ public class JServerTreePanel extends JPanel implements TreeSelectionListener
                   NvpnGroups.setCurrentFilterGroup(NordVPNEnumGroups.Standard_VPN_Servers);
             }
             updateFilterTreeCB(false);
+            UtilMapGeneration.zoomServerLayer();
             GuiMenuBar.updateQuickConnectMenuButton();
          }
       });
@@ -311,7 +312,7 @@ public class JServerTreePanel extends JPanel implements TreeSelectionListener
       }
 
       // (try to) navigate tree to current server
-      CurrentLocation loc = Starter.getCurrentServer();
+      CurrentLocation loc = Starter.getCurrentServer(false);
       if (null != loc)
       {
          JServerTreePanel.activateTreeNode(loc);            
@@ -412,12 +413,11 @@ public class JServerTreePanel extends JPanel implements TreeSelectionListener
          }
          else if (sTechnology.equalsIgnoreCase("NORDWHISPER"))
          {
-            sTechnologyAndProtocol = "NORDWHISPER/UDP"; 
+            sTechnologyAndProtocol = "NORDWHISPER/Webtunnel"; 
          }
       }
       Starter._m_logError.TraceDebug("...Filter Technology (dependent from Settings) = '" + iTechFilter + "' (" + sTechnologyAndProtocol + ").");
-      String sFilterText = filterRegion.name() + " & " + filterGroup.name() + " (Obfuscate " + ((bObfuscate) ? "yes) & " : "no) & ") + sTechnologyAndProtocol;
-      m_filterLabel.setToolTipText("Filter: " + sFilterText);
+      String sFilterText = setFilterToolTip(filterRegion.name(), filterGroup.name(), bObfuscate, sTechnologyAndProtocol);
 
       // get the complete server list
       int nbCountries = 0;
@@ -527,8 +527,7 @@ public class JServerTreePanel extends JPanel implements TreeSelectionListener
          
          // actualize world map
          UtilMapGeneration.changeVpnServerLocationsMapLayer(vpnServers);
-         UtilMapGeneration.zoomServerLayer();
-         Starter._m_logError.LoggingInfo("Filtered " + vpnServers.size() + " VPN Servers (in " + nbCountries + " countries) [" + sFilterText + "].");
+         Starter._m_logError.TraceIni("Filtered " + vpnServers.size() + " VPN Servers (in " + nbCountries + " countries) [" + sFilterText + "].");
       }
       else
       {
@@ -542,8 +541,11 @@ public class JServerTreePanel extends JPanel implements TreeSelectionListener
       return root;
    }
 
-    /** Set Focus to the tree node of a Location.
-    * @param loc is the location
+   /**
+    * Set Focus to the tree node of a Location.
+    * 
+    * @param loc
+    *           is the location
     */
    public static void activateTreeNode(CurrentLocation loc)
    {
@@ -561,25 +563,25 @@ public class JServerTreePanel extends JPanel implements TreeSelectionListener
             }
             else
             {
-               // reset selection (no active server)
+               // reset selection (not connected)
                mySetSelectionPath(null);
             }
          }
          else
          {
-            // reset selection (no active server)
+            // reset selection (active server not found in list)
             mySetSelectionPath(null);
             if (loc.isConnected())
             {
-               UtilMapGeneration.changeCurrentServerMapLayer(loc);
+               UtilMapGeneration.zoomIn(loc);
             }
          }
-         /* TODO: keep focus on current server (Preferences?)
-         if (loc.isActive() && m_filterText.isBlank())
-         {
-            UtilMapGeneration.zoomIn(loc);
-         }
-         */
+      }
+      else
+      {
+         // reset selection (no active server)
+         mySetSelectionPath(null);
+         UtilMapGeneration.zoomServerLayer();
       }
    }
 
@@ -677,8 +679,7 @@ public class JServerTreePanel extends JPanel implements TreeSelectionListener
       }
       else if ((!bObfuscateSetting && (bObfuscateSetting != bObfuscateCurrent)) && (idxFilterGroups == idxObfuscatedGroup))
       {
-         // settings Obfuscate=disabled - filter groups selection must be changed from 'Obfuscated' (Default Standard
-         // Servers)
+         // settings Obfuscate=disabled - filter groups selection must be changed from 'Obfuscated' (Default Standard Servers)
          Starter._m_logError.TraceDebug(
                "Update of filter group selection required, because obfuscate is disabled but current group is '" + NvpnGroups.getCurrentFilterGroup() + "'.");
          m_filterGroups.setSelectedIndex(0);
@@ -690,14 +691,23 @@ public class JServerTreePanel extends JPanel implements TreeSelectionListener
                "Update of filter group selection required, selected group '" + m_iaGroups[idxFilterGroups] + "' is different from current group.");
          m_filterGroups.setSelectedIndex(idxCurrentGroup);
       }
+
+      // update filter toolTip
+      setFilterToolTip(NvpnGroups.getCurrentFilterRegion().name(), NvpnGroups.getCurrentFilterGroup().name(), bObfuscateSetting, Starter.getCurrentSettingsData().getTechnology(false) + "/" + Starter.getCurrentSettingsData().getProtocol(false));
+
+   }
+
+   private String setFilterToolTip(String sFilterRegion, String sFilterGroup, boolean bObfuscate, String sTechnologyAndProtocol)
+   {
+      String sFilterText = sFilterRegion + " & " + sFilterGroup + " (Obfuscate " + ((bObfuscate) ? "yes) & " : "no) & ") + sTechnologyAndProtocol;
+      m_filterLabel.setToolTipText("Filter: " + sFilterText);
+
+      return sFilterText;
    }
 
    @Override
    public void valueChanged(TreeSelectionEvent e)
    {
-      // Update the current server map layer and zoom there
-      UtilMapGeneration.changeCurrentServerMapLayer(Starter.getCurrentServer());
-
       if (m_skipValueChangedEvent) return; // avoid recursive calls
 
       if (m_tree.getLastSelectedPathComponent() instanceof JServerNode)
@@ -706,7 +716,15 @@ public class JServerTreePanel extends JPanel implements TreeSelectionListener
          if (node != m_tree.getModel().getRoot() && node != null)
          {
             CurrentLocation loc = new CurrentLocation(((JServerNode) node).getLocation());
-            NvpnCallbacks.executeConnect(loc, "NordVPN Connect", "NordVPN Connect");
+            boolean rc = NvpnCallbacks.executeConnect(loc, "NordVPN Connect", "NordVPN Connect");
+            if (false == rc)
+            {
+               activateTreeNode(null);
+            }
+            else
+            {
+               UtilMapGeneration.zoomIn(loc);
+            }
          }
       }
       else if (m_tree.getLastSelectedPathComponent() instanceof JCountryNode)
