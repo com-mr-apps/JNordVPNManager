@@ -40,7 +40,7 @@ public class CallCommand
    private static Object invokeMethod(Command cmd, String className, String methodName, Object[] arguments, Class<?>[] argTypes)
    {
       Object callResult;
-      Starter._m_logError.TraceDebug("invoke method " + cmd.getCommand() + " - " + methodName);
+      Starter._m_logError.TraceDebug("Invoke method " + className + "." + methodName);
       try
       {
          if (null != arguments)
@@ -60,7 +60,7 @@ public class CallCommand
       {
          Starter._m_logError.LoggingError(10900,
                "Class not found.",
-               "Class not found exception - skipping method call.");
+               "Class [" + className + "] not found exception - skipping method call.");
          callResult = null;
       }
       catch (NoSuchMethodException e)
@@ -88,7 +88,7 @@ public class CallCommand
       {
          Starter._m_logError.LoggingError(10900,
                "Generic exception.",
-               "Exception encountered when trying to invoke method with the name=" + methodName + " - skipping method call.");
+               "Exception encountered when trying to invoke method with the name=" + methodName + " in Class [" + className + "] - skipping method call.");
          callResult = null;
       }
 

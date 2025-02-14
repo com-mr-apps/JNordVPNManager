@@ -124,6 +124,7 @@ public class GuiCommandsToolBar extends JPanel implements ActionListener
                         "The command type '" + cmd.getType() + "' is not defined! Check source code.");
                   continue;
                }
+               cmd.updateUI();
 
                // Add the Customize Command
                tbCustomize = new Command();
@@ -291,7 +292,7 @@ public class GuiCommandsToolBar extends JPanel implements ActionListener
    {
       JPanel jPanel = createPanel(cmd);
 
-      // Create and initialize the Button.
+      // Create the Button
       JButton button = new JButton();
       button.setToolTipText(cmd.getToolTip());
       button.setActionCommand(cmd.getId());
@@ -319,10 +320,10 @@ public class GuiCommandsToolBar extends JPanel implements ActionListener
    {
       JPanel jPanel = createPanel(cmd);
 
-      // Create and initialize the CheckBox.
+      // Create the CheckBox
       JCheckBox checkBox = new JCheckBox();
       checkBox.setActionCommand(cmd.getId());
-      checkBox.setSelected((boolean)cmd.getValue());
+      // checkBox.setSelected((boolean)cmd.getValue()); ..done after creation with the updateUI() method
       checkBox.setToolTipText(cmd.getToolTip());
       checkBox.addActionListener(this);
       cmd.setComponent(checkBox);
@@ -333,6 +334,7 @@ public class GuiCommandsToolBar extends JPanel implements ActionListener
       // add the pop up menu with the list of available commands
       jLabel.setComponentPopupMenu(customizePopUpMenu);
       jLabel.setName(cmd.getId());
+      jLabel.setToolTipText("Click RMB to customize Commands ToolBar");
 
       jPanel.add(checkBox);
       jPanel.add(jLabel);
@@ -377,7 +379,7 @@ public class GuiCommandsToolBar extends JPanel implements ActionListener
          if ((null != commandsToolbarList) && (true == commandsToolbarList.contains(cmd)))
          {
             // call the component specific update method
-            Starter._m_logError.LoggingInfo("Update Command: " + cmd.getCommand());
+            Starter._m_logError.TraceDebug("Update Command: " + cmd.getCommand());
             cmd.updateUI();
          }
       }
@@ -396,7 +398,7 @@ public class GuiCommandsToolBar extends JPanel implements ActionListener
       Command cmd = Command.getObject(cmdId);
       if (null != cmd)
       {
-         Starter._m_logError.LoggingInfo("Execute selected Command: " + cmd.getCommand());
+         Starter._m_logError.TraceDebug("Execute selected Command: " + cmd.getCommand());
          cmd.execute(e);
       }
       else

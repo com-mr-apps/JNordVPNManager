@@ -439,6 +439,7 @@ public class UtilSystem
          File fpJarFile = new File (path,jarFile);
          if (fpJarFile.canRead())
          {
+            Starter._m_logError.TraceDebug("Add '" + jarFile + "' to the classpath.");
             DynamicClassLoader dcl = (DynamicClassLoader) ClassLoader.getSystemClassLoader();
             dcl.add(new URL("file://" + fpJarFile));
          }
