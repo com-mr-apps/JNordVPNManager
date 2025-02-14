@@ -32,6 +32,7 @@ public class Command
    public static final int TYPE_CHECKBOX  = 3;
 
    // Declaration of the available Command UId's (HashMap key)
+   public static final String          VPN_CMD_DISCONNECT      = "VPN_CMD_DISCONNECT";
    public static final String          VPN_CMD_RECONNECT       = "VPN_CMD_RECONNECT";
    public static final String          VPN_CMD_PAUSE           = "VPN_CMD_PAUSE";
    public static final String          VPN_SET_KILLSWITCH      = "VPN_SET_KILLSWITCH";
@@ -96,6 +97,11 @@ public class Command
          // initialize all available commands (ONCE per program lifetime)
          m_allCommandsMap  = new HashMap<String, Command>();
 
+         m_allCommandsMap.put(VPN_CMD_DISCONNECT, 
+               new Command(VPN_CMD_DISCONNECT, 
+                     TYPE_BUTTON,JResizedIcon.IconUrls.ICON_DISCONNECT,
+                     "Click here to Disconnect from the VPN Server",
+                     "VpnDisconnect"));
          m_allCommandsMap.put(VPN_CMD_RECONNECT, 
                new Command(VPN_CMD_RECONNECT, 
                      TYPE_BUTTON,JResizedIcon.IconUrls.ICON_RECONNECT,

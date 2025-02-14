@@ -73,7 +73,7 @@ public class UtilPrefs
    private static String DEFAULT_PREF_SERVERLIST_DATA             = "";
    private static String DEFAULT_PREF_SERVERLIST_TIMESTAMP        = "0";
    private static int    DEFAULT_PREF_SERVERLIST_AUTOUPDATE       = 0;
-   private static int    DEFAULT_PREF_SETTINGS_COMPACTMODE        = 0;  // this flag represents the current state -> no setting. TODO: (?) add another "Start Program in Compact Mode"
+   private static int    DEFAULT_PREF_SETTINGS_COMPACTMODE        = 0;  // this flag represents the current state -> no setting.
    private static int    DEFAULT_PREF_SETTINGS_AUTOCONNECTMODE    = 0;
    private static int    DEFAULT_PREF_SETTINGS_AUTODISCONNECTMODE = 0;
    private static int    DEFAULT_PREF_SETTINGS_TRACEDEBUG         = 0;

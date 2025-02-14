@@ -36,6 +36,7 @@ public class JResizedIcon extends ImageIcon
       ICON_MAP_CONNECT                 ("i_MapConnectToVPN.png"),
       ICON_TIMER_PAUSE                 ("i_TimerPauseVPN.png"),
       ICON_TIMER_CONNECT               ("i_TimerConnectToVPN.png"),
+      ICON_DISCONNECT                  ("i_DisconnectVPN.png"),
       ICON_RECONNECT                   ("i_ReConnectToVPN.png"),
       ICON_SERVER_SEARCH_FILTER        ("i_SearchInTree.png"),
       ICON_TREE_LOCATION               ("i_TreeLocation.png"),
