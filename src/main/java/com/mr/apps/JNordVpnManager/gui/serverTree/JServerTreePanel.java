@@ -729,7 +729,20 @@ public class JServerTreePanel extends JPanel implements TreeSelectionListener
       }
       else if (m_tree.getLastSelectedPathComponent() instanceof JCountryNode)
       {
-         // TODO: do nothing (country selected)
+         JCountryNode node = (JCountryNode) m_tree.getLastSelectedPathComponent();
+         if (node != m_tree.getModel().getRoot() && node != null)
+         {
+            CurrentLocation loc = new CurrentLocation(((JCountryNode) node).getLocation());
+            boolean rc = NvpnCallbacks.executeConnect(loc, "NordVPN Connect", "NordVPN Connect");
+            if (false == rc)
+            {
+               activateTreeNode(null);
+            }
+            else
+            {
+               UtilMapGeneration.zoomIn(Starter.getCurrentServer(false));
+            }
+         }
       }
    }
 }
