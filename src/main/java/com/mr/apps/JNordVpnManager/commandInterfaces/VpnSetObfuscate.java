@@ -11,6 +11,7 @@ package com.mr.apps.JNordVpnManager.commandInterfaces;
 import java.awt.event.ActionEvent;
 
 import javax.swing.JCheckBox;
+import javax.swing.JPanel;
 
 import com.mr.apps.JNordVpnManager.Starter;
 import com.mr.apps.JNordVpnManager.utils.String.StringFormat;
@@ -49,18 +50,12 @@ public class VpnSetObfuscate extends CoreCommandClass
       JCheckBox cb = (JCheckBox)cmd.getComponent();
       if (null != cb)
       {
-         if (false == Starter.getCurrentSettingsData().getTechnology(false).equals("OPENVPN"))
-         {
-            cb.setSelected(false);
-            cb.setEnabled(false);
-            cb.setToolTipText("Obfuscated only available for technology 'OPENVPN'");
-         }
-         else
-         {
-            cb.setSelected(StringFormat.string2boolean(Starter.getCurrentSettingsData().getObfuscate(false)));
-            cb.setEnabled(true);
-            cb.setToolTipText(cmd.getToolTip());
-         }
+         cb.setSelected(StringFormat.string2boolean(Starter.getCurrentSettingsData().getObfuscate(false)));
+         cb.setEnabled(cmd.isEnabled());
+         String toolTip = cmd.getToolTip();
+         cb.setToolTipText(toolTip);
+         JPanel bp = (JPanel) cb.getParent();
+         bp.setToolTipText(toolTip);
       }
       return true;
    }

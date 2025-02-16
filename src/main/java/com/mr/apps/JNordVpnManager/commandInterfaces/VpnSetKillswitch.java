@@ -47,7 +47,7 @@ public class VpnSetKillswitch extends CoreCommandClass
       JCheckBox cb = (JCheckBox)cmd.getComponent();
       if (null != cb)
       {
-         cb.setSelected(StringFormat.string2boolean(Starter.getCurrentSettingsData().getKillswitch(false)));
+         cb.setSelected((boolean)get());
       }
       return true;
    }

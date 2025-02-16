@@ -41,14 +41,9 @@ public class AppPrefAutoDisconnect extends CoreCommandClass
    public static boolean updateUI(Command cmd)
    {
       JCheckBox cb = (JCheckBox)cmd.getComponent();
-      int iAutoDisconnect = UtilPrefs.getAutoDisConnectMode();
-      if (1 == iAutoDisconnect)
+      if (null != cb)
       {
-         cb.setSelected(true);
-      }
-      else
-      {
-         cb.setSelected(false);
+         cb.setSelected((boolean)get());
       }
       return true;
    }

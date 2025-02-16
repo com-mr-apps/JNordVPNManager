@@ -22,12 +22,14 @@ import javax.swing.event.MenuEvent;
 import javax.swing.event.MenuListener;
 
 import com.mr.apps.JNordVpnManager.Starter;
+import com.mr.apps.JNordVpnManager.commandInterfaces.Command;
 import com.mr.apps.JNordVpnManager.geotools.CurrentLocation;
 import com.mr.apps.JNordVpnManager.geotools.Location;
 import com.mr.apps.JNordVpnManager.geotools.UtilLocations;
 import com.mr.apps.JNordVpnManager.gui.components.JResizedIcon;
 import com.mr.apps.JNordVpnManager.gui.components.JResizedIcon.IconSize;
 import com.mr.apps.JNordVpnManager.gui.components.JResizedIcon.IconUrls;
+import com.mr.apps.JNordVpnManager.gui.connectLine.GuiCommandsToolBar;
 import com.mr.apps.JNordVpnManager.gui.dialog.JModalDialog;
 import com.mr.apps.JNordVpnManager.gui.dialog.JSystemInfoDialog;
 import com.mr.apps.JNordVpnManager.gui.dialog.JWhatsNewDialog;
@@ -389,8 +391,11 @@ public class GuiMenuBar
    {
       // update Quick connect command Tool tip - display actual command dependent on Region and Group
       String optGroup = (NvpnGroups.getCurrentFilterRegion().equals(NvpnGroups.NordVPNEnumGroups.all_regions)) ? "--group " + NvpnGroups.getCurrentFilterGroup().name() : NvpnGroups.getCurrentFilterRegion().name();
-      String sToolTip = "nordvpn connect " + optGroup;
+      String sToolTip = "Click here for: nordvpn connect " + optGroup;
       m_menuItemQuickConnect.setToolTipText(sToolTip);
+      Command cmd = Command.getObject(Command.VPN_CMD_QUICKCONNECT);
+      cmd.setToolTip(sToolTip);
+      GuiCommandsToolBar.updateCommand(Command.VPN_CMD_QUICKCONNECT);
    }
 
    /**

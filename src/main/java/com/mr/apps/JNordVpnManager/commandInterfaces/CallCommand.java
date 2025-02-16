@@ -40,7 +40,7 @@ public class CallCommand
    private static Object invokeMethod(Command cmd, String className, String methodName, Object[] arguments, Class<?>[] argTypes)
    {
       Object callResult;
-      Starter._m_logError.TraceDebug("Invoke method " + className + "." + methodName);
+//      Starter._m_logError.TraceDebug("Invoke method " + className + "." + methodName);
       try
       {
          if (null != arguments)

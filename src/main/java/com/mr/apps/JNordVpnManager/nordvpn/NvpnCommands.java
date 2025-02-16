@@ -453,24 +453,24 @@ public class NvpnCommands {
    public static String connect(CurrentLocation loc)
    {
       String status = null;
+
+      // Set default connection data
       String country = "";
       String city = "";
-
       NordVPNEnumGroups currentGroup = NvpnGroups.getCurrentFilterGroup();
       boolean bObfuscate = currentGroup.equals(NordVPNEnumGroups.legacy_obfuscated_servers);
 
-      Starter._m_logError.LoggingInfo("Connect to Server: " + loc.toString() + " / Obfuscate=" + bObfuscate);
-
       if (null != loc)
       {
+         Starter._m_logError.LoggingInfo("Connect to Server: " + loc.toString() + " / Obfuscate=" + bObfuscate);
          // validate group/VPN settings for the connection
          NvpnSettingsData csd = Starter.getCurrentSettingsData();
          boolean rc = csd.checkForConnection(loc);
          if (false == rc)
          {
             // Required settings changes refused
-            // Connection to the selected server connection cannot established with the current NordVPN settings
-            status = "The selected Server location '" + loc.getServerId() + "' does not fit for the current settings.";
+            // ! Connection to the selected server connection cannot established with the current NordVPN settings
+            status = "The selected Server location '" + loc.getServerId() + "' does not support the current settings.";
             Starter._m_logError.LoggingWarning(90500,
                   "Settings Mismatch",
                   status);
@@ -482,6 +482,10 @@ public class NvpnCommands {
          city = loc.getCityNordVPN();
          currentGroup = NordVPNEnumGroups.get(loc.getLegacyGroup());
          bObfuscate = (NordVPNEnumGroups.legacy_obfuscated_servers).equals(currentGroup);
+      }
+      else
+      {
+         Starter._m_logError.LoggingInfo("nordvpn quick connect");
       }
 
       if (city.isBlank())

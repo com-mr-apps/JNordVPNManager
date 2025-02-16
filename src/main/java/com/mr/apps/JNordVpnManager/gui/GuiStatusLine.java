@@ -23,7 +23,7 @@ import com.mr.apps.JNordVpnManager.Starter;
 import com.mr.apps.JNordVpnManager.geotools.CurrentLocation;
 import com.mr.apps.JNordVpnManager.geotools.UtilLocations;
 import com.mr.apps.JNordVpnManager.geotools.UtilMapGeneration;
-import com.mr.apps.JNordVpnManager.gui.connectLine.JPauseSlider;
+import com.mr.apps.JNordVpnManager.gui.connectLine.JPanelConnectTimer;
 import com.mr.apps.JNordVpnManager.gui.dialog.JModalDialog;
 import com.mr.apps.JNordVpnManager.nordvpn.NvpnGroups.NordVPNEnumGroups;
 import com.mr.apps.JNordVpnManager.nordvpn.NvpnSettingsData;
@@ -160,7 +160,7 @@ public class GuiStatusLine
           *  connected
           */
          // update pause slider
-         String pauseMsg = JPauseSlider.syncStatusForTimer(Starter.STATUS_CONNECTED);
+         String pauseMsg = JPanelConnectTimer.syncStatusForTimer(JPanelConnectTimer.STATUS_CONNECTED);
          if ((null != pauseMsg) && (pauseMsg.isBlank()))
          {
             // Automatic Reconnect Mode
@@ -223,8 +223,8 @@ public class GuiStatusLine
           *  disconnected or not logged in (maybe outside of the application)
           */
          // update time slider
-         int iStatus = (true == Starter.getCurrentAccountData(false).isLoggedIn()) ? Starter.STATUS_DISCONNECTED : Starter.STATUS_LOGGEDOUT;
-         String pauseMsg = JPauseSlider.syncStatusForTimer(iStatus);
+         int iStatus = (true == Starter.getCurrentAccountData(false).isLoggedIn()) ? JPanelConnectTimer.STATUS_DISCONNECTED : JPanelConnectTimer.STATUS_LOGGEDOUT;
+         String pauseMsg = JPanelConnectTimer.syncStatusForTimer(iStatus);
          if (null == pauseMsg)
          {
             // Status: Disconnected (or error message...)

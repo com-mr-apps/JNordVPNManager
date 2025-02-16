@@ -46,7 +46,7 @@ public class GuiConnectLine
       GuiCommandsToolBar ctb = new GuiCommandsToolBar();
       connectPanel.add(ctb, BorderLayout.LINE_START);
 
-      JPauseSlider ps = new JPauseSlider();
+      JPanelConnectTimer ps = new JPanelConnectTimer();
       connectPanel.add(ps, BorderLayout.CENTER);
 
       JPanel mailPanel = new JPanel(new FlowLayout());

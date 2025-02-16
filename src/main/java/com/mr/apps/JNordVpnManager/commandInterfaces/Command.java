@@ -16,6 +16,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Vector;
 
+import javax.swing.ImageIcon;
+
 import com.mr.apps.JNordVpnManager.Starter;
 import com.mr.apps.JNordVpnManager.gui.components.JResizedIcon;
 import com.mr.apps.JNordVpnManager.utils.UtilPrefs;
@@ -32,21 +34,25 @@ public class Command
    public static final int TYPE_CHECKBOX  = 3;
 
    // Declaration of the available Command UId's (HashMap key)
-   public static final String          VPN_CMD_DISCONNECT      = "VPN_CMD_DISCONNECT";
-   public static final String          VPN_CMD_RECONNECT       = "VPN_CMD_RECONNECT";
-   public static final String          VPN_CMD_PAUSE           = "VPN_CMD_PAUSE";
-   public static final String          VPN_SET_KILLSWITCH      = "VPN_SET_KILLSWITCH";
-   public static final String          VPN_SET_OBFUSCATE       = "VPN_SET_OBFUSCATE";
-   public static final String          APP_PREF_AUTOCONNECT    = "APP_PREF_AUTOCONNECT";
-   public static final String          APP_PREF_AUTODISCONNECT = "APP_PREF_AUTODISCONNECT";
+   public static final String          VPN_CMD_DISCONNECT       = "VPN_CMD_DISCONNECT";
+   public static final String          VPN_CMD_RECONNECT        = "VPN_CMD_RECONNECT";
+   public static final String          VPN_CMD_QUICKCONNECT     = "VPN_CMD_QUICKCONNECT";
+   public static final String          VPN_CMD_TIMER_CONNECT    = "VPN_CMD_TIMER_CONNECT";
+   public static final String          VPN_SET_KILLSWITCH       = "VPN_SET_KILLSWITCH";
+   public static final String          VPN_SET_OBFUSCATE        = "VPN_SET_OBFUSCATE";
+   public static final String          VPN_SET_THREATPROTECTION = "VPN_SET_THREATPROTECTION";
+   public static final String          APP_PREF_AUTOCONNECT     = "APP_PREF_AUTOCONNECT";
+   public static final String          APP_PREF_AUTODISCONNECT  = "APP_PREF_AUTODISCONNECT";
 
    // class members
-   private Component             m_component = null;
-   private String                m_id        = null;
-   private int                   m_iType     = -1;
-   private JResizedIcon.IconUrls m_iconUrl   = null;
-   private String                m_toolTip   = null;
-   private String                m_command   = null;
+   private Component                     m_component             = null;
+   private String                        m_id                    = null;
+   private int                           m_iType                 = -1;
+   private Vector<JResizedIcon.IconUrls> m_iconUrl               = null;
+   private String                        m_toolTip               = null;
+   private String                        m_command               = null;
+   private ImageIcon                     m_iconImage             = null; // used internally in case of change icons in updateUI
+   private boolean                       m_enabled               = true; // used internally in updateUI
 
    // list of all available commands
    private static Map<String, Command> m_allCommandsMap  = null;
@@ -63,7 +69,8 @@ public class Command
    {
       m_iType = TYPE_CUSTOMIZE;
       m_toolTip = "Click RMB to add a command to the Commands ToolBar";
-      m_iconUrl = JResizedIcon.IconUrls.ICON_CUSTOMIZE_ADD_COMMAND_BAR;
+      m_iconUrl = new Vector<JResizedIcon.IconUrls>();
+      m_iconUrl.add(JResizedIcon.IconUrls.ICON_CUSTOMIZE_ADD_COMMAND_BAR);
    }
 
    /**
@@ -74,7 +81,7 @@ public class Command
     * @param iType
     *           is the UI type
     * @param iconUrl
-    *           is the icob URL
+    *           is the icon URL
     * @param toolTip
     *           is the toolTip
     * @param command
@@ -85,7 +92,18 @@ public class Command
       m_component = null; // UI Element - set on creation
       m_id = id;
       m_iType = iType;
-      m_iconUrl = iconUrl;
+      m_iconUrl = new Vector<JResizedIcon.IconUrls>();
+      m_iconUrl.add(iconUrl);
+      m_toolTip = toolTip;
+      m_command = command;
+   }
+
+   public Command(String id, int iType, Vector<JResizedIcon.IconUrls> iconUrls, String toolTip, String command)
+   {
+      m_component = null; // UI Element - set on creation
+      m_id = id;
+      m_iType = iType;
+      m_iconUrl = iconUrls;
       m_toolTip = toolTip;
       m_command = command;
    }
@@ -97,21 +115,32 @@ public class Command
          // initialize all available commands (ONCE per program lifetime)
          m_allCommandsMap  = new HashMap<String, Command>();
 
-         m_allCommandsMap.put(VPN_CMD_DISCONNECT, 
-               new Command(VPN_CMD_DISCONNECT, 
-                     TYPE_BUTTON,JResizedIcon.IconUrls.ICON_DISCONNECT,
+         m_allCommandsMap.put(VPN_CMD_DISCONNECT,
+               new Command(VPN_CMD_DISCONNECT, TYPE_BUTTON,
+                     JResizedIcon.IconUrls.ICON_DISCONNECT,
                      "Click here to Disconnect from the VPN Server",
                      "VpnDisconnect"));
-         m_allCommandsMap.put(VPN_CMD_RECONNECT, 
-               new Command(VPN_CMD_RECONNECT, 
-                     TYPE_BUTTON,JResizedIcon.IconUrls.ICON_RECONNECT,
-                     "Click here to Reconnect the VPN Server",
+
+         m_allCommandsMap.put(VPN_CMD_RECONNECT,
+               new Command(VPN_CMD_RECONNECT, TYPE_BUTTON,
+                     JResizedIcon.IconUrls.ICON_RECONNECT,
+                     "Click here to [Re]connect the VPN Server",
                      "VpnReconnect"));
-         m_allCommandsMap.put(VPN_CMD_PAUSE,
-               new Command(VPN_CMD_PAUSE, TYPE_BUTTON,
-                     JResizedIcon.IconUrls.ICON_TIMER_PAUSE,
-                     "Click here to Pause the Connection to the VPN Server",
-                     "VpnPause"));
+
+         m_allCommandsMap.put(VPN_CMD_QUICKCONNECT,
+               new Command(VPN_CMD_QUICKCONNECT, TYPE_BUTTON,
+                     JResizedIcon.IconUrls.ICON_QUICKCONNECT,
+                     "Click here to quick connect to a VPN Server",
+                     "VpnQuickconnect"));
+
+         Vector<JResizedIcon.IconUrls> iconUrls = new Vector<JResizedIcon.IconUrls>();
+         iconUrls.add(JResizedIcon.IconUrls.ICON_TIMER_PAUSE);
+         iconUrls.add(JResizedIcon.IconUrls.ICON_TIMER_CONNECT);
+         m_allCommandsMap.put(VPN_CMD_TIMER_CONNECT,
+               new Command(VPN_CMD_TIMER_CONNECT, TYPE_BUTTON,
+                     iconUrls,
+                     "*** Tooltip is set in updateUI!",
+                     "VpnTimerConnect"));
 
          m_allCommandsMap.put(VPN_SET_KILLSWITCH,
                new Command(VPN_SET_KILLSWITCH, TYPE_CHECKBOX,
@@ -125,22 +154,25 @@ public class Command
                      "Click here to change the VPN Setting for Obfuscate",
                      "VpnSetObfuscate"));
 
+         m_allCommandsMap.put(VPN_SET_THREATPROTECTION,
+               new Command(VPN_SET_THREATPROTECTION, TYPE_CHECKBOX,
+                     JResizedIcon.IconUrls.ICON_VPN_SET_THREATPROTECTION,
+                     "Click here to change the VPN Setting for Threat Protection",
+                     "VpnSetThreatprotection"));
+
          m_allCommandsMap.put(APP_PREF_AUTOCONNECT,
-               new Command(APP_PREF_AUTOCONNECT,
-                     TYPE_CHECKBOX,
-                     JResizedIcon.IconUrls.ICON_CMD_AUTOCONNECT_ON_START,
+               new Command(APP_PREF_AUTOCONNECT, TYPE_CHECKBOX,
+                     JResizedIcon.IconUrls.ICON_APP_PREF_AUTOCONNECT,
                      "Click here to change User Preferences for Auto Connect to VPN on Application Start",
                      "AppPrefAutoConnect"));
          m_allCommandsMap.put(APP_PREF_AUTODISCONNECT,
-               new Command(APP_PREF_AUTODISCONNECT,
-                     TYPE_CHECKBOX,
-                     JResizedIcon.IconUrls.ICON_CMD_AUTODISCONNECT_ON_EXIT,
+               new Command(APP_PREF_AUTODISCONNECT, TYPE_CHECKBOX,
+                     JResizedIcon.IconUrls.ICON_APP_PREF_AUTODISCONNECT,
                      "Click here to change User Preferences for Auto Disconnect from VPN on Application Exit",
                      "AppPrefAutoDisconnect"));
          
          m_allCommandKeysSorted = new ArrayList<String>(m_allCommandsMap.keySet());
          Collections.sort(m_allCommandKeysSorted);
-
       }
 
       // initialize the current available commands in the ToolBar
@@ -193,14 +225,35 @@ public class Command
       return m_iType;
    }
 
-   public JResizedIcon.IconUrls getIconUrl()
+   public Vector<JResizedIcon.IconUrls> getIconUrl()
    {
       return m_iconUrl;
+   }
+   public ImageIcon getIconImage()
+   {
+      return m_iconImage;
+   }
+   public void setIconImage(ImageIcon iconImage)
+   {
+      m_iconImage = iconImage;
+   }
+
+   public boolean isEnabled()
+   {
+      return m_enabled;
+   }
+   public void setEnabled(boolean enabled)
+   {
+      m_enabled = enabled;
    }
 
    public String getToolTip()
    {
       return m_toolTip;
+   }
+   public void setToolTip (String sToolTip)
+   {
+      m_toolTip = sToolTip;
    }
 
    public String getCommand()

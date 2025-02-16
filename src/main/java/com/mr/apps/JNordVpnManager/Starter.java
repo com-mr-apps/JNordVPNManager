@@ -43,7 +43,7 @@ import com.mr.apps.JNordVpnManager.gui.GuiMapArea;
 import com.mr.apps.JNordVpnManager.gui.GuiMenuBar;
 import com.mr.apps.JNordVpnManager.gui.GuiStatusLine;
 import com.mr.apps.JNordVpnManager.gui.connectLine.GuiConnectLine;
-import com.mr.apps.JNordVpnManager.gui.connectLine.JPauseSlider;
+import com.mr.apps.JNordVpnManager.gui.connectLine.JPanelConnectTimer;
 import com.mr.apps.JNordVpnManager.gui.dialog.JAboutScreen;
 import com.mr.apps.JNordVpnManager.gui.dialog.JCustomConsole;
 import com.mr.apps.JNordVpnManager.gui.dialog.JModalDialog;
@@ -72,13 +72,6 @@ public class Starter extends JFrame
 {
    public static final String      APPLICATION_DATA_DIR       = "/.local/share/.JNordVpnManager"; // ..added to $HOME directory
 
-   public static final int         STATUS_UNKNOWN             = -1;
-   public static final int         STATUS_CONNECTED           = 0;
-   public static final int         STATUS_PAUSED              = 1;
-   public static final int         STATUS_DISCONNECTED        = 2;
-   public static final int         STATUS_RECONNECT           = 3;
-   public static final int         STATUS_LOGGEDOUT           = 4;
-   public static final int         STATUS_WORKMODE            = 5;
 
    private static final String     APPLICATION_TITLE          = "JNordVPN Manager [Copyright Ⓒ 2025 - written by com.mr.apps]";
    private static final String     APPLICATION_ICON_IMAGE     = "resources/icons/icon.png";
@@ -257,11 +250,11 @@ public class Starter extends JFrame
       int iAutoDisConnect = UtilPrefs.getAutoDisConnectMode();
 
       // check if paused
-      String pauseMsg = JPauseSlider.syncStatusForTimer(Starter.STATUS_DISCONNECTED);
+      String pauseMsg = JPanelConnectTimer.syncStatusForTimer(JPanelConnectTimer.STATUS_DISCONNECTED);
       if ((0 == iAutoDisConnect) && (null != pauseMsg))
       {
          // paused
-         if (JModalDialog.showConfirm("Your VPN connection is paused. If you quit the application, it will not be reconnected automatically.\nAre you sure you want to quit?") == JOptionPane.YES_OPTION)
+         if (JModalDialog.showConfirm("Your VPN connection is paused. If you quit the application,\nit will not be reconnected automatically.\n\nAre you sure you want to quit?") == JOptionPane.YES_OPTION)
          {
             // exit confirmed
             cleanUp();
@@ -577,7 +570,7 @@ public class Starter extends JFrame
          int iAutoConnect = UtilPrefs.getAutoConnectMode();
          if (1 == iAutoConnect)
          {
-            m_splashScreen.setProgress(30);
+            m_splashScreen.setProgress(25);
             CurrentLocation loc = getCurrentServer(true);
             if (null != loc)
             {
@@ -596,6 +589,16 @@ public class Starter extends JFrame
          GuiStatusLine.updateStatusLine(STATUS_DISCONNECTED, "Not logged in to NordVPN Service.");
       }
 */
+
+      m_splashScreen.setProgress(30);
+      m_splashScreen.setStatus("Create Commands ToolBar...");
+
+      //-------------------------------------------------------------------------------
+      // Connect Panel
+      //-------------------------------------------------------------------------------
+      m_connectLine = new GuiConnectLine();
+      JPanel connectPanel = m_connectLine.create(m_nvpnAccountData);
+
       m_splashScreen.setProgress(40);
       m_splashScreen.setStatus("Create World Map...");
 
@@ -625,12 +628,6 @@ public class Starter extends JFrame
       m_mainFrame.setJMenuBar(menubar);
 
       m_splashScreen.setProgress(70);
-
-      //-------------------------------------------------------------------------------
-      // Connect Panel
-      //-------------------------------------------------------------------------------
-      m_connectLine = new GuiConnectLine();
-      JPanel connectPanel = m_connectLine.create(m_nvpnAccountData);
 
       //-------------------------------------------------------------------------------
       // initialize data dependent GUI elements based on current (valid) account data

@@ -12,28 +12,34 @@ import java.awt.event.ActionEvent;
 
 import javax.swing.JCheckBox;
 
-import com.mr.apps.JNordVpnManager.utils.UtilPrefs;
+import com.mr.apps.JNordVpnManager.Starter;
+import com.mr.apps.JNordVpnManager.utils.String.StringFormat;
 
 /**
- * Command User Preferences - Auto Connect on Program Start
+ * Command VPN Settings - Obfuscate
  */
-public class AppPrefAutoConnect extends CoreCommandClass
+public class VpnSetThreatprotection extends CoreCommandClass
 {
    public static Object get()
    {
-      return (1 == UtilPrefs.getAutoConnectMode());
+      return (StringFormat.string2boolean(Starter.getCurrentSettingsData().getTplite(false)));
    }
 
    public static boolean execute(ActionEvent e)
    {
       JCheckBox cb = (JCheckBox) e.getSource();
-      if (cb.isSelected())
+      if (null != cb)
       {
-         UtilPrefs.setAutoConnectMode(1);
-      }
-      else
-      {
-         UtilPrefs.setAutoConnectMode(0);
+         if (cb.isSelected())
+         {
+            Starter.getCurrentSettingsData().setTplite("true", false);
+         }
+         else
+         {
+            Starter.getCurrentSettingsData().setTplite("false", false);
+         }
+         Starter.updateStatusLine();
+         Starter.setTreeFilterGroup();
       }
       return true;
    }
@@ -43,7 +49,10 @@ public class AppPrefAutoConnect extends CoreCommandClass
       JCheckBox cb = (JCheckBox)cmd.getComponent();
       if (null != cb)
       {
-         cb.setSelected((boolean)get());
+         if (null != cb)
+         {
+            cb.setSelected((boolean)get());
+         }
       }
       return true;
    }
