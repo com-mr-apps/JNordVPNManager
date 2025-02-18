@@ -9,13 +9,62 @@
 package com.mr.apps.JNordVpnManager.commandInterfaces;
 
 import java.awt.event.ActionEvent;
+import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.net.URL;
+import java.net.URLClassLoader;
 
 import com.mr.apps.JNordVpnManager.Starter;
 
 public class CallCommand
 {
+   private static URLClassLoader m_urlClassLoader = null;
+   private static String m_jarFile = null; // for UserPrefs Addon Path changes (keep the jar file name)
+
+   public static boolean initClassLoader(String path, String jarFile)
+   {
+      if (null == jarFile) jarFile = m_jarFile;
+
+      File fpJarFile = new File(path, jarFile);
+      try
+      {
+         if (fpJarFile.canRead())
+         {
+
+            URL[] jarURL = {
+                  new URL("file:" + fpJarFile.getAbsolutePath())
+            };
+            if (null != m_urlClassLoader)
+            {
+               m_urlClassLoader.close();
+            }
+            m_urlClassLoader = new URLClassLoader(jarURL);
+            m_jarFile = jarFile;
+         }
+         else
+         {
+            Starter._m_logError.LoggingWarning(10901,
+                  "Add Classpath Error",
+                  "Addon jarfile (optional) does not exist:\n" + fpJarFile.getAbsolutePath());
+            return false;
+         }
+
+      }
+      catch (Exception e)
+      {
+         Starter._m_logError.LoggingWarning(10901,
+               "Add Classpath Exception",
+               "Addon jarfile (optional) does not exist:\n" + fpJarFile.getAbsolutePath());
+         return false;
+      }
+      return true;
+   }
+
+   public static Object invokeAddonMethod(String className, String methodName)
+   {
+      return invokeMethod(null, "com.mr.apps.JNordVpnManager.addons." + className, methodName, null, null);
+   }
 
    public static Object invokeCommandMethod(Command cmd, String methodName)
    {
@@ -32,11 +81,6 @@ public class CallCommand
       return invokeMethod(cmd, "com.mr.apps.JNordVpnManager.commandInterfaces." + cmd.getCommand(), methodName, arguments, argTypes);
    }
 
-   public static Object invokeAddonsMethod(Command cmd, String methodName, String[] arguments, Class<String>[] argTypes)
-   {
-      return invokeMethod(cmd, "com.mr.apps.JNordVpnManager.addons.commandInterfaces." + cmd.getCommand(), methodName, arguments, argTypes);
-   }
-
    private static Object invokeMethod(Command cmd, String className, String methodName, Object[] arguments, Class<?>[] argTypes)
    {
       Object callResult;
@@ -45,15 +89,35 @@ public class CallCommand
       {
          if (null != arguments)
          {
-            Class<?> c = Class.forName(className);
-            Method m = c.getDeclaredMethod(methodName, argTypes);
-            callResult = m.invoke(null, (Object[]) arguments);
+            if (null == m_urlClassLoader)
+            {
+               Class<?> c = Class.forName(className);
+               Method m = c.getDeclaredMethod(methodName, argTypes);
+               callResult = m.invoke(null, (Object[]) arguments);
+            }
+            else
+            {
+               Class<?> c = m_urlClassLoader.loadClass(className);
+               Object instance = c.getDeclaredConstructor().newInstance();
+               Method m = c.getMethod(methodName, argTypes);
+               callResult = m.invoke(instance, (Object[]) arguments);
+            }
          }
          else
          {
-            Class<?> c = Class.forName(className);
-            Method m = c.getDeclaredMethod(methodName, (Class[]) null);
-            callResult = m.invoke(null, (Object[]) null);
+            if (null == m_urlClassLoader)
+            {
+               Class<?> c = Class.forName(className);
+               Method m = c.getDeclaredMethod(methodName, (Class[]) null);
+               callResult = m.invoke(null, (Object[]) null);
+            }
+            else
+            {
+               Class<?> c = m_urlClassLoader.loadClass(className);
+               Object instance = c.getDeclaredConstructor().newInstance();
+               Method m = c.getMethod(methodName);
+               callResult = m.invoke(instance);
+            }
          }
       }
       catch (ClassNotFoundException e)
@@ -82,6 +146,13 @@ public class CallCommand
          Starter._m_logError.LoggingError(10900,
                "Illegal access.",
                "Illegal access for method with the name=" + methodName + " - skipping method call.");
+         callResult = null;
+      }
+      catch (IllegalArgumentException e)
+      {
+         Starter._m_logError.LoggingError(10900,
+               "Illegal argument.",
+               "Illegal argument for method with the name=" + methodName + " - skipping method call.");
          callResult = null;
       }
       catch (Exception e)

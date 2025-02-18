@@ -20,23 +20,25 @@ public class VpnTimerConnect extends CoreCommandClass
    public static boolean execute(ActionEvent e)
    {
       int m_timerWorkMode = JPanelConnectTimer.getTimerWorkMode();
-      if (m_timerWorkMode == JPanelConnectTimer.STATUS_PAUSED)
+      if (m_timerWorkMode == GuiStatusLine.STATUS_PAUSED)
       {
-         GuiStatusLine.setStatusLine(JPanelConnectTimer.STATUS_CONNECTED, JPanelConnectTimer.syncStatusForTimer(JPanelConnectTimer.STATUS_CONNECTED));
+         GuiStatusLine.setStatusLine(GuiStatusLine.STATUS_CONNECTED, JPanelConnectTimer.syncStatusForTimer(GuiStatusLine.STATUS_CONNECTED));
       }
-      else if (m_timerWorkMode == JPanelConnectTimer.STATUS_RECONNECT)
+      else if (m_timerWorkMode == GuiStatusLine.STATUS_RECONNECT)
       {
-         GuiStatusLine.setStatusLine(JPanelConnectTimer.STATUS_CONNECTED, JPanelConnectTimer.syncStatusForTimer(JPanelConnectTimer.STATUS_CONNECTED));
+         GuiStatusLine.setStatusLine(GuiStatusLine.STATUS_CONNECTED, JPanelConnectTimer.syncStatusForTimer(GuiStatusLine.STATUS_CONNECTED));
       }
-      else if (m_timerWorkMode == JPanelConnectTimer.STATUS_CONNECTED)
+      else if (m_timerWorkMode == GuiStatusLine.STATUS_CONNECTED)
       {
-         JPanelConnectTimer.syncStatusForTimer(JPanelConnectTimer.STATUS_CONNECTED);
-         GuiStatusLine.setStatusLine(JPanelConnectTimer.STATUS_PAUSED, JPanelConnectTimer.syncStatusForTimer(JPanelConnectTimer.STATUS_PAUSED));
+         GuiStatusLine.setStatusLine(GuiStatusLine.STATUS_PAUSED, JPanelConnectTimer.syncStatusForTimer(GuiStatusLine.STATUS_PAUSED));
       }
-      else if (m_timerWorkMode == JPanelConnectTimer.STATUS_DISCONNECTED)
+      else if (m_timerWorkMode == GuiStatusLine.STATUS_DISCONNECTED)
       {
-         JPanelConnectTimer.syncStatusForTimer(JPanelConnectTimer.STATUS_CONNECTED);
-         GuiStatusLine.setStatusLine(JPanelConnectTimer.STATUS_PAUSED, JPanelConnectTimer.syncStatusForTimer(JPanelConnectTimer.STATUS_PAUSED));
+         GuiStatusLine.setStatusLine(GuiStatusLine.STATUS_PAUSED, JPanelConnectTimer.syncStatusForTimer(GuiStatusLine.STATUS_PAUSED));
+      }
+      else if (m_timerWorkMode == GuiStatusLine.STATUS_UNKNOWN)
+      {
+         GuiStatusLine.setStatusLine(GuiStatusLine.STATUS_PAUSED, JPanelConnectTimer.syncStatusForTimer(GuiStatusLine.STATUS_PAUSED));
       }
       else // Starter.STATUS_LOGGEDOUT
       {

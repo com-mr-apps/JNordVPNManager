@@ -36,6 +36,7 @@ import javax.swing.Timer;
 import javax.swing.WindowConstants;
 import org.geotools.swing.JMapFrame;
 
+import com.mr.apps.JNordVpnManager.commandInterfaces.CallCommand;
 import com.mr.apps.JNordVpnManager.geotools.CurrentLocation;
 import com.mr.apps.JNordVpnManager.geotools.UtilLocations;
 import com.mr.apps.JNordVpnManager.geotools.UtilMapGeneration;
@@ -250,7 +251,7 @@ public class Starter extends JFrame
       int iAutoDisConnect = UtilPrefs.getAutoDisConnectMode();
 
       // check if paused
-      String pauseMsg = JPanelConnectTimer.syncStatusForTimer(JPanelConnectTimer.STATUS_DISCONNECTED);
+      String pauseMsg = JPanelConnectTimer.syncStatusForTimer(GuiStatusLine.STATUS_DISCONNECTED);
       if ((0 == iAutoDisConnect) && (null != pauseMsg))
       {
          // paused
@@ -315,7 +316,10 @@ public class Starter extends JFrame
       _m_logError.LoggingInfo("GUI Version: " + version);
 
       // add addons classpath
-      UtilSystem.addClasspath(UtilPrefs.getAddonsPath(), "/JNordVpnManager.addons-" + version + ".jar");
+      if (CallCommand.initClassLoader(UtilPrefs.getAddonsPath(), "/JNordVpnManager.addons-" + version + ".jar"))
+      {
+         CallCommand.invokeAddonMethod("AddonManager", "initialize");
+      }
 
       // main frame
       m_mainFrame = this;

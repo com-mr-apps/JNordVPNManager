@@ -22,6 +22,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 import com.mr.apps.JNordVpnManager.Starter;
+import com.mr.apps.JNordVpnManager.commandInterfaces.CallCommand;
 import com.mr.apps.JNordVpnManager.commandInterfaces.Command;
 import com.mr.apps.JNordVpnManager.gui.settings.JUserPrefsDialog;
 import com.mr.apps.JNordVpnManager.nordvpn.NvpnGroups.NordVPNEnumGroups;
@@ -689,7 +690,7 @@ public class UtilPrefs
       if (false == sCurrentAddonPath.equals(sNewAddonPath))
       {
          // add changed addons classpath
-         if (true == UtilSystem.addClasspath(sNewAddonPath, null))
+         if (true == CallCommand.initClassLoader(sNewAddonPath, null))
          {
             setAddonsPath(sNewAddonPath);
          }

@@ -52,6 +52,14 @@ public class GuiStatusLine
          "Click here to switch to Expanded view."
    };
 
+   // Defined connection states
+   public static final int         STATUS_UNKNOWN             = -1;
+   public static final int         STATUS_CONNECTED           = 0;
+   public static final int         STATUS_PAUSED              = 1;
+   public static final int         STATUS_DISCONNECTED        = 2;
+   public static final int         STATUS_RECONNECT           = 3;
+   public static final int         STATUS_LOGGEDOUT           = 99;
+
    /**
     * Constructor for GUI Status Line
     */
@@ -150,23 +158,37 @@ public class GuiStatusLine
          return ret_loc;
       }
 
-      int iconId = 0;
+      int iconId = 4;
       String sPrefix = "";
       String statusMessage  = "";
+
+      // update pause slider
+      int iStatus = (true == Starter.getCurrentAccountData(false).isLoggedIn()) ? JPanelConnectTimer.getTimerWorkMode() : STATUS_LOGGEDOUT;
+      String connectTimerMsg = JPanelConnectTimer.syncStatusForTimer(iStatus);
+      if (null == connectTimerMsg)
+      {
+         // Status: ..connect timer not running
+         if (iStatus != STATUS_LOGGEDOUT)
+         {
+            iconId = (Starter.getCurrentStatusData().isConnected()) ? STATUS_CONNECTED : STATUS_DISCONNECTED;
+         }
+      }
+      else if (false == connectTimerMsg.isBlank())
+      {
+         // Status: Paused
+         iconId = 1;
+      }
+      else
+      {
+         // Status: automatic reconnect
+         iconId = 3;
+      }
 
       if (statusData.isConnected())
       {
          /*
           *  connected
           */
-         // update pause slider
-         String pauseMsg = JPanelConnectTimer.syncStatusForTimer(JPanelConnectTimer.STATUS_CONNECTED);
-         if ((null != pauseMsg) && (pauseMsg.isBlank()))
-         {
-            // Automatic Reconnect Mode
-            iconId = 3;
-         }
-
          ret_loc = new CurrentLocation(UtilLocations.getLocation(statusData.getCity(), statusData.getCountry()));
          ret_loc.setConnected(true);
 
@@ -215,35 +237,8 @@ public class GuiStatusLine
          {
             JModalDialog.showWarning(sShortMsg + "\n\n" + sLongMsg);
          }
-         statusMessage = statusData.getStatusLineMessage(sPrefix);
       }
-      else
-      {
-         /*
-          *  disconnected or not logged in (maybe outside of the application)
-          */
-         // update time slider
-         int iStatus = (true == Starter.getCurrentAccountData(false).isLoggedIn()) ? JPanelConnectTimer.STATUS_DISCONNECTED : JPanelConnectTimer.STATUS_LOGGEDOUT;
-         String pauseMsg = JPanelConnectTimer.syncStatusForTimer(iStatus);
-         if (null == pauseMsg)
-         {
-            // Status: Disconnected (or error message...)
-            iconId = 2;
-            statusMessage = statusData.getStatusLineMessage(sPrefix);
-         }
-         else if (false == pauseMsg.isBlank())
-         {
-            // Status: Paused
-            iconId = 1;
-            statusMessage = pauseMsg;
-         }
-         else
-         {
-            // Status: automatic reconnect
-            iconId = 3;
-            statusMessage = statusData.getStatusLineMessage(sPrefix);
-         }
-      }
+      statusMessage = statusData.getStatusLineMessage(sPrefix);
       
       setStatusLine(iconId, statusMessage);
 
@@ -261,14 +256,19 @@ public class GuiStatusLine
    public static void setStatusLine(int iStatus, String msg)
    {
       m_statusIndicator.setIcon(m_statusImages.get(iStatus));
-      if (null != msg)
+      if (null == msg)
       {
-         Starter._m_logError.TraceDebug("Update Statusline: [" + iStatus + "] " + msg);
+         msg = "";
+      }
+      else if (msg.isBlank())
+      {
+         msg = Starter.getCurrentStatusData().getStatusLineMessage("");
          m_statusText.setText(msg);
       }
       else
       {
-         Starter._m_logError.TraceDebug("Update Statusline: [" + iStatus + "]");
+         m_statusText.setText(msg);
       }
+      Starter._m_logError.TraceDebug("Update Statusline: [" + iStatus + "] " + msg);
    }
 }

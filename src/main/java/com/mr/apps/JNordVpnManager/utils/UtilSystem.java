@@ -422,43 +422,4 @@ public class UtilSystem
       }
    }
 
-   private static String m_jarFile = null;
-   public static boolean addClasspath (String path, String jarFile)
-   {
-      if (null == jarFile)
-      {
-         jarFile = m_jarFile;
-      }
-      else
-      {
-         m_jarFile = jarFile;
-      }
-
-      try
-      {
-         File fpJarFile = new File (path,jarFile);
-         if (fpJarFile.canRead())
-         {
-            Starter._m_logError.TraceDebug("Add '" + jarFile + "' to the classpath.");
-            DynamicClassLoader dcl = (DynamicClassLoader) ClassLoader.getSystemClassLoader();
-            dcl.add(new URL("file://" + fpJarFile));
-         }
-         else
-         {
-            Starter._m_logError.LoggingWarning(10901,
-                  "DynamicClassLoader Error",
-                  "Addon jarfile (optional) does not exist:\n" + fpJarFile.getAbsolutePath());
-            return false;
-         }
-      }
-      catch (Exception e)
-      {
-         Starter._m_logError.LoggingError(10997,
-               "DynamicClassLoader Error",
-               "Please update Application Launcher file. Java requires the additional option:\n-Djava.system.class.loader=com.mr.apps.JNordVpnManager.utils.DynamicClassLoader");
-         Starter._m_logError.LoggingExceptionMessage(4, 10901, e);
-         return false;
-      }
-      return true;
-   }
 }

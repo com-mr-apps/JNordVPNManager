@@ -82,7 +82,7 @@ public class GuiCommandsToolBar extends JPanel implements ActionListener
    /**
     * Create the Commands ToolBar by adding commands defined in the commands ToolBar list.
     * <p>
-    * This method is called on initialization and on add/delete commands.
+    * This method is called on initialization and on add/remove commands.
     */
    private void createCommandsToolBar()
    {
@@ -90,7 +90,7 @@ public class GuiCommandsToolBar extends JPanel implements ActionListener
 
       // we use a common popup menu for all 'Add'-Labels
       JPopupMenu customizePopUpMenuAdd = new JPopupMenu();
-      // ... and a common popup menu for all 'Delete/Move'-Buttons
+      // ... and a common popup menu for all 'Remove/Move'-Buttons
       JPopupMenu customizePopUpMenu = new JPopupMenu();
 
       // get the list of commands to add (from user preferences)
@@ -140,10 +140,10 @@ public class GuiCommandsToolBar extends JPanel implements ActionListener
       /*
        *  add the pop up menu items for the commands in the ToolBar
        */
-      JMenuItem itemDelete = new JMenuItem("Delete");
-      itemDelete.setToolTipText("Click here to remove the command from the tool bar");
-      itemDelete.setIcon(JResizedIcon.getIcon(JResizedIcon.IconUrls.ICON_CUSTOMIZE_DEL_COMMAND_BAR, JResizedIcon.IconSize.SMALL));
-      itemDelete.addActionListener(new ActionListener() {
+      JMenuItem itemRemove = new JMenuItem("Remove");
+      itemRemove.setToolTipText("Click here to remove the command from the tool bar");
+      itemRemove.setIcon(JResizedIcon.getIcon(JResizedIcon.IconUrls.ICON_CUSTOMIZE_DEL_COMMAND_BAR, JResizedIcon.IconSize.SMALL));
+      itemRemove.addActionListener(new ActionListener() {
          @Override
          public void actionPerformed(ActionEvent e)
          {
@@ -173,7 +173,7 @@ public class GuiCommandsToolBar extends JPanel implements ActionListener
             Command cmdSel = Command.getObject(cmdId);
             if (null != cmdSel)
             {
-               Starter._m_logError.TraceDebug("Deleted Command '" + cmdSel.toString() + "' from Tool Bar.");
+               Starter._m_logError.TraceDebug("Removed Command '" + cmdSel.toString() + "' from Tool Bar.");
                boolean rc = cmdSel.removeCommandFromToolbarList();
                if (true == rc)
                {
@@ -184,16 +184,16 @@ public class GuiCommandsToolBar extends JPanel implements ActionListener
                }
                else
                {
-                  Starter._m_logError.TraceDebug("Could not deleted Command '" + cmdSel.toString() + "' from Tool Bar List!");
+                  Starter._m_logError.TraceDebug("Could not remove Command '" + cmdSel.toString() + "' from Tool Bar List!");
                }
             }
             else
             {
-               Starter._m_logError.TraceDebug("Could not find Command with Id'" + cmdId + "' to delete from Tool Bar!");
+               Starter._m_logError.TraceDebug("Could not find Command with Id'" + cmdId + "' to remove from Tool Bar!");
             }
          }
       });
-      customizePopUpMenu.add(itemDelete);
+      customizePopUpMenu.add(itemRemove);
 
       /*
        *  add the pop up menu items for the add buttons with the unused commands

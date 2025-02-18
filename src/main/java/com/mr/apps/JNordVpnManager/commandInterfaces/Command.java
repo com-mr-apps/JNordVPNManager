@@ -43,6 +43,8 @@ public class Command
    public static final String          VPN_SET_THREATPROTECTION = "VPN_SET_THREATPROTECTION";
    public static final String          APP_PREF_AUTOCONNECT     = "APP_PREF_AUTOCONNECT";
    public static final String          APP_PREF_AUTODISCONNECT  = "APP_PREF_AUTODISCONNECT";
+   // Addons
+   public static final String          VPN_CMD_TIMER_RECONNECT  = "VPN_CMD_TIMER_RECONNECT";
 
    // class members
    private Component                     m_component             = null;
@@ -55,7 +57,7 @@ public class Command
    private boolean                       m_enabled               = true; // used internally in updateUI
 
    // list of all available commands
-   private static Map<String, Command> m_allCommandsMap  = null;
+   private static Map<String, Command> m_allCommandsMap    = new HashMap<String, Command>();
    private static ArrayList<String> m_allCommandKeysSorted = null;
 
    // list with current commands in the ToolBar
@@ -108,72 +110,63 @@ public class Command
       m_command = command;
    }
 
+   /**
+    * initialize all available commands (ONCE per program lifetime)
+    */
    public static void initAllCommands()
    {
-      if (null == m_allCommandsMap)
-      {
-         // initialize all available commands (ONCE per program lifetime)
-         m_allCommandsMap  = new HashMap<String, Command>();
+      // ...add the Basis Commands
+      addCommand(new Command(VPN_CMD_DISCONNECT, TYPE_BUTTON,
+                  JResizedIcon.IconUrls.ICON_DISCONNECT,
+                  "Click here to Disconnect from the VPN Server",
+                  "VpnDisconnect"));
 
-         m_allCommandsMap.put(VPN_CMD_DISCONNECT,
-               new Command(VPN_CMD_DISCONNECT, TYPE_BUTTON,
-                     JResizedIcon.IconUrls.ICON_DISCONNECT,
-                     "Click here to Disconnect from the VPN Server",
-                     "VpnDisconnect"));
+      addCommand(new Command(VPN_CMD_RECONNECT, TYPE_BUTTON,
+                  JResizedIcon.IconUrls.ICON_RECONNECT,
+                  "Click here to [Re]connect the VPN Server",
+                  "VpnReconnect"));
 
-         m_allCommandsMap.put(VPN_CMD_RECONNECT,
-               new Command(VPN_CMD_RECONNECT, TYPE_BUTTON,
-                     JResizedIcon.IconUrls.ICON_RECONNECT,
-                     "Click here to [Re]connect the VPN Server",
-                     "VpnReconnect"));
+      addCommand(new Command(VPN_CMD_QUICKCONNECT, TYPE_BUTTON,
+                  JResizedIcon.IconUrls.ICON_QUICKCONNECT,
+                  "Click here to quick connect to a VPN Server",
+                  "VpnQuickconnect"));
 
-         m_allCommandsMap.put(VPN_CMD_QUICKCONNECT,
-               new Command(VPN_CMD_QUICKCONNECT, TYPE_BUTTON,
-                     JResizedIcon.IconUrls.ICON_QUICKCONNECT,
-                     "Click here to quick connect to a VPN Server",
-                     "VpnQuickconnect"));
+      Vector<JResizedIcon.IconUrls> iconUrls = new Vector<JResizedIcon.IconUrls>();
+      iconUrls.add(JResizedIcon.IconUrls.ICON_TIMER_PAUSE);
+      iconUrls.add(JResizedIcon.IconUrls.ICON_TIMER_CONNECT);
+      addCommand(new Command(VPN_CMD_TIMER_CONNECT, TYPE_BUTTON,
+                  iconUrls,
+                  "*** Tooltip is set in updateUI!",
+                  "VpnTimerConnect"));
 
-         Vector<JResizedIcon.IconUrls> iconUrls = new Vector<JResizedIcon.IconUrls>();
-         iconUrls.add(JResizedIcon.IconUrls.ICON_TIMER_PAUSE);
-         iconUrls.add(JResizedIcon.IconUrls.ICON_TIMER_CONNECT);
-         m_allCommandsMap.put(VPN_CMD_TIMER_CONNECT,
-               new Command(VPN_CMD_TIMER_CONNECT, TYPE_BUTTON,
-                     iconUrls,
-                     "*** Tooltip is set in updateUI!",
-                     "VpnTimerConnect"));
+      addCommand(new Command(VPN_SET_KILLSWITCH, TYPE_CHECKBOX,
+                  JResizedIcon.IconUrls.ICON_VPN_SET_KILLSWITCH,
+                  "Click here to change the VPN Setting for Killswitch",
+                  "VpnSetKillswitch"));
 
-         m_allCommandsMap.put(VPN_SET_KILLSWITCH,
-               new Command(VPN_SET_KILLSWITCH, TYPE_CHECKBOX,
-                     JResizedIcon.IconUrls.ICON_VPN_SET_KILLSWITCH,
-                     "Click here to change the VPN Setting for Killswitch",
-                     "VpnSetKillswitch"));
+      addCommand(new Command(VPN_SET_OBFUSCATE, TYPE_CHECKBOX,
+                  JResizedIcon.IconUrls.ICON_VPN_SET_OBFUSCATE,
+                  "Click here to change the VPN Setting for Obfuscate",
+                  "VpnSetObfuscate"));
 
-         m_allCommandsMap.put(VPN_SET_OBFUSCATE,
-               new Command(VPN_SET_OBFUSCATE, TYPE_CHECKBOX,
-                     JResizedIcon.IconUrls.ICON_VPN_SET_OBFUSCATE,
-                     "Click here to change the VPN Setting for Obfuscate",
-                     "VpnSetObfuscate"));
+      addCommand(new Command(VPN_SET_THREATPROTECTION, TYPE_CHECKBOX,
+                  JResizedIcon.IconUrls.ICON_VPN_SET_THREATPROTECTION,
+                  "Click here to change the VPN Setting for Threat Protection",
+                  "VpnSetThreatprotection"));
 
-         m_allCommandsMap.put(VPN_SET_THREATPROTECTION,
-               new Command(VPN_SET_THREATPROTECTION, TYPE_CHECKBOX,
-                     JResizedIcon.IconUrls.ICON_VPN_SET_THREATPROTECTION,
-                     "Click here to change the VPN Setting for Threat Protection",
-                     "VpnSetThreatprotection"));
+      addCommand(new Command(APP_PREF_AUTOCONNECT, TYPE_CHECKBOX,
+                  JResizedIcon.IconUrls.ICON_APP_PREF_AUTOCONNECT,
+                  "Click here to change User Preferences for Auto Connect to VPN on Application Start",
+                  "AppPrefAutoConnect"));
 
-         m_allCommandsMap.put(APP_PREF_AUTOCONNECT,
-               new Command(APP_PREF_AUTOCONNECT, TYPE_CHECKBOX,
-                     JResizedIcon.IconUrls.ICON_APP_PREF_AUTOCONNECT,
-                     "Click here to change User Preferences for Auto Connect to VPN on Application Start",
-                     "AppPrefAutoConnect"));
-         m_allCommandsMap.put(APP_PREF_AUTODISCONNECT,
-               new Command(APP_PREF_AUTODISCONNECT, TYPE_CHECKBOX,
-                     JResizedIcon.IconUrls.ICON_APP_PREF_AUTODISCONNECT,
-                     "Click here to change User Preferences for Auto Disconnect from VPN on Application Exit",
-                     "AppPrefAutoDisconnect"));
-         
-         m_allCommandKeysSorted = new ArrayList<String>(m_allCommandsMap.keySet());
-         Collections.sort(m_allCommandKeysSorted);
-      }
+      addCommand(new Command(APP_PREF_AUTODISCONNECT, TYPE_CHECKBOX,
+                  JResizedIcon.IconUrls.ICON_APP_PREF_AUTODISCONNECT,
+                  "Click here to change User Preferences for Auto Disconnect from VPN on Application Exit",
+                  "AppPrefAutoDisconnect"));
+
+      // make a sorted list
+      m_allCommandKeysSorted = new ArrayList<String>(m_allCommandsMap.keySet());
+      Collections.sort(m_allCommandKeysSorted);
 
       // initialize the current available commands in the ToolBar
       m_CommandsToolbarList = new Vector<Command>();
@@ -186,11 +179,27 @@ public class Command
          if (!commandId.isBlank())
          {
             Command cmd = m_allCommandsMap.get(commandId);
-            m_CommandsToolbarList.addElement((Command)cmd);
-            Starter._m_logError.TraceDebug("Add Command to ToolBar: " + cmd.toString());
+            if (null != cmd)
+            {
+               m_CommandsToolbarList.addElement((Command)cmd);
+               Starter._m_logError.TraceDebug("Add Command to ToolBar: " + cmd.toString());
+            }
+            else
+            {
+               Starter._m_logError.TraceDebug("Command with id: '" + commandId + "' not found!");
+            }
          }
       }
 
+   }
+
+   public static void addCommand(Command cmd)
+   {
+      if (null == m_allCommandsMap)
+      {
+         m_allCommandsMap = new HashMap<String, Command>();
+      }
+      m_allCommandsMap.put(cmd.getId(), cmd);
    }
 
    public static Vector<Command> getListOfUnusedCommands()

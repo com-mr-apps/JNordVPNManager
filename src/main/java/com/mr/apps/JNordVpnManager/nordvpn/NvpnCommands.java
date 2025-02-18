@@ -10,6 +10,7 @@ package com.mr.apps.JNordVpnManager.nordvpn;
 
 import com.mr.apps.JNordVpnManager.Starter;
 import com.mr.apps.JNordVpnManager.geotools.CurrentLocation;
+import com.mr.apps.JNordVpnManager.gui.connectLine.JPanelConnectTimer;
 import com.mr.apps.JNordVpnManager.nordvpn.NvpnGroups.NordVPNEnumGroups;
 import com.mr.apps.JNordVpnManager.utils.UtilSystem;
 
@@ -569,6 +570,7 @@ public class NvpnCommands {
             }
          }
       }
+      JPanelConnectTimer.forceStopTheTimer();
       if (false == UtilSystem.isLastError())
       {
          NvpnSettingsData.resetRequiresReconnect(); // successfully connected with current settings
@@ -597,6 +599,7 @@ public class NvpnCommands {
    {
       String status = null;
       
+      JPanelConnectTimer.forceStopTheTimer();
       status = UtilSystem.runCommand(CMD_NORDVPN, ARG_DISCONNECT);
       
       return status;
