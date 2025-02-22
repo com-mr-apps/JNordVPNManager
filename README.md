@@ -2,8 +2,7 @@
 
 **Introducing JNordVPN Manager - a user-friendly, open-source graphical interface for managing NordVPN connections on Linux. This application simplifies VPN administration with features like a server/city list grouped by countries with filter functionality (by name, region or legacy group), connection management (login, logout, connect, disconnect, reconnect, pause), NordVPN Settings management and a world map showing all servers and the active one. Recent connections are also stored for easy reconnection by a single click.**
 
-![JNordVPNManager_expanded](https://github.com/user-attachments/assets/0d94b444-d18d-4a81-9ade-8d0b2eaf7762)
-
+![JNordVPNManager_expanded](https://github.com/user-attachments/assets/8c96506f-2418-4d45-8da1-105dc57ad78d)
 
 JNordVPN Manager is an open-source graphical user interface (GUI) application designed to make managing NordVPN connections on Linux easier and more intuitive than using the native nordvpn commands. Built with Java, this GUI provides a comprehensive set of features that cater to the needs of NordVPN users on the Linux platform.
 
@@ -16,6 +15,7 @@ Key Features:
 * **Recent Connections**: The application stores your recent connections for easy reconnection. Simply select one to reconnect instantly.
 * **World Map View**: Visualize all available VPN servers on a world map and focus on the active server, providing an intuitive way to navigate through NordVPN's vast network.
 * **Security**: The application does not store any login information (Account, Password). It is just an interface for the the native nordvpn commands.
+* **Quick Access Commands Toolbar** Free configurable commands Toolbar for commonly used commands/settings.
 
 The application is released under the Common Development and Distribution License 1.1 ([CDDL-1.1](https://spdx.org/licenses/CDDL-1.1.html)) with a Commons Clause License, ensuring that it remains free for private use only. This means that while you can download and enjoy NordVPN Manager without any costs, commercial exploitation of the software requires my explicit permission.
 
@@ -30,7 +30,7 @@ JNordVPNManager  is a Java program that is all bundled into a single jar file.  
 
     java -jar JNordVPNManager_[version].jar
   
- Please note that Java 11 or higher must be in your path and this assumes the JNordVPNManager.jar is in your current directory.
+Please note that Java 11 or higher must be in your path and this assumes the JNordVPNManager.jar is in your current directory.
 
 ## SNAP
 
@@ -72,6 +72,7 @@ Thanks to Natural Earth. Free vector and raster map data from:
 
 ## Donations
 Funding for the ongoing development and maintenance of this application comes from donations made to me through [https://buymeacoffee.com/3dprototyping](https://buymeacoffee.com/3dprototyping). Your support in the form of a coffee or any other contribution is greatly appreciated and helps keep JNordVPN Manager alife and up-to-date.
+If you like to be part of the Supporters group, which will have access to the Supporter Edition with more features, you can find more information there.
 
 If you appreciate NordVPN's services, you can also support me by ordering NordVPN through my affiliate link: [https://refer-nordvpn.com/ArNNOfynXcu](https://refer-nordvpn.com/ArNNOfynXcu). This not only helps fund the development of JNordVPN Manager but also provides a financial incentive for further improving and maintaining this application.
 
