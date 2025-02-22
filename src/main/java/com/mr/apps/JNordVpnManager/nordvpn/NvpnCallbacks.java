@@ -35,8 +35,6 @@ public class NvpnCallbacks
       String msg = "no message...";
       if (null != loc)
       {
-         Starter._m_logError.LoggingInfo("Connect to Server: " + loc.toString());
-
          msg = NvpnCommands.connect(loc);
          if (UtilSystem.isLastError())
          {
@@ -62,7 +60,7 @@ public class NvpnCallbacks
                      errMsg);
             }
          }
-         else
+         else if (null != msg)
          {
             // OK
             rc = true;
@@ -77,6 +75,14 @@ public class NvpnCallbacks
             {
                JModalDialog.showMessageAutoClose(titleOk, msg);
             }
+         }
+         else
+         {
+            if (null != titleKo)
+            {
+               JModalDialog.showWarning("Cancelled new server connection to '" + loc.getServerId() + "'.");
+            }
+            rc = false;
          }
       }
 
@@ -224,7 +230,7 @@ public class NvpnCallbacks
          if ((1 == iAutoConnect) && (newStatus == true))
          {
             // AutoConnect after login
-            CurrentLocation loc = Starter.getCurrentServer();
+            CurrentLocation loc = Starter.getCurrentServer(true);
             if (null != loc)
             {
                NvpnCallbacks.executeConnect(loc, null, null);

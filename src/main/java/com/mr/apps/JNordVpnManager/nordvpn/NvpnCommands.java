@@ -10,6 +10,7 @@ package com.mr.apps.JNordVpnManager.nordvpn;
 
 import com.mr.apps.JNordVpnManager.Starter;
 import com.mr.apps.JNordVpnManager.geotools.CurrentLocation;
+import com.mr.apps.JNordVpnManager.gui.connectLine.JPanelConnectTimer;
 import com.mr.apps.JNordVpnManager.nordvpn.NvpnGroups.NordVPNEnumGroups;
 import com.mr.apps.JNordVpnManager.utils.UtilSystem;
 
@@ -441,35 +442,51 @@ public class NvpnCommands {
 
    /**
     * Connect to VPN server
-    * @param loc is the current location to connect to (optional)
-    * @param country is the country to connect (optional)
-    * @param city is the city to connect (optional)
-    * @return the current connection status of nordvpn
+    * 
+    * @param loc
+    *           is the current location to connect to (optional)
+    * @param country
+    *           is the country to connect (optional)
+    * @param city
+    *           is the city to connect (optional)
+    * @return the current connection status of nordvpn - if <code>null</code>, checkForConnection failed
     */
    public static String connect(CurrentLocation loc)
    {
       String status = null;
+
+      // Set default connection data
       String country = "";
       String city = "";
-
       NordVPNEnumGroups currentGroup = NvpnGroups.getCurrentFilterGroup();
-
       boolean bObfuscate = currentGroup.equals(NordVPNEnumGroups.legacy_obfuscated_servers);
+
       if (null != loc)
       {
-         country = loc.getCountryNordVPN();
-         city = loc.getCityNordVPN();
-         currentGroup = NordVPNEnumGroups.get(loc.getLegacyGroup());
-         bObfuscate = (NordVPNEnumGroups.legacy_obfuscated_servers).equals(currentGroup);
-         
+         Starter._m_logError.LoggingInfo("Connect to Server: " + loc.toString() + " / Obfuscate=" + bObfuscate);
+         // validate group/VPN settings for the connection
          NvpnSettingsData csd = Starter.getCurrentSettingsData();
          boolean rc = csd.checkForConnection(loc);
          if (false == rc)
          {
-            // Cancel - required settings changes refused
-            UtilSystem.setLastError("Cancelled connection to: " + loc.getServerId(), 1);
-            return status;
+            // Required settings changes refused
+            // ! Connection to the selected server connection cannot established with the current NordVPN settings
+            status = "The selected Server location '" + loc.getServerId() + "' does not support the current settings.";
+            Starter._m_logError.LoggingWarning(90500,
+                  "Settings Mismatch",
+                  status);
+            return null;
          }
+
+         // get the connection data from the location object
+         country = loc.getCountryNordVPN();
+         city = loc.getCityNordVPN();
+         currentGroup = NordVPNEnumGroups.get(loc.getLegacyGroup());
+         bObfuscate = (NordVPNEnumGroups.legacy_obfuscated_servers).equals(currentGroup);
+      }
+      else
+      {
+         Starter._m_logError.LoggingInfo("nordvpn quick connect");
       }
 
       if (city.isBlank())
@@ -553,13 +570,13 @@ public class NvpnCommands {
             }
          }
       }
+      JPanelConnectTimer.forceStopTheTimer();
       if (false == UtilSystem.isLastError())
       {
          NvpnSettingsData.resetRequiresReconnect(); // successfully connected with current settings
 
          // ensure that after successful connection the current group (for status and JServerTree filter) is updated
          NvpnGroups.setCurrentLegacyGroup(currentGroup);
-         Starter.setTreeFilterGroup();
          Starter.updateCurrentServer();
       }
       else
@@ -582,6 +599,7 @@ public class NvpnCommands {
    {
       String status = null;
       
+      JPanelConnectTimer.forceStopTheTimer();
       status = UtilSystem.runCommand(CMD_NORDVPN, ARG_DISCONNECT);
       
       return status;

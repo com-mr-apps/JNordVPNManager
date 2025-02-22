@@ -14,15 +14,13 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 import javax.swing.BorderFactory;
-import javax.swing.BoxLayout;
 import javax.swing.JButton;
-import javax.swing.JCheckBox;
 import javax.swing.JPanel;
 import javax.swing.JSeparator;
 
+import com.mr.apps.JNordVpnManager.gui.components.JResizedIcon;
 import com.mr.apps.JNordVpnManager.nordvpn.NvpnAccountData;
 import com.mr.apps.JNordVpnManager.nordvpn.NvpnCallbacks;
-import com.mr.apps.JNordVpnManager.utils.UtilPrefs;
 
 public class GuiConnectLine
 {
@@ -45,69 +43,16 @@ public class GuiConnectLine
       JPanel connectPanel = new JPanel(new BorderLayout());
       connectPanel.setBorder(BorderFactory.createEmptyBorder(0,5,5,5));
 
-      JPanel frame = new JPanel();
-      frame.setLayout(new BoxLayout(frame, BoxLayout.Y_AXIS));
-      JCheckBox autoConnect = new JCheckBox("GUI Auto Connect");
-      autoConnect.setToolTipText("Automatic connect with the current VPN Server on next program start.");
-      int iAutoConnect = UtilPrefs.getAutoConnectMode();
-      if (1 == iAutoConnect)
-      {
-         autoConnect.setSelected(true);
-      }
-      else
-      {
-         autoConnect.setSelected(false);
-      }
-      autoConnect.addActionListener(new ActionListener() {
-         @Override
-         public void actionPerformed(ActionEvent e)
-         {
-            JCheckBox cb = (JCheckBox) e.getSource();
-            if (cb.isSelected())
-            {
-               UtilPrefs.setAutoConnectMode(1);
-            }
-            else
-            {
-               UtilPrefs.setAutoConnectMode(0);
-            }
-         }
-      });
-      frame.add(autoConnect);
+      GuiCommandsToolBar ctb = new GuiCommandsToolBar();
+      connectPanel.add(ctb, BorderLayout.LINE_START);
 
-      JCheckBox autoDisConnect = new JCheckBox("GUI Auto Disconnect");
-      autoDisConnect.setToolTipText("Automatic disonnect from VPN Server at program exit.");
-      int iAutoDisConnect = UtilPrefs.getAutoDisConnectMode();
-      if (1 == iAutoDisConnect)
-      {
-         autoDisConnect.setSelected(true);
-      }
-      else
-      {
-         autoDisConnect.setSelected(false);
-      }
-      autoDisConnect.addActionListener(new ActionListener() {
-         @Override
-         public void actionPerformed(ActionEvent e) {
-            JCheckBox cb = (JCheckBox) e.getSource();
-            if (cb.isSelected())
-            {
-               UtilPrefs.setAutoDisConnectMode(1);
-            }
-            else
-            {
-               UtilPrefs.setAutoDisConnectMode(0);
-            }
-         }
-      });
-      frame.add(autoDisConnect);
-      connectPanel.add(frame, BorderLayout.LINE_START);
-
-      JPauseSlider ps = new JPauseSlider();
+      JPanelConnectTimer ps = new JPanelConnectTimer();
       connectPanel.add(ps, BorderLayout.CENTER);
 
       JPanel mailPanel = new JPanel(new FlowLayout());
       m_jbMail = new JButton();
+      m_jbMail.setBorder(BorderFactory.createRaisedSoftBevelBorder());
+
       m_jbMail.addActionListener(new ActionListener() {
          @Override
          public void actionPerformed(ActionEvent e)
@@ -134,13 +79,17 @@ public class GuiConnectLine
    {
       if (null != accountData && !accountData.isFailed())
       {
-         m_jbMail.setText((accountData.isLoggedIn()) ? accountData.getEmail() : "Login");
-         m_jbMail.setToolTipText((accountData.isLoggedIn()) ? "Logout from " + accountData.getEmail() : "Login");
+//         m_jbMail.setText((accountData.isLoggedIn()) ? accountData.getEmail() : "Login");
+         m_jbMail.setIcon((accountData.isLoggedIn()) ? JResizedIcon.getIcon(JResizedIcon.IconUrls.ICON_LOGGED_IN_TO_NORDVPN, JResizedIcon.IconSize.LARGE) : JResizedIcon.getIcon(JResizedIcon.IconUrls.ICON_LOGGED_OUT_FROM_NORDVPN, JResizedIcon.IconSize.LARGE));
+         m_jbMail.setBorder((accountData.isLoggedIn()) ? BorderFactory.createLoweredSoftBevelBorder() : BorderFactory.createRaisedSoftBevelBorder());
+         m_jbMail.setToolTipText((accountData.isLoggedIn()) ? "Click here to Logout from NordVPN " + accountData.getEmail() : "Click here to Login to NordVPN");
       }
       else
       {
-         m_jbMail.setText("Login");
-         m_jbMail.setToolTipText("Login");
+//         m_jbMail.setText("Login");
+         m_jbMail.setIcon(JResizedIcon.getIcon(JResizedIcon.IconUrls.ICON_LOGGED_OUT_FROM_NORDVPN, JResizedIcon.IconSize.LARGE));
+         m_jbMail.setBorder(BorderFactory.createRaisedSoftBevelBorder());
+         m_jbMail.setToolTipText("Click here to Login to NordVPN");
       }
    }
 }

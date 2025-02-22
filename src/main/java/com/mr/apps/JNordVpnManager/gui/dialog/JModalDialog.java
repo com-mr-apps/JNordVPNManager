@@ -14,11 +14,13 @@ import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.Frame;
+import java.awt.MouseInfo;
 import java.awt.Point;
+import java.awt.PointerInfo;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.File;
 import java.util.StringTokenizer;
-
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JDialog;
@@ -30,8 +32,8 @@ import javax.swing.Timer;
 import javax.swing.border.BevelBorder;
 import javax.swing.border.LineBorder;
 import javax.swing.border.TitledBorder;
-
 import com.mr.apps.JNordVpnManager.Starter;
+import com.mr.apps.JNordVpnManager.gui.components.JFileSelectionBox;
 import com.mr.apps.JNordVpnManager.gui.components.JResizedIcon;
 import com.mr.apps.JNordVpnManager.gui.components.JResizedIcon.IconSize;
 import com.mr.apps.JNordVpnManager.utils.UtilPrefs;
@@ -52,13 +54,14 @@ import com.mr.apps.JNordVpnManager.utils.String.Wrap;
 @SuppressWarnings("serial")
 public class JModalDialog extends JDialog implements ActionListener
 {
-   private String  m_result;
-   private String  m_buttons;
-   private JPanel  m_messagePanel;
-   private JPanel  m_buttonsPanel;
-   private Timer   m_autoCloseTimer;
-   private int     m_iTimer;
-   private JButton m_button;
+   private String            m_result;
+   private String            m_buttons;
+   private JPanel            m_messagePanel;
+   private JPanel            m_buttonsPanel;
+   private Timer             m_autoCloseTimer;
+   private int               m_iTimer;
+   private JButton           m_button;
+   private JFileSelectionBox m_dragAndDropPanel;
 
    /**
     * Constructor for any modal dialog
@@ -77,8 +80,12 @@ public class JModalDialog extends JDialog implements ActionListener
     *           is a comma separated list with the available button names e.g. "Ok,Cancel"
     * @param color
     *           is the dialog background color
+    * @param currentDirectory
+    *           is the current directory of the file requester (or null for user.home)
+    * @param fileFilter
+    *           is the file dialog file filter in form "name [ext]" (or null)
     */
-   public JModalDialog(Frame owner, String title, String iconName, String msg, String buttons, Color color)
+   public JModalDialog(Frame owner, String title, String iconName, String msg, String buttons, Color color, File currentDirectory, String fileFilter)
    {
       super(owner, title, true);
 //      Starter._m_logError.TraceDebug("(JModalDialog) " + title + " / Buttons=" + buttons + " / Message=\n" + msg);
@@ -127,6 +134,13 @@ public class JModalDialog extends JDialog implements ActionListener
       messageText.setEditable(false);
       m_messagePanel.add(messageText, BorderLayout.CENTER);
 
+      // optional copy (drag&drop) file region
+      if (null != currentDirectory)
+      {
+         m_dragAndDropPanel = new JFileSelectionBox(currentDirectory, fileFilter);
+         m_messagePanel.add(m_dragAndDropPanel, BorderLayout.PAGE_END);
+      }
+
       // Buttons
       m_buttonsPanel = new JPanel();
       m_buttonsPanel.setLayout(new FlowLayout(FlowLayout.CENTER));
@@ -156,11 +170,12 @@ public class JModalDialog extends JDialog implements ActionListener
       pack();
 
       // place the dialog [buttons] in the near of the mouse pointer
-      Point parloc = owner.getLocation();
-      final Point mousePos = owner.getMousePosition();
+      Point parloc = new Point(0, 0);
+      PointerInfo pointerInfo = MouseInfo.getPointerInfo();
+      Point mousePos = pointerInfo.getLocation();
       if (mousePos != null)
       {
-        setLocation(Math.max(0, parloc.x + mousePos.x - this.getWidth()/2), parloc.y + mousePos.y - this.getHeight() + 20);
+         setLocation(Math.max(0, parloc.x + mousePos.x - this.getWidth() / 2), parloc.y + mousePos.y - this.getHeight() + 20);
       }
       else
       {
@@ -168,13 +183,21 @@ public class JModalDialog extends JDialog implements ActionListener
       }
    }
 
-   public JModalDialog(Frame owner, String title, String msg, String buttons, Color color)
+   private JModalDialog(Frame owner, String title, String msg, String buttons, Color color)
    {
-      this(owner, title, null, msg, buttons, color);
+      this(owner, title, null, msg, buttons, color, null, null);
+   }
+
+   private JModalDialog(Frame owner, String title, String iconName, String msg, String buttons, Color color)
+   {
+      this(owner, title, iconName, msg, buttons, color, null, null);
    }
 
    /**
     * Action, when a button is pressed.
+    * 
+    * @param event
+    *           is the action event
     */
    public void actionPerformed(ActionEvent event)
    {
@@ -200,7 +223,7 @@ public class JModalDialog extends JDialog implements ActionListener
    /**
     * Get the result of which button was pressed
     * 
-    * @return the index of the button in the creation list (starting at 0)
+    * @return the index of the button in the buttons creation list (starting at 0)
     */
    public int getResult()
    {
@@ -215,20 +238,66 @@ public class JModalDialog extends JDialog implements ActionListener
          }
          iCnt++;
       }
+
       return -1;
    }
 
-   public static JModalDialog JOptionDialog(String title, String msg, String button_text)
+   /**
+    * Get the result [file name] from JFileSelectionBox.
+    * @return the selected file
+    */
+   public File getSelectedFile()
    {
-      JModalDialog dlg = new JModalDialog(Starter.getMainFrame(), title, msg, button_text, null);
+      return m_dragAndDropPanel.getSelectedFile();
+   }
+
+   /* =============================================================================================
+    * Dialogs
+    * ============================================================================================= */
+   public static JModalDialog JOptionDialog(String title, String msg, String buttons)
+   {
+      JModalDialog dlg = new JModalDialog(Starter.getMainFrame(), title, msg, buttons, null);
       dlg.repaint();
       dlg.setVisible(true);
       return dlg;
    }
 
-   public static int OKDialog(String title, String msg, String button_text)
+   /**
+    * Generate a Dialog with customizable buttons and file selection.
+    * <p>
+    * Example:
+    * 
+    * <pre>
+    * <code>
+    * JModalDialog dlg = JModalDialog.JDropFileSelectDialog("Title", "Message", "Cancel,Copy,Move", currentDataDir, "Java Archive File [jar]");<br>
+    * int rc = dlg.getResult();<br>
+    * File fpFile = dlg.getSelectedFile();<br> 
+    * </code>
+    * </pre>
+    * 
+    * @param title
+    *           is the dialog message title
+    * @param msg
+    *           is the dialog message
+    * @param buttons
+    *           is a comma separated list with the available button names e.g. "Ok,Cancel"
+    * @param currentDirectory
+    *           is the current directory of the file requester (or null for user.home)
+    * @param fileFilter
+    *           is the file dialog file filter in form "name [ext]" (or null)
+    * @return the index of the button in the buttons creation list (starting at 0)
+    */
+   public static JModalDialog JDropFileSelectDialog(String title, String msg, String buttons, File currentDirectory, String fileFilter)
    {
-      JModalDialog dlg = new JModalDialog(Starter.getMainFrame(), title, msg, button_text, null);
+      JModalDialog dlg = new JModalDialog(Starter.getMainFrame(), title, null, msg, buttons, null, currentDirectory, fileFilter);
+      dlg.repaint();
+      dlg.setVisible(true);
+      return dlg;
+   }
+
+   public static int OKDialog(String title, String msg, String buttons)
+   {
+      JModalDialog dlg = new JModalDialog(Starter.getMainFrame(), title, msg, buttons, null);
       dlg.repaint();
       dlg.setVisible(true);
       return dlg.getResult();

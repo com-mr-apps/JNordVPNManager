@@ -14,7 +14,10 @@ import com.mr.apps.JNordVpnManager.nordvpn.NvpnGroups.NordVPNEnumGroups;
 
 /**
  * Class for the current location<p>
- * Extends class Location by connected status attribute.
+ * Extends class Location by connected status attributes.<br>
+ * There are two types of locations (for connection):<br>
+ * For static Connection (recent list, autostart, reconnect) - Filter Group, Technology, Protocol from location object.<br>
+ * For Dynamic connection (Tree/Map selection) - Filter Group, Technology, Protocol [== null] from current GUI and VPN settings.
  */
 public class CurrentLocation extends Location
 {
@@ -59,9 +62,9 @@ public class CurrentLocation extends Location
       this.m_technologies = loc.m_technologies;
 
       setConnected(false);
-      setLegacyGroup(null); // set to null means return the current setting
-      setVpnTechnology(null);
-      setVpnProtocol(null);
+      setLegacyGroup(null); // set to null means return the current GUI setting
+      setVpnTechnology(null); // set to null means return the current VPN setting
+      setVpnProtocol(null); // set to null means return the current VPN setting
    }
 
    /**
@@ -149,6 +152,15 @@ public class CurrentLocation extends Location
    public void setVpnProtocol(String vpnProtocol)
    {
       this.m_vpnProtocol = vpnProtocol;
+   }
+
+   /**
+    * Check for static location.
+    * @return <code>true</code> if the location is static, <code>false</code> if the location is dynamic 
+    */
+   public boolean isStatic()
+   {
+      return (null == m_legacyGroup && null == m_vpnTechnology && null ==m_vpnProtocol);
    }
 
    /**

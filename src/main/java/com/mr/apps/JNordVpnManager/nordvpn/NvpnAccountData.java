@@ -118,7 +118,7 @@ public class NvpnAccountData
                Date date = format.parse(matcher.group(3) + "-" + matcher.group(1) + "-" + matcher.group(2));
                long lTime = date.getTime();
                long daysUntilNow = UtilSystem.getDaysUntilNow(lTime) * (-1);
-               Starter._m_logError.LoggingInfo("NordVPN License expires in " + daysUntilNow + " days.");
+               Starter._m_logError.TraceIni("NordVPN License expires in " + daysUntilNow + " days.");
                m_nordAccountRemainingDays = (int)daysUntilNow;
                if (m_nordAccountRemainingDays > 180) UtilPrefs.resetAccountReminder(); // reset the settings to keep the reminder at the default days (after a subscription renew)
             }

@@ -131,30 +131,45 @@ public class UtilMapGeneration
    {
       if (null != envelope)
       {
+         Starter._m_logError.TraceDebug("Map zoom Out...");
          m_mapPane.getMapContent().getViewport().setBounds(envelope);
          // force refresh!
-         m_mapPane.moveImage(1,1);
-         m_mapPane.moveImage(-1,-1);
-         m_mapPane.repaint();
+         mapRefresh();
+         return;
       }
+      Starter._m_logError.TraceDebug("Map zoom Out - envelope=null!");
+
    }
 
    public static void zoomIn(Location loc)
    {
       if (null != loc)
       {
+         Starter._m_logError.TraceDebug("Map zoom In...");
          ReferencedEnvelope envelope = new ReferencedEnvelope(loc.getLongitude()-10, loc.getLongitude()+10, loc.getLatitude()-10,loc.getLatitude()+10, DefaultGeographicCRS.WGS84);      
          m_mapPane.getMapContent().getViewport().setBounds(envelope);
          // force refresh!
-         m_mapPane.moveImage(1,1);
-         m_mapPane.moveImage(-1,-1);
-         m_mapPane.repaint();
+         mapRefresh();
+         return;
       }
+      Starter._m_logError.TraceDebug("Map zoom In - location=null!");
+
    }
 
    public static void zoomServerLayer()
    {
       zoomOut(m_serverMapEnvelope);
+   }
+
+   public static void mapRefresh()
+   {
+      if (null != m_mapPane)
+      {
+         // force refresh!
+         m_mapPane.moveImage(1,1);
+         m_mapPane.moveImage(-1,-1);
+         m_mapPane.repaint();
+      }
    }
 
    public static void changeCurrentServerMapLayer(Location loc)
@@ -168,11 +183,11 @@ public class UtilMapGeneration
 
       if (null != loc)
       {
+         Starter._m_logError.TraceDebug("Changed VPN Server on map: " + loc.getServerId());
          m_currentServerMapLayer = createCurrentServerMapLayer(loc);
          m_map.addLayer(m_currentServerMapLayer);
          m_currentServerMapLayer.updated();
          zoomIn(loc);
-         Starter._m_logError.TraceDebug("Changed VPN Server on map: " + loc.getServerId());
       }
    }
    
@@ -216,10 +231,9 @@ public class UtilMapGeneration
          m_vpnServerMapLayer.setTitle("VPN Server");
          m_map.addLayer(m_vpnServerMapLayer);
          m_vpnServerMapLayer.updated();
-         m_mapPane.moveImage(1,1);
-         m_mapPane.moveImage(-1,-1);
-         m_mapPane.repaint();
+         mapRefresh();
          Starter._m_logError.TraceDebug("Updated VPN Server locations layer.");
+         if (null != m_currentServerMapLayer) m_currentServerMapLayer.setTitle(m_currentServerMapLayer.getTitle() + "force Update");
       }
       else
       {
@@ -388,7 +402,7 @@ public class UtilMapGeneration
          if (nb > 0)
          {
             // got a match
-            Starter._m_logError.LoggingInfo("VPN Server city selected: " + info.toString());
+            Starter._m_logError.LoggingInfo("VPN Server location selected: " + info.toString());
             Map<String, Object> data = info.getFeatureData(0);
             String serverId = (String) data.get("Name");
             loc = UtilLocations.getLocation(serverId);

@@ -22,11 +22,14 @@ import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 import com.mr.apps.JNordVpnManager.Starter;
+import com.mr.apps.JNordVpnManager.commandInterfaces.CallCommand;
+import com.mr.apps.JNordVpnManager.commandInterfaces.Command;
 import com.mr.apps.JNordVpnManager.gui.settings.JUserPrefsDialog;
 import com.mr.apps.JNordVpnManager.nordvpn.NvpnGroups.NordVPNEnumGroups;
-import com.mr.apps.JNordVpnManager.gui.GuiMenuBar;
-import com.mr.apps.JNordVpnManager.gui.settings.JSettingsPanelField;
 import com.mr.apps.JNordVpnManager.utils.String.StringFormat;
+import com.mr.apps.JNordVpnManager.gui.GuiMenuBar;
+import com.mr.apps.JNordVpnManager.gui.connectLine.GuiCommandsToolBar;
+import com.mr.apps.JNordVpnManager.gui.settings.JSettingsPanelField;
 
 /**
  * Class to manage the application User Preferences.<p>
@@ -59,6 +62,7 @@ public class UtilPrefs
    // private static final String COMPACTMODE                              = "COMPACTMODE";
    // private static final String RECENTSERVER_REGION                      = "RECENTSERVER_REGION";
    // private static final String RECENTSERVER_GROUP                       = "RECENTSERVER_GROUP";
+   // private static final String TIMER_DEFAULT_VALUE                      = "TIMER_DEFAULT_VALUE";
 
    // Internal Defaults
    private static String DEFAULT_PREF_RECENTSERVER_CITY           = "";
@@ -70,7 +74,7 @@ public class UtilPrefs
    private static String DEFAULT_PREF_SERVERLIST_DATA             = "";
    private static String DEFAULT_PREF_SERVERLIST_TIMESTAMP        = "0";
    private static int    DEFAULT_PREF_SERVERLIST_AUTOUPDATE       = 0;
-   private static int    DEFAULT_PREF_SETTINGS_COMPACTMODE        = 0;  // this flag represents the current state -> no setting. TODO: (?) add another "Start Program in Compact Mode"
+   private static int    DEFAULT_PREF_SETTINGS_COMPACTMODE        = 0;  // this flag represents the current state -> no setting.
    private static int    DEFAULT_PREF_SETTINGS_AUTOCONNECTMODE    = 0;
    private static int    DEFAULT_PREF_SETTINGS_AUTODISCONNECTMODE = 0;
    private static int    DEFAULT_PREF_SETTINGS_TRACEDEBUG         = 0;
@@ -83,6 +87,8 @@ public class UtilPrefs
    private static int    DEFAULT_PREF_SETTINGS_COMMAMD_TIMEOUT    = 30;
    private static int    DEFAULT_PREF_SETTINGS_MESSAGE_AUTOCLOSE  = 2;
    private static int    DEFAULT_PREF_SETTINGS_ACCOUNTREMINDER    = 31;
+   private static String DEFAULT_PREF_SETTINGS_COMMANDS_TOOLBAR   = Command.APP_PREF_AUTOCONNECT + ";" + Command.APP_PREF_AUTODISCONNECT + ";" + Command.VPN_CMD_RECONNECT + ";" + Command.VPN_SET_KILLSWITCH;
+   private static int    DEFAULT_PREF_SETTINGS_TIMERDEFAULTVALUE  = 5; // in minutes
 
    /**
     * Dataset defining the UserPreference values.
@@ -357,6 +363,7 @@ public class UtilPrefs
    {
       Preferences settingsAutoConnectMode = Preferences.userRoot().node("com/mr/apps/JNordVpnManager/Settings");
       settingsAutoConnectMode.putInt("AutoConnectMode", autoConnectMode);
+      GuiCommandsToolBar.updateCommand(Command.APP_PREF_AUTOCONNECT);
 
       return;
    }
@@ -373,6 +380,7 @@ public class UtilPrefs
    {
       Preferences settingsAutoDisConnectMode = Preferences.userRoot().node("com/mr/apps/JNordVpnManager/Settings");
       settingsAutoDisConnectMode.putInt("AutoDisConnectMode", autoDisConnectMode);
+      GuiCommandsToolBar.updateCommand(Command.APP_PREF_AUTODISCONNECT);
 
       return;
    }
@@ -557,6 +565,38 @@ public class UtilPrefs
       return;
    }
 
+   public static String getCommandsToolbarIds()
+   {
+      Preferences settingsCommandsToolbar = Preferences.userRoot().node("com/mr/apps/JNordVpnManager/Settings");
+      String commandsToolbar = settingsCommandsToolbar.get("CommandsToolbar", DEFAULT_PREF_SETTINGS_COMMANDS_TOOLBAR);
+
+      return commandsToolbar;
+   }
+
+   public static void setCommandsToolbarIds(String commandsToolbar)
+   {
+      Preferences settingsCommandsToolbar = Preferences.userRoot().node("com/mr/apps/JNordVpnManager/Settings");
+      settingsCommandsToolbar.put("CommandsToolbar", commandsToolbar);
+
+      return;
+   }
+
+   public static int getTimerDefaultValue()
+   {
+      Preferences settingsTimerDefaultValue = Preferences.userRoot().node("com/mr/apps/JNordVpnManager/Settings");
+      int timerDefaultValue = settingsTimerDefaultValue.getInt("Timer.Defaultvalue", DEFAULT_PREF_SETTINGS_TIMERDEFAULTVALUE);
+
+      return timerDefaultValue;
+   }
+
+   public static void setTimerDefaultValue(int timerDefaultValue)
+   {
+      Preferences settingsTimerDefaultValue = Preferences.userRoot().node("com/mr/apps/JNordVpnManager/Settings");
+      settingsTimerDefaultValue.putInt("Timer.Defaultvalue", timerDefaultValue);
+
+      return;
+   }
+
    /**
     * Get a data set with all User Preferences data
     * @return the dataset with all user preferences data.
@@ -650,7 +690,7 @@ public class UtilPrefs
       if (false == sCurrentAddonPath.equals(sNewAddonPath))
       {
          // add changed addons classpath
-         if (true == UtilSystem.addClasspath(sNewAddonPath, null))
+         if (true == CallCommand.initClassLoader(sNewAddonPath))
          {
             setAddonsPath(sNewAddonPath);
          }

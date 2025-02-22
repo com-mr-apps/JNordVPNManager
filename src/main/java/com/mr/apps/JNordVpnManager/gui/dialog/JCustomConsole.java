@@ -28,6 +28,9 @@ import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
 import java.io.PrintStream;
 import java.io.Writer;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import javax.swing.Box;
 import javax.swing.BoxLayout;
@@ -53,7 +56,7 @@ import com.mr.apps.JNordVpnManager.utils.UtilLogErr;
 import com.mr.apps.JNordVpnManager.utils.UtilPrefs;
 
 @SuppressWarnings("serial")
-public class JCustomConsole extends JFrame implements Runnable
+public class JCustomConsole extends JFrame
 {
    private static final Color     COLOR_wheat           = new Color(255, 235, 205);
    private static final Color     COLOR_darkGreen       = new Color(40, 180, 99);
@@ -73,9 +76,9 @@ public class JCustomConsole extends JFrame implements Runnable
    private boolean                m_isVisible           = false;
    private JFrame                 m_consoleMainFrame;
    private JScrollPane            m_consoleOutputScrollPane;
-   private Thread                 m_readerThreadOut;
-   private Thread                 m_readerThreadErr;
    private boolean                m_quitFlag;
+
+   ExecutorService m_streamHandlers = null;
    private final PipedInputStream m_pipedInputStreamOut = new PipedInputStream();
    private final PipedInputStream m_pipedInputStreamErr = new PipedInputStream();
 
@@ -300,12 +303,12 @@ public class JCustomConsole extends JFrame implements Runnable
       JButton btnClear = new JButton("Clear Log");
       JButton btnSave = new JButton("Save Log");
       JButton btnClose = new JButton("Close Console");
-      JButton btnExit = new JButton("Exit JNordVPN Manager");
+      JButton btnExit = new JButton("Force Exit JNordVPN Manager");
       buttonRow.setLayout(new FlowLayout(FlowLayout.CENTER));
       buttonRow.add(btnSave);
       buttonRow.add(btnClear);
       buttonRow.add(btnClose);
-      if (Starter.isInstallMode()) buttonRow.add(btnExit);
+      /*if (Starter.isInstallMode()) */buttonRow.add(btnExit);
 
       m_consoleMainFrame.getContentPane().setLayout(new BorderLayout());
       m_consoleMainFrame.getContentPane().add(tracesRow, BorderLayout.PAGE_START);
@@ -377,56 +380,33 @@ public class JCustomConsole extends JFrame implements Runnable
          Starter._m_logError.setConsoleOutput(true);
       }
 
+      // start two threads to read stdOut and stdErr
+      m_streamHandlers = Executors.newFixedThreadPool(2);
       m_quitFlag = false; // signals the Threads that they should exit
-
-      // Starting two separate threads to read from the PipedInputStreams
-      m_readerThreadOut = new Thread(this);
-      m_readerThreadOut.setDaemon(true);
-      m_readerThreadOut.start();
-      //
-      m_readerThreadErr = new Thread(this);
-      m_readerThreadErr.setDaemon(true);
-      m_readerThreadErr.start();
+      m_streamHandlers.execute(() -> handleStream(m_pipedInputStreamOut));
+      m_streamHandlers.execute(() -> handleStream(m_pipedInputStreamErr));
 
    }
 
    /**
     * Runnable thread(s) - read stdOut and stdErr
     */
-   public synchronized void run()
+   public synchronized void handleStream(PipedInputStream inStream)
    {
       try
       {
-         while (Thread.currentThread() == m_readerThreadOut)
+         while (true)
          {
             try
             {
-               this.wait(50);
+               this.wait(10);
             }
             catch (InterruptedException ie)
             {
             }
-            if (m_pipedInputStreamOut.available() != 0)
+            if (inStream.available() != 0)
             {
-               String input = this.readLine(m_pipedInputStreamOut);
-               appendText(input);
-            }
-            if (m_quitFlag)
-               return;
-         }
-
-         while (Thread.currentThread() == m_readerThreadErr)
-         {
-            try
-            {
-               this.wait(50);
-            }
-            catch (InterruptedException ie)
-            {
-            }
-            if (m_pipedInputStreamErr.available() != 0)
-            {
-               String input = this.readLine(m_pipedInputStreamErr);
+               String input = this.readLine(inStream);
                appendText(input);
             }
             if (m_quitFlag)
@@ -446,28 +426,47 @@ public class JCustomConsole extends JFrame implements Runnable
     */
    private synchronized void btnExitExecute()
    {
-      int ret = JModalDialog.YesNoDialog("Do you really want to exit JNordVPNManager?");
+      int ret = JModalDialog.YesNoDialog("Do you really want to FORCE exit JNordVPNManager?");
       if (ret == 0)
       {
          m_quitFlag = true;
-         this.notifyAll(); // stop all threads
+         m_streamHandlers.shutdown(); // Disable new tasks from being submitted
          try
          {
-            m_readerThreadOut.join(1000);
+            // Wait a while for existing tasks to terminate
+            if (!m_streamHandlers.awaitTermination(1, TimeUnit.SECONDS))
+            {
+               m_streamHandlers.shutdownNow(); // Cancel currently executing tasks
+               // Wait a while for tasks to respond to being cancelled
+               if (!m_streamHandlers.awaitTermination(1, TimeUnit.SECONDS))
+               {
+                  Starter._m_logError.setConsoleOutput(false);
+                  Starter._m_logError.LoggingError(10997,
+                        "Console Shutdown",
+                        "Stream Handler threads did not terminate.");
+                  Starter._m_logError.setConsoleOutput(true);
+               }
+            }
+         }
+         catch (InterruptedException ie)
+         {
+            // (Re-)Cancel if current thread also interrupted
+            m_streamHandlers.shutdownNow();
+            // Preserve interrupt status
+            Thread.currentThread().interrupt();
+         }
+
+         try
+         {
             m_pipedInputStreamOut.close();
-         }
-         catch (Exception e)
-         {
-         }
-         try
-         {
-            m_readerThreadErr.join(1000);
             m_pipedInputStreamErr.close();
          }
          catch (Exception e)
          {
          }
-         Starter.cleanupAndExit(true);
+//         Starter.cleanupAndExit(true);
+         Starter._m_logError.LoggingInfo("... Console force exit JNordVPN Manager.");
+         System.exit(0);
       }
    }
 
@@ -552,9 +551,13 @@ public class JCustomConsole extends JFrame implements Runnable
             break;
          nbRead = in.read(b, 0, 1);
          if (nbRead != -1) line.append((char)b[0]);
-         if (line.toString().endsWith("</p>")) break;
+         if ((line.toString().endsWith("</p>")) || (b[0] == '\n'))
+         {
+            appendText(line.toString());
+            line = new StringBuffer();
+         }
       }
-      while ((nbRead == 1) && (b[0] != '\n') && (!m_quitFlag));
+      while ((nbRead == 1) && (!m_quitFlag));
 
       return line.toString();
    }
@@ -586,7 +589,15 @@ public class JCustomConsole extends JFrame implements Runnable
       finally
       {
          JScrollBar vertical = m_consoleOutputScrollPane.getVerticalScrollBar();
-         vertical.setValue( vertical.getMaximum() );
+         int max = vertical.getMaximum();
+         vertical.setValue(max);
+/*
+         JViewport viewport = m_consoleOutputScrollPane.getViewport(); 
+         JEditorPane editorPane = (JEditorPane)viewport.getView(); 
+         Point keypoint = new Point(0, max);
+         Rectangle keyview = new Rectangle(keypoint);
+         editorPane.scrollRectToVisible(keyview);
+*/
       }
    }
 

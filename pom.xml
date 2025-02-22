@@ -5,7 +5,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.mr.apps.JNordVpnManager</groupId>
 	<artifactId>JNordVpnManager</artifactId>
-	<version>2025.2.1</version>
+	<version>2025.3.0</version>
 	<name>JNordVpnManager</name>
 	<url>http://maven.apache.org</url>
 	<properties>
@@ -14,11 +14,11 @@
 		<maven.deploy.skip>true</maven.deploy.skip>
 	</properties>
 	<repositories>
-		<repository>
+		<!--repository>
 			<id>j-nordvpn-manager-addons</id>
 			<name>JNordVPN Manager AddOns</name>
 			<url>file:/${project.basedir}/libs</url>
-		</repository>
+		</repository-->
 		<repository>
 			<id>osgeo</id>
 			<name>OSGeo Release Repository</name>
@@ -46,7 +46,7 @@
 		<!--dependency>
 			<groupId>j-nordvpn-manager</groupId>
 			<artifactId>JNordVpnManager.addons</artifactId>
-			<version>2025.2.1</version>
+			<version>${project.version}</version>
 		</dependency-->
 		<dependency>
 			<groupId>org.junit.jupiter</groupId>
