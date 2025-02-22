@@ -303,7 +303,7 @@ public class JCustomConsole extends JFrame
       JButton btnClear = new JButton("Clear Log");
       JButton btnSave = new JButton("Save Log");
       JButton btnClose = new JButton("Close Console");
-      JButton btnExit = new JButton("Exit JNordVPN Manager");
+      JButton btnExit = new JButton("Force Exit JNordVPN Manager");
       buttonRow.setLayout(new FlowLayout(FlowLayout.CENTER));
       buttonRow.add(btnSave);
       buttonRow.add(btnClear);
@@ -426,7 +426,7 @@ public class JCustomConsole extends JFrame
     */
    private synchronized void btnExitExecute()
    {
-      int ret = JModalDialog.YesNoDialog("Do you really want to exit JNordVPNManager?");
+      int ret = JModalDialog.YesNoDialog("Do you really want to FORCE exit JNordVPNManager?");
       if (ret == 0)
       {
          m_quitFlag = true;
@@ -464,7 +464,9 @@ public class JCustomConsole extends JFrame
          catch (Exception e)
          {
          }
-         Starter.cleanupAndExit(true);
+//         Starter.cleanupAndExit(true);
+         Starter._m_logError.LoggingInfo("... Console force exit JNordVPN Manager.");
+         System.exit(0);
       }
    }
 

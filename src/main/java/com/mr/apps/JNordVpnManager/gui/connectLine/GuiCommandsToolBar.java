@@ -379,7 +379,7 @@ public class GuiCommandsToolBar extends JPanel implements ActionListener
          if ((null != commandsToolbarList) && (true == commandsToolbarList.contains(cmd)))
          {
             // call the component specific update method
-            Starter._m_logError.TraceDebug("Update Command: " + cmd.getCommand());
+            Starter._m_logError.TraceDebug("Update Command UI: " + cmd.getCommand());
             cmd.updateUI();
          }
       }
