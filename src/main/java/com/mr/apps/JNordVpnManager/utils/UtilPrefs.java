@@ -690,7 +690,7 @@ public class UtilPrefs
       if (false == sCurrentAddonPath.equals(sNewAddonPath))
       {
          // add changed addons classpath
-         if (true == CallCommand.initClassLoader(sNewAddonPath, null))
+         if (true == CallCommand.initClassLoader(sNewAddonPath))
          {
             setAddonsPath(sNewAddonPath);
          }

@@ -29,6 +29,7 @@ import javax.swing.event.HyperlinkListener;
 
 import com.mr.apps.JNordVpnManager.Starter;
 import com.mr.apps.JNordVpnManager.gui.components.JLogo;
+import com.mr.apps.JNordVpnManager.gui.components.JResizedIcon;
 import com.mr.apps.JNordVpnManager.utils.UtilSystem;
 
 public class JAboutScreen
@@ -54,6 +55,7 @@ public class JAboutScreen
    + "<p>The newest version and the source code can be found on GitHub: <a href=\"https://github.com/com.mr.apps/JNordVpnManager\">https://github.com/com.mr.apps/JNordVpnManager</a>."
    + "Requirements, Bugs, etc. can be posted and will be administrated there.</p>"
    + "<p>Thank you for considering JNordVPN Manager as your go-to GUI for managing NordVPN connections on Linux.</p>"
+   
    + "<h2>References</h2>"
    + "<h3>NordVPN backend (prerequisit)</h3>"
    + "<ul>"
@@ -72,9 +74,14 @@ public class JAboutScreen
    + "<ul>"
    + "<li><a href=\"https://www.naturalearthdata.com/\">https://www.naturalearthdata.com/</a></li>"
    + "</ul>"
+   
    + "<h2>Donations</h2>"
    + "<p>Funding for the ongoing development and maintenance of this application comes from donations made to me through <a href=\"https://buymeacoffee.com/3dprototyping\">https://buymeacoffee.com/3dprototyping</a>. Your support in the form of a coffee or any other contribution is greatly appreciated and helps keep JNordVPN Manager alife and up-to-date.</p>"
    + "<p>If you appreciate NordVPNs services, you can also support me by ordering NordVPN through my affiliate link: <a href=\"https://refer-nordvpn.com/ArNNOfynXcu\">https://refer-nordvpn.com/ArNNOfynXcu</a>. This not only helps fund the development of JNordVPN Manager but also provides a financial incentive for further improving and maintaining this application.</p>"
+
+   + "<h2>Supporter Edition</h2>"
+   + "<p>Supporters (Donators) of this project get access to the <em>Supporters Edition</em>. A key file and an add-on library extend the functionality of the application.</p>"
+   
    + "<h2>License</h2>"
    + "<p>The \"Commons Clause\" License Condition v1.0</p>"
    + "<p>The Software is provided to you by the Licensor under the License, as defined below, subject to the following condition.</p>"
@@ -114,17 +121,25 @@ public class JAboutScreen
 
       JLabel lblVersion = new JLabel(version);
       lblVersion.setSize(lblVersion.getPreferredSize());
-      lblVersion.setLocation(200, 150);
+      lblVersion.setLocation(20, 15);
       lblVersion.setFont(new Font("serif", Font.ITALIC, 12));
       lblVersion.setForeground(new Color(97, 206, 255));
       aboutBaseImageLabel.add(lblVersion);
 
       JLabel copyright =  new JLabel(COPYRIGHT_STRING);
       copyright.setSize(copyright.getPreferredSize());
-      copyright.setLocation(200, 170);
+      copyright.setLocation(20, 35);
       copyright.setFont(new Font("serif", Font.ITALIC, 12));
       copyright.setForeground(new Color(97, 206, 255));
       aboutBaseImageLabel.add(copyright);
+
+      if (Starter.isSupporterEdition())
+      {
+         JLabel supporterEdition = new JLabel(JResizedIcon.getIcon("SupporterEdition.png", 268, 30));
+         supporterEdition.setSize(new Dimension(268, 30));
+         supporterEdition.setLocation(320, 160);
+         aboutBaseImageLabel.add(supporterEdition);
+      }
 
       JLogo mrLogo = new JLogo(JLogo.Logos.LOGO_MR);
       mrLogo.setSize(new Dimension(80,80));

@@ -71,7 +71,7 @@ import com.mr.apps.JNordVpnManager.utils.String.StringFormat;
 @SuppressWarnings("serial")
 public class Starter extends JFrame 
 {
-   public static final String      APPLICATION_DATA_DIR       = "/.local/share/.JNordVpnManager"; // ..added to $HOME directory
+   public static final String      APPLICATION_DATA_DIR       = "/.local/share/JNordVpnManager"; // ..added to $HOME directory
 
 
    private static final String     APPLICATION_TITLE          = "JNordVPN Manager [Copyright Ⓒ 2025 - written by com.mr.apps]";
@@ -101,7 +101,9 @@ public class Starter extends JFrame
    private static NvpnAccountData  m_nvpnAccountData          = null;
 
    private static boolean          m_skipFocusGainedForDebug  = false;
-   private static Timer m_timer = null;
+   private static Timer            m_timer                    = null;
+   private static String           m_AddOnLibVersion          = null;
+   private static boolean          m_isSupporterEdition       = false;
 
    /**
     * NordVPN GUI application.
@@ -117,8 +119,17 @@ public class Starter extends JFrame
       _m_logError = new UtilLogErr(UtilPrefs.getLogfileName(), null, null);
 
       ExecutorService processHandlers = Executors.newFixedThreadPool(3);
+//      processHandlers.execute(() -> consoleWindowInit());
+      consoleWindowInit();
+      _m_logError.LoggingInfo("JNordVPN Manager launched...");
+
+      // add add-ons classpath
+      if (CallCommand.initClassLoader(UtilPrefs.getAddonsPath()))
+      {
+         m_isSupporterEdition = (boolean)CallCommand.invokeAddonMethod("AddonManager", "initialize");
+      }
+
       processHandlers.execute(() -> splashScreenInit());
-      processHandlers.execute(() -> consoleWindowInit());
 
       // wait the two windows to initialize
       m_timer = new Timer(100, new ActionListener() {
@@ -142,11 +153,9 @@ public class Starter extends JFrame
    public Starter()
    {
       super();
-      _m_logError.LoggingInfo("JNordVPN Manager launched...");
-
       // get the application implementation version from jar manifest file
       Package p = getClass().getPackage();
-      String version = StringFormat.printString(p.getImplementationVersion(), "n/a", "n/a");
+      String version = StringFormat.printString(p.getImplementationVersion(), "n/a", "n/a") + ((getAddOnLibVersion() == null) ? "" : (" / AddOn Version: " + getAddOnLibVersion()));
       m_splashScreen.setVersion(version);
 
       // initialize the application
@@ -299,8 +308,6 @@ public class Starter extends JFrame
       // delete temporary map files
       UtilMapGeneration.cleanUp();
       
-//      updateCurrentServer(); // update recent server settings
-      
       if (m_splashScreen.getProgress() < 100)
       {
          // close an open [in case of initialization error] splash screen
@@ -314,12 +321,6 @@ public class Starter extends JFrame
    private void init(String version)
    {
       _m_logError.LoggingInfo("GUI Version: " + version);
-
-      // add addons classpath
-      if (CallCommand.initClassLoader(UtilPrefs.getAddonsPath(), "/JNordVpnManager.addons-" + version + ".jar"))
-      {
-         CallCommand.invokeAddonMethod("AddonManager", "initialize");
-      }
 
       // main frame
       m_mainFrame = this;
@@ -873,6 +874,12 @@ public class Starter extends JFrame
       return m_nvpnStatusData;
    }
 
+   public static NvpnStatusData refreshCurrentStatusData()
+   {
+      m_nvpnStatusData = new NvpnStatusData(); 
+      return m_nvpnStatusData;
+   }
+
    public static NvpnSettingsData getCurrentSettingsData()
    {
       if (null == m_nvpnSettingsData) m_nvpnSettingsData = new NvpnSettingsData(); 
@@ -883,6 +890,21 @@ public class Starter extends JFrame
    {
       if (null == m_nvpnAccountData || update) m_nvpnAccountData = new NvpnAccountData(); 
       return m_nvpnAccountData;
+   }
+
+   public static void setAddOnLibVersion(String addOnLibVersion)
+   {
+      m_AddOnLibVersion = addOnLibVersion;
+   }
+
+   public static String getAddOnLibVersion()
+   {
+      return m_AddOnLibVersion;
+   }
+
+   public static boolean isSupporterEdition()
+   {
+      return m_isSupporterEdition;
    }
 
    public static boolean isInstallMode()

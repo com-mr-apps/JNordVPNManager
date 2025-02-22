@@ -147,7 +147,7 @@ public class JPanelConnectTimer extends JPanel
       m_timeSlider.setPaintTicks(true);
       m_timeSlider.setPaintLabels(true);
       m_timeSlider.setLabelTable(labelTable);
-      m_timeSlider.setToolTipText("Move slider to set timer value - RMB to start timer with predefined values.");
+      setToolTipTimeSlider();
       m_timeSlider.setComponentPopupMenu(timeSliderPopup);
       m_timeSlider.addChangeListener(new ChangeListener() {
          @Override
@@ -238,7 +238,7 @@ public class JPanelConnectTimer extends JPanel
     */
    private static void setTimeSlider(int iTime)
    {
-      m_timeSlider.setValue(iTime * 60);      
+      if (null != m_timeSlider) m_timeSlider.setValue(iTime * 60);      
    }
 
    /**
@@ -254,15 +254,21 @@ public class JPanelConnectTimer extends JPanel
       CurrentLocation loc = Starter.getCurrentServer(true);
       if (m_timerWorkMode != GuiStatusLine.STATUS_RECONNECT)
       {
-         // Pause
-         if (null != loc && true == loc.isConnected()) NvpnCallbacks.executeDisConnect(null, null);
+         // Pause - Disconnect
+         if (null != loc && true == loc.isConnected())
+         {
+            NvpnCallbacks.executeDisConnect(null, null);
+         }
          m_timerWorkMode = GuiStatusLine.STATUS_PAUSED;
          Starter._m_logError.LoggingInfo("Start Pause Timer for " + timeSliderValueToText(iTime*60) + ".");
       }
       else
       {
-         // Reconnect
-         if (null != loc && false == loc.isConnected()) NvpnCallbacks.executeConnect(loc, null, null);
+         // Reconnect - Connect
+         if (null != loc && false == loc.isConnected())
+         {
+            NvpnCallbacks.executeConnect(loc, null, null);
+         }
          m_timerWorkMode = GuiStatusLine.STATUS_RECONNECT;
          Starter._m_logError.LoggingInfo("Start Reconnect Timer for " + timeSliderValueToText(iTime*60) + ".");
       }
@@ -271,6 +277,7 @@ public class JPanelConnectTimer extends JPanel
       if ((null != m_timer) && (m_timer.isRunning())) m_timer.stop();
       m_timer = createConnectTimer();
       m_timer.start();
+      setToolTipTimeSlider();
       setTimeSlider(iTime);
       GuiStatusLine.setStatusLine(m_timerWorkMode, syncStatusForTimer(m_timerWorkMode));
    }
@@ -284,6 +291,7 @@ public class JPanelConnectTimer extends JPanel
    {
       if ((null != m_timer) && (m_timer.isRunning())) m_timer.stop();
       m_timer = null;
+      setToolTipTimeSlider();
 
       CurrentLocation loc = Starter.getCurrentServer(true);
       if (m_timerWorkMode == GuiStatusLine.STATUS_RECONNECT)
@@ -323,12 +331,14 @@ public class JPanelConnectTimer extends JPanel
    {
       if ((null != m_timer) && (m_timer.isRunning()))
       {
-         Starter._m_logError.LoggingInfo("Force Stop Connection Timer. m_timerWorkMode = " + m_timerWorkMode + "set to -1 (STATUS_UNKNOWN)");
+         Starter._m_logError.LoggingInfo("Force Stop Connection Timer.");
+         Starter._m_logError.TraceDebug("m_timerWorkMode = " + m_timerWorkMode + " set to -1 (STATUS_UNKNOWN)");
          m_timer.stop();
       }
       m_timer = null;
       m_timerWorkMode = GuiStatusLine.STATUS_UNKNOWN;
       setTimeSlider(UtilPrefs.getTimerDefaultValue());
+      setToolTipTimeSlider();
    }
 
    /**
@@ -371,6 +381,8 @@ public class JPanelConnectTimer extends JPanel
          if (iStatus == GuiStatusLine.STATUS_RECONNECT)
          {
             // We are in automatic reconnect mode
+            CurrentLocation loc = Starter.getCurrentServer(true);
+            if (null != loc && false == loc.isConnected()) NvpnCallbacks.executeConnect(loc, null, null);
             sMsg = "";
          }
          else if (iStatus == GuiStatusLine.STATUS_PAUSED)
@@ -430,6 +442,25 @@ public class JPanelConnectTimer extends JPanel
    public static int getTimerWorkMode()
    {
       return m_timerWorkMode;
+   }
+
+
+   /**
+    * Set Time Slider ToolTip depending on running/stopped
+    */
+   private static void setToolTipTimeSlider()
+   {
+      if (null == m_timeSlider) return;
+
+      String sTimeSliderToolTip = "Move slider to set timer value - RMB to start timer with predefined values.";
+      if ((null != m_timer) && (m_timer.isRunning()))
+      {
+         m_timeSlider.setToolTipText("[running] " + sTimeSliderToolTip);
+      }
+      else
+      {
+         m_timeSlider.setToolTipText(sTimeSliderToolTip);
+      }
    }
 
    /**

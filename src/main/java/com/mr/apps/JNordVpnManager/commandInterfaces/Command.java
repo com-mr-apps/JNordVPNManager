@@ -100,6 +100,20 @@ public class Command
       m_command = command;
    }
 
+   /**
+    * Constructor of the Command object with multiple icons
+    * 
+    * @param id
+    *           is the unique command Id (HashMap key)
+    * @param iType
+    *           is the UI type
+    * @param iconUrl
+    *           is the icon URL
+    * @param toolTip
+    *           is the toolTip
+    * @param command
+    *           is the command (method) name
+    */
    public Command(String id, int iType, Vector<JResizedIcon.IconUrls> iconUrls, String toolTip, String command)
    {
       m_component = null; // UI Element - set on creation
@@ -131,12 +145,9 @@ public class Command
                   "Click here to quick connect to a VPN Server",
                   "VpnQuickconnect"));
 
-      Vector<JResizedIcon.IconUrls> iconUrls = new Vector<JResizedIcon.IconUrls>();
-      iconUrls.add(JResizedIcon.IconUrls.ICON_TIMER_PAUSE);
-      iconUrls.add(JResizedIcon.IconUrls.ICON_TIMER_CONNECT);
       addCommand(new Command(VPN_CMD_TIMER_CONNECT, TYPE_BUTTON,
-                  iconUrls,
-                  "*** Tooltip is set in updateUI!",
+                  JResizedIcon.IconUrls.ICON_TIMER_PAUSE,
+                  "Pause VPN Server Connection", // used on initialization - as long as updateUI() is not called
                   "VpnTimerConnect"));
 
       addCommand(new Command(VPN_SET_KILLSWITCH, TYPE_CHECKBOX,
@@ -193,6 +204,14 @@ public class Command
 
    }
 
+   /**
+    * Method to add a command to the application.
+    * <p>
+    * Used for addOns - must be called before initAllCommands() [..where the command list is sorted and pre processed]
+    * 
+    * @param cmd
+    *           is the command to add
+    */
    public static void addCommand(Command cmd)
    {
       if (null == m_allCommandsMap)
@@ -202,6 +221,10 @@ public class Command
       m_allCommandsMap.put(cmd.getId(), cmd);
    }
 
+   /**
+    * Get a list of the commands that are not used ib the commands toolBar
+    * @return the list of unused commands
+    */
    public static Vector<Command> getListOfUnusedCommands()
    {
       Vector<Command> listOfUnusedCommands = new Vector<Command>();
@@ -215,78 +238,99 @@ public class Command
       return listOfUnusedCommands;
    }
    
+   /**
+    * Get the GUI component of the command.
+    * @return the GUI component representing the command
+    */
    public Component getComponent()
    {
       return m_component;
    }
+
+   /**
+    * Set the GUI component of the command.
+    * 
+    * @param component
+    *           is the GUI component representing the command
+    */
    public void setComponent(Component component)
    {
       m_component = component;
    }
 
+   /**
+    * Get the unique Id of the command.
+    * @return the unique Id of the command
+    */
    public String getId()
    {
       return m_id;
    }
 
+   /**
+    * Get the type of the command element (Button, CheckBox, ...).
+    * @return the type of the command element
+    */
    public int getType()
    {
       return m_iType;
    }
 
+   /**
+    * Get the icon URL of the command.
+    * @return the icon URL of the command
+    */
    public Vector<JResizedIcon.IconUrls> getIconUrl()
    {
       return m_iconUrl;
    }
-   public ImageIcon getIconImage()
-   {
-      return m_iconImage;
-   }
-   public void setIconImage(ImageIcon iconImage)
-   {
-      m_iconImage = iconImage;
-   }
 
-   public boolean isEnabled()
-   {
-      return m_enabled;
-   }
-   public void setEnabled(boolean enabled)
-   {
-      m_enabled = enabled;
-   }
-
-   public String getToolTip()
-   {
-      return m_toolTip;
-   }
-   public void setToolTip (String sToolTip)
-   {
-      m_toolTip = sToolTip;
-   }
-
+   /**
+    * Get the command method name.
+    * 
+    * @return the the command method name
+    */
    public String getCommand()
    {
       return m_command;
    }
 
+   /**
+    * Get the command object.
+    * 
+    * @param cmdId
+    *           is the unique command Id
+    * 
+    * @return the the command object
+    */
    public static Command getObject(String cmdId)
    {
       return (null == m_allCommandsMap) ? null : m_allCommandsMap.get(cmdId);
    }
 
-  public static Vector<Command> getCommandsToolbarList()
+   /**
+    * Get the list of commands that are added to the commands toolBar.
+    * 
+    * @return the the command method name
+    */
+   public static Vector<Command> getCommandsToolbarList()
    {
       return m_CommandsToolbarList;
    }
 
+   /**
+    * Set the list of commands that are added to the commands toolBar.
+    * 
+    * @param commandsToolbarList
+    *           is the list of commands that are added to the commands toolBar
+    */
    public static void setCommandsToolbarList(Vector<Command> commandsToolbarList)
    {
       Command.m_CommandsToolbarList = commandsToolbarList;
    }
 
    /**
-    * Save the "Commands ToolBar List Items" in the User Preferences.
+    * Save the list of commands that are added to the commands toolBar in the User Preferences.
     */
    public static void saveCommandsToolbarListItems()
    {
@@ -309,7 +353,7 @@ public class Command
    }
 
    /**
-    * Insert a command in the Commands ToolBar List
+    * Insert a command in the Commands ToolBar List.
     * 
     * @param addCmd
     *           is the Command to add
@@ -321,9 +365,82 @@ public class Command
       m_CommandsToolbarList.insertElementAt(addCmd, iPos);
    }
 
+   /**
+    * Remove the command from the Commands ToolBar List.
+    * @return true if the list contained the specified element
+    */
    public boolean removeCommandFromToolbarList()
    {
       return m_CommandsToolbarList.remove(this);
+   }
+
+   /**
+    * Get the icon Image of the command.<p>
+    * Used to change the imageIcon of the command component for updateUI().
+    * 
+    * @return the icon URL of the command
+    */
+   public ImageIcon getIconImage()
+   {
+      return m_iconImage;
+   }
+
+   /**
+    * Set the icon Image of the command.<p>
+    * Used in updateUI() to change the imageIcon of the command component. 
+    * 
+    * @param iconImage
+    *           is the icon URL of the command
+    */
+   public void setIconImage(ImageIcon iconImage)
+   {
+      m_iconImage = iconImage;
+   }
+
+   /**
+    * Get the enabled attribute of the command.<p>
+    * Used to change the enabled attribute of the command component for updateUI().
+    * 
+    * @return the icon URL of the command
+    */
+   public boolean isEnabled()
+   {
+      return m_enabled;
+   }
+
+   /**
+    * Set the enabled attribute of the command.<p>
+    * Used in updateUI() to change the enabled attribute of the command component. 
+    * 
+    * @param enabled
+    *           is the icon URL of the command
+    */
+   public void setEnabled(boolean enabled)
+   {
+      m_enabled = enabled;
+   }
+
+   /**
+    * Get the toolTip of the command.<p>
+    * Used to change the toolTip of the command component for updateUI().
+    * 
+    * @return the toolTip of the command
+    */
+   public String getToolTip()
+   {
+      return m_toolTip;
+   }
+
+   /**
+    * Set the toolTip of the command.<p>
+    * Used in updateUI() to change the toolTip of the command component. 
+    * 
+    * @param sToolTip
+    *           is the toolTip of the command
+    */
+   public void setToolTip (String sToolTip)
+   {
+      m_toolTip = sToolTip;
    }
 
    /**
@@ -332,23 +449,21 @@ public class Command
     */
    public Object getValue()
    {
-      
       return CallCommand.invokeBasisMethod(this, CoreCommandClass.METHOD_GET, null, null);
    }
 
    /**
     * Invoke the Method to update the Command specific GUI element (e.g. CheckBox status)
-    * @return the command specific return value (boolean)
+    * @return the command specific return value
     */
    public Object updateUI()
    {
-      
       return CallCommand.invokeCommandMethod(this, CoreCommandClass.METHOD_UPDATE_UI);
    }
 
    /**
     * Invoke the Method to execute the Command
-    * @return the command specific return value (boolean)
+    * @return the command specific return value
     */
    public Object execute(ActionEvent e)
    {
@@ -356,6 +471,10 @@ public class Command
       return CallCommand.invokeEventMethod(this, CoreCommandClass.METHOD_EXECUTE, e);
    }
 
+   /**
+    * Returns a string representation of the object.
+    * @return the tring representation of the object
+    */
    public String toString()
    {
       return m_id + " " + m_command;

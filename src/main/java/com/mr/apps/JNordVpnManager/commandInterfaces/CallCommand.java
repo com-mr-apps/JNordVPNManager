@@ -14,18 +14,43 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.util.prefs.Preferences;
 
 import com.mr.apps.JNordVpnManager.Starter;
+import com.mr.apps.JNordVpnManager.utils.UtilCrypt;
 
 public class CallCommand
 {
    private static URLClassLoader m_urlClassLoader = null;
-   private static String m_jarFile = null; // for UserPrefs Addon Path changes (keep the jar file name)
 
-   public static boolean initClassLoader(String path, String jarFile)
+   public static boolean initClassLoader(String path)
    {
-      if (null == jarFile) jarFile = m_jarFile;
+      String jarFile = "";
+      try
+      {
+         // not hacker proofed - just to protect my work by legal copyright
+         // Donations based on completely free software seems not to work - changed the concept to addOns for Supporters...
+         Preferences prefAddOns = Preferences.userRoot().node("com/mr/apps/JNordVpnManager/Settings/AddOns");
+         String key = prefAddOns.get("Security.Key", "");
+         if (key.isBlank()) return false;
+         String enc = prefAddOns.get("Data.1", "");
+         if (enc.isBlank()) return false;
 
+         UtilCrypt cryptoUtil = new UtilCrypt();
+         String dec = cryptoUtil.decrypt(key, enc);
+         jarFile = "JNordVpnManager.addons-" + dec + ".jar";
+         Starter._m_logError.LoggingInfo("Load add-on library '" + jarFile + "'. This library is protected by copyright. Illegal use is prohibited!");
+         Starter._m_logError.LoggingInfo("\nI would like to thank the supporters of my work and wish you much joy with the application.\n"
+               + "To become a supporter and get a legal version of the add-on library together with supporters specific content,\n"
+               + "you are invited to visit me here: https://buymeacoffee.com/3dprototyping");
+      }
+      catch (Exception e)
+      {
+         Starter._m_logError.LoggingExceptionMessage(4, 10500, e);
+         return false;
+      }
+
+      if (false == path.endsWith("/")) path = path + "/";
       File fpJarFile = new File(path, jarFile);
       try
       {
@@ -40,7 +65,6 @@ public class CallCommand
                m_urlClassLoader.close();
             }
             m_urlClassLoader = new URLClassLoader(jarURL);
-            m_jarFile = jarFile;
          }
          else
          {

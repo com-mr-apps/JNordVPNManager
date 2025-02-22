@@ -240,11 +240,6 @@ public class NvpnStatusData
       return sPrefix + m_statusLineMessage;
    }
 
-   public void setStatusLineMessage(String statusLineMessage)
-   {
-      this.m_statusLineMessage = statusLineMessage;
-   }
-
    public void setStatus(String status)
    {
       this.m_isConnected = (status.equals("Connected")) ? true : false;

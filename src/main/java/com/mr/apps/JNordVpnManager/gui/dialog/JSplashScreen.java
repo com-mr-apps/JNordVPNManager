@@ -16,6 +16,7 @@ import javax.swing.*;
 
 import com.mr.apps.JNordVpnManager.Starter;
 import com.mr.apps.JNordVpnManager.gui.components.JLogo;
+import com.mr.apps.JNordVpnManager.gui.components.JResizedIcon;
 
 @SuppressWarnings("serial")
 public class JSplashScreen extends JFrame
@@ -75,6 +76,14 @@ public class JSplashScreen extends JFrame
       mrLogo.setSize(new Dimension(80,80));
       mrLogo.setLocation(20, 20);
       this.m_splashImageIcon.add(mrLogo);
+
+      if (Starter.isSupporterEdition())
+      {
+         JLabel supporterEdition = new JLabel(JResizedIcon.getIcon("SupporterEdition.png", 268, 30));
+         supporterEdition.setSize(new Dimension(268, 30));
+         supporterEdition.setLocation(320, 300);
+         this.m_splashImageIcon.add(supporterEdition);
+      }
 
       if (null == status)
       {

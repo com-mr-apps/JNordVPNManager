@@ -41,6 +41,7 @@ import com.mr.apps.JNordVpnManager.nordvpn.NvpnCommands;
 import com.mr.apps.JNordVpnManager.nordvpn.NvpnGroups;
 import com.mr.apps.JNordVpnManager.nordvpn.NvpnGroups.NordVPNEnumGroups;
 import com.mr.apps.JNordVpnManager.nordvpn.NvpnSettingsData;
+import com.mr.apps.JNordVpnManager.utils.UtilCallbacks;
 import com.mr.apps.JNordVpnManager.utils.UtilPrefs;
 import com.mr.apps.JNordVpnManager.utils.UtilSystem;
 
@@ -52,7 +53,7 @@ public class GuiMenuBar
    private static JMenuItem               m_menuItemDisConnect           = null;
    private static JMenuItem               m_menuItemQuickConnect         = null;
    private static JMenuItem               m_menuItemLogInOut             = null;
-   private static JMenuItem               m_menuItemconsole              = null;
+   private static JMenuItem               m_menuItemConsole              = null;
 
    // "Recent Server" menu
    private static JMenuItem               m_menuItemRecentServer         = null;
@@ -86,15 +87,28 @@ public class GuiMenuBar
       });
       fileMenu.add(fileSettings);
 
-      m_menuItemconsole = new JMenuItem("Console on/off");
-      m_menuItemconsole.addActionListener(new ActionListener()
+      m_menuItemConsole = new JMenuItem("Console on/off");
+      m_menuItemConsole.addActionListener(new ActionListener()
       {
          public void actionPerformed(ActionEvent e)
          {
             /* boolean isVisible = */ Starter.switchConsoleWindow();
          }
       });
-      fileMenu.add(m_menuItemconsole);
+      fileMenu.add(m_menuItemConsole);
+
+      JMenuItem manageSupporterEdition = new JMenuItem("Manage Supporter Edition");
+      manageSupporterEdition.setToolTipText("Activate/Deactivate the Supporter Edition.");
+      manageSupporterEdition.addActionListener(new ActionListener()
+      {
+         public void actionPerformed(ActionEvent e)
+         {
+            UtilCallbacks.cbManageSupporterEdition();
+         }
+      });
+      fileMenu.add(manageSupporterEdition);
+      
+      fileMenu.addSeparator();
 
       JMenuItem fileExit = new JMenuItem("Exit");
       fileExit.addActionListener(new ActionListener()
@@ -325,9 +339,10 @@ public class GuiMenuBar
 
       menuBar.add(Box.createHorizontalGlue());
 
-      JMenu sponsorMenu = new JMenu("");
-      sponsorMenu.setIcon(JResizedIcon.getIcon("mrLogoGitHub.png", IconSize.MEDIUM));
-      sponsorMenu.addMenuListener(new MenuListener()
+      // Menu(item) Supporter Edition
+      JMenu suporterMenu = new JMenu("");
+      suporterMenu.setIcon(JResizedIcon.getIcon("icons/i_MenuSupporterEdition.png", 43, 24));
+      suporterMenu.addMenuListener(new MenuListener()
       {
          @Override
          public void menuCanceled(MenuEvent arg0)
@@ -346,7 +361,7 @@ public class GuiMenuBar
             menuBar.setSelected(null);
          }
       });
-      menuBar.add(sponsorMenu);
+      menuBar.add(suporterMenu);
 
       return menuBar;
    }
