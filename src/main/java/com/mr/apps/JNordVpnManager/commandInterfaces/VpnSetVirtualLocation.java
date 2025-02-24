@@ -13,16 +13,17 @@ import java.awt.event.ActionEvent;
 import javax.swing.JCheckBox;
 
 import com.mr.apps.JNordVpnManager.Starter;
+import com.mr.apps.JNordVpnManager.nordvpn.NvpnSettingsData;
 import com.mr.apps.JNordVpnManager.utils.String.StringFormat;
 
 /**
- * Command VPN Settings - Obfuscate
+ * Command VPN Settings - Virtual-Location
  */
-public class VpnSetThreatprotection extends CoreCommandClass
+public class VpnSetVirtualLocation extends CoreCommandClass
 {
    public static Object get()
    {
-      return (StringFormat.string2boolean(Starter.getCurrentSettingsData().getTplite(false)));
+      return (StringFormat.string2boolean(Starter.getCurrentSettingsData().getVirtualLocation(false)));
    }
 
    public static boolean execute(ActionEvent e)
@@ -32,12 +33,14 @@ public class VpnSetThreatprotection extends CoreCommandClass
       {
          if (cb.isSelected())
          {
-            Starter.getCurrentSettingsData().setTplite("true", false);
+            Starter.getCurrentSettingsData().setVirtualLocation("true", false);
          }
          else
          {
-            Starter.getCurrentSettingsData().setTplite("false", false);
+            Starter.getCurrentSettingsData().setVirtualLocation("false", false);
          }
+         Starter.updateFilterTreeCB(false);
+         if (NvpnSettingsData.reconnectRequired()) Starter.updateCurrentServer(); // tbd.. see setVirtualLocation()..
       }
       return true;
    }

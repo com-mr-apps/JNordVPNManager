@@ -40,7 +40,9 @@ public class Command
    public static final String          VPN_CMD_TIMER_CONNECT    = "VPN_CMD_TIMER_CONNECT";
    public static final String          VPN_SET_KILLSWITCH       = "VPN_SET_KILLSWITCH";
    public static final String          VPN_SET_OBFUSCATE        = "VPN_SET_OBFUSCATE";
+   public static final String          VPN_SET_POSTQUANTUM      = "VPN_SET_POSTQUANTUM";
    public static final String          VPN_SET_THREATPROTECTION = "VPN_SET_THREATPROTECTION";
+   public static final String          VPN_SET_VIRTUALLOCATION  = "VPN_SET_VIRTUALSERVER";
    public static final String          APP_PREF_AUTOCONNECT     = "APP_PREF_AUTOCONNECT";
    public static final String          APP_PREF_AUTODISCONNECT  = "APP_PREF_AUTODISCONNECT";
    // Addons
@@ -160,10 +162,20 @@ public class Command
                   "Click here to change the VPN Setting for Obfuscate",
                   "VpnSetObfuscate"));
 
+      addCommand(new Command(VPN_SET_POSTQUANTUM, TYPE_CHECKBOX,
+                  JResizedIcon.IconUrls.ICON_VPN_SET_POSTQUANTUM,
+                  "Click here to change the VPN Setting for Post-Quantum",
+                  "VpnSetPostQuantum"));
+
       addCommand(new Command(VPN_SET_THREATPROTECTION, TYPE_CHECKBOX,
                   JResizedIcon.IconUrls.ICON_VPN_SET_THREATPROTECTION,
                   "Click here to change the VPN Setting for Threat Protection",
                   "VpnSetThreatprotection"));
+
+      addCommand(new Command(VPN_SET_VIRTUALLOCATION, TYPE_CHECKBOX,
+                  JResizedIcon.IconUrls.ICON_VPN_SET_VIRTUALLOCATION,
+                  "Click here to change the VPN Setting for Virtual Location",
+                  "VpnSetVirtualLocation"));
 
       addCommand(new Command(APP_PREF_AUTOCONNECT, TYPE_CHECKBOX,
                   JResizedIcon.IconUrls.ICON_APP_PREF_AUTOCONNECT,

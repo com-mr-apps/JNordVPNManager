@@ -12,6 +12,8 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.Enumeration;
 
@@ -143,6 +145,21 @@ public class JServerTreePanel extends JPanel implements TreeSelectionListener
       // Text Search Filter
       ImageIcon imageLabel = JResizedIcon.getIcon(IconUrls.ICON_SERVER_SEARCH_FILTER, IconSize.MEDIUM);
       m_filterLabel = new JLabel(imageLabel);
+      m_filterLabel.addMouseListener(new MouseAdapter() {
+         @Override
+         public void mouseClicked(MouseEvent e)
+         {
+            if ((null != m_filterText) && (false == m_filterText.isBlank()))
+            {
+               // ..forces a refresh of the tree
+               m_filterTextField.setText("");
+            }
+            else
+            {
+               updateFilterTreeCB(false);
+            }
+         }
+      });
       filterPanel.add(m_filterLabel, BorderLayout.LINE_START);
       m_filterTextField = new JTextField();
       m_filterTextField.setToolTipText("<html><font face=\"sansserif\" color=\"black\">Filter requires min. " + MIN_CHARS_FOR_FILTER + " characters!<br>Press Right Mouse Button to reset.</font></html>");
@@ -417,7 +434,8 @@ public class JServerTreePanel extends JPanel implements TreeSelectionListener
          }
       }
       Starter._m_logError.TraceDebug("...Filter Technology (dependent from Settings) = '" + iTechFilter + "' (" + sTechnologyAndProtocol + ").");
-      String sFilterText = setFilterToolTip(filterRegion.name(), filterGroup.name(), bObfuscate, sTechnologyAndProtocol);
+      boolean isVirtual = StringFormat.string2boolean(Starter.getCurrentSettingsData().getVirtualLocation(false));
+      String sFilterText = setFilterToolTip(filterRegion.name(), filterGroup.name(), bObfuscate, sTechnologyAndProtocol, isVirtual);
 
       // get the complete server list
       int nbCountries = 0;
@@ -468,10 +486,15 @@ public class JServerTreePanel extends JPanel implements TreeSelectionListener
                      if (m_filterText.isBlank() || (!m_filterText.isBlank() && city.toLowerCase().contains(m_filterText)) || matchCountry)
                      {
                         Location loc = UtilLocations.getLocation(UtilLocations.getServerId(city, country));
-                        // 2. Check Technology
+
+                        // 2. Filter Virtual Locations dependent on current settings
+                        if ((false == isVirtual) && (true == loc.isVirtualLocation())) continue;
+
+                        
+                        // 3. Check Technology
                         if (loc.hasTechnology(iTechFilter))
                         {
-                           // 3. check region- and groups-filter defined on server locations
+                           // 4. check region- and groups-filter defined on server locations
                            if (loc.hasGroup(filterRegion) && loc.hasGroup(filterGroup))
                            {
                               if (null == countryNode)
@@ -665,7 +688,9 @@ public class JServerTreePanel extends JPanel implements TreeSelectionListener
       // check group filter consistency (Settings vs. Current)
       boolean bObfuscateSetting = StringFormat.string2boolean(Starter.getCurrentSettingsData().getObfuscate(false));
       boolean bObfuscateCurrent = NvpnGroups.getCurrentFilterGroup().equals(NordVPNEnumGroups.legacy_obfuscated_servers);
-      Starter._m_logError.TraceDebug("Set Tree Filter Group: Setting Obfuscated=" + Starter.getCurrentSettingsData().getObfuscate(false) + "', Current Group=" + NvpnGroups.getCurrentFilterGroup() + "'.");
+
+      boolean isVirtual = StringFormat.string2boolean(Starter.getCurrentSettingsData().getVirtualLocation(false));
+      Starter._m_logError.TraceDebug("Set Tree Filter Group: Setting Obfuscated=" + Starter.getCurrentSettingsData().getObfuscate(false) + "', Current Group=" + NvpnGroups.getCurrentFilterGroup() + "', Virtual Locations=" + String.valueOf(isVirtual) + "'.");
 
       int idxFilterGroups = m_filterGroups.getSelectedIndex(); // index of selected filter group
       int idxCurrentGroup = NvpnGroups.getFieldIndex(NvpnGroups.getCurrentFilterGroup(), m_iaGroups, 0); // index of current (required) filter group
@@ -673,8 +698,7 @@ public class JServerTreePanel extends JPanel implements TreeSelectionListener
       if ((bObfuscateSetting && (bObfuscateSetting != bObfuscateCurrent)) && (idxFilterGroups != idxObfuscatedGroup))
       {
          // settings Obfuscate=enabled - filter groups selection must be set to 'Obfuscated'
-         Starter._m_logError.TraceDebug(
-               "Update of filter group selection required, because obfuscate is enabled but current group is '" + NvpnGroups.getCurrentFilterGroup() + "'.");
+         Starter._m_logError.TraceDebug("Update of filter group selection required, because obfuscate is enabled but current group is '" + NvpnGroups.getCurrentFilterGroup() + "'.");
          m_filterGroups.setSelectedIndex(idxObfuscatedGroup);
       }
       else if ((!bObfuscateSetting && (bObfuscateSetting != bObfuscateCurrent)) && (idxFilterGroups == idxObfuscatedGroup))
@@ -693,14 +717,14 @@ public class JServerTreePanel extends JPanel implements TreeSelectionListener
       }
 
       // update filter toolTip
-      setFilterToolTip(NvpnGroups.getCurrentFilterRegion().name(), NvpnGroups.getCurrentFilterGroup().name(), bObfuscateSetting, Starter.getCurrentSettingsData().getTechnology(false) + "/" + Starter.getCurrentSettingsData().getProtocol(false));
+      setFilterToolTip(NvpnGroups.getCurrentFilterRegion().name(), NvpnGroups.getCurrentFilterGroup().name(), bObfuscateSetting, Starter.getCurrentSettingsData().getTechnology(false) + "/" + Starter.getCurrentSettingsData().getProtocol(false), isVirtual);
 
    }
 
-   private String setFilterToolTip(String sFilterRegion, String sFilterGroup, boolean bObfuscate, String sTechnologyAndProtocol)
+   private String setFilterToolTip(String sFilterRegion, String sFilterGroup, boolean bObfuscate, String sTechnologyAndProtocol, boolean isVirtual)
    {
-      String sFilterText = sFilterRegion + " & " + sFilterGroup + " (Obfuscate " + ((bObfuscate) ? "yes) & " : "no) & ") + sTechnologyAndProtocol;
-      m_filterLabel.setToolTipText("Filter: " + sFilterText);
+      String sFilterText = sFilterRegion + " & " + sFilterGroup + " (Obfuscate: " + String.valueOf(bObfuscate) + ") & " + sTechnologyAndProtocol + " & Virtual Locations: " + String.valueOf(isVirtual);
+      m_filterLabel.setToolTipText("click here to refresh the Server list. Current Filter: " + sFilterText);
 
       return sFilterText;
    }

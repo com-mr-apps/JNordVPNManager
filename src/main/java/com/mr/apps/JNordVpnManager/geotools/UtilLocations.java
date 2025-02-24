@@ -145,7 +145,7 @@ public class UtilLocations
       
                   jsonObjCountry = jsonObjLocation.getJSONObject("country");
                   sCountry = jsonObjCountry.getString("name");
-      
+
                   jsonObjCity = jsonObjCountry.getJSONObject("city");
                   sCity = jsonObjCity.getString("name");
                }
@@ -198,8 +198,18 @@ public class UtilLocations
                }
       
                // --- --- specifications
-               // JSONArray jsonArrSpecifications = jsonObjStations.getJSONArray("specifications");
-      
+               JSONArray jsonArrSpecs = jsonObjStations.getJSONArray("specifications");
+               int nSpec = jsonArrSpecs.length();
+               for (int iSpec = 0; iSpec < nSpec; ++iSpec)
+               {
+                  JSONObject jsonObjSpec = jsonArrSpecs.getJSONObject(iSpec);
+                  if (jsonObjSpec.getInt("id") == 115)
+                  {
+                     // id = 115 / identifier=virtual_location
+                     newLocation.setVirtualLocation(true);
+                  }
+               }
+
                // --- --- ips
                // JSONArray jsonArrIps = jsonObjStations.getJSONArray("ips");
       
@@ -292,9 +302,13 @@ public class UtilLocations
     * <li>NUM - the server identifier</li>
     * <li>GRP - (optional) the server supported groups list (semicolon separated integers)</li>
     * <li>TECH - (optional) the server supported technology list (semicolon separated integers)</li>
+    * <li>VLOC - (v2025.3.1) the flag for virtual location</li>
     * </ul>
     * 
     * @param sCsvFile
+    *           is the CSV file name
+    * @param isCsvFile
+    *           is the CSV file stream
     * @return 0 if all is ok, else an error code
     */
    public static int importLocations(String sCsvFile, InputStream isCsvFile)
@@ -321,6 +335,7 @@ public class UtilLocations
             String sNumber = locations.get("NUM");
             String sGroups = locations.get("GRP");
             String sTechs = locations.get("TECH");
+            String sVirtualLocation = locations.get("VLOC");
 
             // get data
             double latitude = StringFormat.string2number(sLatitude);
@@ -332,6 +347,12 @@ public class UtilLocations
 
             // Flag (country) code
             if (null != sFlag) newLocation.setCountryCode(sFlag);
+
+            // Virtual Location (Default is false)
+            if ((null != sVirtualLocation) && (true == sVirtualLocation.equalsIgnoreCase("true")))
+            {
+               newLocation.setVirtualLocation(true);
+            }
 
             // add groups (if exist)
             String[] saGroups = (null == sGroups) ? null : sGroups.split(";");
@@ -425,7 +446,7 @@ public class UtilLocations
          bwExportfile = new BufferedWriter(osw);
 
          // CSV Columns header
-         bwExportfile.write("LAT,LON,CITY,COUNTRY,FLAG,NUM,GRP,TECH\n");
+         bwExportfile.write("LAT,LON,CITY,COUNTRY,FLAG,NUM,GRP,TECH,VLOC\n");
 
          // export data
          int nbCountries = 0;
