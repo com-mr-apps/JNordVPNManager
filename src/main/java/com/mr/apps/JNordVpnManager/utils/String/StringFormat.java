@@ -171,6 +171,24 @@ public class StringFormat
     */
    public static boolean string2boolean(String value)
    {
+      if (null == value) return false;
       return value.matches("1|[Tt]rue|[Ee]nable[d]?|[Oo]n");
+   }
+
+
+   /**
+    * Check, if two string values representing boolean values are equal
+    * <p>
+    * Valid boolean string values are 1|true|enable|on|enabled or 0|false|disable|off|disabled
+    * 
+    * @param value1
+    *           is the first String value that represents a boolean
+    * @param value2
+    *           is the second String value that represents a boolean
+    * @return true if two string values are equal
+    */
+   public static boolean equalBoolean(String value1, String value2)
+   {
+      return StringFormat.string2boolean(value1) == StringFormat.string2boolean(value2);
    }
 }

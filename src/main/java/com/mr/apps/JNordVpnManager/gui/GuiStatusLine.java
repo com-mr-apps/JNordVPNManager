@@ -255,6 +255,7 @@ public class GuiStatusLine
     */
    public static void setStatusLine(int iStatus, String msg)
    {
+      if (iStatus == STATUS_UNKNOWN) iStatus = (Starter.getCurrentStatusData().isConnected()) ? STATUS_CONNECTED : STATUS_DISCONNECTED;
       m_statusIndicator.setIcon(m_statusImages.get(iStatus));
       if (null == msg)
       {

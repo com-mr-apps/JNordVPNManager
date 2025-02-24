@@ -179,11 +179,12 @@ public class JPanelConnectTimer extends JPanel
          {
             if (((null != m_timer) && m_timer.isRunning()) || m_timeSlider.getValue() == 0)
             {
-               m_timerWorkMode = GuiStatusLine.STATUS_PAUSED; // ..in case we are in automatic reconnect mode, we stop it
+               m_timerWorkMode = GuiStatusLine.STATUS_CONNECTED; // ..in case we are in automatic reconnect mode, we stop it and [re]connect to VPN
                stopTheTimer();
             }
             else
             {
+               m_timerWorkMode = GuiStatusLine.STATUS_UNKNOWN; // ..independent of current work mode, will be set to STATUS_PAUSED
                startTheTimer((m_timeSlider.getValue()+59)/60);
             }
          }
@@ -260,7 +261,6 @@ public class JPanelConnectTimer extends JPanel
             NvpnCallbacks.executeDisConnect(null, null);
          }
          m_timerWorkMode = GuiStatusLine.STATUS_PAUSED;
-         Starter._m_logError.LoggingInfo("Start Pause Timer for " + timeSliderValueToText(iTime*60) + ".");
       }
       else
       {
@@ -270,16 +270,23 @@ public class JPanelConnectTimer extends JPanel
             NvpnCallbacks.executeConnect(loc, null, null);
          }
          m_timerWorkMode = GuiStatusLine.STATUS_RECONNECT;
-         Starter._m_logError.LoggingInfo("Start Reconnect Timer for " + timeSliderValueToText(iTime*60) + ".");
       }
 
-      // start new timer
-      if ((null != m_timer) && (m_timer.isRunning())) m_timer.stop();
-      m_timer = createConnectTimer();
-      m_timer.start();
-      setToolTipTimeSlider();
-      setTimeSlider(iTime);
-      GuiStatusLine.setStatusLine(m_timerWorkMode, syncStatusForTimer(m_timerWorkMode));
+      if (null == m_timer)
+      {
+         // start new timer
+         Starter._m_logError.LoggingInfo("Set Connection Timer - Start for " + timeSliderValueToText(iTime*60) + ". m_timerWorkMode=" + m_timerWorkMode);
+         m_timer = createConnectTimer();
+         m_timer.start();
+         setToolTipTimeSlider();
+         setTimeSlider(iTime);
+         GuiStatusLine.setStatusLine(m_timerWorkMode, syncStatusForTimer(m_timerWorkMode));
+      }
+      else
+      {
+         // re-use running timer
+         Starter._m_logError.LoggingInfo("Set Connection Timer - Continue remaining " + timeSliderValueToText(m_timeSlider.getValue()) + ". m_timerWorkMode=" + m_timerWorkMode);
+      }
    }
 
    /**
@@ -306,12 +313,12 @@ public class JPanelConnectTimer extends JPanel
          {
             m_timerWorkMode = GuiStatusLine.STATUS_DISCONNECTED;
          }
-         Starter._m_logError.LoggingInfo("Stop Timer (Reconnect). m_timerWorkMode = " + m_timerWorkMode);
+         Starter._m_logError.LoggingInfo("Stop connection Timer (Reconnect). m_timerWorkMode = " + m_timerWorkMode);
       }
       else
       {
          // finished
-         Starter._m_logError.TraceDebug("Stop Timer (Pause). m_timerWorkMode = " + m_timerWorkMode);
+         Starter._m_logError.TraceDebug("Stop connection Timer (Pause). m_timerWorkMode = " + m_timerWorkMode);
          if (m_timerWorkMode == GuiStatusLine.STATUS_CONNECTED)
          {
             if (null != loc && false == loc.isConnected()) NvpnCallbacks.executeConnect(loc, null, null);
@@ -339,6 +346,7 @@ public class JPanelConnectTimer extends JPanel
       m_timerWorkMode = GuiStatusLine.STATUS_UNKNOWN;
       setTimeSlider(UtilPrefs.getTimerDefaultValue());
       setToolTipTimeSlider();
+      GuiStatusLine.setStatusLine(m_timerWorkMode, JPanelConnectTimer.syncStatusForTimer(m_timerWorkMode));
    }
 
    /**
@@ -381,8 +389,7 @@ public class JPanelConnectTimer extends JPanel
          if (iStatus == GuiStatusLine.STATUS_RECONNECT)
          {
             // We are in automatic reconnect mode
-            CurrentLocation loc = Starter.getCurrentServer(true);
-            if (null != loc && false == loc.isConnected()) NvpnCallbacks.executeConnect(loc, null, null);
+            startTheTimer(UtilPrefs.getTimerDefaultValue());
             sMsg = "";
          }
          else if (iStatus == GuiStatusLine.STATUS_PAUSED)

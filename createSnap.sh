@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # 1 - build snap
-cd ~/writable/projekte/GitHub/com-mr-apps/JNordVPNManager
+cd /media/martin/writable/projekte/GitHub/com-mr-apps/JNordVPNManager
 snapcraft clean j-nordvpn-manager
 snapcraft
 

@@ -260,8 +260,7 @@ public class Starter extends JFrame
       int iAutoDisConnect = UtilPrefs.getAutoDisConnectMode();
 
       // check if paused
-      String pauseMsg = JPanelConnectTimer.syncStatusForTimer(GuiStatusLine.STATUS_DISCONNECTED);
-      if ((0 == iAutoDisConnect) && (null != pauseMsg))
+      if ((0 == iAutoDisConnect) && (JPanelConnectTimer.getTimerWorkMode() == GuiStatusLine.STATUS_PAUSED))
       {
          // paused
          if (JModalDialog.showConfirm("Your VPN connection is paused. If you quit the application,\nit will not be reconnected automatically.\n\nAre you sure you want to quit?") == JOptionPane.YES_OPTION)
@@ -365,7 +364,7 @@ public class Starter extends JFrame
                      // update the status line, commands menu and world map current server layer
                      updateCurrentServer();
                      // update the server tree (and world map all servers layer)
-                     m_serverListPanel.updateFilterTreeCB(false);
+                     updateFilterTreeCB(false);
 
                      Starter.setCursorCanChange(true);
                      Starter.resetWaitCursor();
@@ -567,6 +566,15 @@ public class Starter extends JFrame
          NvpnGroups.setCurrentFilterRegion(NordVPNEnumGroups.get(UtilPrefs.getRecentServerRegion()));
       }
 
+      m_splashScreen.setProgress(30);
+      m_splashScreen.setStatus("Create Commands ToolBar...");
+
+      //-------------------------------------------------------------------------------
+      // Connect Panel
+      //-------------------------------------------------------------------------------
+      m_connectLine = new GuiConnectLine();
+      JPanel connectPanel = m_connectLine.create(m_nvpnAccountData);
+
       //-------------------------------------------------------------------------------
       // If we are logged in, optionally [auto]connect
       //-------------------------------------------------------------------------------
@@ -575,7 +583,7 @@ public class Starter extends JFrame
          int iAutoConnect = UtilPrefs.getAutoConnectMode();
          if (1 == iAutoConnect)
          {
-            m_splashScreen.setProgress(25);
+            m_splashScreen.setProgress(35);
             CurrentLocation loc = getCurrentServer(true);
             if (null != loc)
             {
@@ -594,15 +602,6 @@ public class Starter extends JFrame
          GuiStatusLine.updateStatusLine(STATUS_DISCONNECTED, "Not logged in to NordVPN Service.");
       }
 */
-
-      m_splashScreen.setProgress(30);
-      m_splashScreen.setStatus("Create Commands ToolBar...");
-
-      //-------------------------------------------------------------------------------
-      // Connect Panel
-      //-------------------------------------------------------------------------------
-      m_connectLine = new GuiConnectLine();
-      JPanel connectPanel = m_connectLine.create(m_nvpnAccountData);
 
       m_splashScreen.setProgress(40);
       m_splashScreen.setStatus("Create World Map...");
@@ -851,6 +850,11 @@ public class Starter extends JFrame
       {
          m_serverListPanel.setTreeFilterGroup();
       }
+   }
+
+   public static void updateFilterTreeCB(boolean update)
+   {
+      m_serverListPanel.updateFilterTreeCB(update);
    }
 
    public static void showAboutScreen()
