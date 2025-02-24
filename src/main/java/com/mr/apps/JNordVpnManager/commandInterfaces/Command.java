@@ -17,7 +17,9 @@ import java.util.Map;
 import java.util.Vector;
 
 import javax.swing.ImageIcon;
-
+import javax.swing.JButton;
+import javax.swing.JCheckBox;
+import javax.swing.JLabel;
 import com.mr.apps.JNordVpnManager.Starter;
 import com.mr.apps.JNordVpnManager.gui.components.JResizedIcon;
 import com.mr.apps.JNordVpnManager.utils.UtilPrefs;
@@ -56,6 +58,7 @@ public class Command
    private String                        m_toolTip               = null;
    private String                        m_command               = null;
    private ImageIcon                     m_iconImage             = null; // used internally in case of change icons in updateUI
+   private JLabel                        m_jLabel                = null;
    private boolean                       m_enabled               = true; // used internally in updateUI
 
    // list of all available commands
@@ -134,17 +137,17 @@ public class Command
       // ...add the Basis Commands
       addCommand(new Command(VPN_CMD_DISCONNECT, TYPE_BUTTON,
                   JResizedIcon.IconUrls.ICON_DISCONNECT,
-                  "Click here to Disconnect from the VPN Server",
+                  "Press Button to Disconnect from the VPN Server",
                   "VpnDisconnect"));
 
       addCommand(new Command(VPN_CMD_RECONNECT, TYPE_BUTTON,
                   JResizedIcon.IconUrls.ICON_RECONNECT,
-                  "Click here to [Re]connect the VPN Server",
+                  "Press Button to [Re]connect the VPN Server",
                   "VpnReconnect"));
 
       addCommand(new Command(VPN_CMD_QUICKCONNECT, TYPE_BUTTON,
                   JResizedIcon.IconUrls.ICON_QUICKCONNECT,
-                  "Click here to quick connect to a VPN Server",
+                  "Press Button to quick connect to a VPN Server",
                   "VpnQuickconnect"));
 
       addCommand(new Command(VPN_CMD_TIMER_CONNECT, TYPE_BUTTON,
@@ -154,37 +157,37 @@ public class Command
 
       addCommand(new Command(VPN_SET_KILLSWITCH, TYPE_CHECKBOX,
                   JResizedIcon.IconUrls.ICON_VPN_SET_KILLSWITCH,
-                  "Click here to change the VPN Setting for Killswitch",
+                  "Click CheckBox to change the VPN Setting for Killswitch",
                   "VpnSetKillswitch"));
 
       addCommand(new Command(VPN_SET_OBFUSCATE, TYPE_CHECKBOX,
                   JResizedIcon.IconUrls.ICON_VPN_SET_OBFUSCATE,
-                  "Click here to change the VPN Setting for Obfuscate",
+                  "Click CheckBox to change the VPN Setting for Obfuscate",
                   "VpnSetObfuscate"));
 
       addCommand(new Command(VPN_SET_POSTQUANTUM, TYPE_CHECKBOX,
                   JResizedIcon.IconUrls.ICON_VPN_SET_POSTQUANTUM,
-                  "Click here to change the VPN Setting for Post-Quantum",
+                  "Click CheckBox to change the VPN Setting for Post-Quantum",
                   "VpnSetPostQuantum"));
 
       addCommand(new Command(VPN_SET_THREATPROTECTION, TYPE_CHECKBOX,
                   JResizedIcon.IconUrls.ICON_VPN_SET_THREATPROTECTION,
-                  "Click here to change the VPN Setting for Threat Protection",
+                  "Click CheckBox to change the VPN Setting for Threat Protection",
                   "VpnSetThreatprotection"));
 
       addCommand(new Command(VPN_SET_VIRTUALLOCATION, TYPE_CHECKBOX,
                   JResizedIcon.IconUrls.ICON_VPN_SET_VIRTUALLOCATION,
-                  "Click here to change the VPN Setting for Virtual Location",
+                  "Click CheckBox to change the VPN Setting for Virtual Location",
                   "VpnSetVirtualLocation"));
 
       addCommand(new Command(APP_PREF_AUTOCONNECT, TYPE_CHECKBOX,
                   JResizedIcon.IconUrls.ICON_APP_PREF_AUTOCONNECT,
-                  "Click here to change User Preferences for Auto Connect to VPN on Application Start",
+                  "Click CheckBox to change User Preferences for Auto Connect to VPN on Application Start",
                   "AppPrefAutoConnect"));
 
       addCommand(new Command(APP_PREF_AUTODISCONNECT, TYPE_CHECKBOX,
                   JResizedIcon.IconUrls.ICON_APP_PREF_AUTODISCONNECT,
-                  "Click here to change User Preferences for Auto Disconnect from VPN on Application Exit",
+                  "Click CheckBox to change User Preferences for Auto Disconnect from VPN on Application Exit",
                   "AppPrefAutoDisconnect"));
 
       // make a sorted list
@@ -268,6 +271,26 @@ public class Command
    public void setComponent(Component component)
    {
       m_component = component;
+   }
+
+   /**
+    * Get the (optional) GUI JLabel of the command.
+    * @return the GUI JLabel of the command - <code>null </code> in case the component doesn't have a label (e.g. buttons)
+    */
+  public JLabel getJLabel()
+   {
+      return m_jLabel;
+   }
+
+   /**
+    * Set the (optional) GUI JLabel of the command.
+    * 
+    * @param component
+    *           is the GUI component representing the command
+    */
+   public void setJLabel(JLabel jLabel)
+   {
+      this.m_jLabel = jLabel;
    }
 
    /**
@@ -453,6 +476,33 @@ public class Command
    public void setToolTip (String sToolTip)
    {
       m_toolTip = sToolTip;
+   }
+
+   /**
+    * Method to update the ToolTip for the command component(s).
+    * <p>
+    * To be called from Command updateUI().
+    * 
+    * @param sToolTip
+    *           is the new ToolTip
+    */
+   public void updateToolTipUI(String sToolTip)
+   {
+      switch (this.m_iType)
+      {
+         case TYPE_BUTTON :
+            ((JButton)this.getComponent()).setToolTipText(sToolTip);
+            break;
+         case TYPE_CHECKBOX :
+            ((JCheckBox)this.getComponent()).setToolTipText(sToolTip);
+            ((JLabel)this.getJLabel()).setToolTipText(sToolTip);
+            break;
+         case TYPE_CUSTOMIZE :
+            break;
+         default:
+            Starter._m_logError.TraceDebug("Todo: Used type not implemented yet in class Command.updateToolTipUI(): " + this.m_iType);
+            break;
+      }
    }
 
    /**

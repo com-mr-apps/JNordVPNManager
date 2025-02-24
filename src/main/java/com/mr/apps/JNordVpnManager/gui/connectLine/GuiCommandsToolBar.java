@@ -90,6 +90,10 @@ public class GuiCommandsToolBar extends JPanel implements ActionListener
 
       // we use a common popup menu for all 'Add'-Labels
       JPopupMenu customizePopUpMenuAdd = new JPopupMenu();
+      JMenuItem title = new JMenuItem("Select Command to add:");
+      title.setEnabled(false);
+      customizePopUpMenuAdd.add(title);
+
       // ... and a common popup menu for all 'Remove/Move'-Buttons
       JPopupMenu customizePopUpMenu = new JPopupMenu();
 
@@ -320,21 +324,21 @@ public class GuiCommandsToolBar extends JPanel implements ActionListener
    {
       JPanel jPanel = createPanel(cmd);
 
-      // Create the CheckBox
+      // Create the CheckBox (setSelected is done after in updateUI)
       JCheckBox checkBox = new JCheckBox();
       checkBox.setActionCommand(cmd.getId());
-      // checkBox.setSelected((boolean)cmd.getValue()); ..done after creation with the updateUI() method
       checkBox.setToolTipText(cmd.getToolTip());
       checkBox.addActionListener(this);
       cmd.setComponent(checkBox);
 
       JLabel jLabel = new JLabel();
       jLabel.setIcon(JResizedIcon.getIcon(cmd.getIconUrl().elementAt(0), JResizedIcon.IconSize.MEDIUM));
+      jLabel.setToolTipText(cmd.getToolTip());
 
       // add the pop up menu with the list of available commands
       jLabel.setComponentPopupMenu(customizePopUpMenu);
       jLabel.setName(cmd.getId());
-      jLabel.setToolTipText("Click RMB to customize Commands ToolBar");
+      cmd.setJLabel(jLabel);
 
       jPanel.add(checkBox);
       jPanel.add(jLabel);
@@ -353,7 +357,7 @@ public class GuiCommandsToolBar extends JPanel implements ActionListener
       FlowLayout flowLayout = new FlowLayout();
       jPanel.setLayout(flowLayout);
       jPanel.setBorder(BorderFactory.createBevelBorder(BevelBorder.RAISED));
-      if (null != cmd) jPanel.setToolTipText(cmd.getToolTip());
+      if (null != cmd) jPanel.setToolTipText("Press RMB on Icon to customize Commands ToolBar");
 //      flowLayout.setHgap(0);
 //      flowLayout.setVgap(0);
       return jPanel;

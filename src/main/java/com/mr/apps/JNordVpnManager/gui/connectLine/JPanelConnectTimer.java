@@ -482,25 +482,25 @@ public class JPanelConnectTimer extends JPanel
       {
          enabled = true;
          icon = m_buttonStartPauseIcons.get(1);
-         sToolTip = "Click here to Stop the Timer and [Re]Connect VPN (Remaining time " + timeSliderValueToText(m_timeSlider.getValue()) + ")";
+         sToolTip = "Press Button to Stop the Timer and [Re]Connect VPN (Remaining time " + timeSliderValueToText(m_timeSlider.getValue()) + ")";
       }
       else if (m_timerWorkMode == GuiStatusLine.STATUS_RECONNECT)
       {
          enabled = true;
          icon = m_buttonStartPauseIcons.get(1);
-         sToolTip = "Click here to Stop Automatic Reconnection (Remaining time " + timeSliderValueToText(m_timeSlider.getValue()) + ")";
+         sToolTip = "Press Button to Stop Automatic Reconnection (Remaining time " + timeSliderValueToText(m_timeSlider.getValue()) + ")";
       }
       else if (m_timerWorkMode == GuiStatusLine.STATUS_CONNECTED)
       {
          enabled = true;
          icon = m_buttonStartPauseIcons.get(0);
-         sToolTip = "Click here to Pause VPN for " + timeSliderValueToText(m_timeSlider.getValue());
+         sToolTip = "Press Button to Pause VPN for " + timeSliderValueToText(m_timeSlider.getValue());
       }
       else if (m_timerWorkMode == GuiStatusLine.STATUS_DISCONNECTED)
       {
          enabled = true;
          icon = m_buttonStartPauseIcons.get(0);
-         sToolTip = "Click here to [Re]Connect VPN in " + timeSliderValueToText(m_timeSlider.getValue());
+         sToolTip = "Press Button to [Re]Connect VPN in " + timeSliderValueToText(m_timeSlider.getValue());
       }
       else if (m_timerWorkMode == GuiStatusLine.STATUS_LOGGEDOUT)
       {
@@ -532,13 +532,13 @@ public class JPanelConnectTimer extends JPanel
          if (m_timerWorkMode == GuiStatusLine.STATUS_RECONNECT)
          {
             enabled = true;
-            sToolTip = "Click here to Stop Automatic VPN Server Reconnection";
+            sToolTip = "Press Button to Stop Automatic VPN Server Reconnection";
 
          }
          else if (m_timerWorkMode != GuiStatusLine.STATUS_LOGGEDOUT)
          {
             enabled = true;
-            sToolTip = "Click here to Start Automatic VPN Server Reconnection";
+            sToolTip = "Press Button to Start Automatic VPN Server Reconnection";
          }
          cmd.setEnabled(enabled);
          cmd.setToolTip(sToolTip);

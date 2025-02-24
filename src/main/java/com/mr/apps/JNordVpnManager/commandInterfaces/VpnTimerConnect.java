@@ -10,8 +10,6 @@ package com.mr.apps.JNordVpnManager.commandInterfaces;
 
 import java.awt.event.ActionEvent;
 import javax.swing.JButton;
-import javax.swing.JPanel;
-
 import com.mr.apps.JNordVpnManager.gui.GuiStatusLine;
 import com.mr.apps.JNordVpnManager.gui.connectLine.JPanelConnectTimer;
 
@@ -51,12 +49,9 @@ public class VpnTimerConnect extends CoreCommandClass
       JButton buttonConnectPause = (JButton)cmd.getComponent();
       if (null != buttonConnectPause)
       {
-         String sToolTip = cmd.getToolTip();
          buttonConnectPause.setEnabled(cmd.isEnabled());
          buttonConnectPause.setIcon(cmd.getIconImage());
-         buttonConnectPause.setToolTipText(sToolTip);
-         JPanel bp = (JPanel) buttonConnectPause.getParent();
-         bp.setToolTipText(sToolTip);
+         cmd.updateToolTipUI(cmd.getToolTip());
       }
       return true;
    }
