@@ -4,7 +4,7 @@
  * Common Development and Distribution License 1.0.
  *
  * You should have received a copy of the “Commons Clause” license with
- * this file. If not, please visit: https://github.com/com.mr.apps/JNordVpnManager
+ * this file. If not, please visit: https://github.com/com-mr-apps/JNordVpnManager
  */
 package com.mr.apps.JNordVpnManager.gui.dialog;
 
@@ -52,7 +52,7 @@ public class JAboutScreen
    + "<li><strong>Security</strong>: The application does not store any login information (Account, Password). It is just an interface for the the native nordvpn commands.</li>"
    + "</ul>"
    + "<p>The application is released under the Common Development and Distribution License (<a href=\"https://opensource.org/license/cddl-1-0\">CDDL</a>) with a Commons Clause License, ensuring that it remains free for private use only. This means that while you can download and enjoy NordVPN Manager without any costs, commercial exploitation of the software requires my explicit permission.</p>"
-   + "<p>The newest version and the source code can be found on GitHub: <a href=\"https://github.com/com.mr.apps/JNordVpnManager\">https://github.com/com.mr.apps/JNordVpnManager</a>."
+   + "<p>The newest version and the source code can be found on GitHub: <a href=\"https://github.com/com-mr-apps/JNordVpnManager\">https://github.com/com-mr-apps/JNordVpnManager</a>."
    + "Requirements, Bugs, etc. can be posted and will be administrated there.</p>"
    + "<p>Thank you for considering JNordVPN Manager as your go-to GUI for managing NordVPN connections on Linux.</p>"
    

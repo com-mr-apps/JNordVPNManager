@@ -4,7 +4,7 @@
  * Common Development and Distribution License 1.0.
  *
  * You should have received a copy of the “Commons Clause” license with
- * this file. If not, please visit: https://github.com/com.mr.apps/JNordVpnManager
+ * this file. If not, please visit: https://github.com/com-mr-apps/JNordVpnManager
  */
 package com.mr.apps.JNordVpnManager.gui.connectLine;
 
@@ -275,7 +275,7 @@ public class JPanelConnectTimer extends JPanel
       if (null == m_timer)
       {
          // start new timer
-         Starter._m_logError.LoggingInfo("Set Connection Timer - Start for " + timeSliderValueToText(iTime*60) + ". m_timerWorkMode=" + m_timerWorkMode);
+         Starter._m_logError.TraceDebug("Set Connection Timer - Start for " + timeSliderValueToText(iTime*60) + ". m_timerWorkMode=" + m_timerWorkMode);
          m_timer = createConnectTimer();
          m_timer.start();
          setToolTipTimeSlider();
@@ -285,7 +285,7 @@ public class JPanelConnectTimer extends JPanel
       else
       {
          // re-use running timer
-         Starter._m_logError.LoggingInfo("Set Connection Timer - Continue remaining " + timeSliderValueToText(m_timeSlider.getValue()) + ". m_timerWorkMode=" + m_timerWorkMode);
+         Starter._m_logError.TraceDebug("Set Connection Timer - Continue remaining " + timeSliderValueToText(m_timeSlider.getValue()) + ". m_timerWorkMode=" + m_timerWorkMode);
       }
    }
 
@@ -313,7 +313,7 @@ public class JPanelConnectTimer extends JPanel
          {
             m_timerWorkMode = GuiStatusLine.STATUS_DISCONNECTED;
          }
-         Starter._m_logError.LoggingInfo("Stop connection Timer (Reconnect). m_timerWorkMode = " + m_timerWorkMode);
+         Starter._m_logError.TraceDebug("Stop connection Timer (Reconnect). m_timerWorkMode = " + m_timerWorkMode);
       }
       else
       {

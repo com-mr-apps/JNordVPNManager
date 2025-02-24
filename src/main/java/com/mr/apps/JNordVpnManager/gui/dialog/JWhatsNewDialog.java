@@ -4,7 +4,7 @@
  * Common Development and Distribution License 1.0.
  *
  * You should have received a copy of the “Commons Clause” license with
- * this file. If not, please visit: https://github.com/com.mr.apps/JNordVpnManager
+ * this file. If not, please visit: https://github.com/com-mr-apps/JNordVpnManager
  */
 package com.mr.apps.JNordVpnManager.gui.dialog;
 
@@ -28,7 +28,7 @@ public class JWhatsNewDialog
    private static final String m_htmlAboutText = "<h2>JNordVPN Manager Version History.</h2>"
          + "<h3>What's New:</h3>"
          + "</ul>"
-         + "<h4>Version 2025.3.0 (Snap 2025.3.0):</h4>"
+         + "<h4>Version 2025.3.1 (Snap 2025.3.1):</h4>"
          + "[Released February 2025]"
          + "<ul>"
          + "<li><strong>Commands Tool Bar</strong>: Customizable commands tool bar to quick access common used commands/features.</li>"
