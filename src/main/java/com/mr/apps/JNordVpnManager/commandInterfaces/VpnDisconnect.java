@@ -10,6 +10,7 @@ package com.mr.apps.JNordVpnManager.commandInterfaces;
 
 import java.awt.event.ActionEvent;
 
+import javax.swing.JButton;
 import com.mr.apps.JNordVpnManager.nordvpn.NvpnCallbacks;
 
 public class VpnDisconnect extends CoreCommandClass
@@ -22,6 +23,12 @@ public class VpnDisconnect extends CoreCommandClass
 
    public static boolean updateUI(Command cmd)
    {
+      JButton button = (JButton)cmd.getComponent();
+      if (null != button)
+      {
+         button.setEnabled(cmd.isEnabled());
+         cmd.updateToolTipUI(cmd.getToolTip());
+      }
       return true;
    }
 }

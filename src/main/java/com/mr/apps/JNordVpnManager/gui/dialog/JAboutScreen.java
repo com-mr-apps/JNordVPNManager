@@ -50,6 +50,8 @@ public class JAboutScreen
    + "<li><strong>Recent Connections</strong>: The application stores your recent connections for easy reconnection. Simply select one to reconnect instantly.</li>"
    + "<li><strong>World Map View</strong>: Visualize all available VPN servers on a world map and focus on the active server, providing an intuitive way to navigate through NordVPN&#39;s vast network.</li>"
    + "<li><strong>Security</strong>: The application does not store any login information (Account, Password). It is just an interface for the the native nordvpn commands.</li>"
+   + "<li><strong>Quick Access Commands Toolbar</strong>: Free configurable commands Toolbar for commonly used commands/settings.</li>"
+
    + "</ul>"
    + "<p>The application is released under the Common Development and Distribution License (<a href=\"https://opensource.org/license/cddl-1-0\">CDDL</a>) with a Commons Clause License, ensuring that it remains free for private use only. This means that while you can download and enjoy NordVPN Manager without any costs, commercial exploitation of the software requires my explicit permission.</p>"
    + "<p>The newest version and the source code can be found on GitHub: <a href=\"https://github.com/com-mr-apps/JNordVpnManager\">https://github.com/com-mr-apps/JNordVpnManager</a>."
@@ -81,13 +83,14 @@ public class JAboutScreen
 
    + "<h2>Supporter Edition</h2>"
    + "<p>Supporters (Donators) of this project get access to the <em>Supporters Edition</em>. A key file and an add-on library extend the functionality of the application.</p>"
+   + "<p>The <em>Supporters Edition</em> can be found on my Donation pages.</p>"
    
    + "<h2>License</h2>"
    + "<p>The \"Commons Clause\" License Condition v1.0</p>"
    + "<p>The Software is provided to you by the Licensor under the License, as defined below, subject to the following condition.</p>"
    + "<p>Without limiting other conditions in the License, the grant of rights under the License will not include, and the License does not grant to you, the right to Sell the Software.</p>"
    + "<p>For purposes of the foregoing, \"Sell\" means practicing any or all of the rights granted to you under the License to provide to third parties, for a fee or other consideration (including without limitation fees for hosting or consulting/ support services related to the Software), a product or service whose value derives, entirely or substantially, from the functionality of the Software. Any license notice or attribution required by the License must also include this Commons Clause License Condition notice.</p>"
-   + "<p>Software: JNordVPNManager</p>"
+   + "<p>Software: JNordVPN Manager</p>"
    + "<p>License: <a href=\"https://spdx.org/licenses/CDDL-1.1.html\">The Common Development and Distribution License 1.1</a></p>"
    + "<p>Licensor: com.mr.apps</p>";
 

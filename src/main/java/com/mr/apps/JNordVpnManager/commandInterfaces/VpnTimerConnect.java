@@ -46,11 +46,11 @@ public class VpnTimerConnect extends CoreCommandClass
 
    public static boolean updateUI(Command cmd)
    {
-      JButton buttonConnectPause = (JButton)cmd.getComponent();
-      if (null != buttonConnectPause)
+      JButton button = (JButton)cmd.getComponent();
+      if (null != button)
       {
-         buttonConnectPause.setEnabled(cmd.isEnabled());
-         buttonConnectPause.setIcon(cmd.getIconImage());
+         button.setEnabled(cmd.isEnabled());
+         button.setIcon(cmd.getIconImage());
          cmd.updateToolTipUI(cmd.getToolTip());
       }
       return true;

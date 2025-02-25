@@ -10,9 +10,6 @@ package com.mr.apps.JNordVpnManager.commandInterfaces;
 
 import java.awt.event.ActionEvent;
 
-import javax.swing.JButton;
-import javax.swing.JPanel;
-
 import com.mr.apps.JNordVpnManager.gui.dialog.JModalDialog;
 import com.mr.apps.JNordVpnManager.nordvpn.NvpnCommands;
 import com.mr.apps.JNordVpnManager.utils.UtilSystem;
@@ -38,13 +35,7 @@ public class VpnQuickconnect extends CoreCommandClass
 
    public static boolean updateUI(Command cmd)
    {
-      JButton buttonQuickConnect = (JButton)cmd.getComponent();
-      if (null != buttonQuickConnect)
-      {
-         buttonQuickConnect.setToolTipText(cmd.getToolTip());
-         JPanel bp = (JPanel) buttonQuickConnect.getParent();
-         bp.setToolTipText(cmd.getToolTip());
-      }
+      cmd.updateToolTipUI(cmd.getToolTip());
       return true;
    }
 }

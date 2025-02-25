@@ -211,7 +211,7 @@ public class GuiCommandsToolBar extends JPanel implements ActionListener
             final int iListIndex = i; // Command popup menuItem list index, used in CB
             JMenuItem item = new JMenuItem(cmd.getCommand());
             item.setToolTipText(cmd.getToolTip());
-            item.setIcon(JResizedIcon.getIcon(cmd.getIconUrl().elementAt(0), JResizedIcon.IconSize.SMALL));
+            item.setIcon(JResizedIcon.getIcon(cmd.getIconUrl(), JResizedIcon.IconSize.SMALL));
             item.addActionListener(new ActionListener() {
                @Override
                public void actionPerformed(ActionEvent e)
@@ -271,7 +271,7 @@ public class GuiCommandsToolBar extends JPanel implements ActionListener
       jPanel.setBorder(BorderFactory.createEmptyBorder()); //.createLoweredSoftBevelBorder());
 
       // Create and initialize the label - Label Text is used in CB to get the insert position!
-      JLabel customizeMenuSeparator = new JLabel(JResizedIcon.getIcon(cmd.getIconUrl().elementAt(0), 5, JResizedIcon.IconSize.MEDIUM.getSize()));
+      JLabel customizeMenuSeparator = new JLabel(JResizedIcon.getIcon(cmd.getIconUrl(), 5, JResizedIcon.IconSize.MEDIUM.getSize()));
       customizeMenuSeparator.setName(StringFormat.int2String(insertPos, "0"));
       customizeMenuSeparator.setToolTipText(cmd.getToolTip());
 
@@ -301,7 +301,7 @@ public class GuiCommandsToolBar extends JPanel implements ActionListener
       button.setToolTipText(cmd.getToolTip());
       button.setActionCommand(cmd.getId());
       button.setName(cmd.getId());
-      button.setIcon(JResizedIcon.getIcon(cmd.getIconUrl().elementAt(0), JResizedIcon.IconSize.MEDIUM));
+      button.setIcon(JResizedIcon.getIcon(cmd.getIconUrl(), JResizedIcon.IconSize.MEDIUM));
       button.setBorder(BorderFactory.createRaisedSoftBevelBorder());
       button.addActionListener(this);
       cmd.setComponent(button);
@@ -332,7 +332,7 @@ public class GuiCommandsToolBar extends JPanel implements ActionListener
       cmd.setComponent(checkBox);
 
       JLabel jLabel = new JLabel();
-      jLabel.setIcon(JResizedIcon.getIcon(cmd.getIconUrl().elementAt(0), JResizedIcon.IconSize.MEDIUM));
+      jLabel.setIcon(JResizedIcon.getIcon(cmd.getIconUrl(), JResizedIcon.IconSize.MEDIUM));
       jLabel.setToolTipText(cmd.getToolTip());
 
       // add the pop up menu with the list of available commands
