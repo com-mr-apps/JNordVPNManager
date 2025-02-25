@@ -4,7 +4,7 @@
  * Common Development and Distribution License 1.0.
  *
  * You should have received a copy of the “Commons Clause” license with
- * this file. If not, please visit: https://github.com/com.mr.apps/JNordVpnManager
+ * this file. If not, please visit: https://github.com/com-mr-apps/JNordVpnManager
  */
 package com.mr.apps.JNordVpnManager.geotools;
 
@@ -23,25 +23,27 @@ import com.mr.apps.JNordVpnManager.nordvpn.NvpnTechnologies;
  */
 public class Location
 {
-   public static final String SERVERID_SEPARATOR = "@";
+   public static final String SERVERID_SEPARATOR      = "@";
    public static final String SERVERID_LIST_SEPARATOR = ":";
 
-   protected String m_serverId;
-   protected String m_cityName;
-   protected String m_countryName;
-   protected String m_countryCode;
-   protected double m_longitude;
-   protected double m_latitude;
-   protected int m_countryId;
-   protected int m_cityId;
+   protected String           m_serverId;
+   protected String           m_cityName;
+   protected String           m_countryName;
+   protected String           m_countryCode;
+   protected double           m_longitude;
+   protected double           m_latitude;
+   protected boolean          m_isVirtualLocation;
+   protected int              m_countryId;
+   protected int              m_cityId;
    protected NvpnTechnologies m_technologies;
-   protected NvpnGroups m_groups;
+   protected NvpnGroups       m_groups;
  
    public Location()
    {
       setServerId("nowhere@nowhere");
       setLongitude(0.0);
       setLatitude(0.0);
+      setVirtualLocation(false);
       setCountryId(0);
       setCityId(-1);
       setCityName("nowhere");
@@ -83,6 +85,7 @@ public class Location
       setLatitude(latitude);
       setCityId(cityId);
 
+      setVirtualLocation(false);
       m_technologies = new NvpnTechnologies();
       m_groups = new NvpnGroups();
  
@@ -141,6 +144,16 @@ public class Location
    public void setLatitude(double latitude)
    {
       this.m_latitude = latitude;
+   }
+
+   public boolean isVirtualLocation()
+   {
+      return m_isVirtualLocation;
+   }
+
+   public void setVirtualLocation(boolean isVirtualLocation)
+   {
+      this.m_isVirtualLocation = isVirtualLocation;
    }
 
    public int getCountryId()
@@ -261,6 +274,15 @@ public class Location
 
    public String exportAsCsvData()
    {
-      return m_latitude + "," + m_longitude + "," + m_cityName + "," + m_countryName + ","  + m_countryCode + "," + m_cityId + "," + m_groups.toStringId() + "," + m_technologies.toStringId();
+      return m_latitude + "," // LAT
+           + m_longitude + "," // LON
+           + m_cityName + "," // CITY
+           + m_countryName + "," // COUNTRY
+           + m_countryCode + "," // FLAG
+           + m_cityId + "," // NUM
+           + m_groups.toStringId() + "," // GRP 
+           + m_technologies.toStringId() + "," // TECH
+           + ((m_isVirtualLocation) ? "true" : "false"); // VLOC
    }
+
 }

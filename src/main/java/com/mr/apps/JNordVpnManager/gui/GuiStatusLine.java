@@ -4,7 +4,7 @@
  * Common Development and Distribution License 1.0.
  *
  * You should have received a copy of the “Commons Clause” license with
- * this file. If not, please visit: https://github.com/com.mr.apps/JNordVpnManager
+ * this file. If not, please visit: https://github.com/com-mr-apps/JNordVpnManager
  */
 package com.mr.apps.JNordVpnManager.gui;
 
@@ -20,9 +20,11 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 
 import com.mr.apps.JNordVpnManager.Starter;
+import com.mr.apps.JNordVpnManager.commandInterfaces.Command;
 import com.mr.apps.JNordVpnManager.geotools.CurrentLocation;
 import com.mr.apps.JNordVpnManager.geotools.UtilLocations;
 import com.mr.apps.JNordVpnManager.geotools.UtilMapGeneration;
+import com.mr.apps.JNordVpnManager.gui.connectLine.GuiCommandsToolBar;
 import com.mr.apps.JNordVpnManager.gui.connectLine.JPanelConnectTimer;
 import com.mr.apps.JNordVpnManager.gui.dialog.JModalDialog;
 import com.mr.apps.JNordVpnManager.nordvpn.NvpnGroups.NordVPNEnumGroups;
@@ -255,6 +257,7 @@ public class GuiStatusLine
     */
    public static void setStatusLine(int iStatus, String msg)
    {
+      if (iStatus == STATUS_UNKNOWN) iStatus = (Starter.getCurrentStatusData().isConnected()) ? STATUS_CONNECTED : STATUS_DISCONNECTED;
       m_statusIndicator.setIcon(m_statusImages.get(iStatus));
       if (null == msg)
       {
@@ -270,5 +273,23 @@ public class GuiStatusLine
          m_statusText.setText(msg);
       }
       Starter._m_logError.TraceDebug("Update Statusline: [" + iStatus + "] " + msg);
+
+      // GUI updates of buttons that depend on the connection status
+      Command cmd = Command.getObject(Command.VPN_CMD_DISCONNECT);
+      String sToolTip = cmd.getToolTip(0);
+      boolean isEnabled = true;
+      if ((false == JPanelConnectTimer.isTimerRunning()) && (iStatus == STATUS_DISCONNECTED || iStatus == STATUS_LOGGEDOUT))
+      {
+         sToolTip = "Not connected.";
+         isEnabled = false;
+      }
+      else
+      {
+         isEnabled = true;
+      }
+      cmd.setToolTip(sToolTip);
+      cmd.setEnabled(isEnabled);
+      GuiCommandsToolBar.updateCommand(Command.VPN_CMD_DISCONNECT);
+
    }
 }

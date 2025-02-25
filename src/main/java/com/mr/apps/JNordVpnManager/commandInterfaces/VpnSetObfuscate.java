@@ -4,15 +4,13 @@
  * Common Development and Distribution License 1.0.
  *
  * You should have received a copy of the “Commons Clause” license with
- * this file. If not, please visit: https://github.com/com.mr.apps/JNordVpnManager
+ * this file. If not, please visit: https://github.com/com-mr-apps/JNordVpnManager
  */
 package com.mr.apps.JNordVpnManager.commandInterfaces;
 
 import java.awt.event.ActionEvent;
 
 import javax.swing.JCheckBox;
-import javax.swing.JPanel;
-
 import com.mr.apps.JNordVpnManager.Starter;
 import com.mr.apps.JNordVpnManager.utils.String.StringFormat;
 
@@ -52,10 +50,7 @@ public class VpnSetObfuscate extends CoreCommandClass
       {
          cb.setSelected(StringFormat.string2boolean(Starter.getCurrentSettingsData().getObfuscate(false)));
          cb.setEnabled(cmd.isEnabled());
-         String toolTip = cmd.getToolTip();
-         cb.setToolTipText(toolTip);
-         JPanel bp = (JPanel) cb.getParent();
-         bp.setToolTipText(toolTip);
+         cmd.updateToolTipUI(cmd.getToolTip());
       }
       return true;
    }

@@ -260,6 +260,7 @@ public class NvpnSettingsData
          this.m_protocol = "Webtunnel";
       }
       if (null == this.m_protocol) this.m_protocol = "UDP";
+      if (null == this.m_postQuantum) this.m_postQuantum = "disabled";
 
       // the following values contain the text "disabled" it they are not set -> reset them
       if (this.m_autoConnect.equals("disabled")) this.m_autoConnect = "";
@@ -446,7 +447,7 @@ public class NvpnSettingsData
       }
       else
       {
-         if (!equalBoolean(m_tplite, data))
+         if (!StringFormat.equalBoolean(m_tplite, data))
          {
             // call set command
             NvpnCommands.tpliteSettings(StringFormat.string2boolean(data));
@@ -526,7 +527,7 @@ public class NvpnSettingsData
       }
       else
       {
-         if (!equalBoolean(m_firewall, data))
+         if (!StringFormat.equalBoolean(m_firewall, data))
          {
             // call set command
             NvpnCommands.firewallSettings(StringFormat.string2boolean(data));
@@ -605,7 +606,7 @@ public class NvpnSettingsData
       }
       else
       {
-         if (!equalBoolean(m_ipv6, data))
+         if (!StringFormat.equalBoolean(m_ipv6, data))
          {
             // call set command
             NvpnCommands.ipv6Settings(StringFormat.string2boolean(data));
@@ -644,11 +645,11 @@ public class NvpnSettingsData
       }
       else
       {
-         if (!equalBoolean(m_routing, data))
+         if (!StringFormat.equalBoolean(m_routing, data))
          {
             // call set command
-            NvpnCommands.routingSettings(StringFormat.string2boolean(data));
-            if (UtilSystem.getLastExitCode() == 0)
+            String msg = NvpnCommands.routingSettings(StringFormat.string2boolean(data));
+            if (0 == UtilSystem.showResultDialog("NordVPN Set Routing", msg, true))
             {
                m_routing = data;
                setRequiresReconnect();
@@ -684,7 +685,7 @@ public class NvpnSettingsData
       }
       else
       {
-         if (!equalBoolean(m_analytics, data))
+         if (!StringFormat.equalBoolean(m_analytics, data))
          {
             // call set command
             NvpnCommands.analyticsSettings(StringFormat.string2boolean(data));
@@ -723,7 +724,7 @@ public class NvpnSettingsData
       }
       else
       {
-         if (!equalBoolean(m_killswitch, data))
+         if (!StringFormat.equalBoolean(m_killswitch, data))
          {
             // call set command
             NvpnCommands.killswitchSettings(StringFormat.string2boolean(data));
@@ -763,7 +764,7 @@ public class NvpnSettingsData
       }
       else
       {
-         if (!equalBoolean(m_notify, data))
+         if (!StringFormat.equalBoolean(m_notify, data))
          {
             // call set command
             NvpnCommands.notifySettings(StringFormat.string2boolean(data));
@@ -802,7 +803,7 @@ public class NvpnSettingsData
       }
       else
       {
-         if (!equalBoolean(m_obfuscate, data))
+         if (!StringFormat.equalBoolean(m_obfuscate, data))
          {
             // call set command
             if (false == m_technology.equals("OPENVPN"))
@@ -861,7 +862,7 @@ public class NvpnSettingsData
       }
       else
       {
-         if (!equalBoolean(m_tray, data))
+         if (!StringFormat.equalBoolean(m_tray, data))
          {
             // call set command
             NvpnCommands.traySettings(StringFormat.string2boolean(data));
@@ -911,6 +912,7 @@ public class NvpnSettingsData
                getNordVPNSettings();
                setRequiresReconnect();
                GuiCommandsToolBar.updateCommand(Command.VPN_SET_OBFUSCATE);
+               GuiCommandsToolBar.updateCommand(Command.VPN_SET_POSTQUANTUM);
                return true;
             }
          }
@@ -943,13 +945,14 @@ public class NvpnSettingsData
       }
       else
       {
-         if (!equalBoolean(m_meshnet, data))
+         if (!StringFormat.equalBoolean(m_meshnet, data))
          {
             // call set command
             NvpnCommands.meshnetSettings(StringFormat.string2boolean(data));
             if (UtilSystem.getLastExitCode() == 0)
             {
                m_meshnet = data;
+               GuiCommandsToolBar.updateCommand(Command.VPN_SET_POSTQUANTUM);
                return true;
             }
          }
@@ -982,7 +985,7 @@ public class NvpnSettingsData
       }
       else
       {
-         if (!equalBoolean(m_lanDiscovery, data))
+         if (!StringFormat.equalBoolean(m_lanDiscovery, data))
          {
             // call set command
             NvpnCommands.lanDiscoverySettings(StringFormat.string2boolean(data));
@@ -1021,15 +1024,15 @@ public class NvpnSettingsData
       }
       else
       {
-         if (!equalBoolean(m_virtualLocation, data))
+         if (!StringFormat.equalBoolean(m_virtualLocation, data))
          {
             // call set command
             NvpnCommands.virtualLocationSettings(StringFormat.string2boolean(data));
             if (UtilSystem.getLastExitCode() == 0)
             {
                m_virtualLocation = data;
-               JModalDialog.showMessage("nordvpn set virtual-location " + data,
-                     "Please refresh the server list to get a list of the actual available servers and manually reconnect.");
+               GuiCommandsToolBar.updateCommand(Command.VPN_SET_VIRTUALLOCATION);
+//               setRequiresReconnect(); -> in this case I don't force a reconnect... tbd...
                return true;
             }
          }
@@ -1054,6 +1057,13 @@ public class NvpnSettingsData
    public boolean setPostQuantum(String data, boolean def)
    {
       if (null == data) return false;
+      if ((true == Starter.getCurrentAccountData(false).isVpnDedicatedIdIsActive()) ||
+          (false == m_technology.equals("NORDLYNX")) ||
+          (true == StringFormat.string2boolean(Starter.getCurrentSettingsData().getMeshnet(false))))
+      {
+         // post-quantum is not compatible with a dedicated IP, Meshnet, and OpenVPN/NORDWHISPER.
+         return false;
+      }
 
       if (true == def)
       {
@@ -1062,13 +1072,16 @@ public class NvpnSettingsData
       }
       else
       {
-         if ((null != m_postQuantum) && (false == equalBoolean(m_postQuantum, data)))
+         if ((null != m_postQuantum) && (false == StringFormat.equalBoolean(m_postQuantum, data)))
          {
             // call set command
-            NvpnCommands.postQuantumSettings(StringFormat.string2boolean(data));
-            if (UtilSystem.getLastExitCode() == 0)
+            String msg = NvpnCommands.postQuantumSettings(StringFormat.string2boolean(data));
+            if (0 == UtilSystem.showResultDialog("NordVPN Set Post Quantum Encryption", msg, true))
             {
+               // ok
                m_postQuantum = data;
+               setRequiresReconnect();
+               GuiCommandsToolBar.updateCommand(Command.VPN_SET_POSTQUANTUM);
                return true;
             }
          }
@@ -1257,7 +1270,7 @@ public class NvpnSettingsData
    public static void setRequiresReconnect()
    {
       Starter._m_logError.TraceDebug("Set RequiresReconnect Flag.");
-      m_requiresReconnect = true;      
+      m_requiresReconnect = true;     
    }
 
    public static void resetRequiresReconnect()
@@ -1287,13 +1300,6 @@ public class NvpnSettingsData
       //    - if legacy group is Obfuscated - Setting obfuscated must be enabled and Technology OPENVPN
       //    - if legacy group is not Obfuscated - Settings obfuscated must be disabled
 
-/* - should be obsolete now:
-      if (NvpnSettingsData.reconnectRequired())
-      {
-         // for reconnect we want to connect with the current (maybe changed) legacy group!
-         loc.setLegacyGroup(NvpnGroups.getCurrentFilterGroup().getId()); // -> this makes loc static
-      }
-*/
       // Get the data
       boolean bObfuscate = StringFormat.string2boolean(m_obfuscate);
       NordVPNEnumGroups currentLegacyGroup = NvpnGroups.getCurrentFilterGroup();
@@ -1410,25 +1416,9 @@ public class NvpnSettingsData
 
       if (true == changedSettings)
       {
-//         Starter.setTreeFilterGroup();
+         Starter._m_logError.TraceDebug("(checkForConnection) Settings changed");
       }
       // ok
       return true;
-   }
-
-   /**
-    * Check, if two string values representing boolean values are equal
-    * <p>
-    * Valid boolean string values are 1|true|enable|on|enabled or 0|false|disable|off|disabled
-    * 
-    * @param value1
-    *           is the first String value that represents a boolean
-    * @param value2
-    *           is the second String value that represents a boolean
-    * @return true if two string values are equal
-    */
-   private boolean equalBoolean(String value1, String value2)
-   {
-      return StringFormat.string2boolean(value1) == StringFormat.string2boolean(value2);
    }
 }

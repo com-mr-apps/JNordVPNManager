@@ -4,12 +4,13 @@
  * Common Development and Distribution License 1.0.
  *
  * You should have received a copy of the “Commons Clause” license with
- * this file. If not, please visit: https://github.com/com.mr.apps/JNordVpnManager
+ * this file. If not, please visit: https://github.com/com-mr-apps/JNordVpnManager
  */
 package com.mr.apps.JNordVpnManager.commandInterfaces;
 
 import java.awt.event.ActionEvent;
 
+import javax.swing.JButton;
 import com.mr.apps.JNordVpnManager.nordvpn.NvpnCallbacks;
 
 public class VpnDisconnect extends CoreCommandClass
@@ -22,6 +23,12 @@ public class VpnDisconnect extends CoreCommandClass
 
    public static boolean updateUI(Command cmd)
    {
+      JButton button = (JButton)cmd.getComponent();
+      if (null != button)
+      {
+         button.setEnabled(cmd.isEnabled());
+         cmd.updateToolTipUI(cmd.getToolTip());
+      }
       return true;
    }
 }

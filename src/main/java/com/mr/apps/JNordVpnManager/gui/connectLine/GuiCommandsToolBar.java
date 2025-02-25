@@ -4,7 +4,7 @@
  * Common Development and Distribution License 1.0.
  *
  * You should have received a copy of the “Commons Clause” license with
- * this file. If not, please visit: https://github.com/com.mr.apps/JNordVpnManager
+ * this file. If not, please visit: https://github.com/com-mr-apps/JNordVpnManager
  */
 package com.mr.apps.JNordVpnManager.gui.connectLine;
 
@@ -90,6 +90,10 @@ public class GuiCommandsToolBar extends JPanel implements ActionListener
 
       // we use a common popup menu for all 'Add'-Labels
       JPopupMenu customizePopUpMenuAdd = new JPopupMenu();
+      JMenuItem title = new JMenuItem("Select Command to add:");
+      title.setEnabled(false);
+      customizePopUpMenuAdd.add(title);
+
       // ... and a common popup menu for all 'Remove/Move'-Buttons
       JPopupMenu customizePopUpMenu = new JPopupMenu();
 
@@ -207,7 +211,7 @@ public class GuiCommandsToolBar extends JPanel implements ActionListener
             final int iListIndex = i; // Command popup menuItem list index, used in CB
             JMenuItem item = new JMenuItem(cmd.getCommand());
             item.setToolTipText(cmd.getToolTip());
-            item.setIcon(JResizedIcon.getIcon(cmd.getIconUrl().elementAt(0), JResizedIcon.IconSize.SMALL));
+            item.setIcon(JResizedIcon.getIcon(cmd.getIconUrl(), JResizedIcon.IconSize.SMALL));
             item.addActionListener(new ActionListener() {
                @Override
                public void actionPerformed(ActionEvent e)
@@ -267,7 +271,7 @@ public class GuiCommandsToolBar extends JPanel implements ActionListener
       jPanel.setBorder(BorderFactory.createEmptyBorder()); //.createLoweredSoftBevelBorder());
 
       // Create and initialize the label - Label Text is used in CB to get the insert position!
-      JLabel customizeMenuSeparator = new JLabel(JResizedIcon.getIcon(cmd.getIconUrl().elementAt(0), 5, JResizedIcon.IconSize.MEDIUM.getSize()));
+      JLabel customizeMenuSeparator = new JLabel(JResizedIcon.getIcon(cmd.getIconUrl(), 5, JResizedIcon.IconSize.MEDIUM.getSize()));
       customizeMenuSeparator.setName(StringFormat.int2String(insertPos, "0"));
       customizeMenuSeparator.setToolTipText(cmd.getToolTip());
 
@@ -297,7 +301,7 @@ public class GuiCommandsToolBar extends JPanel implements ActionListener
       button.setToolTipText(cmd.getToolTip());
       button.setActionCommand(cmd.getId());
       button.setName(cmd.getId());
-      button.setIcon(JResizedIcon.getIcon(cmd.getIconUrl().elementAt(0), JResizedIcon.IconSize.MEDIUM));
+      button.setIcon(JResizedIcon.getIcon(cmd.getIconUrl(), JResizedIcon.IconSize.MEDIUM));
       button.setBorder(BorderFactory.createRaisedSoftBevelBorder());
       button.addActionListener(this);
       cmd.setComponent(button);
@@ -320,21 +324,21 @@ public class GuiCommandsToolBar extends JPanel implements ActionListener
    {
       JPanel jPanel = createPanel(cmd);
 
-      // Create the CheckBox
+      // Create the CheckBox (setSelected is done after in updateUI)
       JCheckBox checkBox = new JCheckBox();
       checkBox.setActionCommand(cmd.getId());
-      // checkBox.setSelected((boolean)cmd.getValue()); ..done after creation with the updateUI() method
       checkBox.setToolTipText(cmd.getToolTip());
       checkBox.addActionListener(this);
       cmd.setComponent(checkBox);
 
       JLabel jLabel = new JLabel();
-      jLabel.setIcon(JResizedIcon.getIcon(cmd.getIconUrl().elementAt(0), JResizedIcon.IconSize.MEDIUM));
+      jLabel.setIcon(JResizedIcon.getIcon(cmd.getIconUrl(), JResizedIcon.IconSize.MEDIUM));
+      jLabel.setToolTipText(cmd.getToolTip());
 
       // add the pop up menu with the list of available commands
       jLabel.setComponentPopupMenu(customizePopUpMenu);
       jLabel.setName(cmd.getId());
-      jLabel.setToolTipText("Click RMB to customize Commands ToolBar");
+      cmd.setJLabel(jLabel);
 
       jPanel.add(checkBox);
       jPanel.add(jLabel);
@@ -353,7 +357,7 @@ public class GuiCommandsToolBar extends JPanel implements ActionListener
       FlowLayout flowLayout = new FlowLayout();
       jPanel.setLayout(flowLayout);
       jPanel.setBorder(BorderFactory.createBevelBorder(BevelBorder.RAISED));
-      if (null != cmd) jPanel.setToolTipText(cmd.getToolTip());
+      if (null != cmd) jPanel.setToolTipText("Press RMB on Icon to customize Commands ToolBar");
 //      flowLayout.setHgap(0);
 //      flowLayout.setVgap(0);
       return jPanel;

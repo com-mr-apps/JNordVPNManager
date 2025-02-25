@@ -19,7 +19,7 @@ Key Features:
 
 The application is released under the Common Development and Distribution License 1.1 ([CDDL-1.1](https://spdx.org/licenses/CDDL-1.1.html)) with a Commons Clause License, ensuring that it remains free for private use only. This means that while you can download and enjoy NordVPN Manager without any costs, commercial exploitation of the software requires my explicit permission.
 
-The newest version and the source code can be found on GitHub: [https://github.com/com.mr.apps/JNordVpnManager](https://github.com/com.mr.apps/JNordVpnManager).
+The newest version and the source code can be found on GitHub: [https://github.com/com-mr-apps/JNordVpnManager](https://github.com/com-mr-apps/JNordVpnManager).
 Requirements, Bugs, etc. can be posted and will be administrated there.
 
 Thank you for considering JNordVPN Manager as your go-to GUI for managing NordVPN connections on Linux.

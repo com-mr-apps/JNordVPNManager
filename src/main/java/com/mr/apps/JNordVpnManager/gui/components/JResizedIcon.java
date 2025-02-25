@@ -4,7 +4,7 @@
  * Common Development and Distribution License 1.0.
  *
  * You should have received a copy of the “Commons Clause” license with
- * this file. If not, please visit: https://github.com/com.mr.apps/JNordVpnManager
+ * this file. If not, please visit: https://github.com/com-mr-apps/JNordVpnManager
  */
 package com.mr.apps.JNordVpnManager.gui.components;
 
@@ -44,7 +44,9 @@ public class JResizedIcon extends ImageIcon
       ICON_TREE_LOCATION               ("i_TreeLocation.png"),
       ICON_VPN_SET_KILLSWITCH          ("i_VpnSetKillswitch.png"),
       ICON_VPN_SET_OBFUSCATE           ("i_VpnSetObfuscate.png"),
+      ICON_VPN_SET_POSTQUANTUM         ("i_VpnSetPostQuantum.png"),
       ICON_VPN_SET_THREATPROTECTION    ("i_VpnSetThreatprotection.png"),
+      ICON_VPN_SET_VIRTUALLOCATION     ("i_VpnSetVirtualLocation.png"),
       ICON_WINDOW_COLLAPSE             ("i_WindowCollapse.png"),
       ICON_WINDOW_EXPAND               ("i_WindowExpand.png"),
       ICON_APP_PREF_AUTOCONNECT        ("i_AppPrefAutoConnect.png"),

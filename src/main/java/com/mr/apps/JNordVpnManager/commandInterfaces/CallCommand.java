@@ -4,7 +4,7 @@
  * Common Development and Distribution License 1.0.
  *
  * You should have received a copy of the “Commons Clause” license with
- * this file. If not, please visit: https://github.com/com.mr.apps/JNordVpnManager
+ * this file. If not, please visit: https://github.com/com-mr-apps/JNordVpnManager
  */
 package com.mr.apps.JNordVpnManager.commandInterfaces;
 
@@ -155,35 +155,35 @@ public class CallCommand
       {
          Starter._m_logError.LoggingError(10900,
                "Method not found or missmatched arguments.",
-               "A method with the name=" + methodName + " - and the supplied arguments could not be found.");
+               "A method with the name=" + className + "." + methodName + " - and the supplied arguments could not be found.");
          callResult = null;
       }
       catch (InvocationTargetException e)
       {
          Starter._m_logError.LoggingError(10900,
                "Invoke failed.",
-               "Invocation of the method with the name=" + methodName + " failed - skipping method call.");
+               "Invocation of the method with the name=" + className + "." + methodName + " failed - skipping method call.");
          callResult = null;
       }
       catch (IllegalAccessException e)
       {
          Starter._m_logError.LoggingError(10900,
                "Illegal access.",
-               "Illegal access for method with the name=" + methodName + " - skipping method call.");
+               "Illegal access for method with the name=" + className + "." + methodName + " - skipping method call.");
          callResult = null;
       }
       catch (IllegalArgumentException e)
       {
          Starter._m_logError.LoggingError(10900,
                "Illegal argument.",
-               "Illegal argument for method with the name=" + methodName + " - skipping method call.");
+               "Illegal argument for method with the name=" + className + "." + methodName + " - skipping method call.");
          callResult = null;
       }
       catch (Exception e)
       {
          Starter._m_logError.LoggingError(10900,
                "Generic exception.",
-               "Exception encountered when trying to invoke method with the name=" + methodName + " in Class [" + className + "] - skipping method call.");
+               "Exception encountered when trying to invoke method with the name=" + className + "." + methodName + " - skipping method call.");
          callResult = null;
       }
 

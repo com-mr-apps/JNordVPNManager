@@ -28,7 +28,7 @@ public class UtilCallbacks
             + "* 'Cancel' - returns to the application.\n"
             + "* 'Copy File' - copies the selected add-on library in the application add-ons folder.\n"
             + "* 'Import Key File' - skips this step and continues with import of the key file.\n"
-            +" * 'Reset to Basis Edition' - removes the Supporter Edition features.\n"
+            + "* 'Reset to Basis Edition' - removes the Supporter Edition features.\n"
             + "(Changes require an restart of the application.)",
             "Cancel,Copy File,Import Key File,Reset to Basis Edition", fpAppDataDir, "Java Archive File [jar]");
       switch (dlg.getResult()) {
