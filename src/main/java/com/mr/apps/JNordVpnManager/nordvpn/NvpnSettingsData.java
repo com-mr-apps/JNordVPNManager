@@ -67,64 +67,71 @@ Commands:
  */
 public class NvpnSettingsData
 {
-   private static final String                     POST_QUANTUM                           = "POST_QUANTUM";
-   private static final String                     VIRTUAL_LOCATION                       = "VIRTUAL_LOCATION";
-   private static final String                     LAN_DISCOVERY                          = "LAN_DISCOVERY";
-   private static final String                     MESHNET                                = "MESHNET";
-   private static final String                     TECHNOLOGY                             = "TECHNOLOGY";
-   private static final String                     TRAY                                   = "TRAY";
-   private static final String                     NOTIFY                                 = "NOTIFY";
-   private static final String                     OBFUSCATE                              = "OBFUSCATE";
-   private static final String                     KILLSWITCH                             = "KILLSWITCH";
-   private static final String                     ANALYTICS                              = "ANALYTICS";
-   private static final String                     ROUTING                                = "ROUTING";
-   private static final String                     IPV6                                   = "IPV6";
-   private static final String                     FIREWALL                               = "FIREWALL";
-   private static final String                     FWMARK                                 = "FWMARK";
-   private static final String                     DNS                                    = "DNS";
-   private static final String                     TPLITE                                 = "TPLITE";
-   private static final String                     AUTOCONNECT                            = "AUTOCONNECT";
-   private static final String                     PROTOCOL                               = "PROTOCOL";
+   private static final String                     POST_QUANTUM                            = "POST_QUANTUM";
+   private static final String                     VIRTUAL_LOCATION                        = "VIRTUAL_LOCATION";
+   private static final String                     LAN_DISCOVERY                           = "LAN_DISCOVERY";
+   private static final String                     MESHNET                                 = "MESHNET";
+   private static final String                     TECHNOLOGY                              = "TECHNOLOGY";
+   private static final String                     TRAY                                    = "TRAY";
+   private static final String                     NOTIFY                                  = "NOTIFY";
+   private static final String                     OBFUSCATE                               = "OBFUSCATE";
+   private static final String                     KILLSWITCH                              = "KILLSWITCH";
+   private static final String                     ANALYTICS                               = "ANALYTICS";
+   private static final String                     ROUTING                                 = "ROUTING";
+   private static final String                     IPV6                                    = "IPV6";
+   private static final String                     FIREWALL                                = "FIREWALL";
+   private static final String                     FWMARK                                  = "FWMARK";
+   private static final String                     DNS                                     = "DNS";
+   private static final String                     TPLITE                                  = "TPLITE";
+   private static final String                     AUTOCONNECT                             = "AUTOCONNECT";
+   private static final String                     PROTOCOL                                = "PROTOCOL";
+   private static final String                     ALLOWLIST_SUBNETS                       = "ALLOWLIST_SUBNETS";
+   private static final String                     ALLOWLIST_PORTS                         = "ALLOWLIST_PORTS";
 
-   private static String                           DEFAULT_NVPN_SETTINGS_AUTOCONNECT      = "";
-   private static String                           DEFAULT_NVPN_SETTINGS_TPLITE           = "disabled";
-   private static String                           DEFAULT_NVPN_SETTINGS_DNS              = "";
-   private static String                           DEFAULT_NVPN_SETTINGS_FIREWALL         = "enabled";
-   private static String                           DEFAULT_NVPN_SETTINGS_FWMARK           = "";
-   private static String                           DEFAULT_NVPN_SETTINGS_IPV6             = "disabled";
-   private static String                           DEFAULT_NVPN_SETTINGS_OBFUSCATE        = "disabled";
-   private static String                           DEFAULT_NVPN_SETTINGS_ROUTING          = "enabled";
-   private static String                           DEFAULT_NVPN_SETTINGS_ANALYTICS        = "disabled";
-   private static String                           DEFAULT_NVPN_SETTINGS_KILLSWITCH       = "disabled";
-   private static String                           DEFAULT_NVPN_SETTINGS_NOTIFY           = "enabled";
-   private static String                           DEFAULT_NVPN_SETTINGS_TRAY             = "enabled";
-   private static String                           DEFAULT_NVPN_SETTINGS_TECHNOLOGY       = "NORDLYNX";
-   private static String                           DEFAULT_NVPN_SETTINGS_MESHNET          = "disabled";
-   private static String                           DEFAULT_NVPN_SETTINGS_LAN_DISCOVERY    = "disabled";
-   private static String                           DEFAULT_NVPN_SETTINGS_VIRTUAL_LOCATION = "enabled";
-   private static String                           DEFAULT_NVPN_SETTINGS_POST_QUANTUM     = "disabled";
-   private static String                           DEFAULT_NVPN_SETTINGS_PROTOCOL         = "UDP";
+   private static String                           DEFAULT_NVPN_SETTINGS_AUTOCONNECT       = "";
+   private static String                           DEFAULT_NVPN_SETTINGS_TPLITE            = "disabled";
+   private static String                           DEFAULT_NVPN_SETTINGS_DNS               = "";
+   private static String                           DEFAULT_NVPN_SETTINGS_FIREWALL          = "enabled";
+   private static String                           DEFAULT_NVPN_SETTINGS_FWMARK            = "";
+   private static String                           DEFAULT_NVPN_SETTINGS_IPV6              = "disabled";
+   private static String                           DEFAULT_NVPN_SETTINGS_OBFUSCATE         = "disabled";
+   private static String                           DEFAULT_NVPN_SETTINGS_ROUTING           = "enabled";
+   private static String                           DEFAULT_NVPN_SETTINGS_ANALYTICS         = "disabled";
+   private static String                           DEFAULT_NVPN_SETTINGS_KILLSWITCH        = "disabled";
+   private static String                           DEFAULT_NVPN_SETTINGS_NOTIFY            = "enabled";
+   private static String                           DEFAULT_NVPN_SETTINGS_TRAY              = "enabled";
+   private static String                           DEFAULT_NVPN_SETTINGS_TECHNOLOGY        = "NORDLYNX";
+   private static String                           DEFAULT_NVPN_SETTINGS_MESHNET           = "disabled";
+   private static String                           DEFAULT_NVPN_SETTINGS_LAN_DISCOVERY     = "disabled";
+   private static String                           DEFAULT_NVPN_SETTINGS_VIRTUAL_LOCATION  = "enabled";
+   private static String                           DEFAULT_NVPN_SETTINGS_POST_QUANTUM      = "disabled";
+   private static String                           DEFAULT_NVPN_SETTINGS_PROTOCOL          = "UDP";
+   private static String                           DEFAULT_NVPN_SETTINGS_ALLOWLIST_SUBNETS = "";
+   private static String                           DEFAULT_NVPN_SETTINGS_ALLOWLIST_PORTS   = "";
 
-   private String                                  m_autoConnect                          = DEFAULT_NVPN_SETTINGS_AUTOCONNECT;
-   private String                                  m_tplite                               = DEFAULT_NVPN_SETTINGS_TPLITE;
-   private String                                  m_dns                                  = DEFAULT_NVPN_SETTINGS_DNS;
-   private String                                  m_firewall                             = DEFAULT_NVPN_SETTINGS_FIREWALL;
-   private String                                  m_fwmark                               = DEFAULT_NVPN_SETTINGS_FWMARK;
-   private String                                  m_ipv6                                 = DEFAULT_NVPN_SETTINGS_IPV6;
-   private String                                  m_obfuscate                            = DEFAULT_NVPN_SETTINGS_OBFUSCATE;
-   private String                                  m_routing                              = DEFAULT_NVPN_SETTINGS_ROUTING;
-   private String                                  m_analytics                            = DEFAULT_NVPN_SETTINGS_ANALYTICS;
-   private String                                  m_killswitch                           = DEFAULT_NVPN_SETTINGS_KILLSWITCH;
-   private String                                  m_notify                               = DEFAULT_NVPN_SETTINGS_NOTIFY;
-   private String                                  m_tray                                 = DEFAULT_NVPN_SETTINGS_TRAY;
-   private String                                  m_technology                           = DEFAULT_NVPN_SETTINGS_TECHNOLOGY;
-   private String                                  m_meshnet                              = DEFAULT_NVPN_SETTINGS_MESHNET;
-   private String                                  m_lanDiscovery                         = DEFAULT_NVPN_SETTINGS_LAN_DISCOVERY;
-   private String                                  m_virtualLocation                      = DEFAULT_NVPN_SETTINGS_VIRTUAL_LOCATION;
-   private String                                  m_postQuantum                          = DEFAULT_NVPN_SETTINGS_POST_QUANTUM;
-   private String                                  m_protocol                             = DEFAULT_NVPN_SETTINGS_PROTOCOL;
+   private String                                  m_autoConnect                           = DEFAULT_NVPN_SETTINGS_AUTOCONNECT;
+   private String                                  m_tplite                                = DEFAULT_NVPN_SETTINGS_TPLITE;
+   private String                                  m_dns                                   = DEFAULT_NVPN_SETTINGS_DNS;
+   private String                                  m_firewall                              = DEFAULT_NVPN_SETTINGS_FIREWALL;
+   private String                                  m_fwmark                                = DEFAULT_NVPN_SETTINGS_FWMARK;
+   private String                                  m_ipv6                                  = DEFAULT_NVPN_SETTINGS_IPV6;
+   private String                                  m_obfuscate                             = DEFAULT_NVPN_SETTINGS_OBFUSCATE;
+   private String                                  m_routing                               = DEFAULT_NVPN_SETTINGS_ROUTING;
+   private String                                  m_analytics                             = DEFAULT_NVPN_SETTINGS_ANALYTICS;
+   private String                                  m_killswitch                            = DEFAULT_NVPN_SETTINGS_KILLSWITCH;
+   private String                                  m_notify                                = DEFAULT_NVPN_SETTINGS_NOTIFY;
+   private String                                  m_tray                                  = DEFAULT_NVPN_SETTINGS_TRAY;
+   private String                                  m_technology                            = DEFAULT_NVPN_SETTINGS_TECHNOLOGY;
+   private String                                  m_meshnet                               = DEFAULT_NVPN_SETTINGS_MESHNET;
+   private String                                  m_lanDiscovery                          = DEFAULT_NVPN_SETTINGS_LAN_DISCOVERY;
+   private String                                  m_virtualLocation                       = DEFAULT_NVPN_SETTINGS_VIRTUAL_LOCATION;
+   private String                                  m_postQuantum                           = DEFAULT_NVPN_SETTINGS_POST_QUANTUM;
+   private String                                  m_protocol                              = DEFAULT_NVPN_SETTINGS_PROTOCOL;
 
-   private static boolean                          m_requiresReconnect                    = false;
+   private String                                  m_allowlistSubnets                      = DEFAULT_NVPN_SETTINGS_ALLOWLIST_SUBNETS;
+   private String                                  m_allowlistPorts                        = DEFAULT_NVPN_SETTINGS_ALLOWLIST_PORTS;
+
+   private static boolean                          m_requiresReconnect                     = false;
 
    /**
     * Dataset defining the NordVPN Settings values.
@@ -132,7 +139,7 @@ public class NvpnSettingsData
     * Contains the panel field description by Id:
     * <ul>
     * <li>Label text</li>
-    * <li>Field Type, where: "T" - Text field / "N[min,max]" - Integer with optional range / "B" - Boolean
+    * <li>Field Type, where: "T" - Text field / "N[min,max,step]" - Integer with optional range / "B" - Boolean
     * (CheckBox)</li>
     * <li>Mnemonic (-1 - no KeyEvent)</li>
     * <li>Field length</li>
@@ -201,21 +208,76 @@ public class NvpnSettingsData
          }
       }
    }
+
    /**
     * Parse NOrdVPN Settings data
-    * @param data is the result from 'nordvpn settings' command
+    * 
+    * @param data
+    *           is the result from 'nordvpn settings' command
     * @return true if parsing was successful, else false
     */
    private boolean parseData(String data)
    {
       HashMap<String,String> values = new HashMap<String, String>();
+      StringBuffer sbAllowListSubnets = new StringBuffer();
+      StringBuffer sbAllowListPorts = new StringBuffer();
       try
       {
+         boolean bAllowListSubnets = false;
+         boolean bAllowListPorts = false;
+
          String[] saLines = data.split("\\n");
          for (String line : saLines)
          {
             String[] parts = line.split(":");
-            values.put(parts[0], parts[1].trim());
+            if (null != parts && parts.length == 2)
+            {
+               values.put(parts[0], parts[1].trim());
+               bAllowListSubnets = false;
+               bAllowListPorts = false;
+            }
+            else
+            {
+               if (line.toUpperCase().contains("ALLOWLIST") && line.toUpperCase().contains("SUBNET"))
+               {
+                  //nordvpn allowlist add subnet 127.0.0.1/24
+                  //Allowlisted subnets:
+                  //   127.0.0.1/24
+
+                  bAllowListSubnets = true;
+                  bAllowListPorts = false;
+               }
+               else if (line.toUpperCase().contains("ALLOWLIST") && line.toUpperCase().contains("PORT"))
+               {
+                  //nordvpn allowlist add ports 12345 12355 protocol TCP
+                  //nordvpn allowlist add port 12555 protocol TCP
+                  //Allowlisted ports:
+                  //   12345 - 12355 (TCP)
+                  //   12555 (TCP) 
+
+                  bAllowListPorts = true;
+                  bAllowListSubnets = false;
+               }
+               else
+               {
+                  if (bAllowListSubnets == true)
+                  {
+                     if (sbAllowListSubnets.length() == 0) sbAllowListSubnets.append(";");
+                     sbAllowListSubnets.append(line.replaceAll("\t", ""));
+                  }
+                  else if (bAllowListPorts == true)
+                  {
+                     if (sbAllowListPorts.length() == 0) sbAllowListPorts.append(";");
+                     sbAllowListPorts.append(line.replaceAll("\t", ""));
+                  }
+                  else
+                  {
+                     Starter._m_logError.LoggingError(10100,
+                           "Parsing NordVPN Settings Information",
+                           "Unknown Data in Settings: '" + line + "' (skipped).");
+                  }
+               }
+            }
          }
       }
       catch (Exception e)
@@ -274,6 +336,10 @@ public class NvpnSettingsData
          // Workaround: get the server from User Prefs
          this.m_autoConnect = getAutoConnect(true);
       }
+
+      // Allowlists
+      this.m_allowlistSubnets = sbAllowListSubnets.toString();
+      this.m_allowlistPorts = sbAllowListPorts.toString();
 
       return true;
    }
@@ -1158,6 +1224,85 @@ public class NvpnSettingsData
       return false;
    }
 
+   public String getAllowlistSubnets(boolean def)
+   {
+      if (true == def)
+      {
+         Preferences prefs = Preferences.userRoot().node("com/mr/apps/JNordVpnManager/nordvpn");
+         return prefs.get("Settings.allowlist.subnets", DEFAULT_NVPN_SETTINGS_ALLOWLIST_SUBNETS);
+      }
+      else
+      {
+         return m_allowlistSubnets;
+      }
+   }
+
+   public boolean setAllowlistSubnets(String data, boolean def)
+   {
+      if (null == data) return false;
+
+      if (true == def)
+      {
+         Preferences prefs = Preferences.userRoot().node("com/mr/apps/JNordVpnManager/nordvpn");
+         prefs.put("Settings.allowlist.subnets", data);
+      }
+      else
+      {
+         if (!m_allowlistSubnets.equalsIgnoreCase(data))
+         {
+            // call set command
+//            NvpnCommands.???Settings(data);
+//            if (UtilSystem.getLastExitCode() == 0)
+//            {
+               m_allowlistSubnets = data;
+               return true;
+//            }
+         }
+      }
+
+      return false;
+   }
+
+
+   public String getAllowlistPorts(boolean def)
+   {
+      if (true == def)
+      {
+         Preferences prefs = Preferences.userRoot().node("com/mr/apps/JNordVpnManager/nordvpn");
+         return prefs.get("Settings.allowlist.ports", DEFAULT_NVPN_SETTINGS_ALLOWLIST_PORTS);
+      }
+      else
+      {
+         return m_allowlistPorts;
+      }
+   }
+
+   public boolean setAllowlistPorts(String data, boolean def)
+   {
+      if (null == data) return false;
+
+      if (true == def)
+      {
+         Preferences prefs = Preferences.userRoot().node("com/mr/apps/JNordVpnManager/nordvpn");
+         prefs.put("Settings.allowlist.ports", data);
+      }
+      else
+      {
+         if (!m_allowlistPorts.equalsIgnoreCase(data))
+         {
+            // call set command
+//            NvpnCommands.???Settings(data);
+//            if (UtilSystem.getLastExitCode() == 0)
+//            {
+               m_allowlistPorts = data;
+               return true;
+//            }
+         }
+      }
+
+      return false;
+   }
+   
    /**
     * Get a dataset with all NordVPN Settings data
     * 
@@ -1187,6 +1332,8 @@ public class NvpnSettingsData
       hm.put(LAN_DISCOVERY, getLanDiscovery(def));
       hm.put(VIRTUAL_LOCATION, getVirtualLocation(def));
       hm.put(POST_QUANTUM, getPostQuantum(def));
+      hm.put(ALLOWLIST_SUBNETS, getAllowlistSubnets(def));
+      hm.put(ALLOWLIST_PORTS, getAllowlistPorts(def));
 
       return hm;
    }
@@ -1236,6 +1383,8 @@ public class NvpnSettingsData
       rc |= setVirtualLocation(hm.get(VIRTUAL_LOCATION), def);
       rc |= setPostQuantum(hm.get(POST_QUANTUM), def);
       rc |= setProtocol(hm.get(PROTOCOL), def);
+      rc |= setAllowlistSubnets(hm.get(ALLOWLIST_SUBNETS), def);
+      rc |= setAllowlistPorts(hm.get(ALLOWLIST_PORTS), def);
 
       Starter._m_logError.TraceDebug("Needs Update Flag=" + rc + ".");
 
