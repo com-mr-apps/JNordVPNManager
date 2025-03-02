@@ -465,7 +465,7 @@ public class Starter extends JFrame
             // desktop file exists
             _m_logError.TraceIni("...'JNordVPNManager_Java.desktop' file found in '~/Desktop directory'.");
             if (JModalDialog.showConfirm("JNordVPNManager (install).\n" +
-                  "Please restart the application by the 'JNordVPNManager_Java.desktop' file found in your '~/Desktop directory'\n\n." +
+                  "Please restart the application by the 'JNordVPNManager_Java.desktop' file found in your '~/Desktop directory'.\n\n" +
                   "If you continue direct from Snap, the application has no permission to execute any 'nordvpn' command, but you have access to the console and Info menus to check messages and errors.\n\n" +
                   "Please confirm to exit the program.") == JOptionPane.YES_OPTION)
             {
