@@ -22,6 +22,7 @@ import javax.swing.event.MenuEvent;
 import javax.swing.event.MenuListener;
 
 import com.mr.apps.JNordVpnManager.Starter;
+import com.mr.apps.JNordVpnManager.commandInterfaces.CallCommand;
 import com.mr.apps.JNordVpnManager.commandInterfaces.Command;
 import com.mr.apps.JNordVpnManager.geotools.CurrentLocation;
 import com.mr.apps.JNordVpnManager.geotools.Location;
@@ -216,6 +217,25 @@ public class GuiMenuBar
          }
       });
       m_nordvpnMenu.add(menuItemEditSettings);
+
+         JMenuItem whiteList = new JMenuItem("Edit AllowList");
+         whiteList.setToolTipText("Show/Edit AllowList.");
+         whiteList.addActionListener(new ActionListener()
+         {
+            public void actionPerformed(ActionEvent e)
+            {
+               if (Starter.isSupporterEdition())
+               {
+                  CallCommand.invokeAddonMethod("AddonManager", "openAllowListDialog");
+               }
+               else
+               {
+                  new JSupportersDialog("Edit NordVPN Allow List");
+               }
+            }
+         });
+         m_nordvpnMenu.add(whiteList);
+
 
       // -------------------------------------------------------------------------------------
       // Menu --- Connect ---

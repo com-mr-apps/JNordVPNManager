@@ -96,7 +96,7 @@ public class UtilPrefs
     * Contains the panel field description by Id:
     * <ul>
     * <li>Label text</li>
-    * <li>Field Type, where: "T" - Text field / "N[min,max]" - Integer with optional range / "B" - Boolean (CheckBox)</li>
+    * <li>Field Type, where: "T" - Text field / "N[min,max,step]" - Integer with optional range / "B" - Boolean (CheckBox)</li>
     * <li>Mnemonic (-1 - no KeyEvent)</li>
     * <li>Field length</li>
     * <li>Default value</li>
@@ -110,11 +110,11 @@ public class UtilPrefs
    {
       Map<String, JSettingsPanelField> settingsPanelFieldsMap  = new HashMap<String, JSettingsPanelField>();
 
-      settingsPanelFieldsMap.put(ACCOUNTREMINDER, new JSettingsPanelField("Account Expiration Warning Days", "N[1,90]", -1, 2, StringFormat.int2String(DEFAULT_PREF_SETTINGS_ACCOUNTREMINDER, "#")));
+      settingsPanelFieldsMap.put(ACCOUNTREMINDER, new JSettingsPanelField("Account Expiration Warning Days", "N[1,90,1]", -1, 2, StringFormat.int2String(DEFAULT_PREF_SETTINGS_ACCOUNTREMINDER, "#")));
       settingsPanelFieldsMap.put(ADDON_PATH, new JSettingsPanelField("Addons", "T", -1, 20, DEFAULT_PREF_SETTINGS_ADDONS_PATH));
       settingsPanelFieldsMap.put(AUTOCONNECTMODE, new JSettingsPanelField("Auto Connect on Program Start", "B", KeyEvent.VK_S, 1, StringFormat.int2String(DEFAULT_PREF_SETTINGS_AUTOCONNECTMODE, "#")));
       settingsPanelFieldsMap.put(AUTODISCONNECTMODE, new JSettingsPanelField("Auto Disconnect on Program Exit", "B", KeyEvent.VK_E, 1, StringFormat.int2String(DEFAULT_PREF_SETTINGS_AUTODISCONNECTMODE, "#")));
-      settingsPanelFieldsMap.put(COMMAND_TIMEOUT, new JSettingsPanelField("Command Timeout (in seconds)", "N[5,99]", -1, 2, StringFormat.int2String(DEFAULT_PREF_SETTINGS_COMMAMD_TIMEOUT, "#")));
+      settingsPanelFieldsMap.put(COMMAND_TIMEOUT, new JSettingsPanelField("Command Timeout (in seconds)", "N[5,99,1]", -1, 2, StringFormat.int2String(DEFAULT_PREF_SETTINGS_COMMAMD_TIMEOUT, "#")));
 //      m_settingsFieldMap.put(COMPACTMODE, new JSettingsPanelField("Start Program in Compact Mode", "B", KeyEvent.VK_M, 5, StringFormat.int2String(DEFAULT_PREF_SETTINGS_COMPACTMODE, "#")));
       settingsPanelFieldsMap.put(CONSOLE_ACTIVE, new JSettingsPanelField("Open Console at Program Start", "B", -1, 1, StringFormat.int2String(DEFAULT_PREF_SETTINGS_CONSOLE_ACTIVE, "#")));
       settingsPanelFieldsMap.put(LOGFILE_ACTIVE, new JSettingsPanelField("Write to Logfile", "B", KeyEvent.VK_W, 1, StringFormat.int2String(DEFAULT_PREF_SETTINGS_LOGFILE_ACTIVE, "#")));
@@ -122,14 +122,14 @@ public class UtilPrefs
       settingsPanelFieldsMap.put(LOGFILE_TRACECMD, new JSettingsPanelField("Trace Command", "B", KeyEvent.VK_A, 1, StringFormat.int2String(DEFAULT_PREF_SETTINGS_TRACECMD, "#")));
       settingsPanelFieldsMap.put(LOGFILE_TRACEDEBUG, new JSettingsPanelField("Trace Debug", "B", KeyEvent.VK_B, 1, StringFormat.int2String(DEFAULT_PREF_SETTINGS_TRACEDEBUG, "#")));
       settingsPanelFieldsMap.put(LOGFILE_TRACEINIT, new JSettingsPanelField("Trace Init", "B", KeyEvent.VK_I, 1, StringFormat.int2String(DEFAULT_PREF_SETTINGS_TRACEINIT, "#")));
-      settingsPanelFieldsMap.put(MESSAGE_AUTOCLOSE, new JSettingsPanelField("Auto Close Messages", "N[-1,99]", -1, 2, StringFormat.int2String(DEFAULT_PREF_SETTINGS_MESSAGE_AUTOCLOSE, "#")));
+      settingsPanelFieldsMap.put(MESSAGE_AUTOCLOSE, new JSettingsPanelField("Auto Close Messages", "N[-1,99,1]", -1, 2, StringFormat.int2String(DEFAULT_PREF_SETTINGS_MESSAGE_AUTOCLOSE, "#")));
       settingsPanelFieldsMap.put(RECENTSERVER_CITY, new JSettingsPanelField("Recent Server", "T", KeyEvent.VK_S, 20, DEFAULT_PREF_RECENTSERVER_CITY));
       settingsPanelFieldsMap.put(RECENTSERVER_COUNTRY, new JSettingsPanelField("Recent Country", "T", KeyEvent.VK_C, 20, DEFAULT_PREF_RECENTSERVER_COUNTRY));
 //      settingsPanelFieldsMap.put(RECENTSERVER_REGION, new JSettingsPanelField("Recent Server Region", "B", -1, 1, StringFormat.int2String(DEFAULT_PREF_RECENTSERVER_REGION, "#")));
 //      settingsPanelFieldsMap.put(RECENTSERVER_GROUP, new JSettingsPanelField("Recent Servers Group", "B", -1, 1, StringFormat.int2String(DEFAULT_PREF_RECENTSERVER_GROUP, "#")));
       settingsPanelFieldsMap.put(RECENTSERVER_LIST, new JSettingsPanelField("Recent Servers List", "T", -1, 20, DEFAULT_PREF_RECENTSERVER_LIST));
-      settingsPanelFieldsMap.put(RECENTSERVER_LIST_LENGTH, new JSettingsPanelField("Recent Servers List Size", "N[1,10]", -1, 2, StringFormat.int2String(DEFAULT_PREF_RECENTSERVER_LIST_LENGTH, "#")));
-      settingsPanelFieldsMap.put(SERVERLIST_AUTOUPDATE, new JSettingsPanelField("Auto Update Server Data on Program Start", "N[0,99]", KeyEvent.VK_U, 2, StringFormat.int2String(DEFAULT_PREF_SERVERLIST_AUTOUPDATE, "#")));
+      settingsPanelFieldsMap.put(RECENTSERVER_LIST_LENGTH, new JSettingsPanelField("Recent Servers List Size", "N[1,10,1]", -1, 2, StringFormat.int2String(DEFAULT_PREF_RECENTSERVER_LIST_LENGTH, "#")));
+      settingsPanelFieldsMap.put(SERVERLIST_AUTOUPDATE, new JSettingsPanelField("Auto Update Server Data on Program Start", "N[0,99,1]", KeyEvent.VK_U, 2, StringFormat.int2String(DEFAULT_PREF_SERVERLIST_AUTOUPDATE, "#")));
       settingsPanelFieldsMap.put(SERVERLIST_DATA, new JSettingsPanelField("Server Data", "T", KeyEvent.VK_D, 20, DEFAULT_PREF_SERVERLIST_DATA));
       settingsPanelFieldsMap.put(SERVERLIST_TIMESTAMP, new JSettingsPanelField("Sync. Data Timestamp", "T", KeyEvent.VK_T, 10, DEFAULT_PREF_SERVERLIST_TIMESTAMP));
 

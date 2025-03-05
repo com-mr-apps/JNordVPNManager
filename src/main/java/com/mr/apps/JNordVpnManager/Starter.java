@@ -890,6 +890,12 @@ public class Starter extends JFrame
       return m_nvpnSettingsData;
    }
 
+   public static NvpnSettingsData refreshCurrentSettingsData()
+   {
+      m_nvpnSettingsData = new NvpnSettingsData(); 
+      return m_nvpnSettingsData;
+   }
+
    public static NvpnAccountData getCurrentAccountData(boolean update)
    {
       if (null == m_nvpnAccountData || update) m_nvpnAccountData = new NvpnAccountData(); 

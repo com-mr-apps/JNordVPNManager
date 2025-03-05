@@ -262,12 +262,12 @@ public class NvpnSettingsData
                {
                   if (bAllowListSubnets == true)
                   {
-                     if (sbAllowListSubnets.length() == 0) sbAllowListSubnets.append(";");
+                     if (sbAllowListSubnets.length() > 0) sbAllowListSubnets.append(";");
                      sbAllowListSubnets.append(line.replaceAll("\t", ""));
                   }
                   else if (bAllowListPorts == true)
                   {
-                     if (sbAllowListPorts.length() == 0) sbAllowListPorts.append(";");
+                     if (sbAllowListPorts.length() > 0) sbAllowListPorts.append(";");
                      sbAllowListPorts.append(line.replaceAll("\t", ""));
                   }
                   else

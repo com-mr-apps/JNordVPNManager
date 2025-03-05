@@ -97,16 +97,16 @@ public class UtilSystem
    {
       if (UtilSystem.isLastError())
       {
-         JModalDialog.showError(shortMsg, UtilSystem.getLastError() + "\n" + StringFormat.printString (msg, "<empty message>", "<null mwssage>"));
+         JModalDialog.showError(shortMsg, UtilSystem.getLastError() + "\n" + StringFormat.printString (msg, "<empty message>", "<null message>"));
          return m_lastExitCode;
       }
       else if (autoClose)
       {
-         JModalDialog.showMessageAutoClose(shortMsg, StringFormat.printString(msg, "<empty message>", "<null mwssage>"));
+         JModalDialog.showMessageAutoClose(shortMsg, StringFormat.printString(msg, "<empty message>", "<null message>"));
       }
       else
       {
-         JModalDialog.showMessage(shortMsg, StringFormat.printString(msg, "<empty message>", "<null mwssage>"));
+         JModalDialog.showMessage(shortMsg, StringFormat.printString(msg, "<empty message>", "<null message>"));
       }
       return 0;
    }

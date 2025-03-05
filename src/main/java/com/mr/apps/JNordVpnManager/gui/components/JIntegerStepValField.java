@@ -20,6 +20,8 @@ import com.mr.apps.JNordVpnManager.Starter;
 import java.awt.FlowLayout;
 import java.awt.event.AdjustmentEvent;
 import java.awt.event.FocusEvent;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.awt.Dimension;
 
 /**
@@ -74,6 +76,30 @@ public class JIntegerStepValField extends JComponent
       try
       {
          set_initValues(in_textPre, in_textPost, in_min, in_max, in_step);
+         create();
+      }
+      catch (Exception e)
+      {
+         Starter._m_logError.LoggingExceptionMessage(5, 10998, e);
+      }
+   }
+
+   /**
+    * Generate a Integer text field with optional pre/post labels, min/max and step values
+    * 
+    * @param in_textPre
+    *           is the optional prefix label
+    * @param in_textPost
+    *           is the optional postfix label
+    * @param format
+    *           defines (type), min, max and step values in form of: N[min,max,step]
+    */
+   public JIntegerStepValField(String in_textPre, String in_textPost, String format)
+   {
+      try
+      {
+         int minMaxStep[] = getMinMaxStep(format);
+         set_initValues(in_textPre, in_textPost, minMaxStep[0], minMaxStep[1], minMaxStep[2]);
          create();
       }
       catch (Exception e)
@@ -190,6 +216,28 @@ public class JIntegerStepValField extends JComponent
       }
 
       return;
+   }
+
+   private int[] getMinMaxStep(String def)
+   {
+      int minMaxStep[] = {0,0,0};
+      
+      Pattern pattern = Pattern.compile("/N\\[([+-]?\\d+),([+-]?\\d+)(?:,([+-]?\\d+))*\\]/gm", Pattern.CASE_INSENSITIVE);
+      Matcher matcher = pattern.matcher(def);
+      boolean matchFound = matcher.find();
+      if (matchFound)
+      {
+         // min and max values
+         minMaxStep[0] = Integer.valueOf(matcher.group(1));
+         minMaxStep[1] = Integer.valueOf(matcher.group(2));
+         if (matcher.groupCount() == 3)
+         {
+            // optional step value
+            minMaxStep[2] = Integer.valueOf(matcher.group(3));
+         }
+      }
+   
+      return minMaxStep;
    }
 
    private void create() throws Exception

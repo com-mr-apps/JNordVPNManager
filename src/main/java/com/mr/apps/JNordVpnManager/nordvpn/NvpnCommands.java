@@ -60,6 +60,17 @@ public class NvpnCommands {
    private static final String VAL_ENABLED          = "enabled";
    private static final String VAL_DISABLED         = "disabled";
 
+   // allowlist command
+   private static final String ARG_ALLOWLIST        = "allowlist";
+   private static final String OPT_ADD              = "add";
+   private static final String OPT_SUBNET           = "subnet";
+   private static final String OPT_PORT             = "port";
+   private static final String OPT_PORTS            = "ports";
+//   private static final String OPT_TCP              = "TCP";
+//   private static final String OPT_UDP              = "UDP";
+   private static final String OPT_REMOVE           = "remove";
+   private static final String OPT_ALL              = "all";
+   
    /**
     * Check, if nordvpn is installed
     * @return true, if nordvpn is installed, else false
@@ -627,6 +638,71 @@ public class NvpnCommands {
       String status = null;
 
       status = UtilSystem.runCommand(CMD_NORDVPN, ARG_LOGOUT);
+
+      return status;
+   }
+
+   public static String allowListPortsAdd(String[] saValues)
+   {
+      // nordvpn allowlist add port 12345 protocol TCP
+      // nordvpn allowlist add ports 12345 12355 protocol TCP
+      String status = null;
+
+      if (saValues[1].isBlank())
+      {
+         status = UtilSystem.runCommand(CMD_NORDVPN, ARG_ALLOWLIST, OPT_ADD, OPT_PORT, saValues[0], OPT_PROTOCOL, saValues[2]);
+      }
+      else
+      {
+         status = UtilSystem.runCommand(CMD_NORDVPN, ARG_ALLOWLIST, OPT_ADD, OPT_PORTS, saValues[0], saValues[1], OPT_PROTOCOL, saValues[2]);
+      }
+
+      return status;
+   }
+
+   public static String allowListPortsRemove(String[] saValues)
+   {
+      // nordvpn allowlist remove port 12345 protocol TCP
+      // nordvpn allowlist remove ports 12345 12355 protocol TCP
+      String status = null;
+
+      if (saValues[1].isBlank())
+      {
+         status = UtilSystem.runCommand(CMD_NORDVPN, ARG_ALLOWLIST, OPT_REMOVE, OPT_PORT, saValues[0], OPT_PROTOCOL, saValues[2]);
+      }
+      else
+      {
+         status = UtilSystem.runCommand(CMD_NORDVPN, ARG_ALLOWLIST, OPT_REMOVE, OPT_PORTS, saValues[0], saValues[1], OPT_PROTOCOL, saValues[2]);
+      }
+
+      return status;
+   }
+
+   public static String allowListSubnetAdd(String sValue)
+   {
+      //nordvpn allowlist add subnet 127.0.0.1/24
+      String status = null;
+
+      status = UtilSystem.runCommand(CMD_NORDVPN, ARG_ALLOWLIST, OPT_ADD, OPT_SUBNET, sValue);
+
+      return status;
+   }
+
+   public static String allowListSubnetRemove(String sValue)
+   {
+      //nordvpn allowlist remove subnet 127.0.0.1/24
+      String status = null;
+
+      status = UtilSystem.runCommand(CMD_NORDVPN, ARG_ALLOWLIST, OPT_REMOVE, OPT_SUBNET, sValue);
+
+      return status;
+   }
+
+   public static String allowListRemoveAll()
+   {
+      String status = null;
+
+      status = UtilSystem.runCommand(CMD_NORDVPN, ARG_ALLOWLIST, OPT_REMOVE, OPT_ALL);
 
       return status;
    }

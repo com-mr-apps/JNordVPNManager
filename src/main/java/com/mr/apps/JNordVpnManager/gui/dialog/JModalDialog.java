@@ -130,7 +130,7 @@ public class JModalDialog extends JDialog implements ActionListener
             new Font("SansSerif",Font.BOLD, 12),
             Color.BLACK));
       messageText.setFont(messageText.getFont().deriveFont(Font.ITALIC));
-      messageText.setText(Wrap.wrap(msg, 200, null, true, null, "   "));
+      messageText.setText(Wrap.wrap(msg.replaceAll("\t", "   "), 200, null, true, null, "   "));
       messageText.setEditable(false);
       m_messagePanel.add(messageText, BorderLayout.CENTER);
 

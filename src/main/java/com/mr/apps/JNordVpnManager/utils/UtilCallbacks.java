@@ -20,66 +20,18 @@ public class UtilCallbacks
     */
    public static boolean cbManageSupporterEdition()
    {
-      // 1st step
       File fpAppDataDir = new File(System.getProperty("user.home"), Starter.APPLICATION_DATA_DIR);
-      JModalDialog dlg = JModalDialog.JDropFileSelectDialog("Manage Supporter Edition [Step 1 - copy Add-on library]",
-            "Copy add-on library file to the application add-on directory:\n"
-            + "-> Drag&Drop library file in the box below or select the file with the '...' button.\n"
-            + "* 'Cancel' - returns to the application.\n"
-            + "* 'Copy File' - copies the selected add-on library in the application add-ons folder.\n"
-            + "* 'Import Key File' - skips this step and continues with import of the key file.\n"
-            + "* 'Reset to Basis Edition' - removes the Supporter Edition features.\n"
-            + "(Changes require an restart of the application.)",
-            "Cancel,Copy File,Import Key File,Reset to Basis Edition", fpAppDataDir, "Java Archive File [jar]");
-      switch (dlg.getResult()) {
-         case 1 : 
-            try
-            {
-               File fpFile = dlg.getSelectedFile();
-               if (null != fpFile)
-               {
-                  File fpAppAddonDir = new File(fpAppDataDir, "addons");
-                  Starter._m_logError.LoggingInfo("Manage Supporter Edition: file copy " + fpFile.getAbsolutePath() + " to " + fpAppAddonDir.getAbsolutePath());
-                  File fpTarget = new File(fpAppAddonDir, fpFile.getName());
-                  Files.copy(fpFile.toPath(), fpTarget.toPath(), StandardCopyOption.REPLACE_EXISTING);
-               }
-               else
-               {
-                  Starter._m_logError.LoggingInfo("Manage Supporter Edition: Skip copy add-on library - no file selected.");
-               }
-            }
-            catch (IOException e1)
-            {
-               Starter._m_logError.LoggingExceptionMessage(4, 10901, e1);
-            }
-            break;
 
-         case 2 :
-            // continue with step 2 'Import Key File'
-            break;
-
-         case 3 :
-            if (Starter.isSupporterEdition())
-            {
-               CallCommand.invokeAddonMethod("AddonManager", "reset");
-               JModalDialog.showInfo("Removed Supporter Edition features.\nPlease restart the application.");
-            }
-            return true;
-
-         default: // cancel
-            Starter._m_logError.LoggingInfo("Manage Supporter Edition: Cancelled activation process.");
-            return true;
-      }
-
-      // 2nd step
-      dlg = JModalDialog.JDropFileSelectDialog("Manage Supporter Edition [Step 2 - Import Key File]",
+      // 1st step
+      JModalDialog dlg = JModalDialog.JDropFileSelectDialog("Manage Supporter Edition [Step 1 - Import Key File]",
             "Import Key file to activate the Supporter Edition:\n"
                   + "-> Drag&Drop key file in the box below or select the file with the '...' button.\n"
                   + "* 'Cancel' - returns to the application.\n"
-                  + "* 'Import Key File' - to activate the Supporter Edition.\n"
+                  + "* 'Import Key File' - to activate the Supporter Edition with the selected file.\n"
+                  + "* 'Import Add-On Library' - Skip this step and continue with Import add-on library.\n"
                   +" * 'Reset to Basis Edition' - removes the Supporter Edition features.\n"
                   + "(Changes require an restart of the application.)",
-              "Cancel,Import Key File,Reset to Basis Edition", fpAppDataDir, "Key File [lic]");
+              "Cancel,(1) Import Key File,(2) Import Add-On Library,Reset to Basis Edition", fpAppDataDir, "Key File [lic]");
       switch (dlg.getResult()) {
          case 1 :
             File fpFile = dlg.getSelectedFile();
@@ -102,20 +54,6 @@ public class UtilCallbacks
                      }
                      iLineNb++;
                   }
-                  // check the key and access to add-on library
-                  if (CallCommand.initClassLoader(UtilPrefs.getAddonsPath()))
-                  {
-                     // ok
-                     JModalDialog.showInfo("Key file imported successfully.\n\nPlease restart the application.");
-                  }
-                  else
-                  {
-                     // test - ko
-                     JModalDialog.showWarning("Supporter Edition initialization failed:\n"
-                           + "Ensure that the key file is correct and the required add-on library is in the application add-on directory:\n"
-                           + "'" +fpAppDataDir.getAbsolutePath() + "'\n\n"
-                           + "Please check the console for more information and restart the application.");
-                  }
                }
                catch (IOException e1)
                {
@@ -123,6 +61,7 @@ public class UtilCallbacks
                   JModalDialog.showError("Key file import failed",
                            "The key file is invalid or could not be read.\n\n"
                            + "Please check the console for more information.");
+                  return true;
                }
             }
             else
@@ -131,16 +70,85 @@ public class UtilCallbacks
             }
             break;
 
-         case 2 : // remove add-on
+         case 2 : // skip
+            Starter._m_logError.LoggingInfo("Manage Supporter Edition: Skip import key file - continue with step 2.");
+            break;
+
+         case 3 : // remove add-on
             if (Starter.isSupporterEdition())
             {
                CallCommand.invokeAddonMethod("AddonManager", "reset");
                JModalDialog.showInfo("Removed Supporter Edition features.\n\nPlease restart the application.");
             }
-            break;
+            return true;
 
          default : // cancel
             Starter._m_logError.LoggingInfo("Manage Supporter Edition: Cancelled import key file.");
+            return true;
+      }
+
+      // 2nd step
+      dlg = JModalDialog.JDropFileSelectDialog("Manage Supporter Edition [Step 2 - Import Add-on library]",
+            "Import add-on library file to the application add-on directory:\n"
+            + "-> Drag&Drop library file in the box below or select the file with the '...' button.\n"
+            + "* 'Cancel' - returns to the application.\n"
+            + "* '(2) Import Add-On Library' - imports the selected add-on library in the application add-ons folder.\n"
+            + "* 'Reset to Basis Edition' - removes the Supporter Edition features.\n"
+            + "(Changes require an restart of the application.)",
+            "Cancel,(2) Import Add-On Library,Reset to Basis Edition", fpAppDataDir, "Java Archive File [jar]");
+      switch (dlg.getResult()) {
+         case 1 : 
+            try
+            {
+               File fpFile = dlg.getSelectedFile();
+               if (null != fpFile)
+               {
+                  File fpAppAddonDir = new File(fpAppDataDir, "addons");
+                  String jarFile = CallCommand.getAddonLibraryName();
+                  File fpTarget = new File(fpAppAddonDir, jarFile);
+
+                  Starter._m_logError.LoggingInfo("Manage Supporter Edition: file copy " + fpFile.getAbsolutePath() + " to " + fpTarget.getAbsolutePath());
+                  Files.copy(fpFile.toPath(), fpTarget.toPath(), StandardCopyOption.REPLACE_EXISTING);
+               }
+               else
+               {
+                  Starter._m_logError.LoggingInfo("Manage Supporter Edition: Skip copy add-on library - no file selected.");
+                  return true;
+               }
+            }
+            catch (IOException e1)
+            {
+               Starter._m_logError.LoggingExceptionMessage(4, 10901, e1);
+               return true;
+            }
+            break;
+
+         case 2 :
+            if (Starter.isSupporterEdition())
+            {
+               CallCommand.invokeAddonMethod("AddonManager", "reset");
+               JModalDialog.showInfo("Removed Supporter Edition features.\nPlease restart the application.");
+            }
+            return true;
+
+         default: // cancel
+            Starter._m_logError.LoggingInfo("Manage Supporter Edition: Cancelled in copy add-on.");
+            return true;
+      }
+
+      // check the key and access to add-on library
+      if (CallCommand.initClassLoader(UtilPrefs.getAddonsPath()))
+      {
+         // ok
+         JModalDialog.showInfo("Supporter Edition activated successfully.\n\nPlease restart the application.");
+      }
+      else
+      {
+         // test - ko
+         JModalDialog.showWarning("Supporter Edition initialization failed:\n"
+               + "Ensure that the key file is correct and the required add-on library is in the application add-on directory:\n"
+               + "'" +fpAppDataDir.getAbsolutePath() + "'\n\n"
+               + "Please check the console for more information and restart the application.");
       }
 
       return true;

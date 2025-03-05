@@ -94,8 +94,7 @@ public class JSettingsPanel extends JPanel
          }
          else if (settingsField.getElementType().startsWith("N"))
          {
-            int minMax[] = getMinMax(settingsField.getElementType());
-            JIntegerStepValField textField = new JIntegerStepValField(null, null, minMax[0], minMax[1], 1);
+            JIntegerStepValField textField = new JIntegerStepValField(null, null, settingsField.getElementType());
             textField.setText(valueField);
             if (textField.hasMinMaxValues()) textField.setEditable(false);
             if (settingsField.getMnemonic() > 0) label.setDisplayedMnemonic(settingsField.getMnemonic());
@@ -258,22 +257,6 @@ public class JSettingsPanel extends JPanel
                "The field type '" + fieldTitle.getElementType() + "' is not implemented yet. Please open a Issue/Bug report.");
          return null;
       }
-   }
-
-   private int[] getMinMax(String def)
-   {
-      int minMax[] = {0,0};
-      
-      Pattern pattern = Pattern.compile("N\\[([+-]?\\d+),([+-]?\\d+)\\]", Pattern.CASE_INSENSITIVE);
-      Matcher matcher = pattern.matcher(def);
-      boolean matchFound = matcher.find();
-      if (matchFound)
-      {
-         minMax[0] = Integer.valueOf(matcher.group(1));
-         minMax[1] = Integer.valueOf(matcher.group(2));
-      }
-
-      return minMax;
    }
    
    private String[] getList(String def)
