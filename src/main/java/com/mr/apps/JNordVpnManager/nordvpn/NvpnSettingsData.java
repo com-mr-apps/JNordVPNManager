@@ -878,9 +878,6 @@ public class NvpnSettingsData
                      "Setting can not be changed",
                      "The Setting 'Obfuscated' is only supported for VPN Technology 'OPENVPN'.");
                m_obfuscate = "disabled";
-               Command cmd = Command.getObject(Command.VPN_SET_OBFUSCATE);
-               cmd.setEnabled(false);
-               cmd.setToolTip("Obfuscated only available for technology 'OPENVPN'");
                GuiCommandsToolBar.updateCommand(Command.VPN_SET_OBFUSCATE);
             }
             else
@@ -891,9 +888,6 @@ public class NvpnSettingsData
                   // ok
                   m_obfuscate = data;
                   setRequiresReconnect();
-                  Command cmd = Command.getObject(Command.VPN_SET_OBFUSCATE);
-                  cmd.setEnabled(false);
-                  cmd.setToolTip("Click here to change the VPN Setting for Obfuscate");
                   GuiCommandsToolBar.updateCommand(Command.VPN_SET_OBFUSCATE);
                   return true;
                }
