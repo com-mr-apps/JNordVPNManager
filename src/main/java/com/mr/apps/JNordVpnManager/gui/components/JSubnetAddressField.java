@@ -136,10 +136,22 @@ public class JSubnetAddressField extends JPanel
          m_jTextFields[i] = new JIntegerTextField();
          m_jTextFields[i].setColumns(sLength[i]);
          m_jTextFields[i].setHorizontalAlignment(SwingConstants.RIGHT);
+         // automatic select all, when focus gained
          m_jTextFields[i].addFocusListener(new java.awt.event.FocusAdapter() {
             public void focusGained(FocusEvent e)
             {
                jTextField_focusGained(e);
+            }
+         });
+         // automatic transfer focus to next field after 3 digits inserted
+         m_jTextFields[i].addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyReleased(java.awt.event.KeyEvent evt)
+            {
+               JIntegerTextField c = (JIntegerTextField)evt.getSource();
+               if (c.getText().length() >= 3)
+               {
+                  c.transferFocus();
+               }
             }
          });
 

@@ -23,6 +23,7 @@ public class JResizedIcon extends ImageIcon
    {
       ICON_MOUSE_POINTER_MAP_LOCATION  ("mp_MapSelectLocation.png"),
       ICON_ADD                         ("i_Add.png"),
+      ICON_MINUS                       ("i_Minus.png"),
       ICON_CUSTOMIZE_ADD_COMMAND_BAR   ("i_CustomizeAddCommandBar.png"),
       ICON_CUSTOMIZE_DEL_COMMAND_BAR   ("i_CustomizeDelCommandBar.png"),
       ICON_STATUS_CONNECTED            ("i_StatusOk.png"),

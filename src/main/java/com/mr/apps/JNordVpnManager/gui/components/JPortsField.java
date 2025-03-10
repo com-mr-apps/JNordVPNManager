@@ -41,13 +41,22 @@ public class JPortsField extends JPanel
    private boolean             m_isEditable       = true;
    private boolean             m_isEnabled        = true;
 
-   private String[] m_saList = new String[] {"TCP","UDP"};
+   // possible Protocol values are "TCP", "UDP" or "TCP|UDP" - where empty ("") is "TCP|UDP"
+   private String[] m_saProtocolList = new String[] {"TCP","UDP"};
 
    public JPortsField()
    {
       this(null, null);
    }
 
+   /**
+    * Constructor to create a Port Fields component
+    * 
+    * @param in_textPre
+    *           is an optional prefix
+    * @param in_textPost
+    *           is an optional postfix
+    */
    public JPortsField(String in_textPre, String in_textPost)
    {
       super ();
@@ -66,21 +75,34 @@ public class JPortsField extends JPanel
       }
    }
 
+   /**
+    * Get a Text component of the Ports Field Component
+    * @param idx is the text field index (1 or 2)
+    * @return the text field component for the requested idx
+    */
    public JTextField getJTextField(int idx)
    {
       return m_jTextFields.getTextField(idx);
    }
 
+   /**
+    * Get the Port Field Component values
+    * @return Port From, Port To, Protocol
+    */
    public String[] getValues()
    {
-      return new String[] {m_jTextFields.getValue(0), m_jTextFields.getValue(1), m_saList[m_jListProtocol.getSelectedIndex()]};
+      return new String[] {m_jTextFields.getValue(0), m_jTextFields.getValue(1), getProtocolValue()};
    }
 
+   /**
+    * Set the Port Field Component values
+    * @param in_String are Port From, Port To, Protocol
+    */
    public void setValues(String[] in_String)
    {
       m_jTextFields.setValues(in_String);
-      int idx = getListIndex(m_saList, in_String[2]);
-      m_jListProtocol.setSelectedIndex(idx);
+      int idx[] = getProtocolListIndex(in_String[2]);
+      m_jListProtocol.setSelectedIndices(idx);
    }
 
    public void setVisible(boolean fVisible)
@@ -118,6 +140,15 @@ public class JPortsField extends JPanel
       return m_isEnabled;
    }
 
+   /**
+    * Create the Ports Field Component
+    * 
+    * @param in_textPre
+    *           is a field prefix
+    * @param in_textPost
+    *           is a field postfix
+    * @throws Exception
+    */
    private void create(String in_textPre, String in_textPost) throws Exception
    {
       if (in_textPre != null)
@@ -133,10 +164,11 @@ public class JPortsField extends JPanel
       m_jLabelProtocol = new JLabel("protocol");
       this.add(m_jLabelProtocol);
 
-      m_jListProtocol = new JList<String>(m_saList);
+      m_jListProtocol = new JList<String>(m_saProtocolList);
       m_jListProtocol.setLayoutOrientation(JList.HORIZONTAL_WRAP);
       m_jListProtocol.setVisibleRowCount(1);
-      m_jListProtocol.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+      m_jListProtocol.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
+      m_jListProtocol.setToolTipText("Hold Ctrl-Key for multi selection.");
       this.add(m_jListProtocol);
 
       if (in_textPost != null)
@@ -147,25 +179,83 @@ public class JPortsField extends JPanel
       }
    }
 
-   private int getListIndex(String[] list, String value)
+   /**
+    * Get the list indices (for set) from the text value
+    * 
+    * @param value
+    *           is the protocol text value
+    * @return the indices for list selection
+    */
+   private int[] getProtocolListIndex(String value)
    {
-      int idx = 0;
-      for (String val : list)
+      if ((null == value) || (value.isBlank()))
       {
-         if (val.equals(value)) return idx;
-         idx++;
+         return null;
       }
-      return 0;
+      else
+      {
+         if (value.contains(m_saProtocolList[0]) && value.contains(m_saProtocolList[1])) // TCP|UDP
+         {
+            int[] i = {0,1};
+            return i;
+         }
+         else if (value.equals(m_saProtocolList[0])) // TCP
+         {
+            int[] i = {0};
+            return i;
+         }
+         else if (value.equals(m_saProtocolList[1])) // UDP
+         {
+            int[] i = {1};
+            return i;
+         }
+      }
+      return null;
    }
 
+   /**
+    * Check, if the ports field component is set
+    * @return true, if the component has values
+    */
    public boolean isSet()
    {
       return (false == m_jTextFields.getValue(0).isBlank());
    }
 
-   public String toString()
+   /**
+    * Get the value for export/import (User Preferences)
+    * @return the text field values in export format
+    */
+   public String export()
    {
-      return m_jTextFields.getValue(0) + ".." + m_jTextFields.getValue(1) + "protocol" + m_jTextFields.getValue(2);
+      String sPortTo = m_jTextFields.getValue(1);
+      if (sPortTo.isBlank())
+      {
+         return m_jTextFields.getValue(0) + " (" + getProtocolValue() + ")";
+      }
+      else
+      {
+         return m_jTextFields.getValue(0) + " - " + m_jTextFields.getValue(1) + " (" + getProtocolValue() + ")";
+      }
+   }
+
+   /**
+    * Get the value for the protocol from the list selection
+    * @return the protocol value "TCP" or "UDP" or "TCP|UDP"
+    */
+   private String getProtocolValue()
+   {
+      int[] selIndex = m_jListProtocol.getSelectedIndices();
+      if ((m_jListProtocol.isSelectionEmpty()) || (selIndex.length == 2))
+      {
+         // "TCP|UDP"
+         return m_saProtocolList[0] + "|" + m_saProtocolList[1];
+      }
+      else
+      {
+         // "TCP" or "UDP"
+         return m_saProtocolList[selIndex[0]];
+      }
    }
 
    // add ons for changing language
@@ -175,5 +265,10 @@ public class JPortsField extends JPanel
       {
          m_jLabelPre.setText(in_text);
       }
+   }
+
+   public String toString()
+   {
+      return m_jTextFields.getValue(0) + ".." + m_jTextFields.getValue(1) + "protocol" + getProtocolValue();
    }
 }

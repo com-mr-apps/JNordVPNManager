@@ -29,6 +29,7 @@ import com.mr.apps.JNordVpnManager.nordvpn.NvpnGroups.NordVPNEnumGroups;
 import com.mr.apps.JNordVpnManager.utils.String.StringFormat;
 import com.mr.apps.JNordVpnManager.gui.GuiMenuBar;
 import com.mr.apps.JNordVpnManager.gui.connectLine.GuiCommandsToolBar;
+import com.mr.apps.JNordVpnManager.gui.connectLine.GuiConnectLine;
 import com.mr.apps.JNordVpnManager.gui.settings.JSettingsPanelField;
 
 /**
@@ -38,6 +39,8 @@ import com.mr.apps.JNordVpnManager.gui.settings.JSettingsPanelField;
  */
 public class UtilPrefs
 {
+   public static final String  PREFRENCES_ADDON_NODE                    = "com/mr/apps/JNordVpnManager/Settings/AddOns";
+
    private static final String ACCOUNTREMINDER                          = "ACCOUNTREMINDER";
    private static final String AUTOCONNECTMODE                          = "AUTOCONNECTMODE";
    private static final String AUTODISCONNECTMODE                       = "AUTODISCONNECTMODE";
@@ -58,64 +61,73 @@ public class UtilPrefs
    private static final String SERVERLIST_AUTOUPDATE                    = "SERVERLIST_AUTOUPDATE";
    private static final String ADDON_PATH                               = "ADDON_PATH";
 
-   // hidden options
-   // private static final String COMPACTMODE                              = "COMPACTMODE";
-   // private static final String RECENTSERVER_REGION                      = "RECENTSERVER_REGION";
-   // private static final String RECENTSERVER_GROUP                       = "RECENTSERVER_GROUP";
-   // private static final String TIMER_DEFAULT_VALUE                      = "TIMER_DEFAULT_VALUE";
+   // internal used current states (exported/imported)
+   private static final String TIMER_DEFAULT_VALUE                      = "TIMER_DEFAULT_VALUE";
+   private static final String COMMANDS_TOOLBAR                         = "COMMANDS_TOOLBAR";
+   private static final String ALLOWLIST_DEACTIVATED                    = "ALLOWLIST_DEACTIVATED";
+
+   // internal used current states (not exported/imported)
+   // private static final String COMPACTMODE = "COMPACTMODE";
+   // private static final String RECENTSERVER_REGION = "RECENTSERVER_REGION";
+   // private static final String RECENTSERVER_GROUP = "RECENTSERVER_GROUP";
 
    // Internal Defaults
-   private static String DEFAULT_PREF_RECENTSERVER_CITY           = "";
-   private static String DEFAULT_PREF_RECENTSERVER_COUNTRY        = "";
-   private static String DEFAULT_PREF_RECENTSERVER_LIST           = "";
-   private static int    DEFAULT_PREF_RECENTSERVER_REGION         = NordVPNEnumGroups.all_regions.getId();
-   private static int    DEFAULT_PREF_RECENTSERVER_GROUP          = NordVPNEnumGroups.Standard_VPN_Servers.getId();
-   private static int    DEFAULT_PREF_RECENTSERVER_LIST_LENGTH    = 5;
-   private static String DEFAULT_PREF_SERVERLIST_DATA             = "";
-   private static String DEFAULT_PREF_SERVERLIST_TIMESTAMP        = "0";
-   private static int    DEFAULT_PREF_SERVERLIST_AUTOUPDATE       = 0;
-   private static int    DEFAULT_PREF_SETTINGS_COMPACTMODE        = 0;  // this flag represents the current state -> no setting.
-   private static int    DEFAULT_PREF_SETTINGS_AUTOCONNECTMODE    = 0;
-   private static int    DEFAULT_PREF_SETTINGS_AUTODISCONNECTMODE = 0;
-   private static int    DEFAULT_PREF_SETTINGS_TRACEDEBUG         = 0;
-   private static int    DEFAULT_PREF_SETTINGS_TRACECMD           = 0;
-   private static int    DEFAULT_PREF_SETTINGS_TRACEINIT          = 0;
-   private static String DEFAULT_PREF_SETTINGS_LOGFILE_NAME       = "~/.local/share/JNordVpnManager/JNordVpnManager.log";
-   private static String DEFAULT_PREF_SETTINGS_ADDONS_PATH         = "~/.local/share/JNordVpnManager/addons";
-   private static int    DEFAULT_PREF_SETTINGS_LOGFILE_ACTIVE     = 0;
-   private static int    DEFAULT_PREF_SETTINGS_CONSOLE_ACTIVE     = 0;
-   private static int    DEFAULT_PREF_SETTINGS_COMMAMD_TIMEOUT    = 30;
-   private static int    DEFAULT_PREF_SETTINGS_MESSAGE_AUTOCLOSE  = 2;
-   private static int    DEFAULT_PREF_SETTINGS_ACCOUNTREMINDER    = 31;
-   private static String DEFAULT_PREF_SETTINGS_COMMANDS_TOOLBAR   = Command.APP_PREF_AUTOCONNECT + ";" + Command.APP_PREF_AUTODISCONNECT + ";" + Command.VPN_CMD_RECONNECT + ";" + Command.VPN_SET_KILLSWITCH;
-   private static int    DEFAULT_PREF_SETTINGS_TIMERDEFAULTVALUE  = 5; // in minutes
+   private static String       DEFAULT_PREF_RECENTSERVER_CITY           = "";
+   private static String       DEFAULT_PREF_RECENTSERVER_COUNTRY        = "";
+   private static String       DEFAULT_PREF_RECENTSERVER_LIST           = "";
+   private static int          DEFAULT_PREF_RECENTSERVER_LIST_LENGTH    = 5;
+   private static String       DEFAULT_PREF_SERVERLIST_DATA             = "";
+   private static String       DEFAULT_PREF_SERVERLIST_TIMESTAMP        = "0";
+   private static int          DEFAULT_PREF_SERVERLIST_AUTOUPDATE       = 0;
+   private static int          DEFAULT_PREF_SETTINGS_AUTOCONNECTMODE    = 0;
+   private static int          DEFAULT_PREF_SETTINGS_AUTODISCONNECTMODE = 0;
+   private static int          DEFAULT_PREF_SETTINGS_TRACEDEBUG         = 0;
+   private static int          DEFAULT_PREF_SETTINGS_TRACECMD           = 0;
+   private static int          DEFAULT_PREF_SETTINGS_TRACEINIT          = 0;
+   private static String       DEFAULT_PREF_SETTINGS_LOGFILE_NAME       = "~/.local/share/JNordVpnManager/JNordVpnManager.log";
+   private static String       DEFAULT_PREF_SETTINGS_ADDONS_PATH        = "~/.local/share/JNordVpnManager/addons";
+   private static int          DEFAULT_PREF_SETTINGS_LOGFILE_ACTIVE     = 0;
+   private static int          DEFAULT_PREF_SETTINGS_CONSOLE_ACTIVE     = 0;
+   private static int          DEFAULT_PREF_SETTINGS_COMMAMD_TIMEOUT    = 30;
+   private static int          DEFAULT_PREF_SETTINGS_MESSAGE_AUTOCLOSE  = 2;
+   private static int          DEFAULT_PREF_SETTINGS_ACCOUNTREMINDER    = 31;
+
+   // internal used current states (exported/imported)
+   private static int          DEFAULT_PREF_SETTINGS_TIMERDEFAULTVALUE  = 5; // in minutes
+   private static String       DEFAULT_PREF_SETTINGS_COMMANDS_TOOLBAR   = Command.APP_PREF_AUTOCONNECT + ";" + Command.APP_PREF_AUTODISCONNECT + ";" + Command.VPN_CMD_RECONNECT + ";" + Command.VPN_SET_KILLSWITCH;
+   private static String       DEFAULT_PREF_ALLOWLIST_DEACTIVATED       = "";
+
+   // internal used current states (not exported/imported)
+   private static int          DEFAULT_PREF_RECENTSERVER_REGION         = NordVPNEnumGroups.all_regions.getId();
+   private static int          DEFAULT_PREF_RECENTSERVER_GROUP          = NordVPNEnumGroups.Standard_VPN_Servers.getId();
+   private static int          DEFAULT_PREF_SETTINGS_COMPACTMODE        = 0;
 
    /**
+    * Show the User Preferences Panel.
+    * <p>
     * Dataset defining the UserPreference values.
     * <p>
     * Contains the panel field description by Id:
     * <ul>
     * <li>Label text</li>
-    * <li>Field Type, where: "T" - Text field / "N[min,max,step]" - Integer with optional range / "B" - Boolean (CheckBox)</li>
+    * <li>Field Type, where: "T" - Text field / "N[min,max,step]" - Integer with optional range / "B" - Boolean
+    * (CheckBox)</li>
     * <li>Mnemonic (-1 - no KeyEvent)</li>
     * <li>Field length</li>
     * <li>Default value</li>
     * </ul>
-    */
-
-   /**
-    * Show the User Preferences Panel.
+    * 
     */
    public static void showUserPreferencesPanel()
    {
       Map<String, JSettingsPanelField> settingsPanelFieldsMap  = new HashMap<String, JSettingsPanelField>();
 
+      // panel fields - editable by the user
       settingsPanelFieldsMap.put(ACCOUNTREMINDER, new JSettingsPanelField("Account Expiration Warning Days", "N[1,90,1]", -1, 2, StringFormat.int2String(DEFAULT_PREF_SETTINGS_ACCOUNTREMINDER, "#")));
       settingsPanelFieldsMap.put(ADDON_PATH, new JSettingsPanelField("Addons", "T", -1, 20, DEFAULT_PREF_SETTINGS_ADDONS_PATH));
       settingsPanelFieldsMap.put(AUTOCONNECTMODE, new JSettingsPanelField("Auto Connect on Program Start", "B", KeyEvent.VK_S, 1, StringFormat.int2String(DEFAULT_PREF_SETTINGS_AUTOCONNECTMODE, "#")));
       settingsPanelFieldsMap.put(AUTODISCONNECTMODE, new JSettingsPanelField("Auto Disconnect on Program Exit", "B", KeyEvent.VK_E, 1, StringFormat.int2String(DEFAULT_PREF_SETTINGS_AUTODISCONNECTMODE, "#")));
       settingsPanelFieldsMap.put(COMMAND_TIMEOUT, new JSettingsPanelField("Command Timeout (in seconds)", "N[5,99,1]", -1, 2, StringFormat.int2String(DEFAULT_PREF_SETTINGS_COMMAMD_TIMEOUT, "#")));
-//      m_settingsFieldMap.put(COMPACTMODE, new JSettingsPanelField("Start Program in Compact Mode", "B", KeyEvent.VK_M, 5, StringFormat.int2String(DEFAULT_PREF_SETTINGS_COMPACTMODE, "#")));
       settingsPanelFieldsMap.put(CONSOLE_ACTIVE, new JSettingsPanelField("Open Console at Program Start", "B", -1, 1, StringFormat.int2String(DEFAULT_PREF_SETTINGS_CONSOLE_ACTIVE, "#")));
       settingsPanelFieldsMap.put(LOGFILE_ACTIVE, new JSettingsPanelField("Write to Logfile", "B", KeyEvent.VK_W, 1, StringFormat.int2String(DEFAULT_PREF_SETTINGS_LOGFILE_ACTIVE, "#")));
       settingsPanelFieldsMap.put(LOGFILE_NAME, new JSettingsPanelField("Logfile", "T", KeyEvent.VK_F, 20, DEFAULT_PREF_SETTINGS_LOGFILE_NAME));
@@ -125,13 +137,16 @@ public class UtilPrefs
       settingsPanelFieldsMap.put(MESSAGE_AUTOCLOSE, new JSettingsPanelField("Auto Close Messages", "N[-1,99,1]", -1, 2, StringFormat.int2String(DEFAULT_PREF_SETTINGS_MESSAGE_AUTOCLOSE, "#")));
       settingsPanelFieldsMap.put(RECENTSERVER_CITY, new JSettingsPanelField("Recent Server", "T", KeyEvent.VK_S, 20, DEFAULT_PREF_RECENTSERVER_CITY));
       settingsPanelFieldsMap.put(RECENTSERVER_COUNTRY, new JSettingsPanelField("Recent Country", "T", KeyEvent.VK_C, 20, DEFAULT_PREF_RECENTSERVER_COUNTRY));
-//      settingsPanelFieldsMap.put(RECENTSERVER_REGION, new JSettingsPanelField("Recent Server Region", "B", -1, 1, StringFormat.int2String(DEFAULT_PREF_RECENTSERVER_REGION, "#")));
-//      settingsPanelFieldsMap.put(RECENTSERVER_GROUP, new JSettingsPanelField("Recent Servers Group", "B", -1, 1, StringFormat.int2String(DEFAULT_PREF_RECENTSERVER_GROUP, "#")));
       settingsPanelFieldsMap.put(RECENTSERVER_LIST, new JSettingsPanelField("Recent Servers List", "T", -1, 20, DEFAULT_PREF_RECENTSERVER_LIST));
       settingsPanelFieldsMap.put(RECENTSERVER_LIST_LENGTH, new JSettingsPanelField("Recent Servers List Size", "N[1,10,1]", -1, 2, StringFormat.int2String(DEFAULT_PREF_RECENTSERVER_LIST_LENGTH, "#")));
       settingsPanelFieldsMap.put(SERVERLIST_AUTOUPDATE, new JSettingsPanelField("Auto Update Server Data on Program Start", "N[0,99,1]", KeyEvent.VK_U, 2, StringFormat.int2String(DEFAULT_PREF_SERVERLIST_AUTOUPDATE, "#")));
       settingsPanelFieldsMap.put(SERVERLIST_DATA, new JSettingsPanelField("Server Data", "T", KeyEvent.VK_D, 20, DEFAULT_PREF_SERVERLIST_DATA));
       settingsPanelFieldsMap.put(SERVERLIST_TIMESTAMP, new JSettingsPanelField("Sync. Data Timestamp", "T", KeyEvent.VK_T, 10, DEFAULT_PREF_SERVERLIST_TIMESTAMP));
+
+      // add internal values (w/o panel fields, but part of managed dataset)
+      settingsPanelFieldsMap.put(COMMANDS_TOOLBAR, null);
+      settingsPanelFieldsMap.put(ALLOWLIST_DEACTIVATED, null);
+      settingsPanelFieldsMap.put(TIMER_DEFAULT_VALUE, null);
 
       JUserPrefsDialog sp = new JUserPrefsDialog(Starter.getMainFrame(), "UserPreferences", settingsPanelFieldsMap);
       sp.getResult();
@@ -144,6 +159,7 @@ public class UtilPrefs
    public static boolean exportUserPreferences(String fileName, HashMap <String,String> hm)
    {
       Starter._m_logError.TraceDebug("Export User Preferences to file '" + fileName + "'.");
+
       try (BufferedWriter writer = new BufferedWriter(new FileWriter(fileName, false)))
       {
          writer.write("INFO JNordVPN User Preferences Export File");
@@ -170,7 +186,7 @@ public class UtilPrefs
     * Action "Import" User Preferences from a file.
     * @param fileName is the file name where to read the data.
     */
-   public static HashMap <String,String> importUserPreferences(String fileName)
+   public static HashMap <String, String> importUserPreferences(String fileName)
    {
       HashMap<String, String> hm = null;
 
@@ -200,7 +216,7 @@ public class UtilPrefs
          Starter._m_logError.LoggingExceptionAbend(10901, e);
          hm = null;
       }
-
+      
       return hm;
    }
 
@@ -597,6 +613,22 @@ public class UtilPrefs
       return;
    }
 
+   public static String getAllowListDeactivated()
+   {
+      Preferences settingsAllowListDeactivated = Preferences.userRoot().node("com/mr/apps/JNordVpnManager");
+      String allowListDeactivated = settingsAllowListDeactivated.get("AllowList.Deactivated", DEFAULT_PREF_ALLOWLIST_DEACTIVATED);
+
+      return allowListDeactivated;
+   }
+
+   public static void setAllowListDeactivated(String allowListDeactivated)
+   {
+      Preferences settingsAllowListDeactivated = Preferences.userRoot().node("com/mr/apps/JNordVpnManager");
+      settingsAllowListDeactivated.put("AllowList.Deactivated", allowListDeactivated);
+
+      return;
+   }
+
    /**
     * Get a data set with all User Preferences data
     * @return the dataset with all user preferences data.
@@ -604,17 +636,14 @@ public class UtilPrefs
    public static HashMap <String,String> getUserPreferencesDataSet()
    {
       HashMap <String,String> hm = new HashMap <String,String>();
-      
+      // panel values
       hm.put(RECENTSERVER_CITY, getRecentServerCity());
       hm.put(RECENTSERVER_COUNTRY, getRecentServerCountry());
-//      hm.put(RECENTSERVER_REGION, StringFormat.int2String(getRecentServerRegion(), "#"));
-//      hm.put(RECENTSERVER_GROUP, StringFormat.int2String(getRecentServerGroup(), "#"));
       hm.put(RECENTSERVER_LIST, getRecentServerList());
       hm.put(RECENTSERVER_LIST_LENGTH, StringFormat.int2String(getRecentServerListLength(), "#"));
       hm.put(SERVERLIST_DATA, getServerListData());
       hm.put(SERVERLIST_TIMESTAMP, getServerListTimestamp());
       hm.put(SERVERLIST_AUTOUPDATE, StringFormat.int2String(getServerListAutoUpdate(), "#"));
-//      hm.put(COMPACTMODE, StringFormat.int2String(getCompactMode(), "#"));
       hm.put(AUTOCONNECTMODE, StringFormat.int2String(getAutoConnectMode(), "#"));
       hm.put(AUTODISCONNECTMODE, StringFormat.int2String(getAutoDisConnectMode(), "#"));
       hm.put(LOGFILE_TRACEDEBUG, StringFormat.int2String(getTraceDebug(), "#"));
@@ -627,6 +656,15 @@ public class UtilPrefs
       hm.put(MESSAGE_AUTOCLOSE, StringFormat.int2String(getMessageAutoclose(), "#"));
       hm.put(ACCOUNTREMINDER, StringFormat.int2String(getAccountReminder(), "#"));
       hm.put(ADDON_PATH, getAddonsPath());
+      // internal values
+      hm.put(TIMER_DEFAULT_VALUE, StringFormat.int2String(getTimerDefaultValue(), "#"));
+      hm.put(ALLOWLIST_DEACTIVATED, getAllowListDeactivated());
+      hm.put(COMMANDS_TOOLBAR, getCommandsToolbarIds());
+
+// not part of the dataset (internal values)
+//    hm.put(RECENTSERVER_REGION, StringFormat.int2String(getRecentServerRegion(), "#"));
+//    hm.put(RECENTSERVER_GROUP, StringFormat.int2String(getRecentServerGroup(), "#"));
+//    hm.put(COMPACTMODE, StringFormat.int2String(getCompactMode(), "#"));
 
       return hm;
    }
@@ -655,9 +693,6 @@ public class UtilPrefs
       setServerListAutoUpdate(Integer.valueOf(hm.get(SERVERLIST_AUTOUPDATE)));
       setRecentServerCity(hm.get(RECENTSERVER_CITY));
       setRecentServerCountry(hm.get(RECENTSERVER_COUNTRY));
-//      setRecentServerRegion(Integer.valueOf(hm.get(RECENTSERVER_REGION)));
-//      setRecentServerGroup(Integer.valueOf(hm.get(RECENTSERVER_GROUP)));
-//      setCompactMode(Integer.valueOf(hm.get(COMPACTMODE)));
       setAutoConnectMode(Integer.valueOf(hm.get(AUTOCONNECTMODE)));
       setAutoDisConnectMode(Integer.valueOf(hm.get(AUTODISCONNECTMODE)));
       setRecentServerListLength(Integer.valueOf(hm.get(RECENTSERVER_LIST_LENGTH)));
@@ -669,8 +704,14 @@ public class UtilPrefs
       setCommandTimeout(Integer.valueOf(hm.get(COMMAND_TIMEOUT)));
       setConsoleActive(Integer.valueOf(hm.get(CONSOLE_ACTIVE)));
       setMessageAutoclose(Integer.valueOf(hm.get(MESSAGE_AUTOCLOSE)));
+      setTimerDefaultValue(Integer.valueOf(hm.get(TIMER_DEFAULT_VALUE)));
+      setAllowListDeactivated(hm.get(ALLOWLIST_DEACTIVATED));
 
-      // GUI Updates
+//      setRecentServerRegion(Integer.valueOf(hm.get(RECENTSERVER_REGION)));
+//      setRecentServerGroup(Integer.valueOf(hm.get(RECENTSERVER_GROUP)));
+//      setCompactMode(Integer.valueOf(hm.get(COMPACTMODE)));
+
+      // Value changes that requires GUI Updates
       String sCurrentList = getRecentServerList();
       String sNewList = hm.get(RECENTSERVER_LIST);
       if (false == sCurrentList.equals(sNewList))
@@ -678,6 +719,7 @@ public class UtilPrefs
          setRecentServerList(sNewList);
          GuiMenuBar.addToMenuRecentServerListItems(null);
       }
+      //
       int sCurrentAccountReminder = getAccountReminder();
       int iNewAccountReminder = Integer.valueOf(hm.get(ACCOUNTREMINDER));
       if (sCurrentAccountReminder != iNewAccountReminder)
@@ -685,16 +727,26 @@ public class UtilPrefs
          setAccountReminder(iNewAccountReminder);
          GuiMenuBar.updateAccountReminder();
       }
+      //
       String sCurrentAddonPath = getAddonsPath();
       String sNewAddonPath = hm.get(ADDON_PATH);
       if (false == sCurrentAddonPath.equals(sNewAddonPath))
       {
-         // add changed addons classpath
+         // add changed add-ons classpath !! ok only if the selected path contains a valid add-on library!!
          if (true == CallCommand.initClassLoader(sNewAddonPath))
          {
             setAddonsPath(sNewAddonPath);
          }
       }
+      //
+      String sCommandsToolbarIds = getCommandsToolbarIds();
+      String sNewCommandsToolbarIds = hm.get(COMMANDS_TOOLBAR);
+      if (false == sCommandsToolbarIds.equals(sNewCommandsToolbarIds))
+      {
+         setCommandsToolbarIds(hm.get(COMMANDS_TOOLBAR));
+         GuiConnectLine.rebuildCommandsToolbar();
+      }
+
    }
 
    /**

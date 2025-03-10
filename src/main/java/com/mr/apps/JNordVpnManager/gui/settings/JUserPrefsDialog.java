@@ -110,7 +110,7 @@ public class JUserPrefsDialog extends JDialog implements ActionListener
             // export a settings file
             JFileChooser filedia = new JFileChooser();
             filedia.setDialogType(JFileChooser.SAVE_DIALOG);
-            filedia.setCurrentDirectory(new File(System.getProperty("user.home", Starter.APPLICATION_DATA_DIR)));
+            filedia.setCurrentDirectory(new File(System.getProperty("user.home", Starter.APPLICATION_DATA_DIR)));  // TODO: seems not to work?
 //            filedia.setFileFilter(new FileNameExtensionFilter("Settings File [exp]", "exp"));
             int ret = filedia.showSaveDialog(m_userPrefsPanel);
             if (ret == 0)

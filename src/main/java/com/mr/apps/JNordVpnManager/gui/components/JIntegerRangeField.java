@@ -160,7 +160,7 @@ public class JIntegerRangeField extends JPanel
 
       m_jTextFields[1] = new JIntegerTextField();
       m_jTextFields[1].setColumns(iLength);
-      m_jTextFields[1].setEditable(false);
+      m_jTextFields[1].setEnabled(false);
       m_jTextFields[1].setHorizontalAlignment(SwingConstants.RIGHT);
       m_jTextFields[1].addFocusListener(new java.awt.event.FocusAdapter() {
          public void focusGained(FocusEvent e)
@@ -210,7 +210,7 @@ public class JIntegerRangeField extends JPanel
       {
          iValTo = iValFrom + 1;
          m_jTextFields[1].setValue(iValTo);
-         m_jTextFields[1].setEditable(true);
+         m_jTextFields[1].setEnabled(true);
       }
       JIntegerTextField jtf = (JIntegerTextField) e.getSource();
       jtf.selectAll();
@@ -224,7 +224,7 @@ public class JIntegerRangeField extends JPanel
       {
          // if "from" is reset, reset "to" too
          m_jTextFields[1].setText("");
-         m_jTextFields[1].setEditable(false);
+         m_jTextFields[1].setEnabled(false);
       }
       else
       {
@@ -242,7 +242,7 @@ public class JIntegerRangeField extends JPanel
             iValTo = iValFrom + 1;
          }
          m_jTextFields[1].setValue(iValTo);
-         m_jTextFields[1].setEditable(true);
+         m_jTextFields[1].setEnabled(true);
       }
    }
 

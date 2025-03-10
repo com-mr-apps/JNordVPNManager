@@ -9,6 +9,7 @@
 package com.mr.apps.JNordVpnManager;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Image;
@@ -71,13 +72,17 @@ import com.mr.apps.JNordVpnManager.utils.String.StringFormat;
 @SuppressWarnings("serial")
 public class Starter extends JFrame 
 {
+   public static final String      COPYRIGHT_STRING           = "Copyright Ⓒ 2025 - written by com.mr.apps";
    public static final String      APPLICATION_DATA_DIR       = "/.local/share/JNordVpnManager"; // ..added to $HOME directory
-
-
-   private static final String     APPLICATION_TITLE          = "JNordVPN Manager [Copyright Ⓒ 2025 - written by com.mr.apps]";
-   private static final String     APPLICATION_ICON_IMAGE     = "resources/icons/icon.png";
+   public static final String      SEP_DATARECORD             = ":";
+   public static final String      SEP_DATAITEM               = ",";
+   public static final Color       Color_Addon                = new Color(81,23,137);
 
    public static UtilLogErr        _m_logError                = null;
+
+   private static final String     APPLICATION_TITLE          = "JNordVPN Manager [" + COPYRIGHT_STRING + "]";
+   private static final String     APPLICATION_ICON_IMAGE     = "resources/icons/icon.png";
+
    private static JFrame           m_mainFrame                = null;
    private static JServerTreePanel m_serverListPanel          = null;
    private static JMapFrame        m_mapFrame                 = null;
@@ -124,10 +129,7 @@ public class Starter extends JFrame
       _m_logError.LoggingInfo("JNordVPN Manager launched...");
 
       // add add-ons classpath
-      if (CallCommand.initClassLoader(UtilPrefs.getAddonsPath()))
-      {
-         m_isSupporterEdition = (boolean)CallCommand.invokeAddonMethod("AddonManager", "initialize");
-      }
+      m_isSupporterEdition = CallCommand.initClassLoader(UtilPrefs.getAddonsPath());
 
       processHandlers.execute(() -> splashScreenInit());
 

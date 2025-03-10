@@ -202,28 +202,8 @@ public class Command
       m_allCommandKeysSorted = new ArrayList<String>(m_allCommandsMap.keySet());
       Collections.sort(m_allCommandKeysSorted);
 
-      // initialize the current available commands in the ToolBar
-      m_CommandsToolbarList = new Vector<Command>();
-
-      // get the Commands ToolBar list items from User Preferences
-      String savedCommandsToolBar = UtilPrefs.getCommandsToolbarIds();
-      String[] saCommandIds = savedCommandsToolBar.split(";");
-      for (String commandId : saCommandIds)
-      {
-         if (!commandId.isBlank())
-         {
-            Command cmd = m_allCommandsMap.get(commandId);
-            if (null != cmd)
-            {
-               m_CommandsToolbarList.addElement((Command)cmd);
-               Starter._m_logError.TraceDebug("Add Command to ToolBar: " + cmd.toString());
-            }
-            else
-            {
-               Starter._m_logError.TraceDebug("Command with id: '" + commandId + "' not found!");
-            }
-         }
-      }
+      // initialize the current available commands in the ToolBar (from User Preferences)
+      setCommandsToolbarList();
 
    }
 
@@ -391,7 +371,37 @@ public class Command
     */
    public static void setCommandsToolbarList(Vector<Command> commandsToolbarList)
    {
-      Command.m_CommandsToolbarList = commandsToolbarList;
+      m_CommandsToolbarList = commandsToolbarList;
+   }
+
+   /**
+    * Set the list of commands that are added to the commands toolBar (from User Preferences).
+    * 
+    */
+   public static void setCommandsToolbarList()
+   {
+      // initialize the current available commands in the ToolBar
+      m_CommandsToolbarList = new Vector<Command>();
+
+      // get the Commands ToolBar list items from User Preferences
+      String savedCommandsToolBar = UtilPrefs.getCommandsToolbarIds();
+      String[] saCommandIds = savedCommandsToolBar.split(";");
+      for (String commandId : saCommandIds)
+      {
+         if (!commandId.isBlank())
+         {
+            Command cmd = m_allCommandsMap.get(commandId);
+            if (null != cmd)
+            {
+               m_CommandsToolbarList.addElement((Command)cmd);
+               Starter._m_logError.TraceDebug("Add Command to ToolBar: " + cmd.toString());
+            }
+            else
+            {
+               Starter._m_logError.TraceDebug("Command with id: '" + commandId + "' not found!");
+            }
+         }
+      }
    }
 
    /**
@@ -589,7 +599,7 @@ public class Command
 
    /**
     * Returns a string representation of the object.
-    * @return the tring representation of the object
+    * @return the string representation of the object
     */
    public String toString()
    {

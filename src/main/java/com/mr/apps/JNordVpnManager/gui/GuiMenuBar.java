@@ -218,24 +218,23 @@ public class GuiMenuBar
       });
       m_nordvpnMenu.add(menuItemEditSettings);
 
-         JMenuItem whiteList = new JMenuItem("Edit AllowList");
-         whiteList.setToolTipText("Show/Edit AllowList.");
-         whiteList.addActionListener(new ActionListener()
+      JMenuItem allowList = new JMenuItem("Edit AllowList");
+      allowList.setForeground(Starter.Color_Addon);
+      allowList.setToolTipText("Show/Edit AllowList.");
+      allowList.addActionListener(new ActionListener() {
+         public void actionPerformed(ActionEvent e)
          {
-            public void actionPerformed(ActionEvent e)
+            if (Starter.isSupporterEdition())
             {
-               if (Starter.isSupporterEdition())
-               {
-                  CallCommand.invokeAddonMethod("AddonManager", "openAllowListDialog");
-               }
-               else
-               {
-                  new JSupportersDialog("Edit NordVPN Allow List");
-               }
+               CallCommand.invokeAddonMethod("AddonManager", "openAllowListDialog");
             }
-         });
-         m_nordvpnMenu.add(whiteList);
-
+            else
+            {
+               new JSupportersDialog("Edit NordVPN Allow List");
+            }
+         }
+      });
+      m_nordvpnMenu.add(allowList);
 
       // -------------------------------------------------------------------------------------
       // Menu --- Connect ---

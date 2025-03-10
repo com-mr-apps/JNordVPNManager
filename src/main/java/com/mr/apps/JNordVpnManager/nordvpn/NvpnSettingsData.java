@@ -262,12 +262,12 @@ public class NvpnSettingsData
                {
                   if (bAllowListSubnets == true)
                   {
-                     if (sbAllowListSubnets.length() > 0) sbAllowListSubnets.append(";");
+                     if (sbAllowListSubnets.length() > 0) sbAllowListSubnets.append(Starter.SEP_DATARECORD);
                      sbAllowListSubnets.append(line.replaceAll("\t", ""));
                   }
                   else if (bAllowListPorts == true)
                   {
-                     if (sbAllowListPorts.length() > 0) sbAllowListPorts.append(";");
+                     if (sbAllowListPorts.length() > 0) sbAllowListPorts.append(Starter.SEP_DATARECORD);
                      sbAllowListPorts.append(line.replaceAll("\t", ""));
                   }
                   else
@@ -337,7 +337,7 @@ public class NvpnSettingsData
          this.m_autoConnect = getAutoConnect(true);
       }
 
-      // Allowlists
+      // AllowLists
       this.m_allowlistSubnets = sbAllowListSubnets.toString();
       this.m_allowlistPorts = sbAllowListPorts.toString();
 

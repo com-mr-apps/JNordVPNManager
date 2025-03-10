@@ -650,11 +650,25 @@ public class NvpnCommands {
 
       if (saValues[1].isBlank())
       {
-         status = UtilSystem.runCommand(CMD_NORDVPN, ARG_ALLOWLIST, OPT_ADD, OPT_PORT, saValues[0], OPT_PROTOCOL, saValues[2]);
+         if (saValues[2].equals("TCP|UDP"))
+         {
+            status = UtilSystem.runCommand(CMD_NORDVPN, ARG_ALLOWLIST, OPT_ADD, OPT_PORT, saValues[0]);
+         }
+         else
+         {
+            status = UtilSystem.runCommand(CMD_NORDVPN, ARG_ALLOWLIST, OPT_ADD, OPT_PORT, saValues[0], OPT_PROTOCOL, saValues[2]);
+         }
       }
       else
       {
-         status = UtilSystem.runCommand(CMD_NORDVPN, ARG_ALLOWLIST, OPT_ADD, OPT_PORTS, saValues[0], saValues[1], OPT_PROTOCOL, saValues[2]);
+         if (saValues[2].equals("TCP|UDP"))
+         {
+            status = UtilSystem.runCommand(CMD_NORDVPN, ARG_ALLOWLIST, OPT_ADD, OPT_PORTS, saValues[0], saValues[1]);
+         }
+         else
+         {
+            status = UtilSystem.runCommand(CMD_NORDVPN, ARG_ALLOWLIST, OPT_ADD, OPT_PORTS, saValues[0], saValues[1], OPT_PROTOCOL, saValues[2]);
+         }
       }
 
       return status;
@@ -664,15 +678,30 @@ public class NvpnCommands {
    {
       // nordvpn allowlist remove port 12345 protocol TCP
       // nordvpn allowlist remove ports 12345 12355 protocol TCP
+      // nordvpn allowlist remove ports 12345 (for protocol TCP|UDP)
       String status = null;
 
       if (saValues[1].isBlank())
       {
-         status = UtilSystem.runCommand(CMD_NORDVPN, ARG_ALLOWLIST, OPT_REMOVE, OPT_PORT, saValues[0], OPT_PROTOCOL, saValues[2]);
+         if (saValues[2].equals("TCP|UDP"))
+         {
+            status = UtilSystem.runCommand(CMD_NORDVPN, ARG_ALLOWLIST, OPT_REMOVE, OPT_PORT, saValues[0]);            
+         }
+         else
+         {
+            status = UtilSystem.runCommand(CMD_NORDVPN, ARG_ALLOWLIST, OPT_REMOVE, OPT_PORT, saValues[0], OPT_PROTOCOL, saValues[2]);            
+         }
       }
       else
       {
-         status = UtilSystem.runCommand(CMD_NORDVPN, ARG_ALLOWLIST, OPT_REMOVE, OPT_PORTS, saValues[0], saValues[1], OPT_PROTOCOL, saValues[2]);
+         if (saValues[2].equals("TCP|UDP"))
+         {
+            status = UtilSystem.runCommand(CMD_NORDVPN, ARG_ALLOWLIST, OPT_REMOVE, OPT_PORTS, saValues[0], saValues[1]);
+         }
+         else
+         {
+            status = UtilSystem.runCommand(CMD_NORDVPN, ARG_ALLOWLIST, OPT_REMOVE, OPT_PORTS, saValues[0], saValues[1], OPT_PROTOCOL, saValues[2]);
+         }
       }
 
       return status;

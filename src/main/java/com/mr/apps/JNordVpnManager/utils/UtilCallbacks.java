@@ -25,13 +25,14 @@ public class UtilCallbacks
       // 1st step
       JModalDialog dlg = JModalDialog.JDropFileSelectDialog("Manage Supporter Edition [Step 1 - Import Key File]",
             "Import Key file to activate the Supporter Edition:\n"
-                  + "-> Drag&Drop key file in the box below or select the file with the '...' button.\n"
+                  + "-> 1st - Drag&Drop key file in the box below or select the file with the '...' button.\n"
+                  + "-> 2nd - 'Import Selected Key File' - to activate the Supporter Edition with the selected file.\n"
+                  + "(Changes require a restart of the application)\n"
+                  + "---\nor:\n"
                   + "* 'Cancel' - returns to the application.\n"
-                  + "* 'Import Key File' - to activate the Supporter Edition with the selected file.\n"
                   + "* 'Import Add-On Library' - Skip this step and continue with Import add-on library.\n"
-                  +" * 'Reset to Basis Edition' - removes the Supporter Edition features.\n"
-                  + "(Changes require an restart of the application.)",
-              "Cancel,(1) Import Key File,(2) Import Add-On Library,Reset to Basis Edition", fpAppDataDir, "Key File [lic]");
+                  + "* 'Reset to Basis Edition' - removes the Supporter Edition features.\n",
+              "Cancel,Import Selected Key File,Import Add-On Library,Reset to Basis Edition", fpAppDataDir, "Key File [lic]");
       switch (dlg.getResult()) {
          case 1 :
             File fpFile = dlg.getSelectedFile();
@@ -90,12 +91,13 @@ public class UtilCallbacks
       // 2nd step
       dlg = JModalDialog.JDropFileSelectDialog("Manage Supporter Edition [Step 2 - Import Add-on library]",
             "Import add-on library file to the application add-on directory:\n"
-            + "-> Drag&Drop library file in the box below or select the file with the '...' button.\n"
+            + "-> 1st - Drag&Drop library file in the box below or select the file with the '...' button.\n"
+            + "-> 2nd - 'Import Selected Add-On Library' - imports the selected add-on library in the application add-ons folder.\n"
+            + "(Changes require a restart of the application)\n"
+            + "---\nor:\n"
             + "* 'Cancel' - returns to the application.\n"
-            + "* '(2) Import Add-On Library' - imports the selected add-on library in the application add-ons folder.\n"
-            + "* 'Reset to Basis Edition' - removes the Supporter Edition features.\n"
-            + "(Changes require an restart of the application.)",
-            "Cancel,(2) Import Add-On Library,Reset to Basis Edition", fpAppDataDir, "Java Archive File [jar]");
+            + "* 'Reset to Basis Edition' - removes the Supporter Edition features.\n",
+            "Cancel,Import Selected Add-On Library,Reset to Basis Edition", fpAppDataDir, "Java Archive File [jar]");
       switch (dlg.getResult()) {
          case 1 : 
             try

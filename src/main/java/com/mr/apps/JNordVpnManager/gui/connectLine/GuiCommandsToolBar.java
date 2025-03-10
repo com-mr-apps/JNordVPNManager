@@ -250,7 +250,17 @@ public class GuiCommandsToolBar extends JPanel implements ActionListener
             customizePopUpMenuAdd.add(item);
          }
       }
+   }
 
+   /**
+    * Rebuild Commands ToolBar with values from User Preferences
+    */
+   public void rebuildCommandsToolbar()
+   {
+      Command.setCommandsToolbarList();
+      createCommandsToolBar();
+      m_toolBar.revalidate();
+      m_toolBar.repaint();
    }
 
    /**

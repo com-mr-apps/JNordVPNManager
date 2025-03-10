@@ -18,6 +18,7 @@ import java.util.prefs.Preferences;
 
 import com.mr.apps.JNordVpnManager.Starter;
 import com.mr.apps.JNordVpnManager.utils.UtilCrypt;
+import com.mr.apps.JNordVpnManager.utils.UtilPrefs;
 
 public class CallCommand
 {
@@ -29,8 +30,8 @@ public class CallCommand
       try
       {
          // not hacker proofed - just to protect my work by legal copyright
-         // Donations based on completely free software seems not to work - changed the concept to addOns for Supporters...
-         Preferences prefAddOns = Preferences.userRoot().node("com/mr/apps/JNordVpnManager/Settings/AddOns");
+         // Donations based development on completely free software seems not to work - changed the concept to addOns for Supporters...
+         Preferences prefAddOns = Preferences.userRoot().node(UtilPrefs.PREFRENCES_ADDON_NODE);
          String key = prefAddOns.get("Security.Key", "");
          if (key.isBlank()) return jarFile;
          String enc = prefAddOns.get("Data.1", "");
@@ -82,7 +83,6 @@ public class CallCommand
                   "Addon jarfile (optional) does not exist:\n" + fpJarFile.getAbsolutePath());
             return false;
          }
-
       }
       catch (Exception e)
       {
@@ -91,9 +91,12 @@ public class CallCommand
                "Addon jarfile (optional) does not exist:\n" + fpJarFile.getAbsolutePath());
          return false;
       }
-      return true;
+      return (boolean)CallCommand.invokeAddonMethod("AddonManager", "initialize");
    }
 
+   /* ==============================================================================================
+    * Invoke methods
+    * ==============================================================================================*/
    public static Object invokeAddonMethod(String className, String methodName)
    {
       return invokeMethod(null, "com.mr.apps.JNordVpnManager.addons." + className, methodName, null, null);

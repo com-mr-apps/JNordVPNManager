@@ -63,6 +63,7 @@ public class JModalDialog extends JDialog implements ActionListener
    private JButton           m_button;
    private JFileSelectionBox m_dragAndDropPanel;
 
+   public static String BUTTON_SEPARATOR = ",";
    /**
     * Constructor for any modal dialog
     * <p>
@@ -144,7 +145,7 @@ public class JModalDialog extends JDialog implements ActionListener
       // Buttons
       m_buttonsPanel = new JPanel();
       m_buttonsPanel.setLayout(new FlowLayout(FlowLayout.CENTER));
-      StringTokenizer strtok = new StringTokenizer(m_buttons, ",");
+      StringTokenizer strtok = new StringTokenizer(m_buttons, BUTTON_SEPARATOR);
       while (strtok.hasMoreTokens())
       {
          m_button = new JButton(strtok.nextToken());
@@ -229,7 +230,7 @@ public class JModalDialog extends JDialog implements ActionListener
    {
       int iCnt = 0;
 
-      StringTokenizer strtok = new StringTokenizer(m_buttons, ",");
+      StringTokenizer strtok = new StringTokenizer(m_buttons, BUTTON_SEPARATOR);
       while (strtok.hasMoreTokens())
       {
          if (strtok.nextToken().equals(m_result))
