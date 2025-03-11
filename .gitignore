@@ -24,3 +24,6 @@
 hs_err_pid*
 replay_pid*
 /target/
+
+# maven temp files
+dependency-reduced-pom.xml
