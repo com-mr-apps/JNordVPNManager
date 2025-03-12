@@ -772,6 +772,38 @@ public class UtilLogErr
    }
 
    /** 
+    * Generate a stdout trace.<P>
+    * The trace has the format:
+    * <PRE>
+    * [Trace::out] <text>
+    * </PRE>
+    * @param sText is the text to be written in the log file, no trace flag
+    */
+   public void TraceOut (String sText)
+   {
+      String traceLine = "[Trace::out] " + sText;
+
+      // write message to log file or console
+      writeLog(traceLine);
+   }
+
+   /** 
+    * Generate a stderr trace.<P>
+    * The trace has the format:
+    * <PRE>
+    * [Trace::err] <text>
+    * </PRE>
+    * @param sText is the text to be written in the log file, no trace flag
+    */
+   public void TraceErr (String sText)
+   {
+      String traceLine = "[Trace::err] " + sText;
+
+      // write message to log file or console
+      writeLog(traceLine);
+   }
+
+   /** 
     * Generate a trace for initialization steps.<P>
     * The trace has the format:
     * <PRE>
@@ -881,6 +913,18 @@ public class UtilLogErr
       {
          iStartMsg = 14;
          sPrefix = "<p class=\"er5\">";
+         sPostfix = "</p>";
+      }
+      else if (sText.startsWith("[Trace::out]"))
+      {
+         iStartMsg = 13;
+         sPrefix = "<p class=\"out\">";
+         sPostfix = "</p>";
+      }
+      else if (sText.startsWith("[Trace::err]"))
+      {
+         iStartMsg = 13;
+         sPrefix = "<p class=\"err\">";
          sPostfix = "</p>";
       }
       else if (sText.startsWith("[Trace::ini]"))

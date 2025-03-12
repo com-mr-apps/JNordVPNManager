@@ -65,6 +65,8 @@ public class JCustomConsole extends JFrame
          + ".dbg {font-style: italic; color: #7b7d7d;}"
          + ".cmd {font-weight: bold; color: blue;}"
          + ".ini {font-weight: normal; color: #28b463;}"
+         + ".out {font-style: italic; font-weight: normal; color: blue;}"
+         + ".err {font-style: italic; font-weight: normal; color: orange;}"
          + ".er5 {font-weight: bold; color: #ff334f;}"
          + ".er4 {font-weight: bold; color: red;}"
          + ".er3 {font-weight: normal; color: orange;}"

@@ -678,7 +678,8 @@ public class NvpnCommands {
    {
       // nordvpn allowlist remove port 12345 protocol TCP
       // nordvpn allowlist remove ports 12345 12355 protocol TCP
-      // nordvpn allowlist remove ports 12345 (for protocol TCP|UDP)
+      // nordvpn allowlist remove port 12345 (for protocol TCP|UDP)
+      // nordvpn allowlist remove ports 12345 12355 (for protocol TCP|UDP)
       String status = null;
 
       if (saValues[1].isBlank())
