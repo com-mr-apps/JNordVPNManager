@@ -300,8 +300,8 @@ public class UtilMapGeneration
       try
       {
          m_tmpMapDirectory = UtilZip.unzipTmp(Starter.class.getResourceAsStream(MAP_ARCHIVE), "NordVPNmap");
-         UtilZip.unzip(Starter.class.getResourceAsStream(MAP_NE1), m_tmpMapDirectory);
-         UtilZip.unzip(Starter.class.getResourceAsStream(MAP_HYP), m_tmpMapDirectory);
+         UtilZip.unzipSplitResourceAsStream(Starter.class, MAP_NE1, m_tmpMapDirectory);
+         UtilZip.unzipSplitResourceAsStream(Starter.class, MAP_HYP, m_tmpMapDirectory);
       }
       catch (IOException e)
       {

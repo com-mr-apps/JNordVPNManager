@@ -110,7 +110,7 @@ public class GuiMenuBar
       fileMenu.add(manageSupporterEdition);
       
       fileMenu.addSeparator();
-
+      
       JMenuItem fileExit = new JMenuItem("Exit");
       fileExit.addActionListener(new ActionListener()
       {
