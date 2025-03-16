@@ -645,7 +645,7 @@ public class Starter extends JFrame
       //-------------------------------------------------------------------------------
       m_mainFrame.add(connectPanel, BorderLayout.PAGE_START);
       m_mainFrame.add(m_serverListPanel, BorderLayout.LINE_START);
-      m_mainFrame.add(m_mapFrame.getContentPane(), BorderLayout.CENTER);
+      if (null != m_mapFrame) m_mainFrame.add(m_mapFrame.getContentPane(), BorderLayout.CENTER);
       m_mainFrame.add(statusPanel, BorderLayout.PAGE_END);
 
       m_aboutScreen  = new JAboutScreen(version);
@@ -832,7 +832,7 @@ public class Starter extends JFrame
       {
          // show map and tree panels
          m_serverListPanel.setVisible(true);
-         m_mapFrame.getContentPane().setVisible(true);
+         if (null != m_mapFrame) m_mapFrame.getContentPane().setVisible(true);
          m_mainFrame.setMinimumSize(new Dimension (800, 400));
          m_mainFrame.pack();
       }
@@ -840,7 +840,7 @@ public class Starter extends JFrame
       {
          // hide map and tree panels
          m_serverListPanel.setVisible(false);
-         m_mapFrame.getContentPane().setVisible(false);
+         if (null != m_mapFrame) m_mapFrame.getContentPane().setVisible(false);
          m_mainFrame.setMinimumSize(new Dimension (800, 80));
          m_mainFrame.pack();
       }

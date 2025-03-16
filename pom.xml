@@ -14,11 +14,6 @@
 		<maven.deploy.skip>true</maven.deploy.skip>
 	</properties>
 	<repositories>
-		<!--repository>
-			<id>j-nordvpn-manager-addons</id>
-			<name>JNordVPN Manager AddOns</name>
-			<url>file:/${project.basedir}/libs</url>
-		</repository-->
 		<repository>
 			<id>osgeo</id>
 			<name>OSGeo Release Repository</name>
@@ -43,11 +38,6 @@
 		</repository>
 	</repositories>
 	<dependencies>
-		<!--dependency>
-			<groupId>j-nordvpn-manager</groupId>
-			<artifactId>JNordVpnManager.addons</artifactId>
-			<version>${project.version}</version>
-		</dependency-->
 		<dependency>
 			<groupId>org.junit.jupiter</groupId>
 			<artifactId>junit-jupiter-engine</artifactId>
@@ -77,14 +67,14 @@
 			<artifactId>gt-swing</artifactId>
 			<version>${geotools.version}</version>
 		</dependency>
+        <dependency>
+            <groupId>org.geotools</groupId>
+            <artifactId>gt-epsg-hsql</artifactId>
+            <version>${geotools.version}</version>
+        </dependency>
 		<dependency>
 			<groupId>org.geotools</groupId>
 			<artifactId>gt-geotiff</artifactId>
-			<version>${geotools.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.geotools</groupId>
-			<artifactId>gt-image</artifactId>
 			<version>${geotools.version}</version>
 		</dependency>
 		<dependency>
@@ -126,6 +116,7 @@
 				<executions>
 					<execution>
 						<phase>package</phase>
+						<id>shade-jar-with-dependencies</id>
 						<goals>
 							<goal>shade</goal>
 						</goals>
@@ -143,15 +134,85 @@
 							</filters>
 							<shadedArtifactAttached>false</shadedArtifactAttached>
 							<shadedClassifierName></shadedClassifierName>
+							<createDependencyReducedPom>false</createDependencyReducedPom>
 							<transformers>
 								<transformer
 									implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
 									<manifestEntries>
 										<Main-Class>
 											com.mr.apps.JNordVpnManager.Starter</Main-Class>
+										<Implementation-Vendor>
+											com.mr.apps</Implementation-Vendor>
+										<Implementation-Title>
+											JNordVPN Manager</Implementation-Title>
 										<Implementation-Version>
 											${project.version}</Implementation-Version>
 									</manifestEntries>
+								</transformer>
+								<!-- merges META-INF/javax.media.jai.registryFile.jai entries instead of overwriting -->
+								<transformer
+									implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+									<resource>META-INF/javax.media.jai.registryFile.jai</resource>
+								</transformer>
+								<transformer
+									implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+									<resource>META-INF/registryFile.jai</resource>
+								</transformer>
+								<transformer
+									implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+									<resource>META-INF/registryFile.jaiext</resource>
+								</transformer>
+								<transformer
+									implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+									<resource>META-INF/services/javax.media.jai.OperationRegistrySpi</resource>
+								</transformer>
+								<transformer
+									implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+									<resource>META-INF/services/javax.imageio.spi.ImageInputStreamSpi</resource>
+								</transformer>
+								<transformer
+									implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+									<resource>META-INF/services/org.geotools.api.filter.expression.Function</resource>
+								</transformer>
+								<transformer
+									implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+									<resource>META-INF/services/javax.imageio.spi.ImageWriterSpi</resource>
+								</transformer>
+								<transformer
+									implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+									<resource>META-INF/services/javax.imageio.spi.ImageReaderSpi</resource>
+								</transformer>
+								<transformer
+									implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+									<resource>META-INF/services/org.geotools.api.referencing.operation.CoordinateOperationAuthorityFactory</resource>
+								</transformer>
+								<transformer
+									implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+									<resource>META-INF/services/org.geotools.api.referencing.datum.DatumAuthorityFactory</resource>
+								</transformer>
+								<transformer
+									implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+									<resource>META-INF/services/org.geotools.api.referencing.cs.CSAuthorityFactory</resource>
+								</transformer>
+								<transformer
+									implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+									<resource>META-INF/services/org.geotools.api.referencing.crs.CRSAuthorityFactory</resource>
+								</transformer>
+								<transformer
+									implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+									<resource>META-INF/services/javax.imageio.spi.ImageOutputStreamSpi</resource>
+								</transformer>
+								<transformer
+									implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+									<resource>META-INF/services/org.geotools.util.ConverterFactory</resource>
+								</transformer>
+								<transformer
+									implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+									<resource>META-INF/services/javax.measure.spi.ServiceProvider</resource>
+								</transformer>
+								<transformer
+									implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+									<resource>it/geosolutions/jaiext/resources/image/it.geosolutions.jaiext.scale.properties</resource>
 								</transformer>
 							</transformers>
 						</configuration>
@@ -212,11 +273,9 @@
 				<version>3.6.3</version>
 				<configuration>
 					<source>11</source>
-					<!-- Specifies whether or not the version text is
-					included.-->
+					<!-- Specifies whether or not the version text is included.-->
 					<version>false</version>
-					<!-- Omit qualifying package name before class names in
-					output.-->
+					<!-- Omit qualifying package name before class names in output.-->
 					<noqualifier>all</noqualifier>
 					<!-- Shuts off non-error and non-warning messages.-->
 					<quiet>true</quiet>
@@ -229,8 +288,7 @@
 					<breakiterator>true</breakiterator>
 					<excludePackageNames>
 						org.geotools.resources:org.geotools.maven:com:net.opengis:org.w3:javax:it.geosolutions</excludePackageNames>
-					<!-- Enables the Javadoc tool to interpret a simple,
-					one-argument -->
+					<!-- Enables the Javadoc tool to interpret a simple, one-argument -->
 					<!-- custom block tag tagname in doc comments. Note:
 					<placement/> -->
 					<!-- should be a combination of the letters Xaoptcmf.             -->
@@ -288,8 +346,7 @@
 						<link>https://locationtech.github.io/jts/javadoc/</link>
 					</links>
 				</configuration>
-				<!-- only works with package javadoc:aggregate for use of
-				META-INF/MANIFEST.MF Automatic-Module-Name -->
+				<!-- only works with package javadoc:aggregate for use of META-INF/MANIFEST.MF Automatic-Module-Name -->
 				<reportSets>
 					<reportSet>
 						<id>aggregate</id>

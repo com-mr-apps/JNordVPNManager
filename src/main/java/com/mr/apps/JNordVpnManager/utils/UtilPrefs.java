@@ -24,6 +24,7 @@ import java.util.stream.Stream;
 import com.mr.apps.JNordVpnManager.Starter;
 import com.mr.apps.JNordVpnManager.commandInterfaces.CallCommand;
 import com.mr.apps.JNordVpnManager.commandInterfaces.Command;
+import com.mr.apps.JNordVpnManager.geotools.UtilMapGeneration;
 import com.mr.apps.JNordVpnManager.gui.settings.JUserPrefsDialog;
 import com.mr.apps.JNordVpnManager.nordvpn.NvpnGroups.NordVPNEnumGroups;
 import com.mr.apps.JNordVpnManager.utils.String.StringFormat;
@@ -60,6 +61,8 @@ public class UtilPrefs
    private static final String SERVERLIST_DATA                          = "SERVERLIST_DATA";
    private static final String SERVERLIST_AUTOUPDATE                    = "SERVERLIST_AUTOUPDATE";
    private static final String ADDON_PATH                               = "ADDON_PATH";
+   private static final String WORLDMAP_IMAGE                           = "WORLDMAP_IMAGE";
+   private static final String WORLDMAP_IMAGE_DISPLAY_MODE              = "WORLDMAP_IMAGE_DISPLAY_MODE";
 
    // internal used current states (exported/imported)
    private static final String TIMER_DEFAULT_VALUE                      = "TIMER_DEFAULT_VALUE";
@@ -91,6 +94,8 @@ public class UtilPrefs
    private static int          DEFAULT_PREF_SETTINGS_COMMAMD_TIMEOUT    = 30;
    private static int          DEFAULT_PREF_SETTINGS_MESSAGE_AUTOCLOSE  = 2;
    private static int          DEFAULT_PREF_SETTINGS_ACCOUNTREMINDER    = 31;
+   private static String       DEFAULT_PREF_WORLDMAP_IMAGE              = "HYP";
+   private static String       DEFAULT_PREF_WORLDMAP_IMAGE_DISPLAY_MODE = "OFF";
 
    // internal used current states (exported/imported)
    private static int          DEFAULT_PREF_SETTINGS_TIMERDEFAULTVALUE  = 5; // in minutes
@@ -142,6 +147,8 @@ public class UtilPrefs
       settingsPanelFieldsMap.put(SERVERLIST_AUTOUPDATE, new JSettingsPanelField("Auto Update Server Data on Program Start", "N[0,99,1]", KeyEvent.VK_U, 2, StringFormat.int2String(DEFAULT_PREF_SERVERLIST_AUTOUPDATE, "#")));
       settingsPanelFieldsMap.put(SERVERLIST_DATA, new JSettingsPanelField("Server Data", "T", KeyEvent.VK_D, 20, DEFAULT_PREF_SERVERLIST_DATA));
       settingsPanelFieldsMap.put(SERVERLIST_TIMESTAMP, new JSettingsPanelField("Sync. Data Timestamp", "T", KeyEvent.VK_T, 10, DEFAULT_PREF_SERVERLIST_TIMESTAMP));
+      settingsPanelFieldsMap.put(WORLDMAP_IMAGE, new JSettingsPanelField("Worldmap Image", "L[HYP,NE1]", -1, 1, DEFAULT_PREF_WORLDMAP_IMAGE));
+      settingsPanelFieldsMap.put(WORLDMAP_IMAGE_DISPLAY_MODE, new JSettingsPanelField("Worldmap Show", "L[OFF,RGB,GREY]", -1, 1, DEFAULT_PREF_WORLDMAP_IMAGE_DISPLAY_MODE));
 
       // add internal values (w/o panel fields, but part of managed dataset)
       settingsPanelFieldsMap.put(COMMANDS_TOOLBAR, null);
@@ -629,6 +636,38 @@ public class UtilPrefs
       return;
    }
 
+   public static String getWorldmapImage()
+   {
+      Preferences worldmapImage = Preferences.userRoot().node("com/mr/apps/JNordVpnManager");
+      String image = worldmapImage.get("Worldmap.Image", DEFAULT_PREF_WORLDMAP_IMAGE);
+
+      return image;
+   }
+
+   public static void setWorldmapImage(String image)
+   {
+      Preferences worldmapImage = Preferences.userRoot().node("com/mr/apps/JNordVpnManager");
+      worldmapImage.put("Worldmap.Image", image);
+
+      return;
+   }
+
+   public static String getWorldmapImageDisplayMode()
+   {
+      Preferences worldmapImageDisplayMode = Preferences.userRoot().node("com/mr/apps/JNordVpnManager");
+      String mode = worldmapImageDisplayMode.get("Worldmap.ImageMode", DEFAULT_PREF_WORLDMAP_IMAGE_DISPLAY_MODE);
+
+      return mode;
+   }
+
+   public static void setWorldmapImageDisplayMode(String mode)
+   {
+      Preferences worldmapImageDisplayMode = Preferences.userRoot().node("com/mr/apps/JNordVpnManager");
+      worldmapImageDisplayMode.put("Worldmap.ImageMode", mode);
+
+      return;
+   }
+
    /**
     * Get a data set with all User Preferences data
     * @return the dataset with all user preferences data.
@@ -656,6 +695,8 @@ public class UtilPrefs
       hm.put(MESSAGE_AUTOCLOSE, StringFormat.int2String(getMessageAutoclose(), "#"));
       hm.put(ACCOUNTREMINDER, StringFormat.int2String(getAccountReminder(), "#"));
       hm.put(ADDON_PATH, getAddonsPath());
+      hm.put(WORLDMAP_IMAGE, getWorldmapImage());
+      hm.put(WORLDMAP_IMAGE_DISPLAY_MODE, getWorldmapImageDisplayMode());
       // internal values
       hm.put(TIMER_DEFAULT_VALUE, StringFormat.int2String(getTimerDefaultValue(), "#"));
       hm.put(ALLOWLIST_DEACTIVATED, getAllowListDeactivated());
@@ -747,6 +788,24 @@ public class UtilPrefs
          GuiConnectLine.rebuildCommandsToolbar();
       }
 
+      String sWorldmapImage = getWorldmapImage();
+      String sNewWorldmapImage = hm.get(WORLDMAP_IMAGE);
+      String sWorldmapImageDisplayMode = getWorldmapImageDisplayMode();
+      String sNewWorldmapImageDisplayMode = hm.get(WORLDMAP_IMAGE_DISPLAY_MODE);
+      if (false == sWorldmapImage.equals(sNewWorldmapImage))
+      {
+         setWorldmapImage(sNewWorldmapImage);
+         setWorldmapImageDisplayMode(sNewWorldmapImageDisplayMode);
+         sWorldmapImageDisplayMode = sNewWorldmapImageDisplayMode;
+         UtilMapGeneration.changeCurrentWorldmapImageLayer(sNewWorldmapImage, sWorldmapImageDisplayMode);
+      }
+
+      if (false == sWorldmapImageDisplayMode.equals(sNewWorldmapImageDisplayMode))
+      {
+         setWorldmapImageDisplayMode(sNewWorldmapImageDisplayMode);
+         UtilMapGeneration.changeCurrentWorldmapImageLayer(sNewWorldmapImage, sNewWorldmapImageDisplayMode);
+      }
+
    }
 
    /**
@@ -776,5 +835,7 @@ public class UtilPrefs
       setCommandTimeout(DEFAULT_PREF_SETTINGS_COMMAMD_TIMEOUT);
       setConsoleActive(DEFAULT_PREF_SETTINGS_CONSOLE_ACTIVE);
       setMessageAutoclose(DEFAULT_PREF_SETTINGS_MESSAGE_AUTOCLOSE);
+      setWorldmapImage(DEFAULT_PREF_WORLDMAP_IMAGE);
+      setWorldmapImageDisplayMode(DEFAULT_PREF_WORLDMAP_IMAGE_DISPLAY_MODE);
    }
 }

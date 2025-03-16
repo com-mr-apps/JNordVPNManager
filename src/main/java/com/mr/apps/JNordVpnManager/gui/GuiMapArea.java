@@ -34,11 +34,18 @@ import com.mr.apps.JNordVpnManager.gui.components.JResizedIcon.IconSize;
 import com.mr.apps.JNordVpnManager.gui.components.JResizedIcon.IconUrls;
 import com.mr.apps.JNordVpnManager.gui.dialog.JModalDialog;
 import com.mr.apps.JNordVpnManager.nordvpn.NvpnCallbacks;
+import com.mr.apps.JNordVpnManager.utils.UtilPrefs;
 
 public class GuiMapArea
 {
    private JMapFrame m_mapFrame = null;
    private Cursor m_selectCursor = null;
+
+   // cycle through Color [0] / Grey [1] / Off [2] -> variables toolTip and icon keep values for next stage
+   private static String[]    m_displayMapColor = new String[] {"RGB", "GREY", "OFF"};
+   private static ImageIcon[] m_iconMapColor = new ImageIcon[] {JResizedIcon.getIcon(IconUrls.ICON_GREYSCALE, IconSize.MEDIUM), JResizedIcon.getIcon(IconUrls.ICON_NOMAP, IconSize.MEDIUM), JResizedIcon.getIcon(IconUrls.ICON_COLOR, IconSize.MEDIUM)};
+   private static String[]    m_toolTipMapColor = new String[] {"Click here to display the World Map in Greyscale", "Click here to display the World Map Outline", "Click here to display the World Map in Color"};
+   private static int         m_indexMapColor = 0;
 
    public GuiMapArea()
    {
@@ -50,6 +57,7 @@ public class GuiMapArea
    public JMapFrame create()
    { 
       m_mapFrame = UtilMapGeneration.createMap();
+      if (null == m_mapFrame) return null;
 
       JToolBar toolbar = m_mapFrame.getToolBar();
       toolbar.addSeparator();
@@ -124,6 +132,42 @@ public class GuiMapArea
          }
       ));
       toolbar.add(pickServer);
+
+      // display the Worldmap image in Greyscale/RGB
+      String displayMode = UtilPrefs.getWorldmapImageDisplayMode();
+      if (displayMode.equals("OFF"))
+      {
+         m_indexMapColor = 2;
+      }
+      else if (displayMode.equals("GREY"))
+      {
+         m_indexMapColor = 1;
+      }
+      else if (displayMode.equals("RGB"))
+      {
+         m_indexMapColor = 0;
+      }
+      else
+      {
+         // this should not happen!
+         Starter._m_logError.TraceErr("(GuiMapArea:create) Invalid option for World Map Color Mode!");
+      }
+
+      JButton jbColorMap = new JButton(m_iconMapColor[m_indexMapColor]);
+      jbColorMap.setToolTipText(m_toolTipMapColor[m_indexMapColor]);
+      jbColorMap.addActionListener(new ActionListener() {
+         public void actionPerformed(ActionEvent e)
+         {
+            // cycle through stages 0-1-2
+            ++m_indexMapColor;
+            if (3 == m_indexMapColor) m_indexMapColor = 0;
+            String worldmapImageId = UtilPrefs.getWorldmapImage();
+            UtilMapGeneration.changeCurrentWorldmapImageLayer(worldmapImageId, m_displayMapColor[m_indexMapColor]);
+            jbColorMap.setToolTipText(m_toolTipMapColor[m_indexMapColor]);
+            jbColorMap.setIcon(m_iconMapColor[m_indexMapColor]);
+         }
+      });
+      toolbar.add(jbColorMap);
 
       return m_mapFrame;
    }

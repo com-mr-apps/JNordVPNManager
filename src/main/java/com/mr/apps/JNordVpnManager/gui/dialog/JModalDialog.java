@@ -330,7 +330,7 @@ public class JModalDialog extends JDialog implements ActionListener
 
    public static int showYesNoDialog(String title, String iconName, String msg)
    {
-      JModalDialog dlg = new JModalDialog(Starter.getMainFrame(), title, iconName, msg, "Yes,No", new Color(51,153,255));
+      JModalDialog dlg = new JModalDialog(Starter.getMainFrame(), title, iconName, msg, "Yes,No", Color.CYAN);
       dlg.repaint();
       dlg.setVisible(true);
       return (dlg.getResult() == 0) ? JOptionPane.YES_OPTION : JOptionPane.NO_OPTION;
