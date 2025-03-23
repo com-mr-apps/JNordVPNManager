@@ -794,11 +794,9 @@ public class Starter extends JFrame
 
          // Update (remove) the current server map layer
          UtilMapGeneration.changeCurrentServerMapLayer(null);
-         // ... and zoom to the last active location
-         UtilMapGeneration.zoomIn(m_currentServer);
       }
 
-      // .. place the tree to the country
+      // .. place the tree to the (last) current server
       JServerTreePanel.activateTreeNode(m_currentServer);
 
       // ... Update the commands Menu

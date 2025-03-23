@@ -70,25 +70,25 @@ import com.mr.apps.JNordVpnManager.utils.UtilZip;
 public class UtilMapGeneration
 {
    // Map
-   private static final String         MAP_ARCHIVE             = "resources/ne_50m_admin_0_countries.zip";
-   private static final String         MAP_NE1                 = "resources/NE1_50M_SR_W.zip";
-   private static final String         MAP_HYP                 = "resources/HYP_50M_SR_W.zip";
-   
-   private static final String         MAP_NAME                = "ne_50m_admin_0_countries.shp";
+   private static final String         MAP_ARCHIVE               = "resources/ne_50m_admin_0_countries.zip";
+   private static final String         MAP_NE1                   = "resources/NE1_50M_SR_W.zip";
+   private static final String         MAP_HYP                   = "resources/HYP_50M_SR_W.zip";
 
-   private static String               m_tmpMapDirectory       = null;
-   private static JMapPane             m_mapPane               = null;
-   private static MapContent           m_map                   = null;
-   private static Layer                m_baseWorldMapLayer     = null;
-   private static Layer                m_imageMapLayer         = null;
-   private static UpdatableLayer       m_currentServerMapLayer = null;
-   private static UpdatableLayer       m_vpnServerMapLayer     = null;
-   private static ReferencedEnvelope   m_fullMapEnvelope       = null;
-   private static ReferencedEnvelope   m_serverMapEnvelope     = null;
+   private static final String         MAP_NAME                  = "ne_50m_admin_0_countries.shp";
 
-   private static GridCoverage2DReader m_2Dreader              = null;
-   private static StyleFactory         m_styleFactory          = CommonFactoryFinder.getStyleFactory();
-   private static FilterFactory        m_filterFactory         = CommonFactoryFinder.getFilterFactory();
+   private static String               m_tmpMapDirectory         = null;
+   private static JMapPane             m_mapPane                 = null;
+   private static MapContent           m_map                     = null;
+   private static Layer                m_baseWorldMapLayer       = null;
+   private static Layer                m_imageMapLayer           = null;
+   private static UpdatableLayer       m_currentServerMapLayer   = null;
+   private static UpdatableLayer       m_vpnServerMapLayer       = null;
+   private static ReferencedEnvelope   m_fullMapEnvelope         = null;
+   private static ReferencedEnvelope   m_serverMapEnvelope       = null;
+
+   private static GridCoverage2DReader m_2Dreader                = null;
+   private static StyleFactory         m_styleFactory            = CommonFactoryFinder.getStyleFactory();
+   private static FilterFactory        m_filterFactory           = CommonFactoryFinder.getFilterFactory();
 
    /**
     * Cleanup on exit
@@ -105,6 +105,16 @@ public class UtilMapGeneration
          File fpTmpMapDirectory = new File(m_tmpMapDirectory);
          UtilSystem.deleteDir(fpTmpMapDirectory);
       }
+   }
+
+   public static void removeLayer(Layer layer)
+   {
+      if (null != layer) m_map.removeLayer(layer);
+   }
+
+   public static void addLayer(Layer layer)
+   {
+      if (null != layer) m_map.addLayer(layer);
    }
 
    /**
@@ -197,8 +207,8 @@ public class UtilMapGeneration
       if (null != m_mapPane)
       {
          // force refresh!
-         m_mapPane.moveImage(1,1);
-         m_mapPane.moveImage(-1,-1);
+         m_mapPane.moveImage(1,0);
+         m_mapPane.moveImage(-1,0);
          m_mapPane.repaint();
       }
    }

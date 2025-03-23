@@ -149,15 +149,7 @@ public class JServerTreePanel extends JPanel implements TreeSelectionListener
          @Override
          public void mouseClicked(MouseEvent e)
          {
-            if ((null != m_filterText) && (false == m_filterText.isBlank()))
-            {
-               // ..forces a refresh of the tree
-               m_filterTextField.setText("");
-            }
-            else
-            {
-               updateFilterTreeCB(false);
-            }
+            updateFilterTreeCB(false);
          }
       });
       filterPanel.add(m_filterLabel, BorderLayout.LINE_START);
@@ -597,6 +589,10 @@ public class JServerTreePanel extends JPanel implements TreeSelectionListener
             if (loc.isConnected())
             {
                UtilMapGeneration.zoomIn(loc);
+            }
+            else
+            {
+               UtilMapGeneration.zoomServerLayer();
             }
          }
       }

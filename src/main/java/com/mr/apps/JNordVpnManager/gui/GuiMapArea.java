@@ -55,10 +55,12 @@ public class GuiMapArea
    }
    
    public JMapFrame create()
-   { 
+   {
+      // create the map
       m_mapFrame = UtilMapGeneration.createMap();
       if (null == m_mapFrame) return null;
 
+      // add buttons to the tool bar
       JToolBar toolbar = m_mapFrame.getToolBar();
       toolbar.addSeparator();
 
@@ -71,7 +73,6 @@ public class GuiMapArea
             UtilMapGeneration.zoomIn(Starter.getCurrentServer(false));
          }
       });
-      toolbar.add(showCurrent);
 
       ImageIcon imageZoomAll = JResizedIcon.getIcon(IconUrls.ICON_MAP_ZOOM_ALL, IconSize.MEDIUM);
       JButton showServers = new JButton(imageZoomAll);
@@ -82,7 +83,6 @@ public class GuiMapArea
             UtilMapGeneration.zoomServerLayer();
          }
       });
-      toolbar.add(showServers);
 
       ImageIcon imageConnectMap = JResizedIcon.getIcon(IconUrls.ICON_MAP_CONNECT, IconSize.MEDIUM);
       JButton pickServer = new JButton(imageConnectMap);
@@ -131,7 +131,6 @@ public class GuiMapArea
             }
          }
       ));
-      toolbar.add(pickServer);
 
       // display the Worldmap image in Greyscale/RGB
       String displayMode = UtilPrefs.getWorldmapImageDisplayMode();
@@ -167,7 +166,11 @@ public class GuiMapArea
             jbColorMap.setIcon(m_iconMapColor[m_indexMapColor]);
          }
       });
+
       toolbar.add(jbColorMap);
+      toolbar.add(showCurrent);
+      toolbar.add(showServers);
+      toolbar.add(pickServer);
 
       return m_mapFrame;
    }

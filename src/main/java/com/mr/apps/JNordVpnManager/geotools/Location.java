@@ -252,9 +252,9 @@ public class Location
       m_groups.addGroup(id);
    }
 
-   public boolean hasGroup(NordVPNEnumGroups m_filterRegion)
+   public boolean hasGroup(NordVPNEnumGroups m_filterGroup)
    {
-      return m_groups.hasGroup(m_filterRegion);
+      return m_groups.hasGroup(m_filterGroup);
    }
 
    public String getFlagImageFileName()
