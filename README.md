@@ -70,6 +70,10 @@ The world map is based on GeoTools, an open source (LGPL) Java code library that
 Thanks to Natural Earth. Free vector and raster map data from:
 * https://www.naturalearthdata.com/
 
+### Speed Test
+Based on JSpeedTest: Speed test client library for Java/Android
+* https://github.com/bertrandmartel/speed-test-lib
+
 ## Donations
 Funding for the ongoing development and maintenance of this application comes from donations made to me through [https://buymeacoffee.com/3dprototyping](https://buymeacoffee.com/3dprototyping). Your support in the form of a coffee or any other contribution is greatly appreciated and helps keep JNordVPN Manager alife and up-to-date.
 If you like to be part of the Supporters group, which will have access to the Supporter Edition with more features, you can find more information there.
