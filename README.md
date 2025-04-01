@@ -45,8 +45,11 @@ This will install the application into a sandbox where it is separated from othe
     /snap/j-nordvpn-manager/current/bin/java -jar /snap/j-nordvpn-manager/current/JNordVpnManager-current.jar
 
 ### Important:
-Because snaps restrict the execution of commands outside of their own sandbox, JNordVPN Manager will run in "Installation" mode: The snap created Desktop Icon has the extension '(install)'.
-The application should be run after the snap installation at least once from the snap in 'Install mode' to create a new  [desktop file](https://github.com/com-mr-apps/JNordVPNManager/blob/main/snap/local/JNordVpnManager_Java.desktop), with that JNordVPN Manager runs with the Java command outside of the sandbox - version independent - from the snap installation (see command line above).
+_In case you run JNordVPN Manager directly as snap application (with the command `j-nordvpn-manager` or by using the default created Application Desktop Icon):_
+
+Because snaps restrict the execution of commands outside of their own environment, JNordVPN Manager will run in 'Installation' mode [_the snap created Desktop Icon has the extension '(install)'_]:
+
+The application should run after the snap installation at least once from the snap in 'Installation' mode to create its - version independent - starter [desktop file](https://github.com/com-mr-apps/JNordVPNManager/blob/main/snap/local/JNordVpnManager_Java.desktop). With that JNordVPN Manager can be launched from the snap installation without restrictions outside of the encapsulated snap environment (see java command line above).
 
 To deinstall type:
 
