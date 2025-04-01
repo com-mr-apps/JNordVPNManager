@@ -44,6 +44,8 @@ This will install the application into a sandbox where it is separated from othe
 
     /snap/j-nordvpn-manager/current/bin/java -jar /snap/j-nordvpn-manager/current/JNordVpnManager-current.jar
 
+Optionally the starter [desktop file](https://github.com/com-mr-apps/JNordVPNManager/blob/main/snap/local/JNordVpnManager_Java.desktop) can be copied manually in the user `~/Desktop` folder.
+
 ### Important:
 _In case you run JNordVPN Manager directly as snap application (with the command `j-nordvpn-manager` or by using the default created Application Desktop Icon):_
 
