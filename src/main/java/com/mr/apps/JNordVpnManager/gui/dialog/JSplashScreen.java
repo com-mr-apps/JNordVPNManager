@@ -11,6 +11,7 @@ package com.mr.apps.JNordVpnManager.gui.dialog;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
+import java.awt.Frame;
 import java.awt.Toolkit;
 import javax.swing.*;
 
@@ -19,14 +20,12 @@ import com.mr.apps.JNordVpnManager.gui.components.JLogo;
 import com.mr.apps.JNordVpnManager.gui.components.JResizedIcon;
 
 @SuppressWarnings("serial")
-public class JSplashScreen extends JFrame
+public class JSplashScreen extends JDialog
 {
    private static final String SPLASH_IMAGE = "resources/SplashScreen.png";
-   private static final String COPYRIGHT_STRING = "Copyright Ⓒ 2025 - written by com.mr.apps";
 
    protected static String _m_versionText; // set at program start and reused for "About" window
 
-   protected JFrame       m_splashFrame;
    protected JLabel       m_splashImageIcon;
    protected JLabel       m_splashStatus;
    protected JProgressBar m_progressBar;
@@ -35,26 +34,27 @@ public class JSplashScreen extends JFrame
    /**
     * Initiates a new Welcome Screen
     */
-   public JSplashScreen()
+   public JSplashScreen(Frame owner)
    {
-      this(null);
+      this(owner, null);
    }
 
    /**
     * Initiates a new Splash Screen or the Welcome Screen
     * 
+    * @param owner
+    *           is the owner frame.
     * @param status
     *           is the initial status text to be displayed. In case of null, the Welcome screen is displayed.
     */
-   public JSplashScreen(String status)
+   public JSplashScreen(Frame owner, String status)
    {
-      super();
-      m_splashFrame = this;
-      m_splashFrame.setLayout(new BoxLayout(m_splashFrame.getContentPane(), BoxLayout.Y_AXIS));
+      super(owner, false);
+      this.setLayout(new BoxLayout(this.getContentPane(), BoxLayout.Y_AXIS));
 
       ImageIcon imageIcon = new ImageIcon(Starter.class.getResource(SPLASH_IMAGE));
       this.m_splashImageIcon = new JLabel(imageIcon);
-      m_splashFrame.add(this.m_splashImageIcon);
+      this.add(this.m_splashImageIcon);
 
       m_version = new JLabel("Version"); // will be updated from the application
       m_version.setSize(m_version.getPreferredSize());
@@ -63,7 +63,7 @@ public class JSplashScreen extends JFrame
       m_version.setForeground(new Color(97, 206, 255));
       this.m_splashImageIcon.add(m_version);
 
-      JLabel copyright =  new JLabel(COPYRIGHT_STRING);
+      JLabel copyright =  new JLabel(Starter.COPYRIGHT_STRING);
       copyright.setSize(copyright.getPreferredSize());
       copyright.setLocation(25, 310);
       copyright.setFont(new Font("serif", Font.ITALIC, 12));
@@ -93,14 +93,14 @@ public class JSplashScreen extends JFrame
          buymeacoffee.setLocation(500, 20);
          this.m_splashImageIcon.add(buymeacoffee);
 
-         m_splashFrame.setPreferredSize(new Dimension(imageIcon.getIconWidth(), imageIcon.getIconHeight()));
+         this.setPreferredSize(new Dimension(imageIcon.getIconWidth(), imageIcon.getIconHeight()));
          m_splashImageIcon.setToolTipText("Press Mouse Button to close.");
          m_splashImageIcon.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mousePressed(java.awt.event.MouseEvent evt)
             {
                Starter.setSkipWindowGainedFocus();
-               m_splashFrame.setVisible(false);
-               m_splashFrame.dispose();
+               setVisible(false);
+               dispose();
             }
          });
          setVersion(_m_versionText);
@@ -109,21 +109,21 @@ public class JSplashScreen extends JFrame
       {
          // Splash Screen
          this.m_splashStatus = new JLabel(status);
-         m_splashFrame.add(this.m_splashStatus);
+         this.add(this.m_splashStatus);
          
          m_progressBar = new JProgressBar(0, 100);
-         m_splashFrame.add(m_progressBar);
-         m_splashFrame.setPreferredSize(new Dimension(imageIcon.getIconWidth()+10, imageIcon.getIconHeight() + 40));
+         this.add(m_progressBar);
+         this.setPreferredSize(new Dimension(imageIcon.getIconWidth()+10, imageIcon.getIconHeight() + 40));
          Starter._m_logError.setCurStartTime();
       }
 
-      m_splashFrame.setUndecorated(true);
-      m_splashFrame.pack();
+      this.setUndecorated(true);
+      this.pack();
 
       // Centers the Splash Screen
       Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-      Dimension panelSize = m_splashFrame.getSize();
-      m_splashFrame.setLocation((screenSize.width / 2) - (panelSize.width / 2), (screenSize.height / 2) - (panelSize.height / 2));
+      Dimension panelSize = this.getSize();
+      this.setLocation((screenSize.width / 2) - (panelSize.width / 2), (screenSize.height / 2) - (panelSize.height / 2));
    }
 
    /**
@@ -140,16 +140,9 @@ public class JSplashScreen extends JFrame
       m_progressBar.update(m_progressBar.getGraphics());
       if (progress == 100)
       {
-         try
-         {
-            Thread.sleep(1000L);
-            Starter.setSkipWindowGainedFocus();
-            m_splashFrame.setVisible(false);
-            m_splashFrame.dispose();
-         }
-         catch (InterruptedException e)
-         {
-         }
+         Starter.setSkipWindowGainedFocus();
+         this.setVisible(false);
+         this.dispose();
       }
    }
 
@@ -172,6 +165,7 @@ public class JSplashScreen extends JFrame
    public void setStatus(String status)
    {
       m_splashStatus.setText(status);
+      m_splashStatus.getGraphics().clearRect(0, 0, 200, 50); // hack - delete background
       m_splashStatus.update(m_splashStatus.getGraphics());
       Starter._m_logError.TraceIni(status);
    }
