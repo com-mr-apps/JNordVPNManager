@@ -27,6 +27,7 @@ import com.mr.apps.JNordVpnManager.commandInterfaces.Command;
 import com.mr.apps.JNordVpnManager.geotools.CurrentLocation;
 import com.mr.apps.JNordVpnManager.geotools.Location;
 import com.mr.apps.JNordVpnManager.geotools.UtilLocations;
+import com.mr.apps.JNordVpnManager.geotools.UtilSpeedtest;
 import com.mr.apps.JNordVpnManager.gui.components.JResizedIcon;
 import com.mr.apps.JNordVpnManager.gui.components.JResizedIcon.IconSize;
 import com.mr.apps.JNordVpnManager.gui.components.JResizedIcon.IconUrls;
@@ -315,7 +316,7 @@ public class GuiMenuBar
       {
          public void actionPerformed(ActionEvent e)
          {
-            JSplashScreen welcomeScreen = new JSplashScreen();
+            JSplashScreen welcomeScreen = new JSplashScreen(Starter.getMainFrame());
             welcomeScreen.setVisible(true);
          }
       });
@@ -356,6 +357,23 @@ public class GuiMenuBar
       });
       infoMenu.add(infoMenuItem);
 
+      // -------------------------------------------------------------------------------------
+      // Menu --- Experimental ---
+      JMenu experimentalMenu = new JMenu("Experimental");
+      menuBar.add(experimentalMenu);
+
+      JMenuItem speedTest = new JMenuItem("speedTest");
+      speedTest.addActionListener(new ActionListener()
+      {
+         public void actionPerformed(ActionEvent e)
+         {
+            UtilSpeedtest.setVisibleSpeedtestMapLayer(true);
+            UtilSpeedtest.speedTest(Starter.getCurrentServer(true));
+         }
+      });
+      experimentalMenu.add(speedTest);
+
+      // -------------------------------------------------------------------------------------
       menuBar.add(Box.createHorizontalGlue());
 
       // Menu(item) Supporter Edition
@@ -602,7 +620,7 @@ public class GuiMenuBar
          if (false == foundAtFirstPos)
          {
             m_recentServerIdList.insertElementAt(loc, 0);
-            Starter._m_logError.TraceDebug("Add " + loc.getServerId() + " to Recentlist.");
+            Starter._m_logError.TraceDebug("Add " + loc.getToolTip() + " to Recentlist.");
 
             while (m_recentServerIdList.size() > UtilPrefs.getRecentServerListLength())
             {

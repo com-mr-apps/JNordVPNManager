@@ -36,6 +36,11 @@
 				<enabled>false</enabled>
 			</releases>
 		</repository>
+		<repository>
+			<id>openHAB</id>
+			<name>openHabTinyB</name>
+			<url>https://openhab.jfrog.io/openhab/libs-release/</url>
+		</repository>
 	</repositories>
 	<dependencies>
 		<dependency>
@@ -79,6 +84,11 @@
 		</dependency>
 		<dependency>
 			<groupId>org.geotools</groupId>
+			<artifactId>gt-image</artifactId>
+			<version>${geotools.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.geotools</groupId>
 			<artifactId>gt-wms</artifactId>
 			<version>${geotools.version}</version>
 		</dependency>
@@ -91,6 +101,18 @@
 			<groupId>org.json</groupId>
 			<artifactId>json</artifactId>
 			<version>20240303</version>
+		</dependency>
+		<!-- https://mvnrepository.com/artifact/org.openhab.osgiify/fr.bmartel.jspeedtest -->
+		<dependency>
+			<groupId>org.openhab.osgiify</groupId>
+			<artifactId>fr.bmartel.jspeedtest</artifactId>
+			<version>1.32.1</version>
+		</dependency>
+		<!-- https://mvnrepository.com/artifact/fr.bmartel/http-endec -->
+		<dependency>
+			<groupId>fr.bmartel</groupId>
+			<artifactId>http-endec</artifactId>
+			<version>1.04</version>
 		</dependency>
 	</dependencies>
 	<build>

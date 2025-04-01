@@ -75,6 +75,11 @@ public class JAboutScreen
    + "<ul>"
    + "<li><a href=\"https://www.naturalearthdata.com/\">https://www.naturalearthdata.com/</a></li>"
    + "</ul>"
+   + "<h3>Speed Test</h3>"
+   + "<p>Based on JSpeedTest: Speed test client library for Java/Android</p>"
+   + "<ul>"
+   + "<li><a href=\"https://github.com/bertrandmartel/speed-test-lib\">https://github.com/bertrandmartel/speed-test-lib</a></li>"
+   + "</ul>"
    
    + "<h2>Donations</h2>"
    + "<p>Funding for the ongoing development and maintenance of this application comes from donations made to me through <a href=\"https://buymeacoffee.com/3dprototyping\">https://buymeacoffee.com/3dprototyping</a>. Your support in the form of a coffee or any other contribution is greatly appreciated and helps keep JNordVPN Manager alife and up-to-date.</p>"

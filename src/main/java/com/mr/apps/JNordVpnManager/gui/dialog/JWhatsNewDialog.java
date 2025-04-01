@@ -31,6 +31,8 @@ public class JWhatsNewDialog
          + "<h4>Version 2025.3.2 (Snap 2025.3.2):</h4>"
          + "[Released March 2025]"
          + "<ul>"
+         + "<li><strong>World Map Enhancements</strong>: Optionally display a colored/greyscale GeoTIFF image as world map background.</li>"
+         + "<li><strong>Speed Test</strong>: Experimental Download Speed Test.</li>"
          + "<li><strong>Maintenance</strong>: Bug Fix in parsing NordVPN Settings data if a subnet/port allowlist is defined.</li>"
          + "<li><strong>NordVPN Allowlist</strong>: new functionality for <em>Supporter Edition</em> to manage the NordVPN allow list.</li>"
          + "<li>...and another minor bug fixes and enhancements to make the application more reliable and handsome.</li>"
