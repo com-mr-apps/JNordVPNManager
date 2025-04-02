@@ -367,7 +367,6 @@ public class GuiMenuBar
       {
          public void actionPerformed(ActionEvent e)
          {
-            UtilSpeedtest.setVisibleSpeedtestMapLayer(true);
             UtilSpeedtest.speedTest(Starter.getCurrentServer(true));
          }
       });

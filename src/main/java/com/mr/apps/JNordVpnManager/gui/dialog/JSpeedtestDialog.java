@@ -21,6 +21,7 @@ import javax.swing.border.LineBorder;
 import javax.swing.border.TitledBorder;
 
 import com.mr.apps.JNordVpnManager.Starter;
+import com.mr.apps.JNordVpnManager.geotools.UtilSpeedtest;
 import com.mr.apps.JNordVpnManager.gui.components.JLabeledTextField;
 import com.mr.apps.JNordVpnManager.gui.components.JSpeedMeter;
 import com.mr.apps.JNordVpnManager.utils.String.Wrap;
@@ -65,6 +66,7 @@ public class JSpeedtestDialog extends JDialog
             Starter.setSkipWindowGainedFocus();
             setVisible(false);
 //            dispose(); -> no dispose, we re use the dialog!
+            UtilSpeedtest.setVisibleSpeedtestMapLayer(false);
          }
       });
       
@@ -83,25 +85,27 @@ public class JSpeedtestDialog extends JDialog
       // right - Speeds (min/max/avg) and Status messages
       JPanel jpr = new JPanel();
       jpr.setLayout(new BoxLayout(jpr, BoxLayout.Y_AXIS));
+      jpr.setAlignmentX(LEFT_ALIGNMENT);
 
       m_txtSpeedMin = new JLabeledTextField(10, "min:", "Mbit/s");
       m_txtSpeedMin.setEditable(false);
-      jpr.add(m_txtSpeedMin);
+//      jpr.add(m_txtSpeedMin);
       
       m_txtSpeedMax = new JLabeledTextField(10, "max:", "Mbit/s");
       m_txtSpeedMax.setEditable(false);
       jpr.add(m_txtSpeedMax);
-      
+
       m_txtSpeedAvg = new JLabeledTextField(10, "avg:", "Mbit/s");
       m_txtSpeedAvg.setEditable(false);
       jpr.add(m_txtSpeedAvg);
 
       m_messageTextArea = new JTextArea();
-      m_messageTextArea.setBorder(new TitledBorder(new LineBorder(Color.gray,2, true), "Status",
-            TitledBorder.CENTER, TitledBorder.TOP,
-            new Font("SansSerif",Font.BOLD, 12),
+      m_messageTextArea.setBorder(new TitledBorder(new LineBorder(Color.gray, 2, true), "Status",
+            TitledBorder.LEFT, TitledBorder.TOP,
+            new Font("SansSerif", Font.BOLD, 12),
             Color.BLACK));
       m_messageTextArea.setFont(m_messageTextArea.getFont().deriveFont(Font.ITALIC));
+      m_messageTextArea.setBackground(Color.lightGray);
       m_messageTextArea.setEditable(false);
       jpr.add(m_messageTextArea, BorderLayout.CENTER);
 
@@ -111,23 +115,28 @@ public class JSpeedtestDialog extends JDialog
       jp.add(jpr, BorderLayout.CENTER);
       getContentPane().add(jp);
 
+      this.pack();
+
       // Centers the Dialog
       Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
       Dimension panelSize = this.getSize();
       this.setLocation((screenSize.width / 2) - (panelSize.width / 2), (screenSize.height / 2) - (panelSize.height / 2));
 
-      this.pack();
-      this.setVisible(true);
+      this.init(null);
    }
 
    public void init(String uri)
    {
-      this.setTitle("SpeedTest: " + uri);
+      if (null != uri)
+      {
+         this.setTitle("SpeedTest: " + uri);
+      }
       m_forceStopTask = false;
       m_progressBar.setValue(0);
       setMessage("init...", false);
       m_speedMeter.reset();
       this.setVisible(true);
+      UtilSpeedtest.setVisibleSpeedtestMapLayer(true);
    }
 
    /**
@@ -148,11 +157,6 @@ public class JSpeedtestDialog extends JDialog
       m_txtSpeedMin.setText(m_speedMeter.getSpeedMin(), "0.00");
       m_txtSpeedMax.setText(m_speedMeter.getSpeedMax(), "0.00");
       m_txtSpeedAvg.setText(m_speedMeter.getSpeedAvg(), "0.00");
-
-      if (progress == 100)
-      {
-         // TODO: Save Statistics
-      }
    }
 
    public boolean forceStopTask()
@@ -162,7 +166,7 @@ public class JSpeedtestDialog extends JDialog
 
    public void setMessage(String message, boolean join)
    {
-      m_statusMessage = (true == join) ? m_statusMessage + "\n" + message : message;
+      m_statusMessage = (true == join) ? m_statusMessage + message : message;
       setStatusMessageTextArea();
    }
 
@@ -170,7 +174,7 @@ public class JSpeedtestDialog extends JDialog
    {
       SwingUtilities.invokeLater(new Runnable() {
          public void run() {
-            m_messageTextArea.setText(Wrap.wrap(m_statusMessage.replaceAll("\t", "   "), 80, null, true, null, "   "));
+            m_messageTextArea.setText(Wrap.wrap(m_statusMessage.replaceAll("\t", "   "), 30, null, true, null, "   "));
          }
        });
     }

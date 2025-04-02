@@ -49,6 +49,8 @@ public class UtilSpeedtest
 {
    // CSV file with Speedtest Server location features
    private static final String                 SPEEDTEST_SERVERS_CSV     = "resources/speedtest_servers.csv";
+   private static final int                    SPEEDTEST_DURATION_IN_MS  = 30000;
+   private static final int                    SPEEDTEST_INTERVAL_IN_MS  = 1000;
 
    // all the speedtest locations from the csv table
    private static ArrayList<SpeedtestLocation> m_speedtestLocations      = null;
@@ -245,8 +247,14 @@ public class UtilSpeedtest
       double currentLat = loc.getLatitude();
       double currentLon = loc.getLongitude();
 
-      String uri = "https://lg-dene.fdcservers.net/100MBtest.zip";
-      String city = "Denver";
+      if (null == m_speedtestLocations)
+      {
+         // first time call - initialization
+         importSpeedtestLocations();
+      }
+
+      String uri = "https://downloads.nordcdn.com/configs/archives/servers/ovpn.zip"; // ..need a bigger file..
+      String city = "NordVPN";
       double dist = 999999999;
       // search nearest Test Server
       for (SpeedtestLocation sloc : m_speedtestLocations)
@@ -262,7 +270,6 @@ public class UtilSpeedtest
          }
       }
       speedTest(city, uri);
-
    }
 
    /**
@@ -276,8 +283,8 @@ public class UtilSpeedtest
    private static void speedTest(String city, String uri)
    {
       Starter._m_logError.TraceDebug("(speedTest) uri=" + uri + " [" + city + "]");
-      SpeedTestSocket speedTestSocket = new SpeedTestSocket();
 
+      // Create/Show the Speed Test Dialog
       if (null == m_speedTestDiaLog)
       {
          // create once
@@ -289,16 +296,20 @@ public class UtilSpeedtest
          m_speedTestDiaLog.init(uri);
       }
 
-      // add a listener to wait for speedtest completion and progress [or error]
+      // Create the Speed Test Socket
+      SpeedTestSocket speedTestSocket = new SpeedTestSocket();
+
+      // add a listener to wait for Speed Test completion and progress [or error]
       speedTestSocket.addSpeedTestListener(new ISpeedTestListener() {
 
          @Override
          public void onCompletion(SpeedTestReport report)
          {
+            Starter._m_logError.getCurElapsedTime("Speed Test End");
             if (m_speedTestDiaLog.forceStopTask())
             {
                // called when download/upload is interrupted manually
-               m_speedTestDiaLog.setMessage("interrupted.", false);
+               m_speedTestDiaLog.setMessage("\ninterrupted.", true);
             }
             else if (true == m_speedtestError)
             {
@@ -308,10 +319,12 @@ public class UtilSpeedtest
             {
                // called when download/upload is successfully completed
                Starter._m_logError.TraceDebug("[COMPLETED] rate in bit/s   : " + report.getTransferRateBit());
-               m_speedTestDiaLog.setMessage("completed.", false);
-               m_speedTestDiaLog.setSpeeds(100, report.getTransferRateBit().divide(new BigDecimal(1000000.0)).doubleValue());
+               double idt = ((report.getReportTime() - report.getStartTime()) / 1000000000.0);
+               m_speedTestDiaLog.setMessage("\nDownloaded " + (int)report.getProgressPercent() + "% of a 100MB Testfile" 
+                     + " in " + StringFormat.number2String(idt, "#.##") + " seconds."
+                     + "\nAverage Download speed: " + StringFormat.number2String((report.getProgressPercent()/idt)*8.0, "#.##") + "MBit/s", true);
+               m_speedTestDiaLog.setSpeeds((int)report.getProgressPercent(), report.getTransferRateBit().divide(new BigDecimal(1000000.0)).doubleValue());
             }
-            Starter._m_logError.getCurElapsedTime("Speed Test End");
          }
 
          @Override
@@ -328,19 +341,18 @@ public class UtilSpeedtest
                   // search the failed server and remove it for this session
                   if (true == uri.equals(sloc.getServerUrl()))
                   {
-                     m_speedTestDiaLog.setMessage("Speed Test Server located in '" + sloc.getCityName() + "' is currently not available and will be removed for this session.\n" + 
+                     m_speedTestDiaLog.setMessage("\nSpeed Test Server located in '" + sloc.getCityName() + "' is currently not available and will be removed for this session.\n" + 
                                                   "Please start Speed Test again to use the next closest server.\n" +
-                                                  errorMessage, false);
+                                                  errorMessage, true);
                      m_speedtestLocations.remove(sloc);
                      break;
                   }
                }
 
-               m_speedTestDiaLog.setSpeeds(100, 0);
                speedTestSocket.forceStopTask();
                return;
             }
-            m_speedTestDiaLog.setMessage(errorMessage, true);
+            m_speedTestDiaLog.setMessage("\n" + errorMessage, true);
          }
 
          @Override
@@ -356,7 +368,7 @@ public class UtilSpeedtest
             }
             else
             {
-               m_speedTestDiaLog.setMessage("in progress" + " [" + city + "]...", false);
+               m_speedTestDiaLog.setMessage(".", true);
             }
          }
       });
@@ -364,36 +376,45 @@ public class UtilSpeedtest
       // start Speed test
       m_speedtestError = false;
       Starter._m_logError.getCurElapsedTime("Speed Test Start");
-      speedTestSocket.startFixedDownload(uri, 30000, 2000);
+      m_speedTestDiaLog.setMessage("\nin progress" + " [" + city + "]...\n", true);
+      speedTestSocket.startFixedDownload(uri, SPEEDTEST_DURATION_IN_MS, SPEEDTEST_INTERVAL_IN_MS);
    }
 
    /**
-    * Calculate distance between two points in latitude and longitude taking
-    * into account height difference. If you are not interested in height
-    * difference pass 0.0. Uses Haversine method as its base.
+    * Calculate distance between two points in latitude and longitude taking into account height difference.
+    * <p>
+    * If you are not interested in height difference pass 0.0. Uses Haversine method as its base.
     * 
-    * lat1, lon1 Start point lat2, lon2 End point el1 Start altitude in meters
-    * el2 End altitude in meters
+    * @param lat1
+    *           Start point latitude
+    * @param lon1
+    *           Start point longitude
+    * @param lat2
+    *           End point latitude
+    * @param lon2
+    *           End point longitude
+    * @param el1
+    *           Start altitude in meters
+    * @param el2
+    *           End altitude in meters
     * @returns Distance in Meters
     */
-   private static double distance(double lat1, double lat2, double lon1,
-           double lon2, double el1, double el2) {
+   private static double distance(double lat1, double lat2, double lon1, double lon2, double el1, double el2)
+   {
+      final int R = 6371; // Radius of the earth
 
-       final int R = 6371; // Radius of the earth
-       
-       double latDistance = Math.toRadians(lat2 - lat1);
-       double lonDistance = Math.toRadians(lon2 - lon1);
-       double a = Math.sin(latDistance / 2) * Math.sin(latDistance / 2)
-               + Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2))
-               * Math.sin(lonDistance / 2) * Math.sin(lonDistance / 2);
-       double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-       double distance = R * c * 1000; // convert to meters
+      double latDistance = Math.toRadians(lat2 - lat1);
+      double lonDistance = Math.toRadians(lon2 - lon1);
+      double a = Math.sin(latDistance / 2) * Math.sin(latDistance / 2)
+               + Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2)) * Math.sin(lonDistance / 2) * Math.sin(lonDistance / 2);
+      double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+      double distance = R * c * 1000; // convert to meters
 
-       double height = el1 - el2;
+      double height = el1 - el2;
 
-       distance = Math.pow(distance, 2) + Math.pow(height, 2);
+      distance = Math.pow(distance, 2) + Math.pow(height, 2);
 
-       return Math.sqrt(distance);
+      return Math.sqrt(distance);
    }
 
 }

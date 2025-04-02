@@ -11,7 +11,6 @@ package com.mr.apps.JNordVpnManager.gui.components;
 import javax.swing.JTextField;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import com.mr.apps.JNordVpnManager.Starter;
 import com.mr.apps.JNordVpnManager.utils.String.StringFormat;
 
 import java.awt.FlowLayout;
@@ -61,15 +60,8 @@ public class JLabeledTextField extends JPanel
       flowLayout.setVgap(0);
       this.setLayout(flowLayout);
 
-      try
-      {
-         create(in_size, in_textPre, in_textPost);
-      }
-      catch (Exception e)
-      {
-         Starter._m_logError.LoggingExceptionMessage(5, 10998, e);
-      }
-   }
+      create(in_size, in_textPre, in_textPost);
+    }
 
    /**
     * Get a Text component of the labeled Text Field Component
@@ -160,7 +152,7 @@ public class JLabeledTextField extends JPanel
     *           is a field postfix
     * @throws Exception
     */
-   private void create(int size, String in_textPre, String in_textPost) throws Exception
+   private void create(int size, String in_textPre, String in_textPost)
    {
       if (in_textPre != null)
       {

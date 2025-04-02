@@ -157,10 +157,7 @@ public class JSpeedMeter extends JPanel
       if (this.m_speed > _m_maxSpeed + 10) this.m_speed = _m_maxSpeed + 10;
 
       // build the string to display
-      this.m_speedString = StringFormat.number2String(this.m_speed, "0.00") + "Mbit/s" /* +
-                         " [min:" + StringFormat.number2String(this.m_speedMin, "0.00") +
-                         " / max: " + StringFormat.number2String(this.m_speedMax, "0.00") +
-                         " / Av: " + StringFormat.number2String(this.m_speedAvg, "0.00") + "]" */ ;
+      this.m_speedString = StringFormat.number2String(this.m_speed, "0.00") + "Mbit/s";
       repaint ();
    }
 
@@ -193,9 +190,9 @@ public class JSpeedMeter extends JPanel
       super.paintComponent(g);
       Graphics2D ga = (Graphics2D) g;
 
-      ga.setColor(Color.white);
+      ga.setColor(Color.lightGray);
       ga.fillRect(0, 0, _m_componentSize - 1, _m_componentSize - 1);
-      ga.setColor(Color.black);
+      ga.setColor(Color.blue);
       ga.drawRect(0, 0, _m_componentSize - 1, _m_componentSize - 1); // draw border
       ga.drawString(m_title, 5, 15);
 
