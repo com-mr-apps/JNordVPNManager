@@ -4,7 +4,7 @@
   <groupId>com.mr.apps.JNordVpnManager</groupId>
   <artifactId>JNordVpnManager</artifactId>
   <name>JNordVpnManager</name>
-  <version>2025.3.1</version>
+  <version>2025.3.2</version>
   <url>http://maven.apache.org</url>
   <build>
     <resources>

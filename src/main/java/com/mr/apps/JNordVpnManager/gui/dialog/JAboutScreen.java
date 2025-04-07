@@ -38,7 +38,6 @@ public class JAboutScreen
    private static final String NORDVPN_IMAGE      = "resources/NordVPN.png";
    private static final String GEOTOOLS_IMAGE     = "resources/GeoTools.png";
    private static final String NATURALEARTH_IMAGE = "resources/NaturalEarth.png";
-   private static final String COPYRIGHT_STRING   = "Copyright Ⓒ 2024 - written by com.mr.apps";
 
    private static final String m_htmlAboutText = "<p>JNordVPN Manager is an open-source graphical user interface (GUI) application designed to make managing NordVPN connections on Linux easier and more intuitive than using the native nordvpn commands. Built with Java, this GUI provides a comprehensive set of features that cater to the needs of NordVPN users on the Linux platform.</p>"
    + "<p>Key Features:</p>"
@@ -75,6 +74,11 @@ public class JAboutScreen
    + "<p>Thanks to Natural Earth. Free vector and raster map data from:</p>"
    + "<ul>"
    + "<li><a href=\"https://www.naturalearthdata.com/\">https://www.naturalearthdata.com/</a></li>"
+   + "</ul>"
+   + "<h3>Speed Test</h3>"
+   + "<p>Based on JSpeedTest: Speed test client library for Java/Android</p>"
+   + "<ul>"
+   + "<li><a href=\"https://github.com/bertrandmartel/speed-test-lib\">https://github.com/bertrandmartel/speed-test-lib</a></li>"
    + "</ul>"
    
    + "<h2>Donations</h2>"
@@ -129,7 +133,7 @@ public class JAboutScreen
       lblVersion.setForeground(new Color(97, 206, 255));
       aboutBaseImageLabel.add(lblVersion);
 
-      JLabel copyright =  new JLabel(COPYRIGHT_STRING);
+      JLabel copyright =  new JLabel(Starter.COPYRIGHT_STRING);
       copyright.setSize(copyright.getPreferredSize());
       copyright.setLocation(20, 35);
       copyright.setFont(new Font("serif", Font.ITALIC, 12));

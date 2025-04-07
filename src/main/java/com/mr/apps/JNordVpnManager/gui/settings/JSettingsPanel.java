@@ -44,12 +44,14 @@ public class JSettingsPanel extends JPanel
    private static final Insets              WEST_INSETS        = new Insets(5, 0, 5, 5);
    private static final Insets              EAST_INSETS        = new Insets(5, 5, 5, 0);
    private Map<String, JSettingsPanelField> m_hmSettingsFields = null;
+   private HashMap<String, String>          m_hmSettingsValues = null;
    private String                           m_title;
 
-   public JSettingsPanel(String title, Map<String, JSettingsPanelField> hmSettingsFields, HashMap<String,String> hmSettingValues)
+   public JSettingsPanel(String title, Map<String, JSettingsPanelField> hmSettingsFields, HashMap<String,String> hmSettingsValues)
    {
       m_title = title;
       m_hmSettingsFields = hmSettingsFields;
+      m_hmSettingsValues = hmSettingsValues;
       setLayout(new GridBagLayout());
       setBorder(BorderFactory.createCompoundBorder(
             BorderFactory.createTitledBorder("Settings Editor"),
@@ -61,9 +63,17 @@ public class JSettingsPanel extends JPanel
       for (String key : keys)
       {
          JSettingsPanelField settingsField = hmSettingsFields.get(key);
-         String valueField = hmSettingValues.get(key);
+         if (null == settingsField)
+         {
+            // skip (internal) dataset value w/o panel field
+//            Starter._m_logError.TraceDebug("Skip internal data (no Panel Field): " + key);
+            continue;
+         }
+
+         String valueField = hmSettingsValues.get(key);
          if (null == valueField)
          {
+            // Skip Panel field with no value
 //            Starter._m_logError.TraceDebug("Skip Panel Field (no value): " + settingsField.toString());
             continue;
          }
@@ -94,8 +104,7 @@ public class JSettingsPanel extends JPanel
          }
          else if (settingsField.getElementType().startsWith("N"))
          {
-            int minMax[] = getMinMax(settingsField.getElementType());
-            JIntegerStepValField textField = new JIntegerStepValField(null, null, minMax[0], minMax[1], 1);
+            JIntegerStepValField textField = new JIntegerStepValField(null, null, settingsField.getElementType());
             textField.setText(valueField);
             if (textField.hasMinMaxValues()) textField.setEditable(false);
             if (settingsField.getMnemonic() > 0) label.setDisplayedMnemonic(settingsField.getMnemonic());
@@ -138,7 +147,7 @@ public class JSettingsPanel extends JPanel
          {
             public void actionPerformed(ActionEvent e)
             {
-               setSettingValue(key, settingsField.getJPanelComponent(),  null);
+               setSettingValue(key, settingsField.getJPanelComponent(), null);
             }
          });
          gbc = createGbc(2, iFieldNb);
@@ -165,39 +174,63 @@ public class JSettingsPanel extends JPanel
       return gbc;
    }
 
+   /**
+    * Get all current Dataset values
+    * @return the complete current dataset values
+    */
    public HashMap<String, String> getAllValues()
    {
       HashMap<String,String> values = new HashMap <String,String>();
       for (HashMap.Entry<String, JSettingsPanelField> entry : m_hmSettingsFields.entrySet())
       {
          String key = entry.getKey();
-         Object field = entry.getValue().getJPanelComponent();
-         values.put(key, getFieldText(m_hmSettingsFields.get(key), field));
+         JSettingsPanelField fieldClass = entry.getValue();
+         if (null == fieldClass)
+         {
+            // internal dataset value w/o panel field
+            values.put(key, m_hmSettingsValues.get(key));
+         }
+         else
+         {
+            // get the current panel field value
+            values.put(key, getFieldText(fieldClass));
+         }
       }
       return values;
    }
 
+   /**
+    * Set a panel field with a value
+    * 
+    * @param key
+    *           is the value key
+    * @param field
+    *           is the panel field component
+    * @param value
+    *           is the value. If null - the data set default value is used
+    */
    private void setSettingValue(String key, Object field, String value)
    {
       if (null == field) return;
 
-      JSettingsPanelField fieldTitle = m_hmSettingsFields.get(key);
-      if (value == null) value = fieldTitle.getDefaultValue();
-      if (fieldTitle.getElementType().startsWith("T"))
+      JSettingsPanelField fieldClass = m_hmSettingsFields.get(key);
+      if (value == null) value = fieldClass.getDefaultValue();
+
+      if (fieldClass.getElementType().startsWith("T"))
       {
          ((JTextField) field).setText(value);
       }
-      else if (fieldTitle.getElementType().startsWith("B"))
+      else if (fieldClass.getElementType().startsWith("B"))
       {
          ((JCheckBox) field).setSelected(value.matches("1|true|enable|on|enabled"));
       }
-      else if (fieldTitle.getElementType().startsWith("N"))
+      else if (fieldClass.getElementType().startsWith("N"))
       {
          ((JIntegerStepValField) field).setText(value);
       }
-      else if (fieldTitle.getElementType().startsWith("L"))
+      else if (fieldClass.getElementType().startsWith("L"))
       {
-         int idx = getListIndex(getList(fieldTitle.getElementType()), value);
+         int idx = getListIndex(getList(fieldClass.getElementType()), value);
          ((JList<?>) field).setSelectedIndex(idx);
       }
       else
@@ -205,19 +238,31 @@ public class JSettingsPanel extends JPanel
          // should not happen
          Starter._m_logError.LoggingAbend(10997,
                "Invalid Field Type",
-               "The field type '" + fieldTitle.getElementType() + "' is not implemented yet. Please open a Issue/Bug report.");
+               "The field type '" + fieldClass.getElementType() + "' is not implemented yet. Please open a Issue/Bug report.");
          return;
       }
       
    }
-   public void setAllSettingValues(HashMap <String,String> hm)
+
+   /**
+    * Set all panel fields with values from a data set
+    * 
+    * @param hm
+    *           is the data set
+    */
+   public void setAllSettingValues(HashMap<String, String> hm)
    {
       Starter._m_logError.TraceDebug("Refresh " + m_title + " settings panel values.");
       for (HashMap.Entry<String, JSettingsPanelField> entry : m_hmSettingsFields.entrySet())
       {
          String key = entry.getKey();
          JSettingsPanelField entryValue = entry.getValue();
-         if (null != entryValue)
+         if (null == entryValue)
+         {
+            // set internal data set value with current value (e.g. from import)
+            m_hmSettingsValues.put(key, hm.get(key));
+         }
+         else
          {
             Object textField = entryValue.getJPanelComponent();
             String value = null;
@@ -230,23 +275,31 @@ public class JSettingsPanel extends JPanel
       }
    }
 
-   public String getFieldText(JSettingsPanelField fieldTitle, Object field)
+   /**
+    * Helper to get a component specific field value
+    * 
+    * @param fieldClass
+    *           is the panel field class
+    * @return the panel field text value
+    */
+   private String getFieldText(JSettingsPanelField fieldClass)
    {
+      Object field = fieldClass.getJPanelComponent();
       if (null == field) return null;
 
-      if (fieldTitle.getElementType().startsWith("T"))
+      if (fieldClass.getElementType().startsWith("T"))
       {
          return ((JTextField) field).getText();
       }
-      else if (fieldTitle.getElementType().startsWith("B"))
+      else if (fieldClass.getElementType().startsWith("B"))
       {
          return (((JCheckBox) field).isSelected()) ? "1" : "0";
       }
-      else if (fieldTitle.getElementType().startsWith("N"))
+      else if (fieldClass.getElementType().startsWith("N"))
       {
          return ((JIntegerStepValField) field).getText();
       }
-      else if (fieldTitle.getElementType().startsWith("L"))
+      else if (fieldClass.getElementType().startsWith("L"))
       {
          return ((JList<?>) field).getSelectedValue().toString();
       }
@@ -255,27 +308,18 @@ public class JSettingsPanel extends JPanel
          // should not happen
          Starter._m_logError.LoggingAbend(10997,
                "Invalid Field Type",
-               "The field type '" + fieldTitle.getElementType() + "' is not implemented yet. Please open a Issue/Bug report.");
+               "The field type '" + fieldClass.getElementType() + "' is not implemented yet. Please open a Issue/Bug report.");
          return null;
       }
    }
-
-   private int[] getMinMax(String def)
-   {
-      int minMax[] = {0,0};
-      
-      Pattern pattern = Pattern.compile("N\\[([+-]?\\d+),([+-]?\\d+)\\]", Pattern.CASE_INSENSITIVE);
-      Matcher matcher = pattern.matcher(def);
-      boolean matchFound = matcher.find();
-      if (matchFound)
-      {
-         minMax[0] = Integer.valueOf(matcher.group(1));
-         minMax[1] = Integer.valueOf(matcher.group(2));
-      }
-
-      return minMax;
-   }
    
+   /**
+    * Helper to get the list options from the list definition
+    * 
+    * @param def
+    *           is the list definition in form L[l1,l2,l3,...]
+    * @return the list in form {"l1","l2","l3",...}
+    */
    private String[] getList(String def)
    {
       Pattern pattern = Pattern.compile("L\\[([^]]*)\\]", Pattern.CASE_INSENSITIVE);
@@ -288,6 +332,15 @@ public class JSettingsPanel extends JPanel
       return null;
    }
 
+   /**
+    * Helper to get the list index from the list
+    * 
+    * @param list
+    *           is the list in form {"l1","l2","l3",...}
+    * @param value
+    *           is the list value, e.g. "l2"
+    * @return the index of the value in the list (starting at 0)
+    */
    private int getListIndex(String[] list, String value)
    {
       int idx = 0;

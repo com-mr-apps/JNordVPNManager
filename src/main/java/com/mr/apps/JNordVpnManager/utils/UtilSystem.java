@@ -97,16 +97,16 @@ public class UtilSystem
    {
       if (UtilSystem.isLastError())
       {
-         JModalDialog.showError(shortMsg, UtilSystem.getLastError() + "\n" + StringFormat.printString (msg, "<empty message>", "<null mwssage>"));
+         JModalDialog.showError(shortMsg, UtilSystem.getLastError() + "\n" + StringFormat.printString (msg, "<empty message>", "<null message>"));
          return m_lastExitCode;
       }
       else if (autoClose)
       {
-         JModalDialog.showMessageAutoClose(shortMsg, StringFormat.printString(msg, "<empty message>", "<null mwssage>"));
+         JModalDialog.showMessageAutoClose(shortMsg, StringFormat.printString(msg, "<empty message>", "<null message>"));
       }
       else
       {
-         JModalDialog.showMessage(shortMsg, StringFormat.printString(msg, "<empty message>", "<null mwssage>"));
+         JModalDialog.showMessage(shortMsg, StringFormat.printString(msg, "<empty message>", "<null message>"));
       }
       return 0;
    }
@@ -146,7 +146,7 @@ public class UtilSystem
     */
    public static String runCommand(String... command)
    {
-      Starter._m_logError.TraceCmd("Execute command=" + joinCommand(command));
+      Starter._m_logError.TraceCmd("[cmd] '" + joinCommand(command) + "'");
       m_lastErrorMessage = null;
       m_lastExitCode = -1;
 
@@ -184,15 +184,15 @@ public class UtilSystem
          }
 
          m_lastExitCode = m_process.exitValue();
-         Starter._m_logError.TraceCmd("Returncode=" + m_lastExitCode);
+//         Starter._m_logError.TraceCmd("Returncode=" + m_lastExitCode);
          if (0 != m_lastExitCode)
          {
             // return error
             m_lastErrorMessage = "Command '" + joinCommand(command) + "' returned with error code: " + m_lastExitCode + ".";
          }
 
-         if (null != m_stdOut && m_stdOut.length() > 0) Starter._m_logError.TraceCmd("[stdout]\n" + m_stdOut + "\n");
-         if (null != m_stdErr && m_stdErr.length() > 0) Starter._m_logError.TraceCmd("[stderr]\n" + m_stdErr + "\n");
+         if (null != m_stdOut && m_stdOut.length() > 0) Starter._m_logError.TraceOut(m_stdOut.toString());
+         if (null != m_stdErr && m_stdErr.length() > 0) Starter._m_logError.TraceErr("(rc=" + m_lastExitCode + ") " + m_stdErr.toString());
 
          if (m_stdErr.length() > 0)
          {

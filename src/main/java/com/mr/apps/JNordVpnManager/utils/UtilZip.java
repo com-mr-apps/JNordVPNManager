@@ -12,12 +12,16 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.SequenceInputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Comparator;
+import java.util.Vector;
 import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
+
+import com.mr.apps.JNordVpnManager.utils.String.StringFormat;
 
 public class UtilZip
 {
@@ -120,6 +124,24 @@ public class UtilZip
          // TODO Auto-generated catch block
          e.printStackTrace();
       }
+   }
 
+   public static void unzipSplitResourceAsStream(Class<?> c, String inFile, String destDir) throws IOException
+   {
+      Vector<InputStream> inputStreams = new Vector<>();
+      int iNumber = 1;
+      String sNumber = "001";
+      String fileName = inFile + "." + sNumber;
+      InputStream inStream = c.getResourceAsStream(fileName);
+      while (inStream != null)
+      {
+         inputStreams.add(inStream);
+         ++iNumber;
+         sNumber = StringFormat.int2String(iNumber, "000");
+         fileName = inFile + "." + sNumber;
+         inStream = c.getResourceAsStream(fileName);
+      }
+      SequenceInputStream sequenceInputStream = new SequenceInputStream(inputStreams.elements());
+      intUnzip(sequenceInputStream, destDir);
    }
 }

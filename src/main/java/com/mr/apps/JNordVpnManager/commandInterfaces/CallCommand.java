@@ -18,37 +18,47 @@ import java.util.prefs.Preferences;
 
 import com.mr.apps.JNordVpnManager.Starter;
 import com.mr.apps.JNordVpnManager.utils.UtilCrypt;
+import com.mr.apps.JNordVpnManager.utils.UtilPrefs;
 
 public class CallCommand
 {
    private static URLClassLoader m_urlClassLoader = null;
 
-   public static boolean initClassLoader(String path)
+   public static String getAddonLibraryName()
    {
       String jarFile = "";
       try
       {
          // not hacker proofed - just to protect my work by legal copyright
-         // Donations based on completely free software seems not to work - changed the concept to addOns for Supporters...
-         Preferences prefAddOns = Preferences.userRoot().node("com/mr/apps/JNordVpnManager/Settings/AddOns");
+         // Donations based development on completely free software seems not to work - changed the concept to addOns for Supporters...
+         Preferences prefAddOns = Preferences.userRoot().node(UtilPrefs.PREFRENCES_ADDON_NODE);
          String key = prefAddOns.get("Security.Key", "");
-         if (key.isBlank()) return false;
+         if (key.isBlank()) return jarFile;
          String enc = prefAddOns.get("Data.1", "");
-         if (enc.isBlank()) return false;
+         if (enc.isBlank()) return jarFile;
 
          UtilCrypt cryptoUtil = new UtilCrypt();
          String dec = cryptoUtil.decrypt(key, enc);
          jarFile = "JNordVpnManager.addons-" + dec + ".jar";
-         Starter._m_logError.LoggingInfo("Load add-on library '" + jarFile + "'. This library is protected by copyright. Illegal use is prohibited!");
-         Starter._m_logError.LoggingInfo("\nI would like to thank the supporters of my work and wish you much joy with the application.\n"
-               + "To become a supporter and get a legal version of the add-on library together with supporters specific content,\n"
-               + "you are invited to visit me here: https://buymeacoffee.com/3dprototyping");
       }
       catch (Exception e)
       {
          Starter._m_logError.LoggingExceptionMessage(4, 10500, e);
-         return false;
       }
+      return jarFile;
+   }
+
+   /**
+    * Initialize the class loader
+    * 
+    * @param path
+    *           is the classpath
+    * @return <code>true</code> if all is ok, else <code>false</code>
+    */
+   public static boolean initClassLoader(String path)
+   {
+      String jarFile = getAddonLibraryName();
+      if (jarFile.isBlank()) return false;
 
       if (false == path.endsWith("/")) path = path + "/";
       File fpJarFile = new File(path, jarFile);
@@ -73,7 +83,6 @@ public class CallCommand
                   "Addon jarfile (optional) does not exist:\n" + fpJarFile.getAbsolutePath());
             return false;
          }
-
       }
       catch (Exception e)
       {
@@ -82,9 +91,12 @@ public class CallCommand
                "Addon jarfile (optional) does not exist:\n" + fpJarFile.getAbsolutePath());
          return false;
       }
-      return true;
+      return (boolean)CallCommand.invokeAddonMethod("AddonManager", "initialize");
    }
 
+   /* ==============================================================================================
+    * Invoke methods
+    * ==============================================================================================*/
    public static Object invokeAddonMethod(String className, String methodName)
    {
       return invokeMethod(null, "com.mr.apps.JNordVpnManager.addons." + className, methodName, null, null);

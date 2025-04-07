@@ -48,9 +48,20 @@ public class VpnSetObfuscate extends CoreCommandClass
       JCheckBox cb = (JCheckBox)cmd.getComponent();
       if (null != cb)
       {
-         cb.setSelected(StringFormat.string2boolean(Starter.getCurrentSettingsData().getObfuscate(false)));
-         cb.setEnabled(cmd.isEnabled());
-         cmd.updateToolTipUI(cmd.getToolTip());
+         String sToolTip = cmd.getToolTip();
+         if (false == Starter.getCurrentSettingsData().getTechnology(false).equals("OPENVPN")) 
+         {
+            cb.setSelected(false);
+            cb.setEnabled(false);
+            sToolTip = "Obfuscated only available for technology 'OPENVPN'";
+         }
+         else
+         {
+            cb.setSelected((boolean)get());
+            cb.setEnabled(true);
+         }
+         cmd.updateToolTipUI(sToolTip);
+
       }
       return true;
    }

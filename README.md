@@ -15,7 +15,7 @@ Key Features:
 * **Recent Connections**: The application stores your recent connections for easy reconnection. Simply select one to reconnect instantly.
 * **World Map View**: Visualize all available VPN servers on a world map and focus on the active server, providing an intuitive way to navigate through NordVPN's vast network.
 * **Security**: The application does not store any login information (Account, Password). It is just an interface for the the native nordvpn commands.
-* **Quick Access Commands Toolbar** Free configurable commands Toolbar for commonly used commands/settings.
+* **Quick Access Commands Tool Bar** Free configurable commands Tool Bar for commonly used commands/settings.
 
 The application is released under the Common Development and Distribution License 1.1 ([CDDL-1.1](https://spdx.org/licenses/CDDL-1.1.html)) with a Commons Clause License, ensuring that it remains free for private use only. This means that while you can download and enjoy NordVPN Manager without any costs, commercial exploitation of the software requires my explicit permission.
 
@@ -80,7 +80,7 @@ Based on JSpeedTest: Speed test client library for Java/Android
 * https://github.com/bertrandmartel/speed-test-lib
 
 ## Donations
-Funding for the ongoing development and maintenance of this application comes from donations made to me through [https://buymeacoffee.com/3dprototyping](https://buymeacoffee.com/3dprototyping). Your support in the form of a coffee or any other contribution is greatly appreciated and helps keep JNordVPN Manager alife and up-to-date.
+Funding for the ongoing development and maintenance of this application comes from donations made to me through [https://buymeacoffee.com/3dprototyping](https://buymeacoffee.com/3dprototyping). Your support in the form of a coffee or any other contribution is greatly appreciated and helps keep JNordVPN Manager alive and up-to-date.
 If you like to be part of the Supporters group, which will have access to the Supporter Edition with more features, you can find more information there.
 
 If you appreciate NordVPN's services, you can also support me by ordering NordVPN through my affiliate link: [https://refer-nordvpn.com/ArNNOfynXcu](https://refer-nordvpn.com/ArNNOfynXcu). This not only helps fund the development of JNordVPN Manager but also provides a financial incentive for further improving and maintaining this application.

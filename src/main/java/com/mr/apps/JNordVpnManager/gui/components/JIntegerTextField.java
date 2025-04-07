@@ -10,6 +10,9 @@ package com.mr.apps.JNordVpnManager.gui.components;
 
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
+
+import com.mr.apps.JNordVpnManager.utils.String.StringFormat;
+
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 
@@ -77,5 +80,17 @@ public class JIntegerTextField extends JTextField
    public JIntegerTextField(int _col)
    {
       this("", _col);
+   }
+   
+   public void setValue(Integer iVal)
+   {
+      if (null == iVal)
+      {
+         this.setText("");
+      }
+      else
+      {
+         this.setText(StringFormat.int2String(iVal, "0"));
+      }
    }
 }

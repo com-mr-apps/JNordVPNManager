@@ -35,7 +35,7 @@ public class JSupportersDialog extends JFrame
 {
    private static final String m_htmlTitleText = "<p>I would like to thank the supporters of my work and wish you much joy with the application.<br>"
          + "<em>To become a supporter and get a legal version of the add-on library together with supporters specific content,"
-         + "you are invited to visit me at Buy Me A Coffee</em>.</p>";
+         + "others are invited to visit me at Buy Me A Coffee</em>.</p>";
 
    private static final String m_htmlBodyText = "<h1>Support My Open-Source Software Development</h1>"
 //         + "<p>Hello, I&#39;m the creator of <a href=\"https://github.com/com-mr-apps\">com-mr-apps</a>, a seasoned software designer &amp; programmer with over 30 years of experience in creating high-quality, usable software solutions. As a strong advocate for open-source software, I&#39;ve dedicated my career to developing applications that benefit the community.</p>"
@@ -55,12 +55,16 @@ public class JSupportersDialog extends JFrame
          + "<p>Your contributions will directly support the development of new features, bug fixes, and documentation for my open-source projects. This will help me allocate more time for creating innovative solutions, rather than focusing on administrative tasks.</p>"
 
          + "<h3>What Is The JNordVPN Manager Supporters Edition</h3>"
-         + "<h4>Some features of the application will be available exclusive for <em>my supporters</em>. Planned features are:</h4>"
+         + "<h4>Features that are available exclusive for <em>my supporters</em>:</h4>"
+         + "<ul>"
+         + "<li><strong>Allow-, Whitelist</strong>: Manage allowlist for ports and subnets.</li>"
+         + "<li><strong>Timer Reconnect</strong>: Time-based automatic [re]connect to VPN location.</li>"
+         + "</ul>"
+         + "<h4>...planned features are:</h4>"
          + "<ul>"
          + "<li><strong>NordVPN Recommended Servers</strong>: Filter Servers by load index (speed) from NordVPN recommended servers list. <a href=\"https://github.com/com-mr-apps/JNordVPNManager/issues/16\">[GitHub Issue #16]</a>.</li>"
-         + "<li><strong>Allow-, Whitelist</strong>: Manage allowlist for ports and subnets. <a href=\"https://github.com/com-mr-apps/JNordVPNManager/issues/17\">[GitHub Issue #17]</a>.</li>"
          + "<li><strong>Meshnet</strong>: NordVPN Meshnet Settings/Management. <a href=\"https://github.com/com-mr-apps/JNordVPNManager/issues/18\">[GitHub Issue #18]</a>.</li>"
-         + "<li><strong>Cycle Connections</strong>: Time-based automatic [re]connect to VPN servers.</li>"
+         + "<li><strong>Cycle Connections</strong>: Time-based automatic [re]connect to a list of defined VPN servers.</li>"
          + "<li><strong>Speedtest</strong>: check/show connection speeds.</li>"
          + "<li><em>...further suggestions are welcome...</em>"
          + "</ul>"
@@ -70,7 +74,7 @@ public class JSupportersDialog extends JFrame
 
          + "<h3>Where you can support me:</h3>"
          + "<ul>"
-         + "<li><a href=\"https://buymeacoffee.com/3dprototyping\">Donations at Buy Me A Coffee</a></li>"
+         + "<li><a href=\"https://buymeacoffee.com/3dprototyping\">Donations and Supporters Membership at Buy Me A Coffee</a></li>"
          + "<li><a href=\"https://github.com/sponsors/com-mr-apps\">GitHub Sponsorship</a> (comming soon...)</li>"
          + "</ul>";
          

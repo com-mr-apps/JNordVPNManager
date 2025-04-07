@@ -65,6 +65,8 @@ public class JCustomConsole extends JFrame
          + ".dbg {font-style: italic; color: #7b7d7d;}"
          + ".cmd {font-weight: bold; color: blue;}"
          + ".ini {font-weight: normal; color: #28b463;}"
+         + ".out {font-style: italic; font-weight: normal; color: blue;}"
+         + ".err {font-style: italic; font-weight: normal; color: orange;}"
          + ".er5 {font-weight: bold; color: #ff334f;}"
          + ".er4 {font-weight: bold; color: red;}"
          + ".er3 {font-weight: normal; color: orange;}"
@@ -386,6 +388,11 @@ public class JCustomConsole extends JFrame
       m_streamHandlers.execute(() -> handleStream(m_pipedInputStreamOut));
       m_streamHandlers.execute(() -> handleStream(m_pipedInputStreamErr));
 
+      if (1 == UtilPrefs.isConsoleActive())
+      {
+         // open the console at program start
+         setConsoleVisible(true);
+      }
    }
 
    /**
@@ -553,8 +560,9 @@ public class JCustomConsole extends JFrame
          if (nbRead != -1) line.append((char)b[0]);
          if ((line.toString().endsWith("</p>")) || (b[0] == '\n'))
          {
-            appendText(line.toString());
-            line = new StringBuffer();
+            nbRead = 0; 
+            //appendText(line.toString());
+            //line = new StringBuffer();
          }
       }
       while ((nbRead == 1) && (!m_quitFlag));
@@ -634,6 +642,11 @@ public class JCustomConsole extends JFrame
    {
       m_isVisible = !m_isVisible;
       setConsoleVisible(m_isVisible);
+      return m_isVisible;
+   }
+
+   public synchronized boolean getConsoleVisible()
+   {
       return m_isVisible;
    }
 }

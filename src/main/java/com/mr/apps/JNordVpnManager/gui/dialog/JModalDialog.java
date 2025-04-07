@@ -63,6 +63,7 @@ public class JModalDialog extends JDialog implements ActionListener
    private JButton           m_button;
    private JFileSelectionBox m_dragAndDropPanel;
 
+   public static String BUTTON_SEPARATOR = ",";
    /**
     * Constructor for any modal dialog
     * <p>
@@ -130,7 +131,7 @@ public class JModalDialog extends JDialog implements ActionListener
             new Font("SansSerif",Font.BOLD, 12),
             Color.BLACK));
       messageText.setFont(messageText.getFont().deriveFont(Font.ITALIC));
-      messageText.setText(Wrap.wrap(msg, 200, null, true, null, "   "));
+      messageText.setText(Wrap.wrap(msg.replaceAll("\t", "   "), 200, null, true, null, "   "));
       messageText.setEditable(false);
       m_messagePanel.add(messageText, BorderLayout.CENTER);
 
@@ -144,7 +145,7 @@ public class JModalDialog extends JDialog implements ActionListener
       // Buttons
       m_buttonsPanel = new JPanel();
       m_buttonsPanel.setLayout(new FlowLayout(FlowLayout.CENTER));
-      StringTokenizer strtok = new StringTokenizer(m_buttons, ",");
+      StringTokenizer strtok = new StringTokenizer(m_buttons, BUTTON_SEPARATOR);
       while (strtok.hasMoreTokens())
       {
          m_button = new JButton(strtok.nextToken());
@@ -229,7 +230,7 @@ public class JModalDialog extends JDialog implements ActionListener
    {
       int iCnt = 0;
 
-      StringTokenizer strtok = new StringTokenizer(m_buttons, ",");
+      StringTokenizer strtok = new StringTokenizer(m_buttons, BUTTON_SEPARATOR);
       while (strtok.hasMoreTokens())
       {
          if (strtok.nextToken().equals(m_result))
@@ -329,7 +330,7 @@ public class JModalDialog extends JDialog implements ActionListener
 
    public static int showYesNoDialog(String title, String iconName, String msg)
    {
-      JModalDialog dlg = new JModalDialog(Starter.getMainFrame(), title, iconName, msg, "Yes,No", new Color(51,153,255));
+      JModalDialog dlg = new JModalDialog(Starter.getMainFrame(), title, iconName, msg, "Yes,No", Color.CYAN);
       dlg.repaint();
       dlg.setVisible(true);
       return (dlg.getResult() == 0) ? JOptionPane.YES_OPTION : JOptionPane.NO_OPTION;

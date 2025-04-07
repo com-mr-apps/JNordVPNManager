@@ -160,7 +160,7 @@ public class CurrentLocation extends Location
     */
    public boolean isStatic()
    {
-      return (null == m_legacyGroup && null == m_vpnTechnology && null ==m_vpnProtocol);
+      return !(null == m_legacyGroup && null == m_vpnTechnology && null == m_vpnProtocol);
    }
 
    /**

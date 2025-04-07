@@ -18,6 +18,7 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 
 import com.mr.apps.JNordVpnManager.Starter;
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.dnd.DnDConstants;
 import java.awt.dnd.DropTarget;
@@ -72,6 +73,7 @@ public class JFileSelectionBox extends JPanel
       });
 
       m_fileDropArea = new JTextArea("Drop file here");
+            m_fileDropArea.setBackground(new Color(247, 217, 146));
       m_fileDropArea.setEditable(false);
       m_fileDropArea.setDropTarget(new DropTarget() {
          public synchronized void drop(DropTargetDropEvent evt)

@@ -25,6 +25,7 @@ import com.mr.apps.JNordVpnManager.nordvpn.NvpnCallbacks;
 public class GuiConnectLine
 {
    private static JButton m_jbMail = null;
+   private static GuiCommandsToolBar m_commandsToolBar = null;
 
    public GuiConnectLine()
    {
@@ -43,8 +44,8 @@ public class GuiConnectLine
       JPanel connectPanel = new JPanel(new BorderLayout());
       connectPanel.setBorder(BorderFactory.createEmptyBorder(0,5,5,5));
 
-      GuiCommandsToolBar ctb = new GuiCommandsToolBar();
-      connectPanel.add(ctb, BorderLayout.LINE_START);
+      m_commandsToolBar = new GuiCommandsToolBar();
+      connectPanel.add(m_commandsToolBar, BorderLayout.LINE_START);
 
       JPanelConnectTimer ps = new JPanelConnectTimer();
       connectPanel.add(ps, BorderLayout.CENTER);
@@ -92,4 +93,13 @@ public class GuiConnectLine
          m_jbMail.setToolTipText("Click here to Login to NordVPN");
       }
    }
+
+   /**
+    * Rebuild Commands ToolBar dependent on User Preferences.
+    */
+   public static void rebuildCommandsToolbar()
+   {
+      m_commandsToolBar.rebuildCommandsToolbar();
+   }
+
 }
