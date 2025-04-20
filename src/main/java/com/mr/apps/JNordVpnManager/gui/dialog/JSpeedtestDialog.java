@@ -145,9 +145,11 @@ public class JSpeedtestDialog extends JDialog
     * @param progress
     *           The progress value to be set
     * @param currentSpeed
-    *           is the current speed
+    *           is the current transfer speed
+    * @param averageSpeed
+    *           is the average transfer speed
     */
-   public void setSpeeds(int progress, double currentSpeed)
+   public void setSpeeds(int progress, double currentSpeed, double averageSpeed)
    {
       m_progressBar.setValue(progress);
       m_progressBar.revalidate();
@@ -156,7 +158,7 @@ public class JSpeedtestDialog extends JDialog
       m_speedMeter.setSpeeds(currentSpeed);
       m_txtSpeedMin.setText(m_speedMeter.getSpeedMin(), "0.00");
       m_txtSpeedMax.setText(m_speedMeter.getSpeedMax(), "0.00");
-      m_txtSpeedAvg.setText(m_speedMeter.getSpeedAvg(), "0.00");
+      m_txtSpeedAvg.setText(averageSpeed, "0.00");
    }
 
    public boolean forceStopTask()
