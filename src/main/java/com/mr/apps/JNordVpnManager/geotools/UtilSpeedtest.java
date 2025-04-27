@@ -66,6 +66,8 @@ public class UtilSpeedtest
    // error messages
    private static boolean                      m_speedtestError          = false;
 
+   private static boolean                      m_speedtestIsRunning      = false;
+
    public static void setVisibleSpeedtestMapLayer(boolean visible)
    {
       if (m_isVisible != visible)
@@ -290,6 +292,13 @@ public class UtilSpeedtest
    {
       Starter._m_logError.TraceDebug("(speedTest) uri=" + uri + " [" + city + "]");
 
+      if (true == m_speedtestIsRunning)
+      {
+         // avoid multiple instances
+         return;
+      }
+      m_speedtestIsRunning = true;
+
       // Create/Show the Speed Test Dialog
       if (null == m_speedTestDiaLog)
       {
@@ -332,6 +341,8 @@ public class UtilSpeedtest
                      + "\nAverage Download speed: " + StringFormat.number2String(averageSpeed, "#.##") + "MBit/s", true);
                m_speedTestDiaLog.setSpeeds((int)report.getProgressPercent(), report.getTransferRateBit().divide(new BigDecimal(1000000.0)).doubleValue(), averageSpeed);
             }
+            m_speedTestDiaLog.finalize();
+            m_speedtestIsRunning = false;
          }
 
          @Override
@@ -357,8 +368,12 @@ public class UtilSpeedtest
                }
 
                speedTestSocket.forceStopTask();
+               m_speedtestIsRunning = false;
+               m_speedTestDiaLog.finalize();
                return;
             }
+
+            // ..additional calls
             m_speedTestDiaLog.setMessage("\n" + errorMessage, true);
          }
 
