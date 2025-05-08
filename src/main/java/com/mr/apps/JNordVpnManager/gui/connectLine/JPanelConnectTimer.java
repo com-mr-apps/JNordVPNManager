@@ -372,7 +372,7 @@ public class JPanelConnectTimer extends JPanel
          // call from GuiStatusLine.update()
          if (m_timerWorkMode == GuiStatusLine.STATUS_UNKNOWN)
          {
-            // initialization (first call from GuiStatusLine.update())
+            // initialization (first call from GuiStatusLine.update() or from Starter.init() AutoConnect)
             iStatus = (Starter.getCurrentStatusData().isConnected()) ? GuiStatusLine.STATUS_CONNECTED : GuiStatusLine.STATUS_DISCONNECTED;
          }
          else

@@ -75,9 +75,9 @@ public class JSupportersDialog extends JFrame
          + "<h3>Where you can support me:</h3>"
          + "<ul>"
          + "<li><a href=\"https://buymeacoffee.com/3dprototyping\">Donations and Supporters Membership at Buy Me A Coffee</a></li>"
-         + "<li><a href=\"https://github.com/sponsors/com-mr-apps\">GitHub Sponsorship</a> (comming soon...)</li>"
+         + "<li><a href=\"https://github.com/sponsors/com-mr-apps\">GitHub Sponsorship</a></li>"
          + "</ul>";
-         
+
    /**
     * Initiates a new Supporters Dialog
     */
