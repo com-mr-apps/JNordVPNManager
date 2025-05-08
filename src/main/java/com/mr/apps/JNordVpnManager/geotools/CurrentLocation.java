@@ -14,10 +14,14 @@ import com.mr.apps.JNordVpnManager.nordvpn.NvpnGroups.NordVPNEnumGroups;
 
 /**
  * Class for the current location<p>
- * Extends class Location by connected status attributes.<br>
- * There are two types of locations (for connection):<br>
- * For static Connection (recent list, autostart, reconnect) - Filter Group, Technology, Protocol from location object.<br>
- * For Dynamic connection (Tree/Map selection) - Filter Group, Technology, Protocol [== null] from current GUI and VPN settings.
+ * Extends class Location by connected status attributes. Data to establish a connection are:<br> 
+ * hostName, cityName, countryName, Legacy Group, Technology, Protocol.<p>
+ * This class is used for the nordvpn connection command which differs two types:
+ * <ul>
+ * <li>Static Connection type (recent list, autostart, reconnect) - Filter Group, Technology, Protocol set in Location object.</li>
+ * <li>Dynamic connection type (Tree/Map selection) - Filter Group, Technology, Protocol [== null in Location object] taken from current GUI and VPN settings</li>.
+ * </ul>
+ * 
  */
 public class CurrentLocation extends Location
 {
@@ -50,16 +54,38 @@ public class CurrentLocation extends Location
     */
    public CurrentLocation(Location loc)
    {
-      this.m_serverId = loc.m_serverId;
-      this.m_cityName = loc.m_cityName;
-      this.m_countryName = loc.m_countryName;
+      super(loc.m_cityName, loc.m_countryName, loc.m_longitude, loc.m_latitude, loc.m_cityId);
+      this.m_vpnServer = loc.m_vpnServer;
       this.m_countryCode = loc.m_countryCode;
-      this.m_longitude = loc.m_longitude;
-      this.m_latitude = loc.m_latitude;
       this.m_countryId = loc.m_countryId;
-      this.m_cityId = loc.m_cityId;
-      this.m_groups = loc.m_groups;
-      this.m_technologies = loc.m_technologies;
+      this.m_vpnServer.m_groups = loc.m_vpnServer.m_groups;
+      this.m_vpnServer.m_technologies = loc.m_vpnServer.m_technologies;
+
+      setConnected(false);
+      setLegacyGroup(null); // set to null means return the current GUI setting
+      setVpnTechnology(null); // set to null means return the current VPN setting
+      setVpnProtocol(null); // set to null means return the current VPN setting
+   }
+
+   /**
+    * Constructor for Current Location with a specific VPN Server
+    * 
+    * @param loc
+    *           is the location data
+    * @param vpnServer
+    *           is the specific vpnServer data
+    */
+   public CurrentLocation(Location loc, VpnServer vpnServer)
+   {
+      super(loc.m_cityName, loc.m_countryName, loc.m_longitude, loc.m_latitude, loc.m_cityId);
+      this.m_countryCode = loc.m_countryCode;
+      this.m_countryId = loc.m_countryId;
+      if (null != vpnServer)
+      {
+         this.m_vpnServer = vpnServer;
+         this.m_vpnServer.m_groups = vpnServer.m_groups;
+         this.m_vpnServer.m_technologies = vpnServer.m_technologies;
+      }
 
       setConnected(false);
       setLegacyGroup(null); // set to null means return the current GUI setting
@@ -165,15 +191,21 @@ public class CurrentLocation extends Location
 
    /**
     * Get Location Connection Data<p>
-    * Generates a string with required data to establish a connection in form:<br>
-    * countryName,Group,Technology,Protocol<br>
+    * Generates a string array with required data to establish a connection in form:<br>
+    * [0] cityName<br>
+    * [1] countryName[#host],Group,Technology,Protocol<br>
     * Used e.g. to store information for recent servers list.
-    * @return a string with the connection data 
+    * @return the connection data 
     */
-   public String getLocationConnectionData()
+   public String[] getLocationConnectionData()
    {
+      String[] rcs = new String[2];
       int legacyGroup = (null == m_legacyGroup) ? NordVPNEnumGroups.legacy_group_unknown.getId() : m_legacyGroup;
-      return m_countryName + "," + legacyGroup + (",") + this.getVpnTechnology() + (",") + this.getVpnProtocol();
+      rcs[0] = m_cityName;
+      rcs[1] = m_countryName 
+            + ((null != getVpnHostName()) ? ("#" + getVpnHostName()) : "") // add optional host
+            + "," + legacyGroup + (",") + this.getVpnTechnology() + (",") + this.getVpnProtocol();
+      return rcs;
    }
 
    /**
@@ -182,23 +214,38 @@ public class CurrentLocation extends Location
     */
    public String getToolTip()
    {
-      return m_serverId + " (" + NordVPNEnumGroups.get(getLegacyGroup()) + ") [" + getVpnTechnology() + "/" + getVpnProtocol() + "]";
+      return getServerName() + " (" + NordVPNEnumGroups.get(getLegacyGroup()) + ") [" + getVpnTechnology() + "/" + getVpnProtocol() + "]";
    }
 
    /**
-    * Check, if a location has the same connection data
+    * Check, if Locations have the same connection data
     * 
     * @param loc
     *           is another connection location
     * @return true, if the connection data is equal
     */
-   public boolean isEqualConnection (CurrentLocation loc)
+   public boolean isEqualLocation(CurrentLocation loc)
    {
-      if (false == this.m_serverId.equals(loc.m_serverId)) return false;
+      if (null == loc) return false;
+      if (false == this.getServerKey().equals(loc.getServerKey())) return false; // Location level
       if (this.getLegacyGroup() != (loc.getLegacyGroup())) return false;
       if (false == this.getVpnTechnology().equals(loc.getVpnTechnology())) return false;
       if (false == this.getVpnProtocol().equals(loc.getVpnProtocol())) return false;
       return true;
+   }
+
+   /**
+    * Check, if servers have the same connection data
+    * 
+    * @param loc
+    *           is another connection location
+    * @return true, if the connection data is equal
+    */
+   public boolean isEqualConnection(CurrentLocation loc)
+   {
+      if (null == loc) return false;
+      if (false == this.getServerNordVPN().equals(loc.getServerNordVPN())) return false; // Server Host level
+      return isEqualLocation(loc);
    }
 
    public String toString()

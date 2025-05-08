@@ -102,6 +102,11 @@ public class CallCommand
       return invokeMethod(null, "com.mr.apps.JNordVpnManager.addons." + className, methodName, null, null);
    }
 
+   public static Object invokeAddonMethod(String className, String methodName, Object[] arguments, Class<?>[] argTypes)
+   {
+      return invokeMethod(null, "com.mr.apps.JNordVpnManager.addons." + className, methodName, arguments, argTypes);
+   }
+
    public static Object invokeCommandMethod(Command cmd, String methodName)
    {
       return invokeMethod(cmd, "com.mr.apps.JNordVpnManager.commandInterfaces." + cmd.getCommand(), methodName, new Object[]{cmd}, new Class<?>[]{com.mr.apps.JNordVpnManager.commandInterfaces.Command.class});

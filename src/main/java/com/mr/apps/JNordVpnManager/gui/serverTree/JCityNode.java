@@ -13,31 +13,31 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import com.mr.apps.JNordVpnManager.geotools.Location;
 
 @SuppressWarnings("serial")
-public class JServerNode extends DefaultMutableTreeNode
+public class JCityNode extends DefaultMutableTreeNode
 {
 
-   private Location loc;
+   private Location m_loc;
 
-   public JServerNode(Location loc)
+   public JCityNode(Location loc)
    {
       super(loc.getCityName());
 
       // linked Location object from CSV table
-      this.loc = loc;
+      this.m_loc = loc;
    }
 
    public String getCountry()
    {
-      return loc.getCountryName();
+      return m_loc.getCountryName();
    }
 
-   public String getServer()
+   public String getCity()
    {
-      return loc.getCityName();
+      return m_loc.getCityName();
    }
 
    public Location getLocation()
    {
-      return loc;
+      return m_loc;
    }
 }

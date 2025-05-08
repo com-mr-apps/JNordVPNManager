@@ -22,6 +22,7 @@ import javax.swing.JPanel;
 import com.mr.apps.JNordVpnManager.Starter;
 import com.mr.apps.JNordVpnManager.commandInterfaces.Command;
 import com.mr.apps.JNordVpnManager.geotools.CurrentLocation;
+import com.mr.apps.JNordVpnManager.geotools.Location;
 import com.mr.apps.JNordVpnManager.geotools.UtilLocations;
 import com.mr.apps.JNordVpnManager.geotools.UtilMapGeneration;
 import com.mr.apps.JNordVpnManager.gui.connectLine.GuiCommandsToolBar;
@@ -189,9 +190,20 @@ public class GuiStatusLine
       if (statusData.isConnected())
       {
          /*
-          *  connected
+          * connected
           */
-         ret_loc = new CurrentLocation(UtilLocations.getLocation(statusData.getCity(), statusData.getCountry()));
+         // get the (GUI) current server location object
+         ret_loc = Starter.getCurrentServer(true);
+         // Create a current server location object based on the current status data (real connected server)
+         Location status_loc = UtilLocations.getLocation(statusData.getCity(), statusData.getCountry());
+         CurrentLocation new_loc = (null != status_loc) ? new CurrentLocation(status_loc) : null;
+         // Check, if GUI current server is the current server
+         if ((null == ret_loc) ||
+             (false == ret_loc.isEqualLocation(new_loc))) // TODO: check also for server host
+         {
+            // set changed current server based on actual status data
+            ret_loc = new_loc;
+         }
          ret_loc.setConnected(true);
 
          String sShortMsg = null;

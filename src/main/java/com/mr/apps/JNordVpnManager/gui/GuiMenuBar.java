@@ -28,6 +28,7 @@ import com.mr.apps.JNordVpnManager.geotools.CurrentLocation;
 import com.mr.apps.JNordVpnManager.geotools.Location;
 import com.mr.apps.JNordVpnManager.geotools.UtilLocations;
 import com.mr.apps.JNordVpnManager.geotools.UtilSpeedtest;
+import com.mr.apps.JNordVpnManager.geotools.VpnServer;
 import com.mr.apps.JNordVpnManager.gui.components.JResizedIcon;
 import com.mr.apps.JNordVpnManager.gui.components.JResizedIcon.IconSize;
 import com.mr.apps.JNordVpnManager.gui.components.JResizedIcon.IconUrls;
@@ -483,12 +484,23 @@ public class GuiMenuBar
       {
          String[] saParts = recentServerId.split(",");
          String serverId = (saParts.length == 4) ? saParts[0] : recentServerId;
-         if (!serverId.isBlank() && false == serverId.startsWith("nowhere"))
+         if (!serverId.isBlank())
          {
-            CurrentLocation loc = new CurrentLocation(UtilLocations.getLocation(serverId));
+            CurrentLocation loc = null;
+            VpnServer vs = null;
+            String sa[] = serverId.split(Location.SERVERID_HOST_SEPARATOR); // check, if this is a host server (serverId = "city@country#host")
+            if (sa.length == 2)
+            {
+               vs = new VpnServer(sa[0], Location.SERVERID_HOST_SEPARATOR + sa[1], sa[1]);
+               serverId = sa[0];
+            }
+            Location l = UtilLocations.getLocation(serverId);
+            if (null == l) l = new Location (serverId, 0, 0, -1);
+            loc = new CurrentLocation(l, vs);
+            
             if (saParts.length == 4)
             {
-               // get (optional) connection data from preferences 'server@country,group,technology,protocol' and add them to loc
+               // get (optional) connection data from preferences 'server@country[#host],group,technology,protocol' and add them to loc
                loc.setLegacyGroup(Integer.valueOf(saParts[1]));
                loc.setVpnTechnology(saParts[2]);
                loc.setVpnProtocol(saParts[3]);
@@ -516,7 +528,7 @@ public class GuiMenuBar
 
          if (null != loc)
          {
-            m_menuItemRecentServerMenuList[i] = new JMenuItem(loc.getCountryName() + " " + loc.getCityName());
+            m_menuItemRecentServerMenuList[i] = new JMenuItem(loc.getLabel());
             m_menuItemRecentServerMenuList[i].setToolTipText(loc.getToolTip());
             m_menuItemRecentServerMenuList[i].addActionListener(new java.awt.event.ActionListener()
             {
@@ -527,15 +539,10 @@ public class GuiMenuBar
             });
             m_menuItemRecentServer.add(m_menuItemRecentServerMenuList[i]);
 
-            // String for user preferences 'server@country,group,technology,protocol'
+            // String for user preferences 'server@country[#host],group,technology,protocol'
             if (recentServerIds.length() > 0) recentServerIds.append(Location.SERVERID_LIST_SEPARATOR);
-            recentServerIds.append(loc.getServerId());
-            recentServerIds.append(",");
-            recentServerIds.append(loc.getLegacyGroup());
-            recentServerIds.append(",");
-            recentServerIds.append(loc.getVpnTechnology());
-            recentServerIds.append(",");
-            recentServerIds.append(loc.getVpnProtocol());
+            String[] saLocationConnectionData = loc.getLocationConnectionData();
+            recentServerIds.append(Location.buildServerId(saLocationConnectionData[0], saLocationConnectionData[1]));
          }
       }
       if (recentServerIds.length() > 0)
@@ -563,7 +570,7 @@ public class GuiMenuBar
    private static void recentServerSelectedCB(ActionEvent e, int which)
    {
       CurrentLocation loc = m_recentServerIdList.get(which);
-      Starter._m_logError.LoggingInfo("Selected Recent Server: " + loc.getToolTip());
+      Starter._m_logError.TraceDebug("Selected Recent Server: " + loc.getToolTip());
 
       // get and set additional (optional) connection data from location and set Group/Tech/Protocol
       Starter.getCurrentSettingsData().setTechnology(loc.getVpnTechnology(), false);
@@ -611,7 +618,7 @@ public class GuiMenuBar
                else
                {
                   m_recentServerIdList.removeElementAt(n);
-                  Starter._m_logError.TraceDebug("Remove " + loc.getServerId() + " at position " + n + " from Recentlist.");
+                  Starter._m_logError.TraceDebug("Remove " + loc.getServerKey() + " at position " + n + " from Recentlist.");
                }
                break;
             }

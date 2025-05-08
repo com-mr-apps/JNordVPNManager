@@ -217,14 +217,14 @@ public class UtilMapGeneration
    {
       if (null != m_currentServerMapLayer)
       {
-         if (null != loc && m_currentServerMapLayer.getTitle().equals(loc.getServerId())) return; // already current
+         if (null != loc && m_currentServerMapLayer.getTitle().equals(loc.getServerKey())) return; // already current
          m_map.removeLayer(m_currentServerMapLayer);
          m_currentServerMapLayer = null;
       }
 
       if (null != loc)
       {
-         Starter._m_logError.TraceDebug("Changed VPN Server on map: " + loc.getServerId());
+         Starter._m_logError.TraceDebug("Changed VPN Server on map: " + loc.getServerKey());
          m_currentServerMapLayer = createCurrentServerMapLayer(loc);
          m_map.addLayer(m_currentServerMapLayer);
          m_currentServerMapLayer.updated();
@@ -251,14 +251,14 @@ public class UtilMapGeneration
       featureBuilder.add(point);
    
       SimpleFeature feature = featureBuilder.buildFeature("ActiveServer");
-      feature.setAttribute("Name", loc.getServerId());
+      feature.setAttribute("Name", loc.getServerKey());
       List<SimpleFeature> featureCollection = new ArrayList<>();
       featureCollection.add(feature);
    
       // create the layer
       Style style = SLD.createPointStyle("Circle" /*"Star"*/, Color.GREEN, Color.RED, 0.5f, 20);
       UpdatableLayer layer = new UpdatableLayer(DataUtilities.collection(featureCollection), style);
-      layer.setTitle(loc.getServerId());
+      layer.setTitle(loc.getServerKey());
       return layer;
    }
 
@@ -478,29 +478,32 @@ public class UtilMapGeneration
       for (String cityId : vpnServers)
       {
          Location loc = UtilLocations.getLocation(cityId);
-         double latitude = loc.getLatitude();
-         double longitude = loc.getLongitude();
-         String name = cityId;
-         int number = loc.getCityId();
-
-         // Longitude (= x coordinate) first !
-         Point point = geometryFactory.createPoint(new Coordinate(longitude, latitude));
-
-         // min/max
-         if (longitude < minLon) minLon = longitude;
-         if (longitude > maxLon) maxLon = longitude;
-         if (latitude < minLat) minLat = latitude;
-         if (latitude > maxLat) maxLat = latitude;
-
-         featureBuilder.add(point);
-         featureBuilder.add(name);
-         featureBuilder.add(number);
-         SimpleFeature feature = featureBuilder.buildFeature(null);
-         features.add(feature);
-
-         if (number == 0)
+         if (null != loc)
          {
-            Starter._m_logError.LoggingInfo("VPN Server location for city=" + cityId + "< not found. Locations database requires an update!");
+            double latitude = loc.getLatitude();
+            double longitude = loc.getLongitude();
+            String name = cityId;
+            int number = loc.getCityId();
+
+            // Longitude (= x coordinate) first !
+            Point point = geometryFactory.createPoint(new Coordinate(longitude, latitude));
+
+            // min/max
+            if (longitude < minLon) minLon = longitude;
+            if (longitude > maxLon) maxLon = longitude;
+            if (latitude < minLat) minLat = latitude;
+            if (latitude > maxLat) maxLat = latitude;
+
+            featureBuilder.add(point);
+            featureBuilder.add(name);
+            featureBuilder.add(number);
+            SimpleFeature feature = featureBuilder.buildFeature(null);
+            features.add(feature);
+
+            if (number == 0)
+            {
+               Starter._m_logError.LoggingInfo("VPN Server location for city=" + cityId + "< not found. Locations database requires an update!");
+            }
          }
       }
 
@@ -556,14 +559,19 @@ public class UtilMapGeneration
                // got a match
                Starter._m_logError.LoggingInfo("VPN Server country selected: " + info.toString().substring(0, 80) + "...");  
                Map<String, Object> data = info.getFeatureData(0);
-               String serverId = (String) data.get("NAME");
-               String countryCode = (String) data.get("ISO_A2_EH");
+               String countryName = (String) data.get("NAME");
 
                // name mappings for geo-map country selections to NordVPN names
-               if (serverId.equalsIgnoreCase("Laos")) serverId = "Lao People's Democratic Republic";
-               if (serverId.startsWith("United States of")) serverId = "United States";
-               loc = UtilLocations.getLocation(serverId);
-               loc.setCountryCode(countryCode.toLowerCase());
+               if (countryName.equalsIgnoreCase("Laos")) countryName = "Lao People's Democratic Republic";
+               if (countryName.startsWith("United States of")) countryName = "United States";
+
+               String serverId = Location.buildServerId("", countryName);
+               loc = new Location (serverId);
+               if (null != loc)
+               {
+                  String countryCode = (String) data.get("ISO_A2_EH");
+                  loc.setCountryCode(countryCode.toLowerCase());
+               }
             }
          }
       }

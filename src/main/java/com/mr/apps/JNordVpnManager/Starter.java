@@ -37,8 +37,10 @@ import org.geotools.swing.JMapFrame;
 
 import com.mr.apps.JNordVpnManager.commandInterfaces.CallCommand;
 import com.mr.apps.JNordVpnManager.geotools.CurrentLocation;
+import com.mr.apps.JNordVpnManager.geotools.Location;
 import com.mr.apps.JNordVpnManager.geotools.UtilLocations;
 import com.mr.apps.JNordVpnManager.geotools.UtilMapGeneration;
+import com.mr.apps.JNordVpnManager.geotools.VpnServer;
 import com.mr.apps.JNordVpnManager.gui.GuiMapArea;
 import com.mr.apps.JNordVpnManager.gui.GuiMenuBar;
 import com.mr.apps.JNordVpnManager.gui.GuiStatusLine;
@@ -72,6 +74,7 @@ public class Starter extends JFrame
 {
    public static final String      COPYRIGHT_STRING           = "Copyright Ⓒ 2025 - written by com.mr.apps";
    public static final String      APPLICATION_DATA_DIR       = "/.local/share/JNordVpnManager"; // ..added to $HOME directory
+   public static final File        APPLICATION_DATA_ABS_PATH  = new File(System.getProperty("user.home"), APPLICATION_DATA_DIR);
    public static final String      SEP_DATARECORD             = ":";
    public static final String      SEP_DATAITEM               = ",";
    public static final Color       Color_Addon                = new Color(81,23,137);
@@ -153,11 +156,11 @@ public class Starter extends JFrame
    {
       super();
 
-      // initialize and open Splash screen
-      splashScreenInit();
-
       // add add-ons classpath
       m_isSupporterEdition = CallCommand.initClassLoader(UtilPrefs.getAddonsPath());
+
+      // initialize and open Splash screen
+      splashScreenInit();
 
       // get the application implementation version from jar manifest file
       Package p = getClass().getPackage();
@@ -623,10 +626,28 @@ public class Starter extends JFrame
       {
          // generate current server location data from user preferences (last valid connection)
          String city = UtilPrefs.getRecentServerCity();
-         String country = UtilPrefs.getRecentServerCountry(); // countryName,group,technology,protocol
+         String country = UtilPrefs.getRecentServerCountry(); // countryName[#host],group,technology,protocol
          String[] saParts = country.split(",");
          String countryName = (saParts.length == 4) ? saParts[0] : country;
-         loc = new CurrentLocation(UtilLocations.getLocation(city, countryName));
+         String serverId = null;
+         VpnServer vs = null;
+         String sa[] = countryName.split(Location.SERVERID_HOST_SEPARATOR); // check, if this is a host server
+         if (sa.length == 2)
+         {
+            // Host server
+            countryName = sa[0];
+            serverId = Location.buildServerId(city, countryName);
+            String hostName = sa[1];
+            vs = new VpnServer(serverId, Location.SERVERID_HOST_SEPARATOR + hostName, hostName);
+         }
+         else
+         {
+            // Location based Server
+            serverId = Location.buildServerId(city, countryName);
+         }
+         Location l = UtilLocations.getLocation(serverId);
+         if (null == l) l = new Location (serverId, 0, 0, -1);
+         loc = new CurrentLocation(l, vs);
          loc.setConnected(false);
          if (saParts.length == 4)
          {
@@ -641,7 +662,18 @@ public class Starter extends JFrame
       {
          // generate current server location data as copy from current location
          boolean bIsConnected = m_currentServer.isConnected();
-         loc = new CurrentLocation(m_currentServer);
+         Location current_loc = UtilLocations.getLocation(m_currentServer.getServerKey());
+         if (null != current_loc)
+         {
+            // create current Location with CSV server location/host data for connect command
+            loc = new CurrentLocation(current_loc, m_currentServer.getVpnServer());
+            // !! Supported Technologies and Groups lists stored in VpnServer are not updated for temp. locations - but we don't need this information on CurrentLocation
+         }
+         else
+         {
+            // CSV Location not available yet - create a temporary current location object for connect command
+            loc = new CurrentLocation(m_currentServer);
+         }
          loc.setConnected(bIsConnected);
          legacyGroup = m_currentServer.getLegacyGroup();
          sVpnTechnology = m_currentServer.getVpnTechnology();
@@ -674,6 +706,11 @@ public class Starter extends JFrame
       m_currentServer = m_statusLine.update(m_nvpnStatusData);
    }
 
+   public static void setCurrentServer(CurrentLocation currentServer)
+   {
+      m_currentServer = currentServer;
+   }
+
    /**
     * Update current server data.
     * <p>
@@ -703,8 +740,9 @@ public class Starter extends JFrame
          _m_logError.TraceDebug("Update Current active Server: " + m_currentServer.toString());
 
          // Update preferences with current connected server
-         UtilPrefs.setRecentServerCity(m_currentServer.getCityName());
-         UtilPrefs.setRecentServerCountry(m_currentServer.getLocationConnectionData());
+         String[] saLocationConnectionData = m_currentServer.getLocationConnectionData();
+         UtilPrefs.setRecentServerCity(saLocationConnectionData[0]);
+         UtilPrefs.setRecentServerCountry(saLocationConnectionData[1]);
 
          // Update the current server map layer and zoom there
          UtilMapGeneration.changeCurrentServerMapLayer(m_currentServer);

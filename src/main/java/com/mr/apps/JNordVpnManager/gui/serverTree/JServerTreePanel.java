@@ -27,19 +27,24 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.JTree;
+import javax.swing.event.TreeExpansionEvent;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
+import javax.swing.event.TreeWillExpandListener;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
+import javax.swing.tree.ExpandVetoException;
 import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 
 import com.mr.apps.JNordVpnManager.Starter;
+import com.mr.apps.JNordVpnManager.commandInterfaces.CallCommand;
 import com.mr.apps.JNordVpnManager.geotools.CurrentLocation;
 import com.mr.apps.JNordVpnManager.geotools.Location;
 import com.mr.apps.JNordVpnManager.geotools.UtilLocations;
 import com.mr.apps.JNordVpnManager.geotools.UtilMapGeneration;
+import com.mr.apps.JNordVpnManager.geotools.VpnServer;
 import com.mr.apps.JNordVpnManager.gui.GuiMenuBar;
 import com.mr.apps.JNordVpnManager.gui.components.JResizedIcon;
 import com.mr.apps.JNordVpnManager.gui.components.JResizedIcon.IconSize;
@@ -358,6 +363,29 @@ public class JServerTreePanel extends JPanel implements TreeSelectionListener
       m_tree.setRootVisible(false);
       m_tree.setShowsRootHandles(true);
 
+      m_tree.addTreeWillExpandListener(new TreeWillExpandListener() {
+         public void treeWillExpand(TreeExpansionEvent evt)
+               throws ExpandVetoException
+         {
+         }
+
+         public void treeWillCollapse(TreeExpansionEvent evt)
+               throws ExpandVetoException
+         {
+            // Avoid collapsing the node with the current server (if selected) on country level
+            if (m_tree.isSelectionEmpty()) return;
+            if (evt.getPath().getLastPathComponent() instanceof JCountryNode)
+            {
+               CurrentLocation loc = Starter.getCurrentServer(false);
+               JCountryNode countryNode = (JCountryNode) (evt.getPath().getLastPathComponent());
+               if (null != loc && countryNode.getCountry().equalsIgnoreCase((loc.getCountryName())))
+               {
+                  throw new ExpandVetoException(evt);
+               }
+            }
+         }
+      });
+
       JScrollPane jsp = new JScrollPane(m_tree);
 
       return jsp;
@@ -373,7 +401,7 @@ public class JServerTreePanel extends JPanel implements TreeSelectionListener
    private DefaultMutableTreeNode createServerTree(boolean update)
    {
       DefaultMutableTreeNode root = new DefaultMutableTreeNode("Serverlist");
-      ArrayList<String> vpnServers = new ArrayList<String>(); 
+      ArrayList<String> vpnLocationsList = new ArrayList<String>(); 
 
       // Filter from GUI (Region and Legacy Group)
       NordVPNEnumGroups filterRegion = NvpnGroups.getCurrentFilterRegion();
@@ -431,6 +459,7 @@ public class JServerTreePanel extends JPanel implements TreeSelectionListener
 
       // get the complete server list
       int nbCountries = 0;
+      int nbServers = 0;
       String serverListString = NvpnServers.getCountriesServerList(update);
       if (NvpnGroups.isValid())
       {
@@ -471,13 +500,16 @@ public class JServerTreePanel extends JPanel implements TreeSelectionListener
                      matchCountry = true;
                   }
 
-                  String[] saCities = cities.split("/");
+                  String[] saCities = cities.split(Location.SERVERID_CITIES_SEPARATOR);
                   for (String city : saCities)
                   {
                      // 1. check filter search text (or country name did match)
                      if (m_filterText.isBlank() || (!m_filterText.isBlank() && city.toLowerCase().contains(m_filterText)) || matchCountry)
                      {
-                        Location loc = UtilLocations.getLocation(UtilLocations.getServerId(city, country));
+                        String serverKey = Location.buildServerId(city, country);
+                        Location loc = UtilLocations.getLocation(serverKey);
+                        if (null == loc) continue;
+                        serverKey = loc.getServerKey();  // mangled HashMap key (lower case and '_' replaced by ' ')
 
                         // 2. Filter Virtual Locations dependent on current settings
                         if ((false == isVirtual) && (true == loc.isVirtualLocation())) continue;
@@ -486,17 +518,35 @@ public class JServerTreePanel extends JPanel implements TreeSelectionListener
                         // 3. Check Technology
                         if (loc.hasTechnology(iTechFilter))
                         {
-                           // 4. check region- and groups-filter defined on server locations
+                           // 4. Check region- and groups-filter defined on server locations
                            if (loc.hasGroup(filterRegion) && loc.hasGroup(filterGroup))
                            {
+                              // Ok: Create nodes
                               if (null == countryNode)
                               {
                                  countryNode = new JCountryNode(loc);
                                  root.add(countryNode);
                                  ++nbCountries;
                               }
-                              countryNode.add(new JServerNode(loc));
-                              if (!vpnServers.contains(loc.getServerId())) vpnServers.add(loc.getServerId());
+                              JCityNode cityNode = new JCityNode(loc);
+                              countryNode.add(cityNode);
+
+                              // Add Location to list for Map Servers Layer display
+                              if (!vpnLocationsList.contains(serverKey)) vpnLocationsList.add(serverKey);
+
+                              // Add servers in city Locations as sub nodes
+                              ArrayList<VpnServer> vpnServerList = UtilLocations.getServersList(serverKey);
+                              if (null != vpnServerList)
+                              {
+                                 for (VpnServer vpnServer : vpnServerList)
+                                 {
+                                    if (vpnServer.hasTechnology(iTechFilter) && 
+                                          vpnServer.hasGroup(filterRegion) && 
+                                          vpnServer.hasGroup(filterGroup))
+                                    cityNode.add(new JServerNode(loc, vpnServer));
+                                    ++nbServers;
+                                 }
+                              }
                            }
                         }
                      }
@@ -541,8 +591,8 @@ public class JServerTreePanel extends JPanel implements TreeSelectionListener
          m_statusInitServerList = false;
          
          // actualize world map
-         UtilMapGeneration.changeVpnServerLocationsMapLayer(vpnServers);
-         Starter._m_logError.TraceIni("Filtered " + vpnServers.size() + " VPN Servers (in " + nbCountries + " countries) [" + sFilterText + "].");
+         UtilMapGeneration.changeVpnServerLocationsMapLayer(vpnLocationsList);
+         Starter._m_logError.TraceIni("Filtered " + nbServers + " servers at " + vpnLocationsList.size() + " VPN Locations (in " + nbCountries + " countries) [" + sFilterText + "].");
       }
       else
       {
@@ -570,7 +620,7 @@ public class JServerTreePanel extends JPanel implements TreeSelectionListener
          if (null != tp)
          {
             m_tree.scrollPathToVisible(tp);
-            m_tree.expandPath(tp);
+
             if (loc.isConnected())
             {
                // set selection to active server
@@ -623,7 +673,7 @@ public class JServerTreePanel extends JPanel implements TreeSelectionListener
       while (e.hasMoreElements())
       {
          DefaultMutableTreeNode node = (DefaultMutableTreeNode) e.nextElement();
-         if (node instanceof JServerNode)
+         if (node instanceof JCityNode)
          {
             // city node
             if (inCountryNode && node.toString().equalsIgnoreCase(s))
@@ -664,9 +714,9 @@ public class JServerTreePanel extends JPanel implements TreeSelectionListener
       while (en.hasMoreElements())
       {
          DefaultMutableTreeNode node = (DefaultMutableTreeNode) en.nextElement();
-         if (node instanceof JServerNode)
+         if (node instanceof JCityNode)
          {
-            JServerNode serverNode = (JServerNode) node;
+            JCityNode serverNode = (JCityNode) node;
             TreeNode[] path = serverNode.getPath();
             System.out.println((serverNode.isLeaf() ? "  - " : "+ ") + path[path.length - 1]);
          }
@@ -730,12 +780,15 @@ public class JServerTreePanel extends JPanel implements TreeSelectionListener
    {
       if (m_skipValueChangedEvent) return; // avoid recursive calls
 
-      if (m_tree.getLastSelectedPathComponent() instanceof JServerNode)
+      Object selectedPathElement = m_tree.getLastSelectedPathComponent();
+      if (selectedPathElement == m_tree.getModel().getRoot() || selectedPathElement == null) return;
+      
+      if (selectedPathElement instanceof JCityNode)
       {
-         JServerNode node = (JServerNode) m_tree.getLastSelectedPathComponent();
-         if (node != m_tree.getModel().getRoot() && node != null)
+         JCityNode node = (JCityNode) selectedPathElement;
+         if (node != null)
          {
-            CurrentLocation loc = new CurrentLocation(((JServerNode) node).getLocation());
+            CurrentLocation loc = new CurrentLocation(node.getLocation());
             boolean rc = NvpnCallbacks.executeConnect(loc, "NordVPN Connect", "NordVPN Connect");
             if (false == rc)
             {
@@ -747,12 +800,21 @@ public class JServerTreePanel extends JPanel implements TreeSelectionListener
             }
          }
       }
-      else if (m_tree.getLastSelectedPathComponent() instanceof JCountryNode)
+      else if (selectedPathElement instanceof JServerNode)
       {
-         JCountryNode node = (JCountryNode) m_tree.getLastSelectedPathComponent();
-         if (node != m_tree.getModel().getRoot() && node != null)
+         if (Starter.isSupporterEdition())
          {
-            CurrentLocation loc = new CurrentLocation(((JCountryNode) node).getLocation());
+            CallCommand.invokeAddonMethod("AddonManager", "connectVPNServer", new Object[]{selectedPathElement}, new Class<?>[]{Object.class});
+         }
+      }
+      else if (selectedPathElement instanceof JCountryNode)
+      {
+         JCountryNode node = (JCountryNode) selectedPathElement;
+         if (node != null)
+         {
+            CurrentLocation loc = new CurrentLocation(node.getLocation());
+            // Country node uses the Location object of the first city - we need to set the correct host for country connection
+            loc.setServerKey("", loc.getCountryName());
             boolean rc = NvpnCallbacks.executeConnect(loc, "NordVPN Connect", "NordVPN Connect");
             if (false == rc)
             {

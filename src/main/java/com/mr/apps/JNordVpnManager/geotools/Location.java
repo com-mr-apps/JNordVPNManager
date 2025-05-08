@@ -10,120 +10,190 @@ package com.mr.apps.JNordVpnManager.geotools;
 
 import java.io.File;
 import java.net.URL;
-
 import com.mr.apps.JNordVpnManager.Starter;
-import com.mr.apps.JNordVpnManager.nordvpn.NvpnGroups;
 import com.mr.apps.JNordVpnManager.nordvpn.NvpnGroups.NordVPNEnumGroups;
-import com.mr.apps.JNordVpnManager.nordvpn.NvpnTechnologies;
+import com.mr.apps.JNordVpnManager.utils.String.StringFormat;
 
 /**
- * Store locations from the CSV table.
+ * Store locations data from the CSV table.
  * <p>
- * Also used to store the current server during runtime (in main class).
+ * Also used to create "temporary" Locations for the current server during runtime which store only connection relevant data.
+ * E.g. temporary locations don"t have location coordinates. They have a city Id <= 1. 
  */
 public class Location
 {
+   // a) HashMap serverKey (lower case): city@country
+   // b) UserPrefs SetverList (mixed case): Country1@City11/.../City1n:Country2@City21/.../City2n:Countrym@Citym1/.../Citymn
    public static final String SERVERID_SEPARATOR      = "@";
    public static final String SERVERID_LIST_SEPARATOR = ":";
+   public static final String SERVERID_CITIES_SEPARATOR = "/";
+   public static final String SERVERID_HOST_SEPARATOR = "#";
 
-   protected String           m_serverId;
-   protected String           m_cityName;
-   protected String           m_countryName;
-   protected String           m_countryCode;
-   protected double           m_longitude;
-   protected double           m_latitude;
-   protected boolean          m_isVirtualLocation;
-   protected int              m_countryId;
-   protected int              m_cityId;
-   protected NvpnTechnologies m_technologies;
-   protected NvpnGroups       m_groups;
+   protected VpnServer            m_vpnServer = null;
+   protected String               m_cityName = "";
+   protected String               m_countryName = "";
+   protected String               m_countryCode = "";
+   protected double               m_longitude = 0.0;
+   protected double               m_latitude = 0.0;
+   protected int                  m_countryId = -1;
+   protected int                  m_cityId =-1;
  
+   /**
+    * Default (empty) Location Constructor
+    */
    public Location()
    {
-      setServerId("nowhere@nowhere");
-      setLongitude(0.0);
-      setLatitude(0.0);
-      setVirtualLocation(false);
-      setCountryId(0);
-      setCityId(-1);
-      setCityName("nowhere");
-      setCountryName("nowhere");
-      setCountryCode("");
-      m_technologies = new NvpnTechnologies();
-      m_groups = new NvpnGroups();
+      this(null, 0.0, 0.0, -1);
    }
 
-   public Location (String serverId, double longitude, double latitude, int cityId)
-   {
-      String[] sa = serverId.split(SERVERID_SEPARATOR);
-      String city = "";
-      String country = "";
-      if (2 == sa.length)
-      {
-         city = sa[0];
-         country = sa[1];
-      }
-      else
-      {
-         country = serverId;
-      }
-      if (null == city) city = "";
-      if (null == country || country.isBlank())
-      {
-         setServerId(city.trim() + SERVERID_SEPARATOR);
-         setCityName(city);
-         setCountryName("");
-         cityId = 0;
-      }
-      else
-      {
-         setServerId(city.trim() + SERVERID_SEPARATOR + country.trim());
-         setCityName(city);
-         setCountryName(country);
-      }
-      setLongitude(longitude);
-      setLatitude(latitude);
-      setCityId(cityId);
-
-      setVirtualLocation(false);
-      m_technologies = new NvpnTechnologies();
-      m_groups = new NvpnGroups();
- 
-      if (cityId == 1)
-      {
-         // internal generated temporary location
-         Starter._m_logError.TraceDebug("Temp. Location: " + this.toString());         
-      }
-      else if (cityId == 0)
-      {
-         Starter._m_logError.TraceDebug("Temp. Location w/o city: " + this.toString());         
-      }
-      else
-      {
-         // from CSV
-         //JNordVpnManager._m_logError.TraceDebug("Add location: " + this.toString());
-      }
-     
-   }
-
+   /**
+    * Constructor for temporary (internal) Location
+    * 
+    * @param serverId
+    *           is the server key (city@country) from HashMap
+    */
    public Location(String serverId)
    {
       this(serverId, 0.0, 0.0, 1);
    }
 
-   public Location (String cityName, String countryName, double longitude, double latitude, int cityId)
+   /**
+    * Constructor for Location with ServerKey
+    * 
+    * @param serverKey
+    *           is the server key (city@country) from HashMap
+    * @param longitude
+    *           is the longitude of the Location
+    * @param latitude
+    *           is the latitude of the Location
+    * @param cityId
+    *           is the city Id
+    */
+   public Location(String serverKey, double longitude, double latitude, int cityId)
    {
-      this(cityName+"@"+countryName, longitude, latitude, cityId);
+      setCityId(cityId);
+      setServerKey(serverKey);
+
+      setLongitude(longitude);
+      setLatitude(latitude);
+
+      if (cityId == -1)
+      {
+         // invalid location
+         Starter._m_logError.TraceDebug("Temp. No Location: " + this.toString());         
+      }
+      if (cityId == 1)
+      {
+         // internal generated temporary city location
+         Starter._m_logError.TraceDebug("Temp. City Location: " + this.toString());         
+      }
+      else if (cityId == 0)
+      {
+         // internal generated temporary country location
+         Starter._m_logError.TraceDebug("Temp. Country Location: " + this.toString());         
+      }
+      else
+      {
+         // from CSV / JSON
+         //JNordVpnManager._m_logError.TraceDebug("Add location: " + this.toString());
+      }
    }
 
-   public String getServerId()
+   /**
+    * Constructor for Location with city and country
+    * 
+    * @param cityName (can be empty)
+    *           is the city name
+    * @param countryName
+    *           is the country name (can be empty)
+    * @param longitude
+    *           is the longitude of the Location
+    * @param latitude
+    *           is the latitude of the Location
+    * @param cityId
+    *           is the city Id
+    */
+   public Location(String cityName, String countryName, double longitude, double latitude, int cityId)
    {
-      return m_serverId;
+      this(buildServerId(cityName, countryName), longitude, latitude, cityId);
    }
 
-   public void setServerId(String serverId)
+   public String getServerKey()
    {
-      this.m_serverId = serverId;
+      return m_vpnServer.getServerKey();
+   }
+
+   public VpnServer getVpnServer()
+   {
+      return m_vpnServer;
+   }
+
+   /**
+    * Build the serverId HashTable Search-key from city and country
+    * 
+    * @param city
+    *           is the city
+    * @param country
+    *           is the country
+    * @return the search key
+    */
+   public static String buildServerId(String city, String country)
+   {
+      return StringFormat.printString(city, "", "") + Location.SERVERID_SEPARATOR + StringFormat.printString(country, "", "");
+   }
+
+   public static String[] splitServerKey(String serverKey)
+   {
+      if (null == serverKey) return new String[] {"", "", ""};
+
+      String[] sa = serverKey.split(SERVERID_SEPARATOR);
+      String city = "";
+      String country = "";
+      if (2 == sa.length)
+      {
+         city = sa[0].trim();
+         country = sa[1].trim();
+      }
+      else
+      {
+         country = serverKey.trim();
+      }
+      return new String[] {city, country};
+   }
+
+   public void setServerKey(String serverKey)
+   {
+      String[] sa = splitServerKey(serverKey);
+      setServerKey(sa[0], sa[1]);
+   }
+
+   public void setServerKey(String city, String country)
+   {
+      setCityName(city.trim());
+      setCountryName(country.trim());
+      if (m_cityName.isBlank() && m_countryName.isBlank())
+      {
+         // temporary no Location for quick connect command
+         this.m_cityId = -1;
+      }
+      else if (m_cityName.isBlank())
+      {
+         // temporary country Location for connect command
+         this.m_cityId = 0;
+      }
+      else if (m_countryName.isBlank())
+      {
+         // temporary city location for connect command
+         this.m_cityId = 1;
+      }
+      else if (m_cityId < 1)
+      {
+         // temporary city or host location for connect command
+         this.m_cityId = 1;
+      }
+
+      // Server based on Location object (no host)
+      m_vpnServer = new VpnServer(buildServerId(city, country), null, null);
    }
 
    public double getLongitude()
@@ -148,12 +218,12 @@ public class Location
 
    public boolean isVirtualLocation()
    {
-      return m_isVirtualLocation;
+      return m_vpnServer.isVirtualLocation();
    }
 
    public void setVirtualLocation(boolean isVirtualLocation)
    {
-      this.m_isVirtualLocation = isVirtualLocation;
+      m_vpnServer.setVirtualLocation(isVirtualLocation);
    }
 
    public int getCountryId()
@@ -213,12 +283,61 @@ public class Location
    {
       this.m_countryCode = countryCode.toLowerCase();
    }
-   
+
+   public String getVpnHostName()
+   {
+      return m_vpnServer.getServerHostName();
+   }
+
+   public String getServerName()
+   {
+      String serverName = "";
+      if (null == m_vpnServer.getServer())
+      {
+         switch (m_cityId)
+         {
+            case 0 :
+               serverName = getCountryName();
+               break;
+            case 1 :
+            default:
+               serverName = getCityName();
+         }
+      }
+      else
+      {
+         serverName = m_vpnServer.getServer();
+      }
+      return serverName;
+   }
+
+   /**
+    * Get the server name for connect command
+    * @return the server name from NordVPN (with underscores)
+    */
+   public String getServerNordVPN()
+   {
+      String serverHostName = m_vpnServer.getServer();
+      if (null == serverHostName)
+      {
+         switch (m_cityId)
+         {
+            case 0 :
+               serverHostName = getCountryNordVPN();
+               break;
+            case 1 :
+            default:
+               serverHostName = getCityNordVPN();
+         }
+      }
+      return serverHostName;
+   }
+
    /**
     * Get the city name
     * @return the city name from NordVPN (with underscores)
     */
-   public String getCityNordVPN()
+   private String getCityNordVPN()
    {
       return m_cityName.replace(' ', '_');
    }
@@ -227,34 +346,34 @@ public class Location
     * Get the country name
     * @return the country name from NordVPN (with underscores)
     */
-   public String getCountryNordVPN()
+   private String getCountryNordVPN()
    {
       return m_countryName.replace(' ', '_');
    }
 
    public void addTechnology(int id)
    {
-      m_technologies.addTechnology(id);
+      m_vpnServer.addTechnology(id);
    }
 
    public boolean hasTechnology(int id)
    {
-      return m_technologies.hasTechnology(id);
+      return m_vpnServer.hasTechnology(id);
    }
 
    public void addGroup(NordVPNEnumGroups id)
    {
-      m_groups.addGroup(id);
+      m_vpnServer.addGroup(id);
    }
 
    public void addGroup(int id)
    {
-      m_groups.addGroup(id);
+      m_vpnServer.addGroup(id);
    }
 
    public boolean hasGroup(NordVPNEnumGroups m_filterGroup)
    {
-      return m_groups.hasGroup(m_filterGroup);
+      return m_vpnServer.hasGroup(m_filterGroup);
    }
 
    public String getFlagImageFileName()
@@ -267,9 +386,38 @@ public class Location
       return Starter.class.getResource("resources/flags/" + this.getCountryCode() + ".png");
    }
 
+   public String getLabel()
+   {
+      String labelName = "";
+      if (null == m_vpnServer.getServer())
+      {
+         switch (m_cityId)
+         {
+            case 0 :
+               labelName = m_countryName;
+               break;
+            case 1 :
+            default:
+               if (null != m_countryName && false == m_countryName.isBlank())
+               {
+                  labelName = m_cityName + " [" + m_countryName + "]";
+               }
+               else
+               {
+                  labelName = m_cityName;
+               }
+         }
+      }
+      else
+      {
+         labelName = m_vpnServer.getServer() + " [" + m_cityName + " / " + m_vpnServer.getServerName() + "]";
+      }
+      return labelName;
+   }
+
    public String toString()
    {
-      return m_serverId + " [" + m_longitude + "," + m_latitude + "] (id=" + m_cityId + ") Groups=" + m_groups.toString() + " / Technologies=" + m_technologies.toString();
+      return getServerNordVPN() + " / " + m_vpnServer.getServerKey() + " [" + m_longitude + "," + m_latitude + "] (id=" + m_cityId + ") Groups=" + m_vpnServer.m_groups.toString() + " / Technologies=" + m_vpnServer.m_technologies.toString();
    }
 
    public String exportAsCsvData()
@@ -280,9 +428,9 @@ public class Location
            + m_countryName + "," // COUNTRY
            + m_countryCode + "," // FLAG
            + m_cityId + "," // NUM
-           + m_groups.toStringId() + "," // GRP 
-           + m_technologies.toStringId() + "," // TECH
-           + ((m_isVirtualLocation) ? "true" : "false"); // VLOC
+           + m_vpnServer.m_groups.toStringId() + "," // GRP 
+           + m_vpnServer.m_technologies.toStringId() + "," // TECH
+           + ((m_vpnServer.isVirtualLocation()) ? "true" : "false"); // VLOC
    }
 
 }
