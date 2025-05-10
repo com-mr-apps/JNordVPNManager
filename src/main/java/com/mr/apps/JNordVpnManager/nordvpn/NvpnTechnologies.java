@@ -70,7 +70,7 @@ public class NvpnTechnologies
 
    public String toString()
    {
-      if (null == m_techIds) return "";
+      if (null == m_techIds) return "[]";
       return StringFormat.int2String(m_techIds, null);
    }
 

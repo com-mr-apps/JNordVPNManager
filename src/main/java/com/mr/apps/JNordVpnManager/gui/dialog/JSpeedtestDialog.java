@@ -14,6 +14,8 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Frame;
 import java.awt.Toolkit;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 
 import javax.swing.*;
@@ -23,20 +25,34 @@ import javax.swing.border.TitledBorder;
 import com.mr.apps.JNordVpnManager.Starter;
 import com.mr.apps.JNordVpnManager.geotools.UtilSpeedtest;
 import com.mr.apps.JNordVpnManager.gui.components.JLabeledTextField;
+import com.mr.apps.JNordVpnManager.gui.components.JResizedIcon;
 import com.mr.apps.JNordVpnManager.gui.components.JSpeedMeter;
+import com.mr.apps.JNordVpnManager.gui.components.JResizedIcon.IconSize;
+import com.mr.apps.JNordVpnManager.gui.components.JResizedIcon.IconUrls;
 import com.mr.apps.JNordVpnManager.utils.String.Wrap;
 
 @SuppressWarnings("serial")
 public class JSpeedtestDialog extends JDialog
 {
-   protected JProgressBar      m_progressBar     = null;
-   protected JSpeedMeter       m_speedMeter      = null;
-   protected JLabeledTextField m_txtSpeedMin     = null;
-   protected JLabeledTextField m_txtSpeedMax     = null;
-   protected JLabeledTextField m_txtSpeedAvg     = null;
-   protected JTextArea         m_messageTextArea = null;
-   protected String            m_statusMessage   = null;
-   protected boolean           m_forceStopTask   = false;
+   protected JProgressBar      m_progressBar      = null;
+   protected JSpeedMeter       m_speedMeter       = null;
+   protected JLabeledTextField m_txtSpeedMin      = null;
+   protected JLabeledTextField m_txtSpeedMax      = null;
+   protected JLabeledTextField m_txtSpeedAvg      = null;
+   protected JTextArea         m_messageTextArea  = null;
+   protected String            m_statusMessage    = null;
+   protected boolean           m_forceStopTask    = false;
+
+   private JButton             m_jbStartStop      = null;
+   private static ImageIcon[]  m_iconStartStop    = new ImageIcon[] {
+         JResizedIcon.getIcon(IconUrls.ICON_BUTTON_STOP, IconSize.MEDIUM),
+         JResizedIcon.getIcon(IconUrls.ICON_BUTTON_START, IconSize.MEDIUM)
+   };
+   private static String[]     m_toolTipStartStop = new String[] {
+         "Click here to Stop the Speed Test",
+         "Click here to [Re]Start the Speed Test"
+   };
+   private static int          m_statusStartStop   = 0; // 0-running / 1-stopped
 
    /**
     * Initiates a new Speed test frame
@@ -78,9 +94,34 @@ public class JSpeedtestDialog extends JDialog
       m_speedMeter.setPreferredSize(m_speedMeter.getMinimumSize());
       jpl.add(m_speedMeter);
 
+      JPanel jpl2 = new JPanel(new BorderLayout());
+      
       m_progressBar = new JProgressBar(0, 100);
       m_progressBar.setStringPainted(true);
-      jpl.add(m_progressBar);
+      jpl2.add(m_progressBar, BorderLayout.CENTER);
+      
+      m_jbStartStop = new JButton(m_iconStartStop[m_statusStartStop]);
+      m_jbStartStop.setBorder(BorderFactory.createRaisedSoftBevelBorder());
+      m_jbStartStop.addActionListener(new ActionListener() {
+         public void actionPerformed(ActionEvent e)
+         {
+            // cycle through stages 0-1
+            m_statusStartStop = 1 - m_statusStartStop;
+            if (0 == m_statusStartStop)
+            {
+               UtilSpeedtest.speedTest(Starter.getCurrentServer(true));
+            }
+            else
+            {
+               m_forceStopTask = true;
+            }
+            m_jbStartStop.setToolTipText(m_toolTipStartStop[m_statusStartStop]);
+            m_jbStartStop.setIcon(m_iconStartStop[m_statusStartStop]);
+         }
+      });
+      jpl2.add(m_jbStartStop, BorderLayout.LINE_END);
+
+      jpl.add(jpl2);
 
       // right - Speeds (min/max/avg) and Status messages
       JPanel jpr = new JPanel();
@@ -135,6 +176,11 @@ public class JSpeedtestDialog extends JDialog
       m_progressBar.setValue(0);
       setMessage("init...", false);
       m_speedMeter.reset();
+
+      m_statusStartStop = 0; // running
+      m_jbStartStop.setToolTipText(m_toolTipStartStop[m_statusStartStop]);
+      m_jbStartStop.setIcon(m_iconStartStop[m_statusStartStop]);
+
       this.setVisible(true);
       UtilSpeedtest.setVisibleSpeedtestMapLayer(true);
    }
@@ -145,9 +191,11 @@ public class JSpeedtestDialog extends JDialog
     * @param progress
     *           The progress value to be set
     * @param currentSpeed
-    *           is the current speed
+    *           is the current transfer speed
+    * @param averageSpeed
+    *           is the average transfer speed
     */
-   public void setSpeeds(int progress, double currentSpeed)
+   public void setSpeeds(int progress, double currentSpeed, double averageSpeed)
    {
       m_progressBar.setValue(progress);
       m_progressBar.revalidate();
@@ -156,12 +204,19 @@ public class JSpeedtestDialog extends JDialog
       m_speedMeter.setSpeeds(currentSpeed);
       m_txtSpeedMin.setText(m_speedMeter.getSpeedMin(), "0.00");
       m_txtSpeedMax.setText(m_speedMeter.getSpeedMax(), "0.00");
-      m_txtSpeedAvg.setText(m_speedMeter.getSpeedAvg(), "0.00");
+      m_txtSpeedAvg.setText(averageSpeed, "0.00");
    }
 
    public boolean forceStopTask()
    {
       return m_forceStopTask;
+   }
+
+   public void finalize()
+   {
+      m_statusStartStop = 1; // stopped
+      m_jbStartStop.setToolTipText(m_toolTipStartStop[m_statusStartStop]);
+      m_jbStartStop.setIcon(m_iconStartStop[m_statusStartStop]);
    }
 
    public void setMessage(String message, boolean join)

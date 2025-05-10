@@ -20,8 +20,6 @@ public class UtilCallbacks
     */
    public static boolean cbManageSupporterEdition()
    {
-      File fpAppDataDir = new File(System.getProperty("user.home"), Starter.APPLICATION_DATA_DIR);
-
       // 1st step
       JModalDialog dlg = JModalDialog.JDropFileSelectDialog("Manage Supporter Edition [Step 1 - Import Key File]",
             "Import Key file to activate the Supporter Edition:\n"
@@ -32,7 +30,7 @@ public class UtilCallbacks
                   + "* 'Cancel' - returns to the application.\n"
                   + "* 'Import Add-On Library' - Skip this step and continue with Import add-on library.\n"
                   + "* 'Reset to Basis Edition' - removes the Supporter Edition features.\n",
-              "Cancel,Import Selected Key File,Import Add-On Library,Reset to Basis Edition", fpAppDataDir, "Key File [lic]");
+              "Cancel,Import Selected Key File,Import Add-On Library,Reset to Basis Edition", Starter.APPLICATION_DATA_ABS_PATH, "Key File [lic]");
       switch (dlg.getResult()) {
          case 1 :
             File fpFile = dlg.getSelectedFile();
@@ -97,7 +95,7 @@ public class UtilCallbacks
             + "---\nor:\n"
             + "* 'Cancel' - returns to the application.\n"
             + "* 'Reset to Basis Edition' - removes the Supporter Edition features.\n",
-            "Cancel,Import Selected Add-On Library,Reset to Basis Edition", fpAppDataDir, "Java Archive File [jar]");
+            "Cancel,Import Selected Add-On Library,Reset to Basis Edition", Starter.APPLICATION_DATA_ABS_PATH, "Java Archive File [jar]");
       switch (dlg.getResult()) {
          case 1 : 
             try
@@ -105,7 +103,7 @@ public class UtilCallbacks
                File fpFile = dlg.getSelectedFile();
                if (null != fpFile)
                {
-                  File fpAppAddonDir = new File(fpAppDataDir, "addons");
+                  File fpAppAddonDir = new File(Starter.APPLICATION_DATA_ABS_PATH, "addons");
                   String jarFile = CallCommand.getAddonLibraryName();
                   File fpTarget = new File(fpAppAddonDir, jarFile);
 
@@ -149,7 +147,7 @@ public class UtilCallbacks
          // test - ko
          JModalDialog.showWarning("Supporter Edition initialization failed:\n"
                + "Ensure that the key file is correct and the required add-on library is in the application add-on directory:\n"
-               + "'" +fpAppDataDir.getAbsolutePath() + "'\n\n"
+               + "'" + Starter.APPLICATION_DATA_ABS_PATH + "'\n\n"
                + "Please check the console for more information and restart the application.");
       }
 

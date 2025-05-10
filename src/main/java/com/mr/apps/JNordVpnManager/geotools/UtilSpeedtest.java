@@ -66,6 +66,8 @@ public class UtilSpeedtest
    // error messages
    private static boolean                      m_speedtestError          = false;
 
+   private static boolean                      m_speedtestIsRunning      = false;
+
    public static void setVisibleSpeedtestMapLayer(boolean visible)
    {
       if (m_isVisible != visible)
@@ -244,6 +246,12 @@ public class UtilSpeedtest
 
    public static void speedTest(CurrentLocation loc)
    {
+      if (null == loc)
+      {
+         Starter._m_logError.TraceErr("(speedTest) No current location!");
+         return;
+      }
+
       double currentLat = loc.getLatitude();
       double currentLon = loc.getLongitude();
 
@@ -284,6 +292,13 @@ public class UtilSpeedtest
    {
       Starter._m_logError.TraceDebug("(speedTest) uri=" + uri + " [" + city + "]");
 
+      if (true == m_speedtestIsRunning)
+      {
+         // avoid multiple instances
+         return;
+      }
+      m_speedtestIsRunning = true;
+
       // Create/Show the Speed Test Dialog
       if (null == m_speedTestDiaLog)
       {
@@ -318,13 +333,16 @@ public class UtilSpeedtest
             else
             {
                // called when download/upload is successfully completed
-               Starter._m_logError.TraceDebug("[COMPLETED] rate in bit/s   : " + report.getTransferRateBit());
+//               Starter._m_logError.TraceDebug("[COMPLETED] rate in bit/s   : " + report.getTransferRateBit());
                double idt = ((report.getReportTime() - report.getStartTime()) / 1000000000.0);
+               double averageSpeed = (report.getProgressPercent()/idt)*8.0; // calculation based on file size = 100MB -> 1..100%
                m_speedTestDiaLog.setMessage("\nDownloaded " + (int)report.getProgressPercent() + "% of a 100MB Testfile" 
                      + " in " + StringFormat.number2String(idt, "#.##") + " seconds."
-                     + "\nAverage Download speed: " + StringFormat.number2String((report.getProgressPercent()/idt)*8.0, "#.##") + "MBit/s", true);
-               m_speedTestDiaLog.setSpeeds((int)report.getProgressPercent(), report.getTransferRateBit().divide(new BigDecimal(1000000.0)).doubleValue());
+                     + "\nAverage Download speed: " + StringFormat.number2String(averageSpeed, "#.##") + "MBit/s", true);
+               m_speedTestDiaLog.setSpeeds((int)report.getProgressPercent(), report.getTransferRateBit().divide(new BigDecimal(1000000.0)).doubleValue(), averageSpeed);
             }
+            m_speedTestDiaLog.finalize();
+            m_speedtestIsRunning = false;
          }
 
          @Override
@@ -350,8 +368,12 @@ public class UtilSpeedtest
                }
 
                speedTestSocket.forceStopTask();
+               m_speedtestIsRunning = false;
+               m_speedTestDiaLog.finalize();
                return;
             }
+
+            // ..additional calls
             m_speedTestDiaLog.setMessage("\n" + errorMessage, true);
          }
 
@@ -359,8 +381,10 @@ public class UtilSpeedtest
          public void onProgress(float percent, SpeedTestReport report)
          {
             // called to notify download/upload progress
-            Starter._m_logError.TraceDebug("[PROGRESS] rate in bit/s   : " + report.getTransferRateBit());
-            m_speedTestDiaLog.setSpeeds((int)report.getProgressPercent(), report.getTransferRateBit().divide(new BigDecimal(1000000.0)).doubleValue());
+//            Starter._m_logError.TraceDebug("[PROGRESS] rate in bit/s   : " + report.getTransferRateBit());
+            double idt = ((report.getReportTime() - report.getStartTime()) / 1000000000.0);
+            double averageSpeed = (report.getProgressPercent()/idt)*8.0; // calculation based on file size = 100MB -> 1..100%
+            m_speedTestDiaLog.setSpeeds((int)report.getProgressPercent(), report.getTransferRateBit().divide(new BigDecimal(1000000.0)).doubleValue(), averageSpeed);
             if (m_speedTestDiaLog.forceStopTask())
             {
                // manual force stop speed test

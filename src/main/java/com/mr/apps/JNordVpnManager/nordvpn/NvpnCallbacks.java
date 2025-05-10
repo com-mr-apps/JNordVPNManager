@@ -80,7 +80,7 @@ public class NvpnCallbacks
          {
             if (null != titleKo)
             {
-               JModalDialog.showWarning("Cancelled new server connection to '" + loc.getServerId() + "'.");
+               JModalDialog.showWarning("Cancelled new server connection to '" + loc.getServerKey() + "'.");
             }
             rc = false;
          }
@@ -239,6 +239,7 @@ public class NvpnCallbacks
          else if (newStatus == false)
          {
             // switch from login to logout -> server disconnected
+            Starter.setCurrentServer(null);
             Starter.updateCurrentServer();
          }
       }

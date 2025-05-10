@@ -17,6 +17,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStreamWriter;
 import java.nio.charset.Charset;
+import java.util.ArrayList;
 import java.util.HashMap;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -36,11 +37,14 @@ public class UtilLocations
 {
    // all the locations from the server list or csv table (key = server name [city@country] - names with spaces)
    private static HashMap<String, Location> m_countryLocations = null;
+   // all the hosts from the server list (key = server name [city@country] - names with spaces)
+   private static HashMap<String, ArrayList<VpnServer>> m_cityServers = null;
    
    // CSV file with location features
    private static final String LOCATIONS_CSV = "resources/locations.csv";
    private static final String LOCATIONS_HTTPS = "https://api.nordvpn.com/v1/servers?limit=0";
-   private static final String LOCATIONS_EXPORT = System.getProperty("user.home") + File.separator + ".local/share/JNordVpnManager/locations.dat";
+   private static final String LOCATIONS_EXPORT = new File(Starter.APPLICATION_DATA_ABS_PATH, "locations.dat").toString();
+   private static final String SERVERS_EXPORT = new File(Starter.APPLICATION_DATA_ABS_PATH, "servers.dat").toString();
 
 
    public static int initNordVpnServersLocations(boolean update)
@@ -70,6 +74,23 @@ public class UtilLocations
                rc = 10500;
                m_countryLocations = null;
             }
+            try
+            {
+               InputStream fis = new FileInputStream(SERVERS_EXPORT);
+               rc = importServers(SERVERS_EXPORT, fis);
+            }
+            catch (FileNotFoundException e)
+            {
+               // ok
+               Starter._m_logError.TraceDebug("Local servers export CSV file not found: " + SERVERS_EXPORT);
+            }
+            catch (Exception e)
+            {
+               // unexpected error
+               Starter._m_logError.LoggingExceptionMessage(4, 10500, e);
+               rc = 10500;
+               m_cityServers = null;
+            }
          }
          if (null == m_countryLocations)
          {
@@ -77,11 +98,13 @@ public class UtilLocations
             InputStream fis = Starter.class.getResourceAsStream(LOCATIONS_CSV);
             rc = importLocations(LOCATIONS_CSV, fis);
          }
+         Starter._m_logError.getCurElapsedTime("Import Local Locations Files end");
          return rc;
       }
 
       Starter._m_logError.TraceIni("Initialize locations from Server: " + LOCATIONS_HTTPS);
       m_countryLocations = new HashMap<String, Location>();
+      m_cityServers = new HashMap<String,ArrayList<VpnServer>>();
       NvpnTechnologies.init();
       NvpnGroups.init();
       try
@@ -105,9 +128,9 @@ public class UtilLocations
                // --- stations
                JSONObject jsonObjStations = jsonArrAll.getJSONObject(i);
                //System.out.println(jsonObjStations.getInt("id"));
-               //System.out.println(jsonObjStations.getString("name"));
+               String sStationName = jsonObjStations.getString("name"); // Switzerland #218
                //System.out.println(jsonObjStations.getString("station"));
-               //System.out.println(jsonObjStations.getString("hostname"));
+               String sHostName = jsonObjStations.getString("hostname"); // ch218.nordvpn.com
                //System.out.println(jsonObjStations.getString("status"));
                //System.out.println(jsonObjStations.getInt("load"));
 
@@ -120,7 +143,11 @@ public class UtilLocations
                   JSONObject jsonObjService = jsonArrServices.getJSONObject(iSer);
                   //System.out.println(jsonObjService.getInt("id"));
                   //System.out.println(jsonObjService.getString("identifier"));
-                  if (jsonObjService.getString("identifier").equalsIgnoreCase("vpn")) hasVPN = true;
+                  if (jsonObjService.getString("identifier").equalsIgnoreCase("vpn"))
+                  {
+                     hasVPN = true;
+                     break;
+                  }
                }
                if (!hasVPN) continue; // filter only VPN entries
 
@@ -150,7 +177,8 @@ public class UtilLocations
                   sCity = jsonObjCity.getString("name");
                }
 
-               Location newLocation = m_countryLocations.get(getServerId(sCity, sCountry).toLowerCase());
+               String keyServerId = Location.buildServerId(sCity, sCountry);
+               Location newLocation = getLocation(keyServerId);
                if (null == newLocation)
                {
                   // one locations definition entry per city
@@ -161,9 +189,20 @@ public class UtilLocations
                   newLocation = new Location(sCity, sCountry, dLongitude, dLatitude, locationId);
                   newLocation.setCountryId(jsonObjCountry.getInt("id"));
                   newLocation.setCountryCode(jsonObjCountry.getString("code"));
-                  m_countryLocations.put(newLocation.getServerId().toLowerCase(), newLocation);
+                  m_countryLocations.put(newLocation.getServerKey(), newLocation);
                }
-      
+               keyServerId = newLocation.getServerKey();  // mangled HashMap key (lower case and '_' replaced by ' ')
+
+               // Create the city servers list
+               ArrayList<VpnServer> vpnServers = getServersList(keyServerId);
+               if (null == vpnServers)
+               {
+                  vpnServers = new ArrayList<VpnServer>();
+                  m_cityServers.put(keyServerId, vpnServers);
+               }
+               VpnServer vpnServer = new VpnServer(keyServerId, sStationName, sHostName);
+               vpnServers.add(vpnServer);
+
                // --- --- technologies
                JSONArray jsonArrTechnologies = jsonObjStations.getJSONArray("technologies");
                int nTec = jsonArrTechnologies.length();
@@ -175,6 +214,7 @@ public class UtilLocations
                   JSONObject jsonObjPivot = jsonObjTechnology.getJSONObject("pivot");
                   //System.out.println(jsonObjPivot.getString("status")); // online/offline
                   newLocation.addTechnology(jsonObjPivot.getInt("technology_id"));
+                  if (null != vpnServer) vpnServer.addTechnology(jsonObjPivot.getInt("technology_id"));
                }
       
                // --- --- groups
@@ -192,6 +232,7 @@ public class UtilLocations
                   }
 
                   newLocation.addGroup(NordVPNEnumGroups.get(jsonObjGroup.getInt("id")));
+                  if (null != vpnServer) vpnServer.addGroup(NordVPNEnumGroups.get(jsonObjGroup.getInt("id")));
                   //JSONObject jsonObjType = jsonObjGroup.getJSONObject("type"); // Europe/legacy_standard/legacy_p2p/
                   //System.out.println(jsonObjType.getInt("id"));
                   //System.out.println(jsonObjType.getString("identifier")); // region/legacy_group_category
@@ -207,6 +248,7 @@ public class UtilLocations
                   {
                      // id = 115 / identifier=virtual_location
                      newLocation.setVirtualLocation(true);
+                     if (null != vpnServer) vpnServer.setVirtualLocation(true);
                   }
                }
 
@@ -253,40 +295,50 @@ public class UtilLocations
 
    /**
     * Get the Location object by city and country.
-    * @param city is the city
-    * @param country is the country
+    * 
+    * @param city
+    *           is the city
+    * @param country
+    *           is the country
     * @return the Location object, if found - else null.
     */
    public static Location getLocation(String city, String country)
    {
-      return getLocation(getServerId(city, country));
+      Location loc = getLocation(Location.buildServerId(city, country));
+      return loc;
    }
-   
+
    /**
-    * Get the Location object by cityId.
-    * @param serverId is the server Id [HashTable search-key]
+    * Get the Location object by serverKey.
+    * 
+    * @param serverKey
+    *           is the city@country Location HashMap key
     * @return the Location object, if found - else null.
     */
-   public static Location getLocation(String serverId)
+   public static Location getLocation(String serverKey)
    {
       Location loc = null;
       if (null != m_countryLocations)
       {
-         loc = m_countryLocations.get(serverId.replace('_', ' ').toLowerCase());
+         loc = m_countryLocations.get(serverKey.toLowerCase().replace("_", " "));
       }
-      if (null == loc) loc = new Location(serverId);
       return loc;
    }
-   
+
    /**
-    * Create the serverId HashTable Search-key from city and country
-    * @param city is the city
-    * @param country is the country
-    * @return the search key
+    * Get the server list of a city Location
+    * 
+    * @param serverKey
+    *           is the city@country Location HashMap key
+    * @return the list of servers or <code>null</code> if not found
     */
-   public static String getServerId(String city, String country)
+   public static ArrayList<VpnServer> getServersList(String serverKey)
    {
-      return StringFormat.printString(city, "nowhere", "nowhere") + Location.SERVERID_SEPARATOR + StringFormat.printString(country, "nowhere", "nowhere");
+      if (null != m_cityServers)
+      {
+         return m_cityServers.get(serverKey.toLowerCase().replace("_", " "));
+      }
+      return null;
    }
 
    /**
@@ -320,22 +372,22 @@ public class UtilLocations
       try
       {
          // LAT, LON, CITY, NUMBER
-         CsvReader locations = new CsvReader(isCsvFile, Charset.defaultCharset());
+         CsvReader locationRecords = new CsvReader(isCsvFile, Charset.defaultCharset());
 
-         locations.readHeaders();
+         locationRecords.readHeaders();
 
-         while (locations.readRecord())
+         while (locationRecords.readRecord())
          {
             // read columns
-            String sLatitude = locations.get("LAT");
-            String sLongitude = locations.get("LON");
-            String sCity = locations.get("CITY");
-            String sCountry = locations.get("COUNTRY");
-            String sFlag = locations.get("FLAG");
-            String sNumber = locations.get("NUM");
-            String sGroups = locations.get("GRP");
-            String sTechs = locations.get("TECH");
-            String sVirtualLocation = locations.get("VLOC");
+            String sLatitude = locationRecords.get("LAT");
+            String sLongitude = locationRecords.get("LON");
+            String sCity = locationRecords.get("CITY");
+            String sCountry = locationRecords.get("COUNTRY");
+            String sFlag = locationRecords.get("FLAG");
+            String sNumber = locationRecords.get("NUM");
+            String sGroups = locationRecords.get("GRP");
+            String sTechs = locationRecords.get("TECH");
+            String sVirtualLocation = locationRecords.get("VLOC");
 
             // get data
             double latitude = StringFormat.string2number(sLatitude);
@@ -388,10 +440,10 @@ public class UtilLocations
             }
 
             // add new location
-            m_countryLocations.put(newLocation.getServerId().toLowerCase(), newLocation);
+            m_countryLocations.put(newLocation.getServerKey().toLowerCase(), newLocation);
          }
          // close table
-         locations.close();
+         locationRecords.close();
       }
       catch (FileNotFoundException e)
       {
@@ -404,35 +456,166 @@ public class UtilLocations
          rc = 10901;
       }
 
-      Starter._m_logError.TraceIni("Location Records read from CSV: " + m_countryLocations.size() + "<.");
-      Starter._m_logError.getCurElapsedTime("Import locations end");
+      Starter._m_logError.TraceIni("Location Records read from CSV: " + m_countryLocations.size());
+      Starter._m_logError.getCurElapsedTime("Import Locations end");
 
       return rc;
    }
 
    /**
-    * Export Locations to a CSV data file.
+    * Import Servers (for locations) from a CSV data file.
+    * <p>
+    * CSV Table has the following columns:
+    * <ul>
+    * <li>KEY - the location key (city@country) - link to the location data</li>
+    * <li>NAME - the server name</li>
+    * <li>HOST - the server hostname (for connection)</li>
+    * <li>GRP - the server supported groups list (semicolon separated integers)</li>
+    * <li>TECH - the server supported technology list (semicolon separated integers)</li>
+    * <li>VLOC - the flag for virtual location</li>
+    * </ul>
+    * 
+    * @param sCsvFile
+    *           is the CSV file name
+    * @param isCsvFile
+    *           is the CSV file stream
+    * @return 0 if all is ok, else an error code
+    */
+   public static int importServers(String sCsvFile, InputStream isCsvFile)
+   {
+      int rc = 0;
+      Starter._m_logError.TraceIni("Initialize servers from CSV: " + sCsvFile);
+      m_cityServers = new HashMap<String, ArrayList<VpnServer>>();
+
+      int nbServers = 0;
+      try
+      {
+         // KEY, NAME, HOST, GRP, TECH, VLOC
+         CsvReader serverRecords = new CsvReader(isCsvFile, Charset.defaultCharset());
+
+         serverRecords.readHeaders();
+
+         while (serverRecords.readRecord())
+         {
+            // read columns
+            String sKey = serverRecords.get("KEY");
+            String sName = serverRecords.get("NAME");
+            String sHost = serverRecords.get("HOST");
+            String sGroups = serverRecords.get("GRP");
+            String sTechs = serverRecords.get("TECH");
+            String sVirtualLocation = serverRecords.get("VLOC");
+
+            // create new server object
+            VpnServer vpnServer = new VpnServer(sKey, sName, sHost);
+
+            // set Virtual Location (Default is false)
+            if ((null != sVirtualLocation) && (true == sVirtualLocation.equalsIgnoreCase("true")))
+            {
+               vpnServer.setVirtualLocation(true);
+            }
+
+            // set groups (if exist)
+            String[] saGroups = (null == sGroups) ? null : sGroups.split(";");
+            if (null != saGroups)
+            {
+               for (String sGroup : saGroups)
+               {
+                  try
+                  {
+                     vpnServer.addGroup(Integer.valueOf(sGroup));
+                  }
+                  catch (NumberFormatException e)
+                  {
+                     // ignore
+                  }
+               }
+            }
+
+            // set technologies (if exist)
+            String[] saTechs = (null == sTechs) ? null : sTechs.split(";");
+            if (null != saTechs)
+            {
+               for (String sTech : saTechs)
+               {
+                  try
+                  {
+                     vpnServer.addTechnology(Integer.valueOf(sTech));
+                  }
+                  catch (NumberFormatException e)
+                  {
+                     // ignore
+                  }
+               }
+            }
+
+            // add new server related to a location (referenced by the location key 'city@country')
+            ArrayList<VpnServer> vpnServers = m_cityServers.get(sKey);
+            if (null == vpnServers)
+            {
+               // new location
+               vpnServers = new ArrayList<VpnServer>();
+               m_cityServers.put(sKey, vpnServers);
+            }
+            vpnServers.add(vpnServer);
+            ++nbServers;
+         }
+         // close table
+         serverRecords.close();
+      }
+      catch (FileNotFoundException e)
+      {
+         Starter._m_logError.LoggingExceptionMessage(5, 10902, e);
+         rc = 10902;
+      }
+      catch (IOException e)
+      {
+         Starter._m_logError.LoggingExceptionMessage(5, 10901, e);
+         rc = 10901;
+      }
+
+      Starter._m_logError.TraceIni("Servers Records read from CSV: " + nbServers);
+      Starter._m_logError.getCurElapsedTime("Import Servers end");
+
+      return rc;
+   }
+
+   /**
+    * Export Locations and Servers to a CSV data file.
     */
    public static void export2file()
    {
-      // create the export file
-      BufferedWriter bwExportfile = null;
-      File fExportFile = new File(LOCATIONS_EXPORT);
+      // create the export files
+      BufferedWriter bwExportLocations = null;
+      File fExportLocations = new File(LOCATIONS_EXPORT);
+      BufferedWriter bwExportServers = null;
+      File fExportServers = new File(SERVERS_EXPORT);
       try
       {
-         // check, if export file already exists
-         if (fExportFile.exists())
+         // if export files already exists, delete them
+         if (fExportLocations.exists())
          {
-            if (false == fExportFile.delete())
+            if (false == fExportLocations.delete())
             {
-               // existing logfile cannot be deleted -> reset logfile name and redirect output to stdout
+               // existing locations file cannot be deleted -> return with error
                Starter._m_logError.LoggingWarning(10900, 
-                     "Cannot delete export server data file",
-                     "Error on delete export server data file: '" + LOCATIONS_EXPORT + "'. Please check permissions.");
+                     "Cannot delete locations data export file",
+                     "Error on delete locations data export file: '" + LOCATIONS_EXPORT + "'. Please check permissions.");
                return;
             }
          }
-         // check if path exists - if not, create
+         if (fExportServers.exists())
+         {
+            if (false == fExportServers.delete())
+            {
+               // existing servers file cannot be deleted -> return with error
+               Starter._m_logError.LoggingWarning(10900, 
+                     "Cannot delete servers data export file",
+                     "Error on delete export server data file: '" + LOCATIONS_EXPORT + "'. Please check permissions.");
+               return; // avoid data inconsistency between locations and servers file
+            }
+         }
+
+         // check if paths exists (same for locations and servers export files) - if not, create
          File fpExportFileDir = new File(LOCATIONS_EXPORT).getParentFile();
          if (!fpExportFileDir.exists())
          {
@@ -440,16 +623,29 @@ public class UtilLocations
             fpExportFileDir.mkdirs();
          }
 
-         // open export file
-         FileOutputStream FOStream = new FileOutputStream(fExportFile);
-         OutputStreamWriter osw = new OutputStreamWriter(FOStream, "UTF-8");
-         bwExportfile = new BufferedWriter(osw);
+         // open export files
+         if (null != fExportLocations)
+         {
+            FileOutputStream FOStream = new FileOutputStream(fExportLocations);
+            OutputStreamWriter osw = new OutputStreamWriter(FOStream, "UTF-8");
+            bwExportLocations = new BufferedWriter(osw);
 
-         // CSV Columns header
-         bwExportfile.write("LAT,LON,CITY,COUNTRY,FLAG,NUM,GRP,TECH,VLOC\n");
+            // CSV Columns header
+            bwExportLocations.write("LAT,LON,CITY,COUNTRY,FLAG,NUM,GRP,TECH,VLOC\n");
+         }
+         if (null != fExportServers)
+         {
+            FileOutputStream FOStream = new FileOutputStream(fExportServers);
+            OutputStreamWriter osw = new OutputStreamWriter(FOStream, "UTF-8");
+            bwExportServers = new BufferedWriter(osw);
+
+            // CSV Columns header
+            bwExportServers.write("KEY,NAME,HOST,GRP,TECH,VLOC\n");
+         }
 
          // export data
          int nbCountries = 0;
+         int nbCities = 0;
          int nbServers = 0;
          String serverListString = UtilPrefs.getServerListData();
          if (null != serverListString && !serverListString.isBlank())
@@ -457,44 +653,69 @@ public class UtilLocations
             String[] saServerList = serverListString.split(Location.SERVERID_LIST_SEPARATOR);
             if (saServerList.length > 0)
             {
-               for (String countries : saServerList)
+               for (String countryCitiesList : saServerList)
                {
                   ++nbCountries;
-                  String[] saCountryCities = countries.split(Location.SERVERID_SEPARATOR);
+                  String[] saCountryCities = countryCitiesList.split(Location.SERVERID_SEPARATOR);
                   if (saCountryCities.length == 2)
                   {
                      String country = saCountryCities[0];
                      String cities = saCountryCities[1];
-                     String[] saCities = cities.split("/");
+                     String[] saCities = cities.split(Location.SERVERID_CITIES_SEPARATOR);
                      for (String city : saCities)
                      {
-                        ++nbServers;
-                        Location loc = UtilLocations.getLocation(UtilLocations.getServerId(city, country));
-                        bwExportfile.write(loc.exportAsCsvData() + "\n");
+                        ++nbCities;
+                        String serverKey = Location.buildServerId(city, country);
+                        Location loc = getLocation(serverKey);
+                        if (null != loc)
+                        {
+                           bwExportLocations.write(loc.exportAsCsvData() + "\n");
+
+                           // write second file with VpnServers (per city)
+                           ArrayList<VpnServer> vpnServers = getServersList(serverKey);
+                           if (null != vpnServers)
+                           {
+                              for (VpnServer vpnServer : vpnServers)
+                              {
+                                 ++nbServers;
+                                 bwExportServers.write(vpnServer.exportAsCsvData() + "\n");
+                              }
+                           }
+                        }
                      }
                   }
                }
             }
          }
-         Starter._m_logError.TraceDebug("Export server data: Exported nb. coutries: " + nbCountries + " / nb. servers: " + nbServers);
+         Starter._m_logError.TraceDebug("Export server data: Exported nb. coutries: " + nbCountries + " / nb. cities: " + nbCities + " / nb. servers: " + nbServers);
       }
       catch (IOException e)
       {
          // Export file could not be accessed.
          Starter._m_logError.LoggingWarning(10900, 
-               "Cannot access export server data file",
-               "Error on access export server data file: '"  + LOCATIONS_EXPORT + "'. Please check permissions.");
+               "Cannot export locations data file",
+               "Error on export locations data file: '"  + LOCATIONS_EXPORT + "'. Please check permissions.");
       }
 
-      // finally - close the export file
+      // finally - close the export files
       try
       {
-         bwExportfile.flush();
-         bwExportfile.close();
+         bwExportLocations.flush();
+         bwExportLocations.close();
       }
       catch (IOException e)
       {
          Starter._m_logError.TraceDebug("Please check: Failed to close the export file: '" + LOCATIONS_EXPORT);
       }
+      try
+      {
+         bwExportServers.flush();
+         bwExportServers.close();
+      }
+      catch (IOException e)
+      {
+         Starter._m_logError.TraceDebug("Please check: Failed to close the export file: '" + SERVERS_EXPORT);
+      }
+      Starter._m_logError.getCurElapsedTime("Export Local Locations Files end");
    }
 }

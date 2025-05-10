@@ -14,6 +14,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import com.mr.apps.JNordVpnManager.Starter;
+import com.mr.apps.JNordVpnManager.geotools.Location;
 import com.mr.apps.JNordVpnManager.geotools.UtilLocations;
 import com.mr.apps.JNordVpnManager.gui.dialog.JModalDialog;
 import com.mr.apps.JNordVpnManager.utils.UtilPrefs;
@@ -79,9 +80,9 @@ public class NvpnServers
                // country
                JSONObject jsonObjCountry = jsonArrCountries.getJSONObject(i);
                String country = jsonObjCountry.getString("name");
-               if (sbListOfServers.length() > 0) sbListOfServers.append(":"); // delimiter between countries
+               if (sbListOfServers.length() > 0) sbListOfServers.append(Location.SERVERID_LIST_SEPARATOR); // delimiter between countries
                sbListOfServers.append(country);
-               String delimiter = "@"; // first delimiter between country and first city
+               String delimiter = Location.SERVERID_SEPARATOR; // first delimiter between country and first city
 
                // --- cities
                JSONArray jsonArrCities = jsonObjCountry.getJSONArray("cities");
@@ -91,7 +92,7 @@ public class NvpnServers
                   JSONObject jsonObjCity = jsonArrCities.getJSONObject(iCity);
                   String city = jsonObjCity.getString("name");
                   sbListOfServers.append(delimiter + city);
-                  delimiter = "/"; // delimiter between city2...cityn
+                  delimiter = Location.SERVERID_CITIES_SEPARATOR; // delimiter between city2...cityn
                }
             }
             rc_serverList = sbListOfServers.toString();

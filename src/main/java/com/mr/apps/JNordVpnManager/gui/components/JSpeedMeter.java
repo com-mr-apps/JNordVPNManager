@@ -58,8 +58,6 @@ public class JSpeedMeter extends JPanel
    private double                 m_speed               = 0;
    private double                 m_speedMax            = 0;
    private double                 m_speedMin            = _m_maxSpeed;
-   private int                    m_recordCount         = 0;
-   private double                 m_speedAvg            = 0;
 
    private String                 m_speedString         = null;
    private String                 m_title               = null;
@@ -126,8 +124,6 @@ public class JSpeedMeter extends JPanel
       this.m_speed = 0;
       this.m_speedMax = 0;
       this.m_speedMin = _m_maxSpeed;
-      this.m_speedAvg = 0;
-      this.m_recordCount = 0;
       this.m_speedString = "";
       repaint();
    }
@@ -147,10 +143,6 @@ public class JSpeedMeter extends JPanel
       {
          // set min. speed
          if (currentSpeed < this.m_speedMin) this.m_speedMin = currentSpeed;
-         // calculate the average
-         double average = this.m_speedAvg * m_recordCount;
-         ++m_recordCount;
-         this.m_speedAvg = (average + currentSpeed) / m_recordCount;
       }
 
       // Limit the max display speed
@@ -174,11 +166,6 @@ public class JSpeedMeter extends JPanel
    public double getSpeedMin()
    {
       return m_speedMin;
-   }
-
-   public double getSpeedAvg()
-   {
-      return m_speedAvg;
    }
 
    /**

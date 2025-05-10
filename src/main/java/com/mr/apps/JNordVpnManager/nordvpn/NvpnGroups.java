@@ -23,7 +23,7 @@ public class NvpnGroups
    private static NordVPNEnumGroups m_currentLegacyGroup = null;
 
    // Storage for groups per location
-   private ArrayList<NordVPNEnumGroups> m_groups = null;
+   private ArrayList<NordVPNEnumGroups> m_groupsIds = null;
 
    private static boolean m_isValid = false;
 
@@ -100,13 +100,13 @@ public class NvpnGroups
 
    public void addGroup(NordVPNEnumGroups id)
    {
-      if (null == m_groups)
+      if (null == m_groupsIds)
       {
-         m_groups = new ArrayList<NordVPNEnumGroups>();
-         m_groups.add(NordVPNEnumGroups.all_regions);
+         m_groupsIds = new ArrayList<NordVPNEnumGroups>();
+         m_groupsIds.add(NordVPNEnumGroups.all_regions);
       }
-      if (m_groups.contains(id)) return;
-      m_groups.add(id);
+      if (m_groupsIds.contains(id)) return;
+      m_groupsIds.add(id);
       m_isValid = true;
    }
 
@@ -118,12 +118,12 @@ public class NvpnGroups
    public boolean hasGroup(NordVPNEnumGroups idGroup)
    {
       // if m_groups == null, we couldn't access the NordVPN groups data
-      return (null == m_groups) ? true : m_groups.contains(idGroup);
+      return (null == m_groupsIds) ? true : m_groupsIds.contains(idGroup);
    }
 
    public void resetGroups()
    {
-      m_groups = null;      
+      m_groupsIds = null;      
    }
 
    public static NordVPNEnumGroups getCurrentFilterRegion()
@@ -175,12 +175,12 @@ public class NvpnGroups
 
    public String toString()
    {
-      if (null == m_groups) return "[]";
+      if (null == m_groupsIds) return "[]";
       StringBuffer sb = new StringBuffer(); 
       sb.append("[");
-      for (NordVPNEnumGroups iGroup : m_groups)
+      for (NordVPNEnumGroups iGroup : m_groupsIds)
       {
-         if (sb.length() > 0) sb.append(",");
+         if (sb.length() > 1) sb.append(",");
          sb.append(NordVPNEnumGroups.get(iGroup.getId()));
       }
       sb.append("]");
@@ -189,9 +189,9 @@ public class NvpnGroups
 
    public String toStringId()
    {
-      if (null == m_groups) return "";
+      if (null == m_groupsIds) return "";
       StringBuffer sb = new StringBuffer(); 
-      for (NordVPNEnumGroups iGroup : m_groups)
+      for (NordVPNEnumGroups iGroup : m_groupsIds)
       {
          if (sb.length() > 0) sb.append(";");
          sb.append(iGroup.getId());

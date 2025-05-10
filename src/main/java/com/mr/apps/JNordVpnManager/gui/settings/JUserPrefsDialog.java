@@ -15,7 +15,6 @@ import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
-import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.StringTokenizer;
@@ -77,7 +76,7 @@ public class JUserPrefsDialog extends JDialog implements ActionListener
             // import a settings file
             JFileChooser filedia = new JFileChooser();
             filedia.setDialogType(JFileChooser.OPEN_DIALOG);
-            filedia.setCurrentDirectory(new File(System.getProperty("user.home"), Starter.APPLICATION_DATA_DIR));
+            filedia.setCurrentDirectory(Starter.APPLICATION_DATA_ABS_PATH);
 //          filedia.setFileFilter(new FileNameExtensionFilter("Settings File [exp]", "exp"));
             int ret = filedia.showOpenDialog(m_userPrefsPanel);
             if (ret == 0)
@@ -110,7 +109,7 @@ public class JUserPrefsDialog extends JDialog implements ActionListener
             // export a settings file
             JFileChooser filedia = new JFileChooser();
             filedia.setDialogType(JFileChooser.SAVE_DIALOG);
-            filedia.setCurrentDirectory(new File(System.getProperty("user.home", Starter.APPLICATION_DATA_DIR)));  // TODO: seems not to work?
+            filedia.setCurrentDirectory(Starter.APPLICATION_DATA_ABS_PATH);  // TODO: seems not to work?
 //            filedia.setFileFilter(new FileNameExtensionFilter("Settings File [exp]", "exp"));
             int ret = filedia.showSaveDialog(m_userPrefsPanel);
             if (ret == 0)
