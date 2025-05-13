@@ -31,6 +31,7 @@ import java.util.concurrent.TimeUnit;
 
 import com.mr.apps.JNordVpnManager.Starter;
 import com.mr.apps.JNordVpnManager.gui.dialog.JModalDialog;
+import com.mr.apps.JNordVpnManager.gui.dialog.JPasswordDialog;
 import com.mr.apps.JNordVpnManager.utils.String.StringFormat;
 
 /**
@@ -122,7 +123,9 @@ public class UtilSystem
 
    /**
     * Delete a directory with all files recursively
-    * @param dirPath is the directory to delete
+    * 
+    * @param dirPath
+    *           is the directory to delete
     */
    public static void deleteDir(File dirPath)
    {
@@ -137,11 +140,94 @@ public class UtilSystem
       dirPath.delete();
    }
    
+   public static String runWithPrivileges(String sCommand)
+   {
+      InputStreamReader input;
+      OutputStreamWriter output;
+
+      String [] command = new String[] {
+            "/bin/bash", "-c", "/usr/bin/sudo -Sk " + sCommand + " 2>&1"
+      };
+      StringBuffer commandOutput = new StringBuffer();
+      Process pb = null;
+      try
+      {
+         // Create the process and start it.
+         pb = new ProcessBuilder(command).start();
+         output = new OutputStreamWriter(pb.getOutputStream());
+         input = new InputStreamReader(pb.getInputStream());
+
+         int bytes = 0;
+         char buffer[] = new char[1024];
+         while ((bytes = input.read(buffer, 0, 1024)) != -1)
+         {
+            if (bytes == 0)
+               continue;
+            // Output the data to console, for debug purposes
+            String data = String.valueOf(buffer, 0, bytes);
+            System.out.println(data);
+            // Check for password request
+            if (data.contains("[sudo] password"))
+            {
+               // Request the password
+               JPasswordDialog dialog = new JPasswordDialog(Starter.getMainFrame(), 10);
+               char[] password = dialog.getPassword();
+               if (null != password)
+               {
+                  output.write(password);
+                  output.write('\n');
+                  output.flush();
+                  // erase password data, to avoid security issues.
+                  dialog.clearPassword();
+               }
+               else
+               {
+                  Starter._m_logError.TraceOut("Command '" + sCommand + "' cancelled (no sudo password entered).");
+                  return null;
+               }
+               // reset the output
+               commandOutput.setLength(0);
+            }
+            else
+            {
+               commandOutput.append(data);
+            }
+         }
+
+         if (!pb.waitFor(COMMAND_TIMEOUT, TimeUnit.SECONDS))
+         {
+            JModalDialog.showError("Process Command Timeout", 
+                  "The Command needed too long for execution. The command was cancelled.");
+            pb.destroyForcibly();
+            pb.waitFor();
+         }
+
+         // command output
+         Starter._m_logError.TraceOut("Command '" + sCommand + "' returned with rc=" + pb.exitValue());
+         Starter._m_logError.TraceOut(commandOutput.toString());
+         return commandOutput.toString();
+      }
+      catch (IOException ex)
+      {
+         Starter._m_logError.TraceErr("Command '" + joinCommand(command) + "' returned with: IOException. rc=" + pb.exitValue());
+         Starter._m_logError.LoggingExceptionMessage(4, 10900, ex);
+      }
+      catch (InterruptedException e)
+      {
+         Starter._m_logError.TraceErr("Command '" + joinCommand(command) + "' returned with: InterruptedException. rc=" + pb.exitValue());
+         Starter._m_logError.LoggingExceptionMessage(4, 10900, e);
+      }
+
+      return null;
+   }
+
    /**
     * Run a command
     * <p>
     * after call of runCommand() the error condition has to be checked with isLastError(), getLastError()
-    * @param command is the command as VARARG e.g. "nordvpn", "connect"
+    * 
+    * @param command
+    *           is the command as VARARG e.g. "nordvpn", "connect"
     * @return the result of the command. Multiple lines in one string, delimited by carriage return
     */
    public static String runCommand(String... command)

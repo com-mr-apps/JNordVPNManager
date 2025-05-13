@@ -24,6 +24,8 @@ public class JResizedIcon extends ImageIcon
       ICON_MOUSE_POINTER_MAP_LOCATION  ("mp_MapSelectLocation.png"),
       ICON_ADD                         ("i_Add.png"),
       ICON_MINUS                       ("i_Minus.png"),
+      ICON_SHOW                        ("i_Show.png"),
+      ICON_HIDE                        ("i_Hide.png"),
       ICON_BUTTON_START                ("i_ButtonStart.png"),
       ICON_BUTTON_STOP                 ("i_ButtonStop.png"),
       ICON_COLOR                       ("i_Color.png"),
