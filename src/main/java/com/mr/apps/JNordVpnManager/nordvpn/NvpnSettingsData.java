@@ -167,7 +167,7 @@ public class NvpnSettingsData
       m_settingsPanelFieldsMap.put(POST_QUANTUM, new JSettingsPanelField("Enable Post-Quantum Encryption", "B", KeyEvent.VK_Q, 1, this.getPostQuantum(true)));
       m_settingsPanelFieldsMap.put(PROTOCOL, new JSettingsPanelField("Protocol (OPENVPN)", "L[TCP,UDP]", KeyEvent.VK_P, 1, this.getProtocol(true)));
       m_settingsPanelFieldsMap.put(ROUTING, new JSettingsPanelField("Enable traffic routing", "B", KeyEvent.VK_R, 1, this.getRouting(true)));
-      m_settingsPanelFieldsMap.put(TECHNOLOGY, new JSettingsPanelField("Technology", "L[NORDLYNX,OPENVPN,NORDWHISPER]", KeyEvent.VK_T, 1, this.getTechnology(true)));
+      m_settingsPanelFieldsMap.put(TECHNOLOGY, new JSettingsPanelField("Technology", "C[NORDLYNX,OPENVPN,NORDWHISPER]", KeyEvent.VK_T, 1, this.getTechnology(true)));
       m_settingsPanelFieldsMap.put(TPLITE, new JSettingsPanelField("Threat Protection Lite", "B", -1, 1, this.getTplite(true)));
       m_settingsPanelFieldsMap.put(TRAY, new JSettingsPanelField("Enable Tray Icon", "B", -1, 1, this.getTray(true)));
       m_settingsPanelFieldsMap.put(VIRTUAL_LOCATION, new JSettingsPanelField("Enable Virtual Locations", "B", KeyEvent.VK_V, 1, this.getVirtualLocation(true)));
@@ -971,6 +971,7 @@ public class NvpnSettingsData
                // ok -> we need to re-read the settings
                getNordVPNSettings();
                setRequiresReconnect();
+               GuiCommandsToolBar.updateCommand(Command.VPN_SET_TECHNOLOGY);
                GuiCommandsToolBar.updateCommand(Command.VPN_SET_OBFUSCATE);
                GuiCommandsToolBar.updateCommand(Command.VPN_SET_POSTQUANTUM);
                return true;
@@ -1178,7 +1179,7 @@ public class NvpnSettingsData
    {
       if (null == data) return false;
 
-      if ((true == m_technology.equals("NORDVPN")) && (!data.equals("UDP")))
+      if ((true == m_technology.equals("NORDLYNX")) && (!data.equals("UDP")))
       {
          // NORDLYNX protocol is fix UDP - only OPENVPN supports TCP
          data = "UDP";
@@ -1210,6 +1211,7 @@ public class NvpnSettingsData
             {
                m_protocol = data;
                setRequiresReconnect();
+               GuiCommandsToolBar.updateCommand(Command.VPN_SET_TECHNOLOGY);
                return true;
             }
          }

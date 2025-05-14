@@ -32,15 +32,15 @@ import com.mr.apps.JNordVpnManager.nordvpn.NvpnSettingsData;
 @SuppressWarnings("serial")
 public class JNordVpnSettingsDialog extends JDialog implements ActionListener
 {
-   private final static String BUTTON_LIST = "Set,Reset All [to NordVPN Defaults],Cancel";
-   private final static int SET_BUTTON = 0;
-   private final static int RESET_BUTTON = 1;
-   private final static int CANCEL_BUTTON = 2;
+   private final static String BUTTON_LIST         = "Set,Reset All [to NordVPN Defaults],Cancel";
+   private final static int    SET_BUTTON          = 0;
+   private final static int    RESET_BUTTON        = 1;
+   private final static int    CANCEL_BUTTON       = 2;
 
-   private String m_result;
-   private boolean m_requiresUpdate = false;
-   private JSettingsPanel m_nvpnSettingsPanel = null;
-   private NvpnSettingsData m_nvpnSettingsData = null;
+   private String              m_result;
+   private boolean             m_requiresUpdate    = false;
+   private JSettingsPanel      m_nvpnSettingsPanel = null;
+   private NvpnSettingsData    m_nvpnSettingsData  = null;
 
    /**
     * NordVPN Settings Panel Layout definition.

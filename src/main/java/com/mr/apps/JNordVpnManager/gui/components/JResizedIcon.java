@@ -58,6 +58,7 @@ public class JResizedIcon extends ImageIcon
       ICON_VPN_SET_POSTQUANTUM         ("i_VpnSetPostQuantum.png"),
       ICON_VPN_SET_THREATPROTECTION    ("i_VpnSetThreatprotection.png"),
       ICON_VPN_SET_VIRTUALLOCATION     ("i_VpnSetVirtualLocation.png"),
+      ICON_VPN_TECHNOLOGY              ("i_VpnTechnology.png"),
       ICON_WINDOW_COLLAPSE             ("i_WindowCollapse.png"),
       ICON_WINDOW_EXPAND               ("i_WindowExpand.png"),
       ICON_APP_PREF_AUTOCONNECT        ("i_AppPrefAutoConnect.png"),

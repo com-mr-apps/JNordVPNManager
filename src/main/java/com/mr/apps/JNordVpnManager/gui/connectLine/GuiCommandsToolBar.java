@@ -9,6 +9,7 @@
 package com.mr.apps.JNordVpnManager.gui.connectLine;
 
 import java.awt.BorderLayout;
+import java.awt.Component;
 import java.awt.FlowLayout;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
@@ -18,9 +19,13 @@ import java.awt.event.HierarchyListener;
 import java.util.Vector;
 
 import javax.swing.BorderFactory;
+import javax.swing.DefaultListCellRenderer;
+import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
 import javax.swing.JLabel;
+import javax.swing.JList;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
@@ -33,6 +38,31 @@ import com.mr.apps.JNordVpnManager.Starter;
 import com.mr.apps.JNordVpnManager.commandInterfaces.Command;
 import com.mr.apps.JNordVpnManager.gui.components.JResizedIcon;
 import com.mr.apps.JNordVpnManager.utils.String.StringFormat;
+
+@SuppressWarnings("serial")
+class IconListRenderer extends DefaultListCellRenderer
+{
+   Command cmd = null;
+
+   public IconListRenderer(Command cmd)
+   {
+      this.cmd = cmd;
+   }
+
+   @Override
+   public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus)
+   {
+      JLabel label = (JLabel) super.getListCellRendererComponent(list, cmd.getOption((int) value), index, isSelected, cellHasFocus);
+
+      // Get icon to use for the list item value
+      Icon icon = JResizedIcon.getIcon(cmd.getIconUrl((int) value), JResizedIcon.IconSize.MEDIUM);
+
+      // Set icon to display for value
+      label.setIcon(icon);
+      label.setToolTipText(cmd.getToolTip((int) value));
+      return label;
+   }
+}
 
 @SuppressWarnings("serial")
 public class GuiCommandsToolBar extends JPanel implements ActionListener
@@ -121,6 +151,11 @@ public class GuiCommandsToolBar extends JPanel implements ActionListener
                   JPanel checkBox = makeCommandCheckBox(cmd, customizePopUpMenu);
                   m_toolBar.add(checkBox);
                }
+               else if (cmd.getType() == Command.TYPE_COMBOBOX)
+               {
+                  JPanel comboBox = makeCommandComboBox(cmd, customizePopUpMenu);
+                  m_toolBar.add(comboBox);
+               }
                else
                {
                   Starter._m_logError.LoggingError(10997,
@@ -165,6 +200,11 @@ public class GuiCommandsToolBar extends JPanel implements ActionListener
             {
                // CheckBox (label)
                cmdId = ((JLabel)cmdObject).getName();
+            }
+            else if (cmdObject instanceof JComboBox)
+            {
+               // ComboBox (label)
+               cmdId = ((JComboBox<?>)cmdObject).getName();
             }
             else
             {
@@ -300,6 +340,8 @@ public class GuiCommandsToolBar extends JPanel implements ActionListener
     * 
     * @param cmd
     *           is the command
+    * @param customizePopUpMenu
+    *           is the pop up menu with the list of available commands
     * @return the created button
     */
    private JPanel makeCommandButton(Command cmd, JPopupMenu customizePopUpMenu)
@@ -324,10 +366,46 @@ public class GuiCommandsToolBar extends JPanel implements ActionListener
    }
    
    /**
+    * Create a Command Button.
+    * 
+    * @param cmd
+    *           is the command
+    * @param customizePopUpMenu
+    *           is the pop up menu with the list of available commands
+    * @return the created button
+    */
+   private JPanel makeCommandComboBox(Command cmd, JPopupMenu customizePopUpMenu)
+   {
+      JPanel jPanel = createPanel(cmd);
+
+      // Create the Button
+      JComboBox<Object> comboBox = new JComboBox<Object>();
+      comboBox.setRenderer(new IconListRenderer(cmd));
+      for (int n = 0 ; n < cmd.getOptionsSize(); n++)
+      {
+         comboBox.addItem(n);
+      }
+      comboBox.setToolTipText(cmd.getToolTip(-1));
+      comboBox.setActionCommand(cmd.getId());
+      comboBox.setName(cmd.getId());
+      comboBox.setBorder(BorderFactory.createRaisedSoftBevelBorder());
+      comboBox.addActionListener(this);
+      cmd.setComponent(comboBox);
+
+      // add the pop up menu with the list of available commands
+      comboBox.setComponentPopupMenu(customizePopUpMenu);
+
+      jPanel.add(comboBox);
+      return jPanel;
+   }
+   
+   /**
     * Create a CheckBox.
     * 
     * @param cmd
     *           is the command
+    * @param customizePopUpMenu
+    *           is the pop up menu with the list of available commands
     * @return the created checkBox
     */
    private JPanel makeCommandCheckBox(Command cmd, JPopupMenu customizePopUpMenu)
