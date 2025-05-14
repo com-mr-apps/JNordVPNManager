@@ -521,6 +521,11 @@ public class NvpnCommands {
             status = UtilSystem.runCommand(CMD_NORDVPN, ARG_CONNECT, NvpnGroups.getCurrentFilterRegion().name());
          }
       }
+      else if (cityId == 2)
+      {
+         // Connect to Region
+         status = UtilSystem.runCommand(CMD_NORDVPN, ARG_CONNECT, loc.getCountryName());
+      }
       else if (cityId == 0)
       {
          // with country only (with valid loc)

@@ -48,7 +48,7 @@ public class GuiStatusLine
    private JButton                     m_minMaxButton         = null;
 
    private static ArrayList<ImageIcon> m_statusImages         = new ArrayList<>();
-   private ArrayList<ImageIcon>        m_collapseExpandImages = new ArrayList<>();
+   private static ArrayList<ImageIcon> m_collapseExpandImages = new ArrayList<>();
 
    private static String[]             m_compactModeToolTip   = {
          "Click here to switch to Compact view.",
@@ -56,12 +56,12 @@ public class GuiStatusLine
    };
 
    // Defined connection states
-   public static final int         STATUS_UNKNOWN             = -1;
-   public static final int         STATUS_CONNECTED           = 0;
-   public static final int         STATUS_PAUSED              = 1;
-   public static final int         STATUS_DISCONNECTED        = 2;
-   public static final int         STATUS_RECONNECT           = 3;
-   public static final int         STATUS_LOGGEDOUT           = 99;
+   public static final int             STATUS_UNKNOWN         = -1;
+   public static final int             STATUS_CONNECTED       = 0;
+   public static final int             STATUS_PAUSED          = 1;
+   public static final int             STATUS_DISCONNECTED    = 2;
+   public static final int             STATUS_RECONNECT       = 3;
+   public static final int             STATUS_LOGGEDOUT       = 99;
 
    /**
     * Constructor for GUI Status Line
@@ -199,10 +199,12 @@ public class GuiStatusLine
          CurrentLocation new_loc = (null != status_loc) ? new CurrentLocation(status_loc) : null;
          // Check, if GUI current server is the current server
          if ((null == ret_loc) ||
-             (false == ret_loc.isEqualLocation(new_loc))) // TODO: check also for server host
+             (false == ret_loc.isEqualLocation(new_loc)))
          {
-            // set changed current server based on actual status data
+            // set current server based on actual status data and make groups static
+            // Remark: May be the case, if connection was changed from CLI (outside of the GUI). In this case, we can set the current Location only to a Location Server (city/country), not to a Host Server
             ret_loc = new_loc;
+            ret_loc.makeStatic(null);
          }
          ret_loc.setConnected(true);
 

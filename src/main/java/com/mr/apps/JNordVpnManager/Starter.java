@@ -608,7 +608,7 @@ public class Starter extends JFrame
     * For Dynamic connection (Tree/Map selection) - Filter Group, Technology, Protocol from current GUI and NordVPN settings.
     * 
     * @param bStatic
-    *           is <code>true</code> for FilterGroup (Obfuscate handling) and Technology/Protocol set fix (static) in
+    *           is <code>true</code> for Static connections, where FilterGroup (Obfuscate handling) and Technology/Protocol are set fix (static) in
     *           the location object
     * @return the current or recent location
     */
@@ -617,9 +617,9 @@ public class Starter extends JFrame
       // first check, if we are logged in
       if (null == m_nvpnAccountData || false == m_nvpnAccountData.isLoggedIn()) return null;
 
-      CurrentLocation loc = null;
+      CurrentLocation ret_loc = null;
 
-      int legacyGroup = NordVPNEnumGroups.legacy_group_unknown.getId();
+      int iLegacyGroup = NordVPNEnumGroups.legacy_group_unknown.getId();
       String sVpnTechnology = null;
       String sVpnProtocol = null;
       if (null == m_currentServer)
@@ -647,13 +647,13 @@ public class Starter extends JFrame
          }
          Location l = UtilLocations.getLocation(serverId);
          if (null == l) l = new Location (serverId, 0, 0, -1);
-         loc = new CurrentLocation(l, vs);
-         loc.setConnected(false);
+         ret_loc = new CurrentLocation(l, vs);
+         ret_loc.setConnected(false);
+
          if (saParts.length == 4)
          {
-            // get (optional) connection data from preferences 'server@country,group,technology,protocol' and add them to loc
-            int iLegacyGroup = Integer.valueOf(saParts[1]);
-            legacyGroup = (iLegacyGroup == NordVPNEnumGroups.legacy_group_unknown.getId()) ? NvpnGroups.getCurrentFilterGroup().getId() : iLegacyGroup;
+            // get (optional) connection data from preferences 'server@country,group,technology,protocol' for static locations
+            iLegacyGroup = Integer.valueOf(saParts[1]);
             sVpnTechnology = saParts[2];
             sVpnProtocol = saParts[3];
          }
@@ -666,39 +666,35 @@ public class Starter extends JFrame
          if (null != current_loc)
          {
             // create current Location with CSV server location/host data for connect command
-            loc = new CurrentLocation(current_loc, m_currentServer.getVpnServer());
+            ret_loc = new CurrentLocation(current_loc, m_currentServer.getVpnServer());
             // !! Supported Technologies and Groups lists stored in VpnServer are not updated for temp. locations - but we don't need this information on CurrentLocation
          }
          else
          {
             // CSV Location not available yet - create a temporary current location object for connect command
-            loc = new CurrentLocation(m_currentServer);
+            ret_loc = new CurrentLocation(m_currentServer);
          }
-         loc.setConnected(bIsConnected);
-         legacyGroup = m_currentServer.getLegacyGroup();
+         ret_loc.setConnected(bIsConnected);
+
+         // get connection data from current Location for static locations
+         iLegacyGroup = m_currentServer.getLegacyGroup();
          sVpnTechnology = m_currentServer.getVpnTechnology();
          sVpnProtocol = m_currentServer.getVpnProtocol();
       }
 
       if (bStatic)
       {
-         // static (use Data for connection from current location)
-         loc.setLegacyGroup((legacyGroup == NordVPNEnumGroups.legacy_group_unknown.getId()) ? NvpnGroups.getCurrentFilterGroup().getId() : legacyGroup);
-         loc.setVpnTechnology(sVpnTechnology);
-         loc.setVpnProtocol(sVpnProtocol);
+         // static Location (use connection data from current location)
+         ret_loc.makeStatic(iLegacyGroup, sVpnTechnology, sVpnProtocol);
       }
       else
       {
-         // dynamic (use Data for connection from current GUI Filter - and - settings)
-         loc.setLegacyGroup(null);
-         loc.setVpnTechnology(null);
-         loc.setVpnProtocol(null);
+         // dynamic Location (use connection data from current GUI Filter - and - settings)
+         ret_loc.makeDynamic();
       }
       
-      Starter._m_logError.TraceDebug("(getCurrentServer) loc=" + loc);
-      return loc;
-
-      // return only a "real" location
+      Starter._m_logError.TraceDebug("(getCurrentServer) loc=" + ret_loc);
+      return ret_loc;
    }
 
    public static void updateStatusLine()

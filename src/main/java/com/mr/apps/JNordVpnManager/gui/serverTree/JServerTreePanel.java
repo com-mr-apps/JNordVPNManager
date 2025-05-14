@@ -250,6 +250,7 @@ public class JServerTreePanel extends JPanel implements TreeSelectionListener
             updateFilterTreeCB(false);
             UtilMapGeneration.zoomServerLayer();
             GuiMenuBar.updateQuickConnectMenuButton();
+            GuiMenuBar.updateRegionConnectMenuButton();
          }
       });
 

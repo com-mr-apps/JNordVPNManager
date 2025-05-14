@@ -55,6 +55,7 @@ public class GuiMenuBar
    private static JMenuItem               m_menuItemReConnect            = null;
    private static JMenuItem               m_menuItemDisConnect           = null;
    private static JMenuItem               m_menuItemQuickConnect         = null;
+   private static JMenuItem               m_menuItemRegionConnect        = null;
    private static JMenuItem               m_menuItemLogInOut             = null;
    private static JMenuItem               m_menuItemConsole              = null;
 
@@ -123,6 +124,16 @@ public class GuiMenuBar
       });
       fileMenu.add(fileExit);
       
+      
+      JMenuItem fileTest = new JMenuItem("Test");
+      fileTest.addActionListener(new ActionListener()
+      {
+         public void actionPerformed(ActionEvent e)
+         {
+            UtilSystem.runWithPrivileges("journalctl -u nordvpnd");
+         }
+      });
+      fileMenu.add(fileTest);
       // -------------------------------------------------------------------------------------
       // Menu --- NordVPN ---
       m_nordvpnMenu = new JMenu("NordVPN");
@@ -284,6 +295,18 @@ public class GuiMenuBar
       updateQuickConnectMenuButton();
       connectMenu.add(m_menuItemQuickConnect);
       
+      m_menuItemRegionConnect = new JMenuItem("VPN Region Connect");
+      m_menuItemRegionConnect.addActionListener(new ActionListener()
+      {
+         public void actionPerformed(ActionEvent e)
+         {
+            CurrentLocation loc = new CurrentLocation (new Location (NvpnGroups.getCurrentFilterRegion().toString(), NvpnGroups.getCurrentFilterRegion().toString(), 0.0, 0.0, 2), null);
+            NvpnCallbacks.executeConnect(loc, "NordVPN Region Connect", "NordVPN Region Connect");
+         }
+      });
+      updateRegionConnectMenuButton();
+      connectMenu.add(m_menuItemRegionConnect);
+      
       m_menuItemDisConnect = new JMenuItem("VPN Disconnect");
       m_menuItemDisConnect.addActionListener(new ActionListener()
       {
@@ -436,6 +459,20 @@ public class GuiMenuBar
       {
          // disable Disconnect command
          m_menuItemDisConnect.setEnabled(false);
+      }
+   }
+
+   public static void updateRegionConnectMenuButton()
+   {
+      if (NvpnGroups.getCurrentFilterRegion().equals(NvpnGroups.NordVPNEnumGroups.all_regions))
+      {
+         m_menuItemRegionConnect.setEnabled(false);
+         m_menuItemRegionConnect.setToolTipText("Select a Region Filter to connect to.");
+      }
+      else
+      {
+         m_menuItemRegionConnect.setEnabled(true);
+         m_menuItemRegionConnect.setToolTipText("Connect to Server: " + NvpnGroups.getCurrentFilterRegion());
       }
    }
 
