@@ -148,6 +148,7 @@ public class UtilSystem
       String [] command = new String[] {
             "/bin/bash", "-c", "/usr/bin/sudo -Sk " + sCommand + " 2>&1"
       };
+      Starter._m_logError.TraceCmd("[sudo cmd] '" + sCommand + "'");
       StringBuffer commandOutput = new StringBuffer();
       Process pb = null;
       try
@@ -165,7 +166,7 @@ public class UtilSystem
                continue;
             // Output the data to console, for debug purposes
             String data = String.valueOf(buffer, 0, bytes);
-            System.out.println(data);
+//            Starter._m_logError.TraceOut(data);
             // Check for password request
             if (data.contains("[sudo] password"))
             {
@@ -182,7 +183,7 @@ public class UtilSystem
                }
                else
                {
-                  Starter._m_logError.TraceOut("Command '" + sCommand + "' cancelled (no sudo password entered).");
+                  Starter._m_logError.TraceErr("Command '" + sCommand + "' cancelled (no sudo password entered).");
                   return null;
                }
                // reset the output
@@ -203,7 +204,7 @@ public class UtilSystem
          }
 
          // command output
-         Starter._m_logError.TraceOut("Command '" + sCommand + "' returned with rc=" + pb.exitValue());
+         Starter._m_logError.TraceDebug("...command returned with rc=" + pb.exitValue());
          Starter._m_logError.TraceOut(commandOutput.toString());
          return commandOutput.toString();
       }

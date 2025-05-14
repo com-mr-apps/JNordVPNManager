@@ -21,6 +21,7 @@ import com.mr.apps.JNordVpnManager.geotools.VpnServer;
 import com.mr.apps.JNordVpnManager.gui.components.JResizedIcon;
 import com.mr.apps.JNordVpnManager.gui.components.JResizedIcon.IconSize;
 import com.mr.apps.JNordVpnManager.gui.components.JResizedIcon.IconUrls;
+import com.mr.apps.JNordVpnManager.nordvpn.NvpnStatusData;
 
 @SuppressWarnings("serial")
 public class MyRenderer extends DefaultTreeCellRenderer
@@ -58,6 +59,14 @@ public class MyRenderer extends DefaultTreeCellRenderer
             if (loc.getServer().equals(cLoc.getServerNordVPN()))
             {
                colorFg = Color.MAGENTA;
+            }
+            else
+            {
+               NvpnStatusData status = Starter.getCurrentStatusData();
+               if (status.getServer().startsWith(((JServerNode)value).toString()))
+               {
+                  colorFg = Color.PINK;
+               }
             }
          }
          

@@ -19,6 +19,7 @@ import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JEditorPane;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.ScrollPaneConstants;
@@ -57,7 +58,7 @@ public class JSupportersDialog extends JFrame
          + "<h3>What Is The JNordVPN Manager Supporters Edition</h3>"
          + "<h4>Features that are available exclusive for <em>my supporters</em>:</h4>"
          + "<ul>"
-         + "<li><strong>Allow-, Whitelist</strong>: Manage allowlist for ports and subnets.</li>"
+         + "<li><strong>Allow-, Whitelist</strong>: Manage allowlist for ports and subnets (<a href=\"https://github.com/com-mr-apps/JNordVPNManager/wiki/Allow-List--%E2%80%90-Whitelist\">Documentation on GitHub Wiki</a>).</li>"
          + "<li><strong>Timer Reconnect</strong>: Time-based automatic [re]connect to VPN location.</li>"
          + "</ul>"
          + "<h4>...planned features are:</h4>"
@@ -142,6 +143,8 @@ public class JSupportersDialog extends JFrame
          }
       });
 
+      JPanel jpButton = new JPanel();
+      jpButton.setLayout(new BoxLayout(jpButton, BoxLayout.Y_AXIS));
       JButton jbManageSupporterEdition = new JButton("Manage Supporter Edition");
       jbManageSupporterEdition.addActionListener(new ActionListener()
       {
@@ -150,6 +153,9 @@ public class JSupportersDialog extends JFrame
             UtilCallbacks.cbManageSupporterEdition();
          }
       });
+      jpButton.add(jbManageSupporterEdition);
+      JLabel jlVersion = new JLabel("Add-On Version: " + Starter.getAddOnLibVersion());
+      jpButton.add(jlVersion);
       
       // Layout title
       jpTitle.add(mrLogo);
@@ -160,7 +166,7 @@ public class JSupportersDialog extends JFrame
          jpTitle.add(editorTitlePane);
          jpTitle.add(Box.createHorizontalGlue());
       }
-      jpTitle.add(jbManageSupporterEdition);
+      jpTitle.add(jpButton);
       jpTitle.add(Box.createRigidArea(new Dimension(20, 0)));
       jpTitle.add(coffeeLogo);
 
