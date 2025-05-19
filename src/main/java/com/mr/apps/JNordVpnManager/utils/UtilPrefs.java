@@ -22,8 +22,8 @@ import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 import com.mr.apps.JNordVpnManager.Starter;
-import com.mr.apps.JNordVpnManager.commandInterfaces.CallCommand;
-import com.mr.apps.JNordVpnManager.commandInterfaces.Command;
+import com.mr.apps.JNordVpnManager.commandInterfaces.base.CallCommand;
+import com.mr.apps.JNordVpnManager.commandInterfaces.base.Command;
 import com.mr.apps.JNordVpnManager.geotools.UtilMapGeneration;
 import com.mr.apps.JNordVpnManager.gui.settings.JUserPrefsDialog;
 import com.mr.apps.JNordVpnManager.nordvpn.NvpnGroups.NordVPNEnumGroups;
@@ -139,7 +139,7 @@ public class UtilPrefs
       settingsPanelFieldsMap.put(LOGFILE_TRACECMD, new JSettingsPanelField("Trace Command", "B", KeyEvent.VK_A, 1, StringFormat.int2String(DEFAULT_PREF_SETTINGS_TRACECMD, "#")));
       settingsPanelFieldsMap.put(LOGFILE_TRACEDEBUG, new JSettingsPanelField("Trace Debug", "B", KeyEvent.VK_B, 1, StringFormat.int2String(DEFAULT_PREF_SETTINGS_TRACEDEBUG, "#")));
       settingsPanelFieldsMap.put(LOGFILE_TRACEINIT, new JSettingsPanelField("Trace Init", "B", KeyEvent.VK_I, 1, StringFormat.int2String(DEFAULT_PREF_SETTINGS_TRACEINIT, "#")));
-      settingsPanelFieldsMap.put(MESSAGE_AUTOCLOSE, new JSettingsPanelField("Auto Close Messages", "N[-1,99,1]", -1, 2, StringFormat.int2String(DEFAULT_PREF_SETTINGS_MESSAGE_AUTOCLOSE, "#")));
+      settingsPanelFieldsMap.put(MESSAGE_AUTOCLOSE, new JSettingsPanelField("Auto Close Messages (in seconds)", "N[-1,99,1]", -1, 2, StringFormat.int2String(DEFAULT_PREF_SETTINGS_MESSAGE_AUTOCLOSE, "#")));
       settingsPanelFieldsMap.put(RECENTSERVER_CITY, new JSettingsPanelField("Recent Server", "T", KeyEvent.VK_S, 20, DEFAULT_PREF_RECENTSERVER_CITY));
       settingsPanelFieldsMap.put(RECENTSERVER_COUNTRY, new JSettingsPanelField("Recent Country", "T", KeyEvent.VK_C, 20, DEFAULT_PREF_RECENTSERVER_COUNTRY));
       settingsPanelFieldsMap.put(RECENTSERVER_LIST, new JSettingsPanelField("Recent Servers List", "T", -1, 20, DEFAULT_PREF_RECENTSERVER_LIST));
@@ -148,7 +148,7 @@ public class UtilPrefs
       settingsPanelFieldsMap.put(SERVERLIST_DATA, new JSettingsPanelField("Server Data", "T", KeyEvent.VK_D, 20, DEFAULT_PREF_SERVERLIST_DATA));
       settingsPanelFieldsMap.put(SERVERLIST_TIMESTAMP, new JSettingsPanelField("Sync. Data Timestamp", "T", KeyEvent.VK_T, 10, DEFAULT_PREF_SERVERLIST_TIMESTAMP));
       settingsPanelFieldsMap.put(WORLDMAP_IMAGE, new JSettingsPanelField("Worldmap Image", "L[HYP,NE1]", -1, 1, DEFAULT_PREF_WORLDMAP_IMAGE));
-      settingsPanelFieldsMap.put(WORLDMAP_IMAGE_DISPLAY_MODE, new JSettingsPanelField("Worldmap Show", "L[OFF,RGB,GREY]", -1, 1, DEFAULT_PREF_WORLDMAP_IMAGE_DISPLAY_MODE));
+      settingsPanelFieldsMap.put(WORLDMAP_IMAGE_DISPLAY_MODE, new JSettingsPanelField("Worldmap Show", "C[OFF,RGB,GREY]", -1, 1, DEFAULT_PREF_WORLDMAP_IMAGE_DISPLAY_MODE));
 
       // add internal values (w/o panel fields, but part of managed dataset)
       settingsPanelFieldsMap.put(COMMANDS_TOOLBAR, null);

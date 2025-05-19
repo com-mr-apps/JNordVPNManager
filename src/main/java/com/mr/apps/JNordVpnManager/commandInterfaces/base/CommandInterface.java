@@ -1,10 +1,10 @@
-package com.mr.apps.JNordVpnManager.commandInterfaces;
+package com.mr.apps.JNordVpnManager.commandInterfaces.base;
 
 import java.awt.event.ActionEvent;
 
 import com.mr.apps.JNordVpnManager.Starter;
 
-public class CoreCommandClass
+public interface CommandInterface
 {
    public static final String METHOD_GET       = "get";
    public static final String METHOD_EXECUTE   = "execute";

@@ -35,16 +35,16 @@ import javax.swing.border.BevelBorder;
 import javax.swing.plaf.basic.BasicToolBarUI;
 
 import com.mr.apps.JNordVpnManager.Starter;
-import com.mr.apps.JNordVpnManager.commandInterfaces.Command;
+import com.mr.apps.JNordVpnManager.commandInterfaces.base.Command;
 import com.mr.apps.JNordVpnManager.gui.components.JResizedIcon;
 import com.mr.apps.JNordVpnManager.utils.String.StringFormat;
 
 @SuppressWarnings("serial")
-class IconListRenderer extends DefaultListCellRenderer
+class ComboBoxIconListRenderer extends DefaultListCellRenderer
 {
    Command cmd = null;
 
-   public IconListRenderer(Command cmd)
+   public ComboBoxIconListRenderer(Command cmd)
    {
       this.cmd = cmd;
    }
@@ -52,14 +52,17 @@ class IconListRenderer extends DefaultListCellRenderer
    @Override
    public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus)
    {
-      JLabel label = (JLabel) super.getListCellRendererComponent(list, cmd.getOption((int) value), index, isSelected, cellHasFocus);
+      JLabel label = (JLabel) super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
 
       // Get icon to use for the list item value
-      Icon icon = JResizedIcon.getIcon(cmd.getIconUrl((int) value), JResizedIcon.IconSize.MEDIUM);
+      Icon icon = cmd.getImageIcon((String) value);
 
-      // Set icon to display for value
+      // Get toolTip to use for the list item value
+      String toolTip = cmd.getToolTip((String) value);
+
+      // Set properties
       label.setIcon(icon);
-      label.setToolTipText(cmd.getToolTip((int) value));
+      label.setToolTipText(toolTip);
       return label;
    }
 }
@@ -353,7 +356,7 @@ public class GuiCommandsToolBar extends JPanel implements ActionListener
       button.setToolTipText(cmd.getToolTip());
       button.setActionCommand(cmd.getId());
       button.setName(cmd.getId());
-      button.setIcon(JResizedIcon.getIcon(cmd.getIconUrl(), JResizedIcon.IconSize.MEDIUM));
+      button.setIcon(cmd.getImageIcon());
       button.setBorder(BorderFactory.createRaisedSoftBevelBorder());
       button.addActionListener(this);
       cmd.setComponent(button);
@@ -380,12 +383,16 @@ public class GuiCommandsToolBar extends JPanel implements ActionListener
 
       // Create the Button
       JComboBox<Object> comboBox = new JComboBox<Object>();
-      comboBox.setRenderer(new IconListRenderer(cmd));
-      for (int n = 0 ; n < cmd.getOptionsSize(); n++)
+      comboBox.setRenderer(new ComboBoxIconListRenderer(cmd));
+      for (String statusId : cmd.getStatusIds())
       {
-         comboBox.addItem(n);
+         String sLabel = cmd.getLabel(statusId);
+         if (null != sLabel)
+         {
+            comboBox.addItem(sLabel);
+         }
       }
-      comboBox.setToolTipText(cmd.getToolTip(-1));
+      comboBox.setToolTipText(cmd.getToolTip());
       comboBox.setActionCommand(cmd.getId());
       comboBox.setName(cmd.getId());
       comboBox.setBorder(BorderFactory.createRaisedSoftBevelBorder());
@@ -420,7 +427,7 @@ public class GuiCommandsToolBar extends JPanel implements ActionListener
       cmd.setComponent(checkBox);
 
       JLabel jLabel = new JLabel();
-      jLabel.setIcon(JResizedIcon.getIcon(cmd.getIconUrl(), JResizedIcon.IconSize.MEDIUM));
+      jLabel.setIcon(cmd.getImageIcon());
       jLabel.setToolTipText(cmd.getToolTip());
 
       // add the pop up menu with the list of available commands
@@ -483,15 +490,16 @@ public class GuiCommandsToolBar extends JPanel implements ActionListener
       }
    }
 
-   @Override
-   public void actionPerformed(ActionEvent e) {
-      String cmdId = e.getActionCommand();
+   public static Object execute(String cmdId, ActionEvent e)
+   {
+      Object rc = null;
 
+      // get the command
       Command cmd = Command.getObject(cmdId);
       if (null != cmd)
       {
          Starter._m_logError.TraceDebug("Execute selected Command: " + cmd.getCommand());
-         cmd.execute(e);
+         rc = cmd.execute(e);
       }
       else
       {
@@ -499,5 +507,12 @@ public class GuiCommandsToolBar extends JPanel implements ActionListener
                "Command not defined",
                "The command with Id '" + cmdId + "' is not defined!");
       }
+      return rc;
+   }
+
+   @Override
+   public void actionPerformed(ActionEvent e) {
+      String cmdId = e.getActionCommand();
+      execute(cmdId, e);
    }
 }

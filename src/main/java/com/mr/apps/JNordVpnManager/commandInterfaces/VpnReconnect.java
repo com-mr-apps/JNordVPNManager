@@ -10,11 +10,15 @@ package com.mr.apps.JNordVpnManager.commandInterfaces;
 
 import java.awt.event.ActionEvent;
 
+import javax.swing.JButton;
+
 import com.mr.apps.JNordVpnManager.Starter;
+import com.mr.apps.JNordVpnManager.commandInterfaces.base.Command;
+import com.mr.apps.JNordVpnManager.commandInterfaces.base.CommandInterface;
 import com.mr.apps.JNordVpnManager.geotools.CurrentLocation;
 import com.mr.apps.JNordVpnManager.nordvpn.NvpnCallbacks;
 
-public class VpnReconnect extends CoreCommandClass
+public class VpnReconnect implements CommandInterface
 {
    public static boolean execute(ActionEvent e)
    {
@@ -25,6 +29,11 @@ public class VpnReconnect extends CoreCommandClass
 
    public static boolean updateUI(Command cmd)
    {
+      JButton button = (JButton)cmd.getComponent();
+      if (null != button)
+      {
+         cmd.updateCommandGadgetUI();
+      }
       return true;
    }
 }

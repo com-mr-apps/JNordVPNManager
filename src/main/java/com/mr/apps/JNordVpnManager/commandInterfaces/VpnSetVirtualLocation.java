@@ -13,13 +13,15 @@ import java.awt.event.ActionEvent;
 import javax.swing.JCheckBox;
 
 import com.mr.apps.JNordVpnManager.Starter;
+import com.mr.apps.JNordVpnManager.commandInterfaces.base.Command;
+import com.mr.apps.JNordVpnManager.commandInterfaces.base.CommandInterface;
 import com.mr.apps.JNordVpnManager.nordvpn.NvpnSettingsData;
 import com.mr.apps.JNordVpnManager.utils.String.StringFormat;
 
 /**
  * Command VPN Settings - Virtual-Location
  */
-public class VpnSetVirtualLocation extends CoreCommandClass
+public class VpnSetVirtualLocation implements CommandInterface
 {
    public static Object get()
    {
@@ -52,7 +54,8 @@ public class VpnSetVirtualLocation extends CoreCommandClass
       {
          if (null != cb)
          {
-            cb.setSelected((boolean)get());
+            cmd.setStatusUI(((true == (boolean)get()) ? "TRUE" : "FALSE"));
+            cmd.updateCommandGadgetUI();
          }
       }
       return true;

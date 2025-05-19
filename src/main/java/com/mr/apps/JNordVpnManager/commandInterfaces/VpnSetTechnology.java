@@ -13,11 +13,14 @@ import java.awt.event.ActionEvent;
 import javax.swing.JComboBox;
 
 import com.mr.apps.JNordVpnManager.Starter;
+import com.mr.apps.JNordVpnManager.commandInterfaces.base.Command;
+import com.mr.apps.JNordVpnManager.commandInterfaces.base.CommandInterface;
+import com.mr.apps.JNordVpnManager.nordvpn.NvpnSettingsData;
 
 /**
  * Command VPN Settings - Technology
  */
-public class VpnSetTechnology extends CoreCommandClass
+public class VpnSetTechnology implements CommandInterface
 {
    public static Object get()
    {
@@ -38,7 +41,7 @@ public class VpnSetTechnology extends CoreCommandClass
          switch (isel)
          {
             case 0:
-               Starter.getCurrentSettingsData().setTechnology("NORDLYNX", false);
+                Starter.getCurrentSettingsData().setTechnology("NORDLYNX", false);
                break;
             case 1:
                Starter.getCurrentSettingsData().setTechnology("NORDWHISPER", false);
@@ -53,8 +56,9 @@ public class VpnSetTechnology extends CoreCommandClass
                break;
             default:
                Starter._m_logError.TraceErr("(VpnSetTechnology.execute) Internal Error: ComboBox index '" + isel + "' not supported!");
+               return false;
          }
-         Starter.updateStatusLine();
+         if (NvpnSettingsData.reconnectRequired()) Starter.updateStatusLine();
       }
       return true;
    }
@@ -67,31 +71,8 @@ public class VpnSetTechnology extends CoreCommandClass
          if (null != cb)
          {
             String sTech = (String)get();
-            int iIndex = 0;
-            String sToolTip = cmd.getToolTip();
-            if (sTech.equalsIgnoreCase("NORDLYNX"))
-            {
-               iIndex = 0;
-            }
-            else if (sTech.equalsIgnoreCase("NORDWHISPER"))
-            {
-               iIndex = 1;
-            }
-            else if (sTech.equalsIgnoreCase("OPENVPN/TCP"))
-            {
-               iIndex = 2;
-            }
-            else if (sTech.equalsIgnoreCase("OPENVPN/UDP"))
-            {
-               iIndex = 3;
-            }
-            else
-            {
-               Starter._m_logError.TraceErr("(VpnSetTechnology.updateUI) Internal Error: Option '" + sTech + "' not supported!");
-            }
-            cb.setSelectedIndex(iIndex);
-            sToolTip = cmd.getToolTip(iIndex);
-            cmd.updateToolTipUI(sToolTip);
+            cmd.setStatusUI(sTech);
+            cmd.updateCommandGadgetUI();
          }
       }
       return true;

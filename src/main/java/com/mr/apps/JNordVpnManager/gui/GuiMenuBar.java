@@ -22,8 +22,8 @@ import javax.swing.event.MenuEvent;
 import javax.swing.event.MenuListener;
 
 import com.mr.apps.JNordVpnManager.Starter;
-import com.mr.apps.JNordVpnManager.commandInterfaces.CallCommand;
-import com.mr.apps.JNordVpnManager.commandInterfaces.Command;
+import com.mr.apps.JNordVpnManager.commandInterfaces.base.CallCommand;
+import com.mr.apps.JNordVpnManager.commandInterfaces.base.Command;
 import com.mr.apps.JNordVpnManager.geotools.CurrentLocation;
 import com.mr.apps.JNordVpnManager.geotools.Location;
 import com.mr.apps.JNordVpnManager.geotools.UtilLocations;
@@ -47,6 +47,7 @@ import com.mr.apps.JNordVpnManager.nordvpn.NvpnSettingsData;
 import com.mr.apps.JNordVpnManager.utils.UtilCallbacks;
 import com.mr.apps.JNordVpnManager.utils.UtilPrefs;
 import com.mr.apps.JNordVpnManager.utils.UtilSystem;
+import com.mr.apps.JNordVpnManager.utils.String.StringFormat;
 
 public class GuiMenuBar
 {
@@ -278,18 +279,7 @@ public class GuiMenuBar
       {
          public void actionPerformed(ActionEvent e)
          {
-            String msg = NvpnCommands.connect(null);
-            if (UtilSystem.isLastError())
-            {
-               // KO
-               msg = UtilSystem.getLastError();
-               JModalDialog.showError("NordVPN Connect", msg);
-            }
-            else
-            {
-               // OK
-               JModalDialog.showMessage("NordVPN Connect", msg);
-            }
+            GuiCommandsToolBar.execute(Command.VPN_CMD_QUICKCONNECT, e);
          }
       });
       updateQuickConnectMenuButton();
@@ -300,6 +290,8 @@ public class GuiMenuBar
       {
          public void actionPerformed(ActionEvent e)
          {
+//            if (NvpnGroups.getCurrentFilterRegion().equals(NvpnGroups.NordVPNEnumGroups.all_regions)) return; // should not happen, because RegionConnect is not enabled 
+            // Create a temp. Region Location (cityId==2)
             CurrentLocation loc = new CurrentLocation (new Location (NvpnGroups.getCurrentFilterRegion().toString(), NvpnGroups.getCurrentFilterRegion().toString(), 0.0, 0.0, 2), null);
             NvpnCallbacks.executeConnect(loc, "NordVPN Region Connect", "NordVPN Region Connect");
          }
@@ -454,11 +446,13 @@ public class GuiMenuBar
       {
          // enable Disconnect command
          m_menuItemDisConnect.setEnabled(true);
+         m_menuItemDisConnect.setToolTipText("Disconnect from VPN Server.");
       }
       else // not connected
       {
          // disable Disconnect command
          m_menuItemDisConnect.setEnabled(false);
+         m_menuItemDisConnect.setToolTipText("Not connected.");
       }
    }
 
@@ -472,18 +466,18 @@ public class GuiMenuBar
       else
       {
          m_menuItemRegionConnect.setEnabled(true);
-         m_menuItemRegionConnect.setToolTipText("Connect to Server: " + NvpnGroups.getCurrentFilterRegion());
+         m_menuItemRegionConnect.setToolTipText("Execute: nordvpn connect " + NvpnGroups.getCurrentFilterRegion());
       }
    }
 
    public static void updateQuickConnectMenuButton()
    {
-      // update Quick connect command Tool tip - display actual command dependent on Region and Group
-      String optGroup = (NvpnGroups.getCurrentFilterRegion().equals(NvpnGroups.NordVPNEnumGroups.all_regions)) ? "--group " + NvpnGroups.getCurrentFilterGroup().name() : NvpnGroups.getCurrentFilterRegion().name();
-      String sToolTip = "Click here for: nordvpn connect " + optGroup;
+      // update Quick connect command Tool tip - display actual command dependent on Group (obfuscated settings)
+      String optGroup = (StringFormat.string2boolean(Starter.getCurrentSettingsData().getObfuscate(false)) || NvpnGroups.getCurrentFilterGroup().equals(NordVPNEnumGroups.legacy_obfuscated_servers)) ? "" : "--group " + NvpnGroups.getCurrentFilterGroup().name();
+      String sToolTip = "Execute: nordvpn connect " + optGroup;
       m_menuItemQuickConnect.setToolTipText(sToolTip);
       Command cmd = Command.getObject(Command.VPN_CMD_QUICKCONNECT);
-      cmd.setToolTip(sToolTip);
+      cmd.setCurrentToolTip(sToolTip);
       GuiCommandsToolBar.updateCommand(Command.VPN_CMD_QUICKCONNECT);
    }
 

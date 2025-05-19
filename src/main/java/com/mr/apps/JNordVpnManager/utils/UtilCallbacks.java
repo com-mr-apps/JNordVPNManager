@@ -9,7 +9,7 @@ import java.util.prefs.Preferences;
 import java.util.stream.Stream;
 
 import com.mr.apps.JNordVpnManager.Starter;
-import com.mr.apps.JNordVpnManager.commandInterfaces.CallCommand;
+import com.mr.apps.JNordVpnManager.commandInterfaces.base.CallCommand;
 import com.mr.apps.JNordVpnManager.gui.dialog.JModalDialog;
 
 public class UtilCallbacks

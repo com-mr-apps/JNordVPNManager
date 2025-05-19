@@ -35,7 +35,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.WindowConstants;
 import org.geotools.swing.JMapFrame;
 
-import com.mr.apps.JNordVpnManager.commandInterfaces.CallCommand;
+import com.mr.apps.JNordVpnManager.commandInterfaces.base.CallCommand;
 import com.mr.apps.JNordVpnManager.geotools.CurrentLocation;
 import com.mr.apps.JNordVpnManager.geotools.Location;
 import com.mr.apps.JNordVpnManager.geotools.UtilLocations;
@@ -157,7 +157,15 @@ public class Starter extends JFrame
       super();
 
       // add add-ons classpath
-      m_isSupporterEdition = CallCommand.initClassLoader(UtilPrefs.getAddonsPath());
+      try
+      {
+         m_isSupporterEdition = CallCommand.initClassLoader(UtilPrefs.getAddonsPath());
+      }
+      catch (Exception e)
+      {
+         _m_logError.LoggingExceptionMessage(4, 10998, e);
+         m_isSupporterEdition = false;
+      }
 
       // initialize and open Splash screen
       splashScreenInit();

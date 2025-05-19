@@ -138,11 +138,11 @@ public class NvpnCommands {
    public static String autoConnectSettings(String value)
    {
       String status = null;
-      if (value.isBlank() || value.equals("disabled"))
+      if (value.isBlank() || value.equals(NvpnSettingsData.SETTINGS_OPT_DISABLED))
       {
          status = UtilSystem.runCommand(CMD_NORDVPN, ARG_SET, OPT_AUTOCONNECT, VAL_DISABLED);
       }
-      else if (value.equals("enabled"))
+      else if (value.equals(NvpnSettingsData.SETTINGS_OPT_ENABLED))
       {
          status = UtilSystem.runCommand(CMD_NORDVPN, ARG_SET, OPT_AUTOCONNECT, VAL_ENABLED);
       }
@@ -175,7 +175,7 @@ public class NvpnCommands {
    {
       String status = null;
       
-      if (value.isBlank() || value.equals("disabled"))
+      if (value.isBlank() || value.equals(VAL_DISABLED))
       {
          status = UtilSystem.runCommand(CMD_NORDVPN, ARG_SET, OPT_DNS, VAL_DISABLED);
       }
@@ -504,21 +504,16 @@ public class NvpnCommands {
 
       if (cityId == -1)
       {
-         // Quick Connect with group - if Region is set, region group, else legacy group (both attributes in the same command are not valid)
-         if (NvpnGroups.getCurrentFilterRegion().equals(NvpnGroups.NordVPNEnumGroups.all_regions))
+         // Quick Connect
+         if (bObfuscate)
          {
-            if (bObfuscate)
-            {
-               status = UtilSystem.runCommand(CMD_NORDVPN, ARG_CONNECT);
-            }
-            else
-            {
-               status = UtilSystem.runCommand(CMD_NORDVPN, ARG_CONNECT, OPT_GROUP, currentGroup.name());
-            }
+            // if 'obfuscate' is set (only for OPENVPN), group attribute is not allowed - in that case, connect without group
+            status = UtilSystem.runCommand(CMD_NORDVPN, ARG_CONNECT);
          }
          else
          {
-            status = UtilSystem.runCommand(CMD_NORDVPN, ARG_CONNECT, NvpnGroups.getCurrentFilterRegion().name());
+            // ..with group
+            status = UtilSystem.runCommand(CMD_NORDVPN, ARG_CONNECT, OPT_GROUP, currentGroup.name());
          }
       }
       else if (cityId == 2)

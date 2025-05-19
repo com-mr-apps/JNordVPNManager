@@ -28,7 +28,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 import com.mr.apps.JNordVpnManager.Starter;
-import com.mr.apps.JNordVpnManager.commandInterfaces.Command;
+import com.mr.apps.JNordVpnManager.commandInterfaces.base.Command;
 import com.mr.apps.JNordVpnManager.geotools.CurrentLocation;
 import com.mr.apps.JNordVpnManager.gui.GuiStatusLine;
 import com.mr.apps.JNordVpnManager.gui.components.JResizedIcon;
@@ -488,34 +488,40 @@ public class JPanelConnectTimer extends JPanel
       int iconId = 0;
       boolean enabled = true;
 
+      String statusId = Command.BASE_STATUS_KEY;
 //      Starter._m_logError.TraceDebug("(updateButtons) m_timerWorkMode= " + m_timerWorkMode);
 
       if (m_timerWorkMode == GuiStatusLine.STATUS_PAUSED)
       {
+         statusId = "CONNECT";
          enabled = true;
          iconId = 1;
          sToolTip = "Press Button to Stop the Timer and [Re]Connect VPN (Remaining time " + timeSliderValueToText(m_timeSlider.getValue()) + ")";
       }
       else if (m_timerWorkMode == GuiStatusLine.STATUS_RECONNECT)
       {
+         statusId = "CONNECT";
          enabled = true;
          iconId = 1;
          sToolTip = "Press Button to Stop Automatic Reconnection (Remaining time " + timeSliderValueToText(m_timeSlider.getValue()) + ")";
       }
       else if (m_timerWorkMode == GuiStatusLine.STATUS_CONNECTED)
       {
+         statusId = "PAUSE";
          enabled = true;
          iconId = 0;
          sToolTip = "Press Button to Pause VPN for " + timeSliderValueToText(m_timeSlider.getValue());
       }
       else if (m_timerWorkMode == GuiStatusLine.STATUS_DISCONNECTED)
       {
+         statusId = "PAUSE";
          enabled = true;
          iconId = 0;
          sToolTip = "Press Button to [Re]Connect VPN in " + timeSliderValueToText(m_timeSlider.getValue());
       }
       else if (m_timerWorkMode == GuiStatusLine.STATUS_LOGGEDOUT)
       {
+         statusId = Command.DISABLED_STATUS_KEY;
          enabled = false;
          iconId = 0;
          sToolTip = "Not logged in";
@@ -524,6 +530,7 @@ public class JPanelConnectTimer extends JPanel
       {
          return;
       }
+      // Actualize "hard coded" Start/Pause Button - TODO: refactoring required, remove start/stop button (use command toolbar functionality)
       m_startPauseButton.setEnabled(enabled);
       m_startPauseButton.setIcon(m_buttonStartPauseIcons.get(iconId));
       m_startPauseButton.setToolTipText(sToolTip);
@@ -532,9 +539,8 @@ public class JPanelConnectTimer extends JPanel
       Command cmd = Command.getObject(Command.VPN_CMD_TIMER_CONNECT);
       if (null != cmd)
       {
-         cmd.setEnabled(enabled);
-         cmd.setToolTip(sToolTip);
-         cmd.setIconImage(m_buttonStartPauseIcons.get(iconId) /* JResizedIcon.getIcon(cmd.getIconUrl(iconId), IconSize.MEDIUM) */); // ..faster..
+         cmd.setStatusUI(statusId);
+         cmd.setCurrentToolTip(sToolTip); // required because ToolTip is variable.
          GuiCommandsToolBar.updateCommand(Command.VPN_CMD_TIMER_CONNECT);
       }
 
@@ -543,17 +549,14 @@ public class JPanelConnectTimer extends JPanel
       {
          if (m_timerWorkMode == GuiStatusLine.STATUS_RECONNECT)
          {
-            enabled = true;
-            sToolTip = "Press Button to Stop Automatic VPN Server Reconnection";
+            statusId = "RUNNING";
 
          }
          else if (m_timerWorkMode != GuiStatusLine.STATUS_LOGGEDOUT)
          {
-            enabled = true;
-            sToolTip = "Press Button to Start Automatic VPN Server Reconnection";
+            statusId = "STOPPED";
          }
-         cmd.setEnabled(enabled);
-         cmd.setToolTip(sToolTip);
+         cmd.setStatusUI(statusId);
          GuiCommandsToolBar.updateCommand(Command.VPN_CMD_TIMER_RECONNECT);
       }
    }

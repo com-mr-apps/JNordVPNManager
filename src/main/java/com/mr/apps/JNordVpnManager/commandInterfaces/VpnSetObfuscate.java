@@ -12,12 +12,14 @@ import java.awt.event.ActionEvent;
 
 import javax.swing.JCheckBox;
 import com.mr.apps.JNordVpnManager.Starter;
+import com.mr.apps.JNordVpnManager.commandInterfaces.base.Command;
+import com.mr.apps.JNordVpnManager.commandInterfaces.base.CommandInterface;
 import com.mr.apps.JNordVpnManager.utils.String.StringFormat;
 
 /**
  * Command VPN Settings - Obfuscate
  */
-public class VpnSetObfuscate extends CoreCommandClass
+public class VpnSetObfuscate implements CommandInterface
 {
    public static Object get()
    {
@@ -48,20 +50,15 @@ public class VpnSetObfuscate extends CoreCommandClass
       JCheckBox cb = (JCheckBox)cmd.getComponent();
       if (null != cb)
       {
-         String sToolTip = cmd.getToolTip();
          if (false == Starter.getCurrentSettingsData().getTechnology(false).equals("OPENVPN")) 
          {
-            cb.setSelected(false);
-            cb.setEnabled(false);
-            sToolTip = "Obfuscated only available for technology 'OPENVPN'";
+            cmd.setStatusUI(Command.DISABLED_STATUS_KEY);
          }
          else
          {
-            cb.setSelected((boolean)get());
-            cb.setEnabled(true);
+            cmd.setStatusUI(((true == (boolean)get()) ? "TRUE" : "FALSE"));
          }
-         cmd.updateToolTipUI(sToolTip);
-
+         cmd.updateCommandGadgetUI();
       }
       return true;
    }

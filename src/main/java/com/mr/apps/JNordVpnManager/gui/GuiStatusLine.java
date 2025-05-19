@@ -20,7 +20,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 
 import com.mr.apps.JNordVpnManager.Starter;
-import com.mr.apps.JNordVpnManager.commandInterfaces.Command;
+import com.mr.apps.JNordVpnManager.commandInterfaces.base.Command;
 import com.mr.apps.JNordVpnManager.geotools.CurrentLocation;
 import com.mr.apps.JNordVpnManager.geotools.Location;
 import com.mr.apps.JNordVpnManager.geotools.UtilLocations;
@@ -216,7 +216,7 @@ public class GuiStatusLine
             // reconnect required - settings changed
             iconId = 4;
             sShortMsg = "NordVPN Settings changed";
-            sLongMsg = "NordVPN Settings were changed which may need a reconnect. Please manually reconnect to ensure the current settings are active.";
+            sLongMsg = "NordVPN Settings were changed which may need a reconnect. Please manually reconnect to verify/activate the current NordVPN settings for the current connection or connect to a server that supports the settings.";
             sPrefix = "[Changed Settings] ";
          }
 
@@ -225,7 +225,8 @@ public class GuiStatusLine
             // reconnect required - settings technology <> current technology
             iconId = 4;
             sShortMsg = "Server Connection Settings Mismatch";
-            sLongMsg = "The current server connection uses '" + statusData.getTechnology() + "' but settings are set to '" + settingsData.getTechnology(false) + "'.";
+            sLongMsg = "The current server connection uses '" + statusData.getTechnology() + "' but NordVPN settings are set to '" + settingsData.getTechnology(false) + "'.\n" +
+                       "Please manually reconnect to verify/activate the current NordVPN settings for the current connection or connect to a server that supports the settings.";
             sPrefix = "[Technology mismatch] ";
          }
 
@@ -237,7 +238,8 @@ public class GuiStatusLine
                // reconnect required - settings OPENVPN protocol <> current OPENVPN protocol
                iconId = 4;
                sShortMsg = "Server Connection Settings Mismatch";
-               sLongMsg = "The current server connection uses '" + statusData.getProtocol() + "' but settings are set to '" + settingsData.getProtocol(false) + "'.";
+               sLongMsg = "The current server connection uses '" + statusData.getProtocol() + "' but NordVPN settings are set to '" + settingsData.getProtocol(false) + "'.\n" +
+                       "Please manually reconnect to verify/activate the current NordVPN settings for the current connection or connect to a server that supports the settings.";
                sPrefix = "[Protocol mismatch] ";
             }
             else if ((StringFormat.string2boolean(settingsData.getObfuscate(false)) == true) && (false == ret_loc.hasGroup(NordVPNEnumGroups.legacy_obfuscated_servers)))
@@ -245,7 +247,7 @@ public class GuiStatusLine
                // reconnect required - current server does not support obfuscated
                iconId = 4;
                sShortMsg = "Server Connection Settings Mismatch";
-               sLongMsg = "The current server does not support obfuscation. Please manually reconnect to a server that supports obfuscation or disable obfuscation.";
+               sLongMsg = "The current server does not support obfuscation. Please manually reconnect to a server that supports obfuscation or disable NordVPN Obfuscation.";
                sPrefix = "[No obfuscation] ";
             }
          }
@@ -290,20 +292,10 @@ public class GuiStatusLine
 
       // GUI updates of buttons that depend on the connection status
       Command cmd = Command.getObject(Command.VPN_CMD_DISCONNECT);
-      String sToolTip = cmd.getToolTip(0);
-      boolean isEnabled = true;
-      if ((false == JPanelConnectTimer.isTimerRunning()) && (iStatus == STATUS_DISCONNECTED || iStatus == STATUS_LOGGEDOUT))
-      {
-         sToolTip = "Not connected.";
-         isEnabled = false;
-      }
-      else
-      {
-         isEnabled = true;
-      }
-      cmd.setToolTip(sToolTip);
-      cmd.setEnabled(isEnabled);
+      String statusId = ((false == JPanelConnectTimer.isTimerRunning()) && (iStatus == STATUS_DISCONNECTED || iStatus == STATUS_LOGGEDOUT))
+            ? "DISCONNECTED"
+            : "CONNECTED";
+      cmd.setStatusUI(statusId);
       GuiCommandsToolBar.updateCommand(Command.VPN_CMD_DISCONNECT);
-
    }
 }
