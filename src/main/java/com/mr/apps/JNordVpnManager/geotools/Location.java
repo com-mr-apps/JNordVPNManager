@@ -399,7 +399,7 @@ public class Location
          switch (m_cityId)
          {
             case 0 :
-               labelName = m_countryName;
+               labelName = m_countryName + " [" + m_countryName + "]";
                break;
             case 1 :
             default:
