@@ -93,6 +93,7 @@ public class Starter extends JFrame
    private static GuiConnectLine   m_connectLine              = null;
    private static JCustomConsole   m_consoleWindow            = null;
 
+   private static boolean          m_isSnapInstallation       = false;
    private static String           m_nordvpnVersion           = "n/a";
    private static Cursor           m_applicationDefaultCursor = null;
    private static int              m_cursorChangeAllowed      = 0;  // counter for nested calls - 0 is allow
@@ -131,13 +132,15 @@ public class Starter extends JFrame
       // -------------------------------------------------------------------------------
       // Check, if Nordvpn is installed
       // -------------------------------------------------------------------------------
-      if (!NvpnCommands.isInstalled())
+      String nvpncmd = NvpnCommands.isInstalled();
+      if (null == nvpncmd)
       {
          // TranslatorAbend() calls cleanupAndExit()
          _m_logError.LoggingAbend(10998,
                "Backend NordVPN not installed.",
                "'nordvpn' command not found.\nCheck installation of NordVPN!\n\nExit program.");
       }
+      m_isSnapInstallation = nvpncmd.startsWith("/snap/bin");
 
       // -------------------------------------------------------------------------------
       // Start the Application
@@ -886,6 +889,11 @@ public class Starter extends JFrame
    public static boolean isSupporterEdition()
    {
       return m_isSupporterEdition;
+   }
+
+   public static boolean isSnapInstallation()
+   {
+      return m_isSnapInstallation;
    }
 
    public static boolean isInstallMode()

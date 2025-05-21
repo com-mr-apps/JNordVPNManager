@@ -125,16 +125,6 @@ public class GuiMenuBar
       });
       fileMenu.add(fileExit);
       
-      
-      JMenuItem fileTest = new JMenuItem("Test");
-      fileTest.addActionListener(new ActionListener()
-      {
-         public void actionPerformed(ActionEvent e)
-         {
-            UtilSystem.runWithPrivileges("journalctl -u nordvpnd");
-         }
-      });
-      fileMenu.add(fileTest);
       // -------------------------------------------------------------------------------------
       // Menu --- NordVPN ---
       m_nordvpnMenu = new JMenu("NordVPN");
@@ -374,11 +364,11 @@ public class GuiMenuBar
       infoMenu.add(infoMenuItem);
 
       // -------------------------------------------------------------------------------------
-      // Menu --- Experimental ---
-      JMenu experimentalMenu = new JMenu("Experimental");
-      menuBar.add(experimentalMenu);
+      // Menu --- Diagnostics ---
+      JMenu diagnosticsMenu = new JMenu("Diagnostics");
+      menuBar.add(diagnosticsMenu);
 
-      JMenuItem speedTest = new JMenuItem("speedTest");
+      JMenuItem speedTest = new JMenuItem("Download Speed Test");
       speedTest.addActionListener(new ActionListener()
       {
          public void actionPerformed(ActionEvent e)
@@ -386,7 +376,27 @@ public class GuiMenuBar
             UtilSpeedtest.speedTest(Starter.getCurrentServer(true));
          }
       });
-      experimentalMenu.add(speedTest);
+      diagnosticsMenu.add(speedTest);
+
+      JMenuItem checkLogFiles = new JMenuItem("Check log files");
+      checkLogFiles.addActionListener(new ActionListener()
+      {
+         public void actionPerformed(ActionEvent e)
+         {
+            StringBuffer sb =new StringBuffer();
+            sb.append("### journalctl -u nordvpnd" + "\n");
+            sb.append(UtilSystem.runWithPrivileges("journalctl -u nordvpnd"));
+            if (Starter.isSnapInstallation())
+            {
+               sb.append("\n###\n### tail ~/snap/nordvpn/common/.config/nordvpn/cli.log" + "\n");
+               sb.append(UtilSystem.runCommand("/bin/bash", "-c", "tail -n30 ~/snap/nordvpn/common/.config/nordvpn/cli.log"));
+               sb.append("\n###\n### tail ~/snap/nordvpn/common/.cache/nordvpn/norduserd.log" + "\n");
+               sb.append(UtilSystem.runCommand("/bin/bash", "-c", "tail -n30 ~/snap/nordvpn/common/.cache/nordvpn/norduserd.log"));
+            }
+            JModalDialog.showMessage("Diagnostic: Log Files", sb.toString());
+         }
+      });
+      diagnosticsMenu.add(checkLogFiles);
 
       // -------------------------------------------------------------------------------------
       menuBar.add(Box.createHorizontalGlue());

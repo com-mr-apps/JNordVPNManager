@@ -171,7 +171,7 @@ public class UtilSystem
             if (data.contains("[sudo] password"))
             {
                // Request the password
-               JPasswordDialog dialog = new JPasswordDialog(Starter.getMainFrame(), 10);
+               JPasswordDialog dialog = new JPasswordDialog(Starter.getMainFrame(), "[command: " + sCommand + "]", 10);
                char[] password = dialog.getPassword();
                if (null != password)
                {
@@ -205,7 +205,7 @@ public class UtilSystem
 
          // command output
          Starter._m_logError.TraceDebug("...command returned with rc=" + pb.exitValue());
-         Starter._m_logError.TraceOut(commandOutput.toString());
+//         Starter._m_logError.TraceOut(commandOutput.toString());
          return commandOutput.toString();
       }
       catch (IOException ex)

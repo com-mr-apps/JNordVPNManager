@@ -12,6 +12,7 @@ import javax.swing.*;
 import javax.swing.border.LineBorder;
 import javax.swing.border.TitledBorder;
 
+import com.mr.apps.JNordVpnManager.Starter;
 import com.mr.apps.JNordVpnManager.gui.components.JResizedIcon;
 import com.mr.apps.JNordVpnManager.gui.components.JResizedIcon.IconSize;
 import com.mr.apps.JNordVpnManager.gui.components.JResizedIcon.IconUrls;
@@ -54,7 +55,7 @@ public class JPasswordDialog extends JDialog
          "Click here to hide the password."
    };
 
-   public JPasswordDialog(JFrame parent, int size)
+   public JPasswordDialog(JFrame parent, String sTitle, int size)
    {
       // Set up the dialog
       setUndecorated(true);
@@ -63,13 +64,15 @@ public class JPasswordDialog extends JDialog
       setLayout(new BorderLayout());
 
       JPanel dialogPanel = new JPanel(new BorderLayout());
-      dialogPanel.setBorder(new TitledBorder(new LineBorder(Color.gray,2, true), "Enter sudo password:",
+      dialogPanel.setBorder(new TitledBorder(new LineBorder(Color.gray,2, true), 
+            "Enter sudo password:",
             TitledBorder.CENTER, TitledBorder.TOP,
             new Font("SansSerif",Font.BOLD, 12),
             Color.BLACK));
       getContentPane().add(dialogPanel, BorderLayout.CENTER);
 
       // Initialize components
+      JLabel jl = new JLabel(sTitle);
       m_passwordField = new JPasswordField(size);
       m_echoChar = m_passwordField.getEchoChar();
       m_showHideButton = new JButton(m_showHideImages.get(0));
@@ -82,6 +85,7 @@ public class JPasswordDialog extends JDialog
 
       // Input Panel
       JPanel inputPanel = new JPanel(new BorderLayout());
+      inputPanel.add(jl, BorderLayout.PAGE_START);
       inputPanel.add(m_passwordField, BorderLayout.CENTER);
       inputPanel.add(m_showHideButton, BorderLayout.EAST);
       dialogPanel.add(inputPanel, BorderLayout.CENTER);
@@ -101,14 +105,12 @@ public class JPasswordDialog extends JDialog
             if (echoChar == (char) 0)
             {
                m_passwordField.setEchoChar(m_echoChar);
-//               m_showHideButton.setText("Show");
                m_showHideButton.setIcon(m_showHideImages.get(0));
                m_showHideButton.setToolTipText(m_showHideToolTip[0]);
             }
             else
             {
                m_passwordField.setEchoChar((char) 0);
-//               m_showHideButton.setText("Hide");
                m_showHideButton.setIcon(m_showHideImages.get(1));
                m_showHideButton.setToolTipText(m_showHideToolTip[1]);
             }
@@ -143,6 +145,8 @@ public class JPasswordDialog extends JDialog
    {
       m_password = new String(m_passwordField.getPassword()).toCharArray();
 
+      Starter.setSkipWindowGainedFocus();
+      setVisible(false);
       dispose();
    }
 

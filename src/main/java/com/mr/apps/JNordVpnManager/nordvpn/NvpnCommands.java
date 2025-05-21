@@ -73,12 +73,12 @@ public class NvpnCommands {
    
    /**
     * Check, if nordvpn is installed
-    * @return true, if nordvpn is installed, else false
+    * @return null, if nordvpn is not installed, else the path to the nordvpn command
     */
-   public static boolean isInstalled()
+   public static String isInstalled()
    {
       String retVal = UtilSystem.runCommand(CMD_WHICH, CMD_NORDVPN);
-      return !retVal.isEmpty();
+      return (null == retVal || retVal.isEmpty()) ? null : retVal;
    }
 
    /**
