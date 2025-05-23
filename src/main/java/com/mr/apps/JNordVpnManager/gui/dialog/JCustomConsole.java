@@ -19,14 +19,15 @@ import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
+import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
-import java.io.PipedInputStream;
-import java.io.PipedOutputStream;
-import java.io.PrintStream;
 import java.io.Writer;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -41,7 +42,6 @@ import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JScrollBar;
 import javax.swing.JScrollPane;
 import javax.swing.JViewport;
 import javax.swing.ScrollPaneConstants;
@@ -58,12 +58,20 @@ import com.mr.apps.JNordVpnManager.utils.UtilPrefs;
 @SuppressWarnings("serial")
 public class JCustomConsole extends JFrame
 {
-   private static final Color     COLOR_wheat           = new Color(255, 235, 205);
-   private static final Color     COLOR_darkGreen       = new Color(40, 180, 99);
+   private static final Color  COLOR_wheat         = new Color(255, 235, 205);
+   private static final Color  COLOR_darkGreen     = new Color(40, 180, 99);
 
-   private static final String    EMPTY_TEXT            = "<html><head><style>"
+   public static final String  CONSOLE_STDOUT_PIPE = new File(Starter.APPLICATION_DATA_ABS_PATH, "stdout_pipe").toString();
+   public static final String  CONSOLE_STDERR_PIPE = new File(Starter.APPLICATION_DATA_ABS_PATH, "stderr_pipe").toString();
+   public static final String  CONSOLE_CMD_EXIT    = "#EXIT#";
+   public static final String  CONSOLE_CMD_SHOW    = "#SHOW#";
+   public static final String  CONSOLE_CMD_HIDE    = "#HIDE#";
+   public static final String  CONSOLE_CMD_SWITCH  = "#SWITCH#";
+
+   private static final String    EMPTY_TEXT       = "<html><head><style>"
          + ".dbg {font-style: italic; color: #7b7d7d;}"
          + ".cmd {font-weight: bold; color: blue;}"
+         + ".ext {font-style: italic; color: orange;}"
          + ".ini {font-weight: normal; color: #28b463;}"
          + ".out {font-style: italic; font-weight: normal; color: blue;}"
          + ".err {font-style: italic; font-weight: normal; color: orange;}"
@@ -75,19 +83,19 @@ public class JCustomConsole extends JFrame
          + "</style></head>"
          + "<body style=\"background-color:#FFEBCD\" id='body'>Console output start...</body></html>";
 
-   private boolean                m_isVisible           = false;
-   private JFrame                 m_consoleMainFrame;
-   private JScrollPane            m_consoleOutputScrollPane;
-   private boolean                m_quitFlag;
+   private boolean             m_isVisible         = false;
+   private JFrame              m_consoleMainFrame;
+   private JScrollPane         m_consoleOutputScrollPane;
+   private boolean             m_quitFlag;
+   private String              m_pid               = null;
 
-   ExecutorService m_streamHandlers = null;
-   private final PipedInputStream m_pipedInputStreamOut = new PipedInputStream();
-   private final PipedInputStream m_pipedInputStreamErr = new PipedInputStream();
+   ExecutorService             m_streamHandlers    = null;
 
-   public JCustomConsole()
+   public JCustomConsole(String sPid)
    {
       super("JNordVPN Manager Console");
        m_consoleMainFrame = this;
+       m_pid = sPid;
       
       // Close Window with "X"
       m_consoleMainFrame.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
@@ -105,13 +113,12 @@ public class JCustomConsole extends JFrame
       int x = (int) (frameSize.width / 3);
       int y = (int) (frameSize.height / 3);
       m_consoleMainFrame.setBounds(x, y, frameSize.width, frameSize.height/2);
- 
+
       // Content
       JPanel tracesRow = new JPanel();
       tracesRow.setLayout(new BoxLayout(tracesRow, BoxLayout.X_AXIS));
-      JLabel lblTrace = new JLabel("Console Settings: ");
+      JLabel lblTrace = new JLabel("Console Settings (Changes require restart!): ");
       tracesRow.add(lblTrace);
-
       tracesRow.add(Box.createRigidArea(new Dimension(5, 0)));
 
       JCheckBox cbxTraceInit = new JCheckBox("Init");
@@ -147,14 +154,13 @@ public class JCustomConsole extends JFrame
          }
       });
       tracesRow.add(cbxTraceInit);
-
       tracesRow.add(Box.createRigidArea(new Dimension(5, 0)));
 
       JCheckBox cbxTraceCommand = new JCheckBox("Command");
       cbxTraceCommand.setToolTipText("Flag for Trace Command output.");
       cbxTraceCommand.setForeground(Color.blue);
       cbxTraceCommand.setBackground(COLOR_wheat);
-      cbxTraceCommand.setFont(new Font(cbxTraceCommand.getFont().getName(),Font.BOLD,cbxTraceCommand.getFont().getSize()));
+      cbxTraceCommand.setFont(new Font(cbxTraceCommand.getFont().getName(), Font.BOLD, cbxTraceCommand.getFont().getSize()));
       int iTraceCommand = UtilPrefs.getTraceCmd();
       if (1 == iTraceCommand || Starter._m_logError.isTraceFlagSet(UtilLogErr.TRACE_Cmd))
       {
@@ -184,14 +190,13 @@ public class JCustomConsole extends JFrame
          }
       });
       tracesRow.add(cbxTraceCommand);
-
       tracesRow.add(Box.createRigidArea(new Dimension(5, 0)));
 
       JCheckBox cbxTraceDebug = new JCheckBox("Debug");
       cbxTraceDebug.setToolTipText("Flag for Trace Debug output.");
       cbxTraceDebug.setForeground(Color.gray);
       cbxTraceDebug.setBackground(COLOR_wheat);
-      cbxTraceDebug.setFont(new Font(cbxTraceDebug.getFont().getName(),Font.ITALIC,cbxTraceDebug.getFont().getSize()));
+      cbxTraceDebug.setFont(new Font(cbxTraceDebug.getFont().getName(), Font.ITALIC, cbxTraceDebug.getFont().getSize()));
       int iTraceDebug = UtilPrefs.getTraceDebug();
       if (1 == iTraceDebug || Starter._m_logError.isTraceFlagSet(UtilLogErr.TRACE_Debug))
       {
@@ -221,7 +226,6 @@ public class JCustomConsole extends JFrame
          }
       });
       tracesRow.add(cbxTraceDebug);
-
       tracesRow.add(Box.createHorizontalGlue());
 
       JCheckBox cbxOpenConsole = new JCheckBox("Open Console on Application Start");
@@ -251,7 +255,6 @@ public class JCustomConsole extends JFrame
          }
       });
       tracesRow.add(cbxOpenConsole);
-
       tracesRow.add(Box.createRigidArea(new Dimension(5, 0)));
 
       JCheckBox cbxWriteToLogfile = new JCheckBox("Write Log File");
@@ -290,7 +293,7 @@ public class JCustomConsole extends JFrame
          }
       });
       tracesRow.add(cbxWriteToLogfile);
-      
+
       JEditorPane editorPane = new JEditorPane();
       editorPane.setEditable(false);
       editorPane.setCaretColor(COLOR_wheat); // hide caret
@@ -310,14 +313,13 @@ public class JCustomConsole extends JFrame
       buttonRow.add(btnSave);
       buttonRow.add(btnClear);
       buttonRow.add(btnClose);
-      /*if (Starter.isInstallMode()) */buttonRow.add(btnExit);
+      buttonRow.add(btnExit);
 
       m_consoleMainFrame.getContentPane().setLayout(new BorderLayout());
       m_consoleMainFrame.getContentPane().add(tracesRow, BorderLayout.PAGE_START);
       m_consoleMainFrame.getContentPane().add(m_consoleOutputScrollPane, BorderLayout.CENTER);
       m_consoleMainFrame.getContentPane().add(buttonRow, BorderLayout.PAGE_END);
       m_consoleMainFrame.setVisible(false);
-      Starter._m_logError.setConsoleOutput(true);
 
       btnSave.addActionListener(new ActionListener() {
          public void actionPerformed(ActionEvent arg0)
@@ -346,47 +348,27 @@ public class JCustomConsole extends JFrame
          }
       });
 
+      FileInputStream stdoutPipe;
+      FileInputStream stderrPipe;
       try
       {
-         PipedOutputStream pout = new PipedOutputStream(this.m_pipedInputStreamOut);
-         System.setOut(new PrintStream(pout, true));
+         stdoutPipe = new FileInputStream(CONSOLE_STDOUT_PIPE);
+         stderrPipe = new FileInputStream(CONSOLE_STDERR_PIPE);
       }
-      catch (java.io.IOException io)
+      catch (FileNotFoundException e)
       {
-         Starter._m_logError.setConsoleOutput(false);
-         Starter._m_logError.LoggingExceptionMessage(4, 10901, io);
-         Starter._m_logError.setConsoleOutput(true);
+         e.printStackTrace();
+         return;
       }
-      catch (SecurityException se)
-      {
-         Starter._m_logError.setConsoleOutput(false);
-         Starter._m_logError.LoggingExceptionMessage(4, 10901, se);
-         Starter._m_logError.setConsoleOutput(true);
-      }
-
-      try
-      {
-         PipedOutputStream pout2 = new PipedOutputStream(this.m_pipedInputStreamErr);
-         System.setErr(new PrintStream(pout2, true));
-      }
-      catch (java.io.IOException io)
-      {
-         Starter._m_logError.setConsoleOutput(false);
-         Starter._m_logError.LoggingExceptionMessage(4, 10901, io);
-         Starter._m_logError.setConsoleOutput(true);
-      }
-      catch (SecurityException se)
-      {
-         Starter._m_logError.setConsoleOutput(false);
-         Starter._m_logError.LoggingExceptionMessage(4, 10901, se);
-         Starter._m_logError.setConsoleOutput(true);
-      }
+ 
+      BufferedReader stdoutReader = new BufferedReader(new InputStreamReader(stdoutPipe));
+      BufferedReader stderrReader = new BufferedReader(new InputStreamReader(stderrPipe));
 
       // start two threads to read stdOut and stdErr
       m_streamHandlers = Executors.newFixedThreadPool(2);
       m_quitFlag = false; // signals the Threads that they should exit
-      m_streamHandlers.execute(() -> handleStream(m_pipedInputStreamOut));
-      m_streamHandlers.execute(() -> handleStream(m_pipedInputStreamErr));
+      m_streamHandlers.execute(() -> handleStream(1, stdoutReader));
+      m_streamHandlers.execute(() -> handleStream(2, stderrReader));
 
       if (1 == UtilPrefs.isConsoleActive())
       {
@@ -398,7 +380,7 @@ public class JCustomConsole extends JFrame
    /**
     * Runnable thread(s) - read stdOut and stdErr
     */
-   public synchronized void handleStream(PipedInputStream inStream)
+   public synchronized void handleStream(int nb, BufferedReader stdReader)
    {
       try
       {
@@ -411,20 +393,49 @@ public class JCustomConsole extends JFrame
             catch (InterruptedException ie)
             {
             }
-            if (inStream.available() != 0)
+
+            String input;
+            while ((input = stdReader.readLine()) != null)
             {
-               String input = this.readLine(inStream);
-               appendText(input);
+               if (nb == 2) // check for stderr commands
+               {
+                  if (input.equals(CONSOLE_CMD_EXIT))
+                  {
+                     m_quitFlag = true;
+                     btnExitExecute();
+                  }
+                  else if (input.equals(CONSOLE_CMD_SHOW))
+                  {
+                     setConsoleVisible(true);
+                  }
+                  else if (input.equals(CONSOLE_CMD_HIDE))
+                  {
+                     setConsoleVisible(false);
+                  }
+                  else if (input.equals(CONSOLE_CMD_SWITCH))
+                  {
+                     switchConsoleVisible();
+                  }
+                  else // stderr output
+                  {
+                     appendText(input);
+                  }
+               }
+               else // stdout output
+               {
+                  appendText(input);
+               }
+
+               if (m_quitFlag)
+               {
+                  return;
+               }
             }
-            if (m_quitFlag)
-               return;
          }
       }
       catch (Exception e)
       {
-         Starter._m_logError.setConsoleOutput(false);
-         Starter._m_logError.LoggingExceptionMessage(4, 10901, e);
-         Starter._m_logError.setConsoleOutput(true);
+         e.printStackTrace();
       }
    }
 
@@ -433,8 +444,7 @@ public class JCustomConsole extends JFrame
     */
    private synchronized void btnExitExecute()
    {
-      int ret = JModalDialog.YesNoDialog("Do you really want to FORCE exit JNordVPNManager?");
-      if (ret == 0)
+      if (m_quitFlag || JModalDialog.YesNoDialog("Do you really want to FORCE exit JNordVPNManager?") == 0)
       {
          m_quitFlag = true;
          m_streamHandlers.shutdown(); // Disable new tasks from being submitted
@@ -447,11 +457,7 @@ public class JCustomConsole extends JFrame
                // Wait a while for tasks to respond to being cancelled
                if (!m_streamHandlers.awaitTermination(1, TimeUnit.SECONDS))
                {
-                  Starter._m_logError.setConsoleOutput(false);
-                  Starter._m_logError.LoggingError(10997,
-                        "Console Shutdown",
-                        "Stream Handler threads did not terminate.");
-                  Starter._m_logError.setConsoleOutput(true);
+                  System.out.println("Console Shutdown - Stream Handler threads did not terminate.");
                }
             }
          }
@@ -463,16 +469,15 @@ public class JCustomConsole extends JFrame
             Thread.currentThread().interrupt();
          }
 
+         ProcessBuilder killMainApp = new ProcessBuilder("kill", "-9", m_pid);
          try
          {
-            m_pipedInputStreamOut.close();
-            m_pipedInputStreamErr.close();
+            killMainApp.start();
          }
-         catch (Exception e)
+         catch (IOException e)
          {
          }
-//         Starter.cleanupAndExit(true);
-         Starter._m_logError.LoggingInfo("... Console force exit JNordVPN Manager.");
+
          System.exit(0);
       }
    }
@@ -511,10 +516,11 @@ public class JCustomConsole extends JFrame
       editorPane.setText(EMPTY_TEXT);
    }
 
-
    /**
     * Save the log file (html) to disk.
-    * @param file is the log file name
+    * 
+    * @param file
+    *           is the log file name
     */
    private synchronized void saveLogFileToDisk(String file)
    {
@@ -531,43 +537,8 @@ public class JCustomConsole extends JFrame
       }
       catch (Exception e)
       {
-         Starter._m_logError.LoggingExceptionMessage(4, 10901, e);
-         JModalDialog.showError("Save Logfile Error", "Could not write log file.\n" + e.getMessage());
+         e.printStackTrace();
       }
-   }
-
-   /**
-    * Read from the stream byte by byte until 'EndOfLine'
-    * 
-    * @param in
-    *           is the input stream
-    * @return a complete line
-    * @throws IOException
-    */
-   private synchronized String readLine(PipedInputStream in) throws IOException
-   {
-      StringBuffer line = new StringBuffer();
-      
-      // Read from the stream byte by byte until 'EndOfLine' - to return always one complete line
-      int nbRead = 0;
-      byte b[] = new byte[1];
-      do
-      {
-         int available = in.available();
-         if (available == 0)
-            break;
-         nbRead = in.read(b, 0, 1);
-         if (nbRead != -1) line.append((char)b[0]);
-         if ((line.toString().endsWith("</p>")) || (b[0] == '\n'))
-         {
-            nbRead = 0; 
-            //appendText(line.toString());
-            //line = new StringBuffer();
-         }
-      }
-      while ((nbRead == 1) && (!m_quitFlag));
-
-      return line.toString();
    }
 
    /**
@@ -587,25 +558,12 @@ public class JCustomConsole extends JFrame
          HTMLDocument doc = (HTMLDocument) editorPane.getDocument();
          Element elem = doc.getElement("body");
          doc.insertBeforeEnd(elem, msg);
+
+         editorPane.setCaretPosition(doc.getLength());
       }
       catch (BadLocationException | IOException e)
       {
-         Starter._m_logError.setConsoleOutput(false);
-         Starter._m_logError.LoggingExceptionMessage(4, 10901, e);
-         Starter._m_logError.setConsoleOutput(true);
-      }
-      finally
-      {
-         JScrollBar vertical = m_consoleOutputScrollPane.getVerticalScrollBar();
-         int max = vertical.getMaximum();
-         vertical.setValue(max);
-/*
-         JViewport viewport = m_consoleOutputScrollPane.getViewport(); 
-         JEditorPane editorPane = (JEditorPane)viewport.getView(); 
-         Point keypoint = new Point(0, max);
-         Rectangle keyview = new Rectangle(keypoint);
-         editorPane.scrollRectToVisible(keyview);
-*/
+         e.printStackTrace();
       }
    }
 
@@ -625,11 +583,6 @@ public class JCustomConsole extends JFrame
          Point keypoint = new Point(0, max);
          Rectangle keyview = new Rectangle(keypoint);
          editorPane.scrollRectToVisible(keyview);
-      }
-      else
-      {
-         // close window -> return focus to main frame
-         Starter.setSkipWindowGainedFocus();
       }
    }
 

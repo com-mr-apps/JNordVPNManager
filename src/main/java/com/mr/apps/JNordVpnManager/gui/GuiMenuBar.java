@@ -97,7 +97,7 @@ public class GuiMenuBar
       {
          public void actionPerformed(ActionEvent e)
          {
-            /* boolean isVisible = */ Starter.switchConsoleWindow();
+            Starter.switchConsoleWindow();
          }
       });
       fileMenu.add(m_menuItemConsole);

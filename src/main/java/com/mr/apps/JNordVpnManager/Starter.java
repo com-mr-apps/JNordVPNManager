@@ -21,8 +21,6 @@ import java.awt.event.WindowFocusListener;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -91,8 +89,6 @@ public class Starter extends JFrame
    private static JSplashScreen    m_splashScreen             = null;
    private static GuiStatusLine    m_statusLine               = null;
    private static GuiConnectLine   m_connectLine              = null;
-   private static JCustomConsole   m_consoleWindow            = null;
-
    private static boolean          m_isSnapInstallation       = false;
    private static String           m_nordvpnVersion           = "n/a";
    private static Cursor           m_applicationDefaultCursor = null;
@@ -116,40 +112,64 @@ public class Starter extends JFrame
     */
    public static void main(String[] args) throws Exception
    {
-      _m_logError = new UtilLogErr(UtilPrefs.getLogfileName(), null, null);
-      if (System.getenv("COM_MR_APPS_DEBUG") != null)
+      if (args != null && args.length != 0 && args[0].equalsIgnoreCase("Console"))
       {
-         // ..for debug
-         m_skipFocusGainedForDebug = true;
+         /*
+          * Console... (started by main application as separate process)
+          */
+         _m_logError = new UtilLogErr(null, null, null);
+         SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+               /* JCustomConsole consoleWindow = */ new JCustomConsole(args[1]);
+            }
+         });
       }
-
-      // initialize and open console window  
-      // TODO: may cause memory corruption.. should be opened in the Swing Event thread - but synchronization then is not ok! Requires redesign in separate application!!!
-      ExecutorService threads = Executors.newFixedThreadPool(2);
-      threads.execute(() -> consoleWindowInit());
-      _m_logError.LoggingInfo("JNordVPN Manager launched...");
-
-      // -------------------------------------------------------------------------------
-      // Check, if Nordvpn is installed
-      // -------------------------------------------------------------------------------
-      String nvpncmd = NvpnCommands.isInstalled();
-      if (null == nvpncmd)
+      else
       {
-         // TranslatorAbend() calls cleanupAndExit()
-         _m_logError.LoggingAbend(10998,
-               "Backend NordVPN not installed.",
-               "'nordvpn' command not found.\nCheck installation of NordVPN!\n\nExit program.");
-      }
-      m_isSnapInstallation = nvpncmd.startsWith("/snap/bin");
+         /*
+          * Main application...
+          */
+         UtilLogErr.setConsoleOutput(true);
+         _m_logError = new UtilLogErr(UtilPrefs.getLogfileName(), null, null);
 
-      // -------------------------------------------------------------------------------
-      // Start the Application
-      // -------------------------------------------------------------------------------
-      SwingUtilities.invokeLater(new Runnable() {
-         public void run() {
-            new Starter();
+         long pid = ProcessHandle.current().pid();
+
+         // Start the Console process...
+         String javaprog = new File(System.getProperty("java.home"), "bin/java").toString();
+         String classpath = System.getProperty("java.class.path");
+         ProcessBuilder consoleBuilder = new ProcessBuilder(javaprog, "-cp", classpath, "com.mr.apps.JNordVpnManager.Starter", "Console", StringFormat.long2String(pid, "0"));
+         consoleBuilder.start();
+
+         _m_logError.LoggingInfo("JNordVPN Manager launched...");
+
+         if (System.getenv("COM_MR_APPS_DEBUG") != null)
+         {
+            // ..for debug
+            m_skipFocusGainedForDebug = true;
          }
-       });
+
+         // -------------------------------------------------------------------------------
+         // Check, if Nordvpn is installed
+         // -------------------------------------------------------------------------------
+         String nvpncmd = NvpnCommands.isInstalled();
+         if (null == nvpncmd)
+         {
+            // TranslatorAbend() calls cleanupAndExit()
+            _m_logError.LoggingAbend(10998,
+                  "Backend NordVPN not installed.",
+                  "'nordvpn' command not found.\nCheck installation of NordVPN!\n\nExit program.");
+         }
+         m_isSnapInstallation = nvpncmd.startsWith("/snap/bin");
+
+         // -------------------------------------------------------------------------------
+         // Start the Application
+         // -------------------------------------------------------------------------------
+         SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+               new Starter();
+            }
+         });
+      }
    }
 
    /**
@@ -198,14 +218,6 @@ public class Starter extends JFrame
    {
       m_splashScreen = new JSplashScreen(this, "JNordVPN Manager loading...");
       m_splashScreen.setVisible(true);
-   }
-
-   /**
-    * Create the Console output Window
-    */
-   private static void consoleWindowInit()
-   {
-      m_consoleWindow = new JCustomConsole();
    }
 
    /**
@@ -271,6 +283,12 @@ public class Starter extends JFrame
       return;
    }
 
+   private static void programExit(int rc)
+   {
+      Starter._m_logError.shutdownErrorHandling();
+      System.exit(rc);
+   }
+
    /**
     * Cleanup and exit.
     * @param quiet if true, suppress confirm dialog
@@ -279,7 +297,7 @@ public class Starter extends JFrame
    {
       if (null == m_mainFrame)
       {
-         System.exit(0);
+         programExit(0);
       }
 
       // check for automatic disconnect at program end
@@ -294,7 +312,7 @@ public class Starter extends JFrame
             // exit confirmed
             cleanUp();
             _m_logError.LoggingInfo("... exit JNordVPN Manager.");
-            System.exit(0);
+            programExit(0);
          }
       }
       else
@@ -315,7 +333,7 @@ public class Starter extends JFrame
             _m_logError.LoggingInfo("... exit JNordVPN Manager.");
 
             // exit program with last error code (or 0)
-            System.exit(_m_logError.getLastErrCode());
+            programExit(_m_logError.getLastErrCode());
          }
       }
    }
@@ -831,14 +849,9 @@ public class Starter extends JFrame
       m_aboutScreen.show();
    }
 
-   public static boolean switchConsoleWindow()
+   public static void switchConsoleWindow()
    {
-      return m_consoleWindow.switchConsoleVisible();
-   }
-   
-   public static boolean getConsoleVisible()
-   {
-      return m_consoleWindow.getConsoleVisible();
+      _m_logError.sendConsoleCommand(JCustomConsole.CONSOLE_CMD_SWITCH);
    }
 
    public static JFrame getMainFrame()
@@ -913,8 +926,8 @@ public class Starter extends JFrame
          _m_logError.enableTraceFlag(UtilLogErr.TRACE_Init);
          _m_logError.enableTraceFlag(UtilLogErr.TRACE_Cmd);
 
-         // open the console window (if not already open)
-         if (false == getConsoleVisible()) switchConsoleWindow();
+         // ensure the console window is open
+         _m_logError.sendConsoleCommand("#SHOW#");
 
          // check if the local desktop file already exists (in the real home directory!)
          String targetFile = myHome + "/Desktop/JNordVpnManager_Java.desktop";
