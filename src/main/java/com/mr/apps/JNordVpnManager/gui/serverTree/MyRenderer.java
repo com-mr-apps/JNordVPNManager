@@ -63,7 +63,7 @@ public class MyRenderer extends DefaultTreeCellRenderer
             else
             {
                NvpnStatusData status = Starter.getCurrentStatusData();
-               if (status.getServer().startsWith(((JServerNode)value).toString()))
+               if (status.isConnected() && status.getServer().startsWith(((JServerNode)value).toString()))
                {
                   colorFg = Color.PINK;
                }

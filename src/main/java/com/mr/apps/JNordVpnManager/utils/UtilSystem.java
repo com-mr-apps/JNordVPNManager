@@ -298,6 +298,7 @@ public class UtilSystem
          Starter._m_logError.LoggingExceptionMessage(4, 10900, e);
          m_lastExitCode = m_process.exitValue();
          m_lastErrorMessage = "Command '" + joinCommand(command) + "' returned with: InterruptedException.";
+         m_process.destroyForcibly();
       }
       catch (SecurityException e)
       {

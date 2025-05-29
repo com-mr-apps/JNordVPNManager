@@ -11,6 +11,7 @@ import java.util.stream.Stream;
 import com.mr.apps.JNordVpnManager.Starter;
 import com.mr.apps.JNordVpnManager.commandInterfaces.base.CallCommand;
 import com.mr.apps.JNordVpnManager.gui.dialog.JModalDialog;
+import com.mr.apps.JNordVpnManager.utils.String.StringFormat;
 
 public class UtilCallbacks
 {
@@ -152,5 +153,31 @@ public class UtilCallbacks
       }
 
       return true;
+   }
+
+   /**
+    * Get average ping time to a host
+    * 
+    * @param ipAddress
+    *           is the host iP address
+    * @return the average time or <code>null</code> in case of error.
+    */
+   public static String cbPingServer(String ipAddress)
+   {
+      if (null == ipAddress) return null;
+
+      String msg = UtilSystem.runCommand("ping", "-c", "2", ipAddress);
+      if (UtilSystem.isLastError())
+      {
+         // KO
+         JModalDialog.showError("Ping " + ipAddress, UtilSystem.getLastError() + "\n" + StringFormat.printString (msg, "<empty message>", "<null message>"));
+         return null;
+      }
+      else
+      {
+         // OK - get the average time
+         String result = msg.split("rtt min/avg/max/mdev = ")[1].split("/")[1];
+         return result;
+      }
    }
 }
