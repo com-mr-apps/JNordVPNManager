@@ -139,6 +139,7 @@ public class GuiCommandsToolBar extends JPanel implements ActionListener
          JPanel customizeButton = makeToolBarCustomizeButton(tbCustomize, 0, customizePopUpMenuAdd);
          m_toolBar.add(customizeButton);
          
+         boolean bAddTimeSlider = false;
          for (int i = 0; i < commandsToolbarList.size(); i++)
          {
             Command cmd = commandsToolbarList.get(i);
@@ -168,11 +169,27 @@ public class GuiCommandsToolBar extends JPanel implements ActionListener
                }
                cmd.updateUI();
 
+               if (cmd.getId().equals(Command.VPN_CMD_TIMER_CONNECT))
+               {
+                  bAddTimeSlider = true;
+               }
+               else if (cmd.getId().equals(Command.VPN_CMD_TIMER_RECONNECT))
+               {
+                  bAddTimeSlider = true;
+               }
+
                // Add the Customize Command
                tbCustomize = new Command();
                customizeButton = makeToolBarCustomizeButton(tbCustomize, i+1, customizePopUpMenuAdd);
                m_toolBar.add(customizeButton);
             }
+         }
+
+         if (true == bAddTimeSlider)
+         {
+            // For Timer commands add the timer slider
+            JPanelConnectTimer timeSlider = new JPanelConnectTimer();
+            m_toolBar.add(timeSlider);
          }
 
          // Update User Preferences

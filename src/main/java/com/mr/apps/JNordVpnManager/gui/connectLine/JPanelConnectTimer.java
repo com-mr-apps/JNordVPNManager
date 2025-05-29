@@ -12,12 +12,8 @@ package com.mr.apps.JNordVpnManager.gui.connectLine;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.ArrayList;
 import java.util.Hashtable;
 
-import javax.swing.BorderFactory;
-import javax.swing.ImageIcon;
-import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
@@ -31,34 +27,56 @@ import com.mr.apps.JNordVpnManager.Starter;
 import com.mr.apps.JNordVpnManager.commandInterfaces.base.Command;
 import com.mr.apps.JNordVpnManager.geotools.CurrentLocation;
 import com.mr.apps.JNordVpnManager.gui.GuiStatusLine;
-import com.mr.apps.JNordVpnManager.gui.components.JResizedIcon;
-import com.mr.apps.JNordVpnManager.gui.components.JResizedIcon.IconSize;
-import com.mr.apps.JNordVpnManager.gui.components.JResizedIcon.IconUrls;
 import com.mr.apps.JNordVpnManager.nordvpn.NvpnCallbacks;
 import com.mr.apps.JNordVpnManager.utils.UtilPrefs;
 
+/**
+ * Class for Pause/[Re]Connect connections to VPN
+ * <p>
+ * This class contains methods to start/stop a timer that will connect/disconnect to/from VPN. The Constructor generates
+ * a JPanel with a JSlider to set/display start/stop the timer. The timer can be used without the JSlider - e.g
+ * start/stop with Connect/Reconnect Command Buttons, then the default time (stored in UserPrefs) is used.
+ */
 @SuppressWarnings("serial")
 public class JPanelConnectTimer extends JPanel
 {
    // timer default values
-   private static final int       TIMER_UPDATE_INTERVALL = 15000;                  // 15 seconds
-   private static final int       TIMER_MAX_VALUE        = 3600;                   // 60 minutes
+   private static final int            TIMER_UPDATE_INTERVALL  = 15000;                  // 15 seconds
+   private static final int            TIMER_MAX_VALUE         = 3600;                   // 60 minutes
 
-   private static ArrayList<ImageIcon> m_buttonStartPauseIcons = new ArrayList<>();
+   private static Timer                m_timer                 = null;
+   private static JSlider              m_timeSlider            = null;
+   private static JMenuItem            m_startPauseMenuItem    = null;
+   private static int                  m_timerWorkMode         = GuiStatusLine.STATUS_UNKNOWN;
+   private static int                  m_timerValue            = UtilPrefs.getTimerDefaultValue() * 60;
 
-   private static Timer           m_timer = null;
-   private static JSlider         m_timeSlider;
-   private static JButton         m_startPauseButton;
-   private static int             m_timerWorkMode = GuiStatusLine.STATUS_UNKNOWN;
-
+   /**
+    * Constructor to create the Timer-JSlider
+    */
    public JPanelConnectTimer()
    {
-      // Disconnect/Connect Icons
-      m_buttonStartPauseIcons.add(JResizedIcon.getIcon(IconUrls.ICON_TIMER_PAUSE, IconSize.MEDIUM));
-      m_buttonStartPauseIcons.add(JResizedIcon.getIcon(IconUrls.ICON_TIMER_CONNECT, IconSize.MEDIUM));
-
       // Time Slider RMB popup menu
       JPopupMenu timeSliderPopup = new JPopupMenu();
+      m_startPauseMenuItem = new JMenuItem("Start Pause");
+      m_startPauseMenuItem.setToolTipText("Start the timer to pause VPN connection.");
+      m_startPauseMenuItem.addActionListener(new ActionListener() {
+         @Override
+         public void actionPerformed(ActionEvent e)
+         {
+            // (manual change) - start/stop the timer
+            if ((true == isTimerRunning()) || m_timerValue == 0)
+            {
+               m_timerWorkMode = GuiStatusLine.STATUS_CONNECTED; // ..in case we are in automatic reconnect mode, we stop it and [re]connect to VPN
+               stopTheTimer();
+            }
+            else
+            {
+               m_timerWorkMode = GuiStatusLine.STATUS_UNKNOWN; // ..independent of current work mode, will be set to STATUS_PAUSED
+               startTheTimer((m_timerValue+59)/60);
+            }
+         }
+      });
+
       JMenuItem m1 = new JMenuItem("1 min.");
       m1.setToolTipText("Pause VPN connection for " + timeSliderValueToText(60) + ".");
       m1.addActionListener(new ActionListener() {
@@ -70,6 +88,7 @@ public class JPanelConnectTimer extends JPanel
             startTheTimer(1);
          }
       });
+
       JMenuItem m5 = new JMenuItem("5 min.");
       m5.setToolTipText("Pause VPN connection for " + timeSliderValueToText(300) + ".");
       m5.addActionListener(new ActionListener() {
@@ -81,6 +100,7 @@ public class JPanelConnectTimer extends JPanel
             startTheTimer(5);
          }
       });
+
       JMenuItem m15 = new JMenuItem("15 min.");
       m15.setToolTipText("Pause VPN connection for " + timeSliderValueToText(900) + ".");
       m15.addActionListener(new ActionListener() {
@@ -92,6 +112,7 @@ public class JPanelConnectTimer extends JPanel
             startTheTimer(15);
          }
       });
+
       JMenuItem m30 = new JMenuItem("30 min.");
       m30.setToolTipText("Pause VPN connection for " + timeSliderValueToText(1800) + ".");
       m30.addActionListener(new ActionListener() {
@@ -103,6 +124,7 @@ public class JPanelConnectTimer extends JPanel
             startTheTimer(30);
          }
       });
+
       JMenuItem m60 = new JMenuItem("60 min.");
       m60.setToolTipText("Pause VPN connection for " + timeSliderValueToText(3600) + ".");
       m60.addActionListener(new ActionListener() {
@@ -114,6 +136,8 @@ public class JPanelConnectTimer extends JPanel
             startTheTimer(60);
          }
       });
+
+      timeSliderPopup.add(m_startPauseMenuItem);
       timeSliderPopup.add(m1);
       timeSliderPopup.add(m5);
       timeSliderPopup.add(m15);
@@ -142,7 +166,7 @@ public class JPanelConnectTimer extends JPanel
       m_timeSlider = new JSlider();
       m_timeSlider.setMinimum(0);
       m_timeSlider.setMaximum(TIMER_MAX_VALUE);
-      m_timeSlider.setValue(UtilPrefs.getTimerDefaultValue() * 60);
+      m_timeSlider.setValue(m_timerValue);
       m_timeSlider.setMajorTickSpacing(TIMER_MAX_VALUE/12);
       m_timeSlider.setPaintTicks(true);
       m_timeSlider.setPaintLabels(true);
@@ -162,7 +186,8 @@ public class JPanelConnectTimer extends JPanel
             else
             {
                // (manual change) - update default timer value
-               UtilPrefs.setTimerDefaultValue(m_timeSlider.getValue()/60);
+               m_timerValue = m_timeSlider.getValue();
+               UtilPrefs.setTimerDefaultValue(m_timerValue/60);
 
                // update tool tip for start/pause buttons
                updateButtons();
@@ -170,28 +195,7 @@ public class JPanelConnectTimer extends JPanel
          }
       });
 
-      // Timer Start/Pause buttons
-      m_startPauseButton = new JButton(m_buttonStartPauseIcons.get(0));
-      m_startPauseButton.setBorder(BorderFactory.createRaisedSoftBevelBorder());
-      m_startPauseButton.addActionListener(new ActionListener() {
-         @Override
-         public void actionPerformed(ActionEvent e)
-         {
-            if ((true == isTimerRunning()) || m_timeSlider.getValue() == 0)
-            {
-               m_timerWorkMode = GuiStatusLine.STATUS_CONNECTED; // ..in case we are in automatic reconnect mode, we stop it and [re]connect to VPN
-               stopTheTimer();
-            }
-            else
-            {
-               m_timerWorkMode = GuiStatusLine.STATUS_UNKNOWN; // ..independent of current work mode, will be set to STATUS_PAUSED
-               startTheTimer((m_timeSlider.getValue()+59)/60);
-            }
-         }
-      });
-
       add(m_timeSlider);
-      add(m_startPauseButton);
    }
 
    /**
@@ -204,14 +208,15 @@ public class JPanelConnectTimer extends JPanel
          @Override
          public void actionPerformed(ActionEvent e)
          {
-            int value = m_timeSlider.getValue() - (TIMER_UPDATE_INTERVALL/1000);
-            if (value <= m_timeSlider.getMinimum())
+            m_timerValue = m_timerValue - (TIMER_UPDATE_INTERVALL/1000);
+            if (m_timerValue <= 0)
             {
+               m_timerValue = 0;
                stopTheTimer();                  
             }
-            else
+            else if (null != m_timeSlider)
             {
-               m_timeSlider.setValue(value);
+               m_timeSlider.setValue(m_timerValue);
             }
          }
       });
@@ -239,7 +244,8 @@ public class JPanelConnectTimer extends JPanel
     */
    private static void setTimeSlider(int iTime)
    {
-      if (null != m_timeSlider) m_timeSlider.setValue(iTime * 60);      
+      m_timerValue = iTime * 60;
+      if (null != m_timeSlider) m_timeSlider.setValue(m_timerValue);      
    }
 
    /**
@@ -285,7 +291,7 @@ public class JPanelConnectTimer extends JPanel
       else
       {
          // re-use running timer
-         Starter._m_logError.TraceDebug("Set Connection Timer - Continue remaining " + timeSliderValueToText(m_timeSlider.getValue()) + ". m_timerWorkMode=" + m_timerWorkMode);
+         Starter._m_logError.TraceDebug("Set Connection Timer - Continue remaining " + timeSliderValueToText(m_timerValue) + ". m_timerWorkMode=" + m_timerWorkMode);
       }
    }
 
@@ -396,7 +402,7 @@ public class JPanelConnectTimer extends JPanel
          else if (iStatus == GuiStatusLine.STATUS_PAUSED)
          {
             // connection paused
-            sMsg = "VPN will be reconnected in " + timeSliderValueToText(m_timeSlider.getValue()) + ".";
+            sMsg = "VPN will be reconnected in " + timeSliderValueToText(m_timerValue) + ".";
          }
          else if ((iStatus == GuiStatusLine.STATUS_CONNECTED) || (iStatus == GuiStatusLine.STATUS_DISCONNECTED))
          {
@@ -416,7 +422,7 @@ public class JPanelConnectTimer extends JPanel
          {
             // we use this to start pause from command
             startTheTimer(UtilPrefs.getTimerDefaultValue());
-            sMsg = "VPN will be reconnected in " + timeSliderValueToText(m_timeSlider.getValue()) + ".";
+            sMsg = "VPN will be reconnected in " + timeSliderValueToText(m_timerValue) + ".";
          }
          else if (iStatus == GuiStatusLine.STATUS_RECONNECT)
          {
@@ -428,7 +434,7 @@ public class JPanelConnectTimer extends JPanel
          {
             sMsg = null;
          }
-         else // Starter.STATUS_LOGGEDOUT
+         else // (iStatus == GuiStatusLine.STATUS_LOGGEDOUT)
          {
             // not logged in
             sMsg = null;
@@ -489,51 +495,54 @@ public class JPanelConnectTimer extends JPanel
       boolean enabled = true;
 
       String statusId = Command.BASE_STATUS_KEY;
-//      Starter._m_logError.TraceDebug("(updateButtons) m_timerWorkMode= " + m_timerWorkMode);
 
       if (m_timerWorkMode == GuiStatusLine.STATUS_PAUSED)
       {
          statusId = "CONNECT";
          enabled = true;
          iconId = 1;
-         sToolTip = "Press Button to Stop the Timer and [Re]Connect VPN (Remaining time " + timeSliderValueToText(m_timeSlider.getValue()) + ")";
+         sToolTip = "Press Button to Stop the Timer and [Re]Connect VPN (Remaining time " + timeSliderValueToText(m_timerValue) + ").";
       }
       else if (m_timerWorkMode == GuiStatusLine.STATUS_RECONNECT)
       {
          statusId = "CONNECT";
          enabled = true;
          iconId = 1;
-         sToolTip = "Press Button to Stop Automatic Reconnection (Remaining time " + timeSliderValueToText(m_timeSlider.getValue()) + ")";
+         sToolTip = "Press Button to Stop Automatic Reconnection (Remaining time " + timeSliderValueToText(m_timerValue) + ").";
       }
       else if (m_timerWorkMode == GuiStatusLine.STATUS_CONNECTED)
       {
          statusId = "PAUSE";
          enabled = true;
          iconId = 0;
-         sToolTip = "Press Button to Pause VPN for " + timeSliderValueToText(m_timeSlider.getValue());
+         sToolTip = "Press Button to Pause VPN for " + timeSliderValueToText(m_timerValue) + ".";
       }
       else if (m_timerWorkMode == GuiStatusLine.STATUS_DISCONNECTED)
       {
          statusId = "PAUSE";
          enabled = true;
          iconId = 0;
-         sToolTip = "Press Button to [Re]Connect VPN in " + timeSliderValueToText(m_timeSlider.getValue());
+         sToolTip = "Press Button to [Re]Connect VPN in " + timeSliderValueToText(m_timerValue) + ".";
       }
       else if (m_timerWorkMode == GuiStatusLine.STATUS_LOGGEDOUT)
       {
          statusId = Command.DISABLED_STATUS_KEY;
          enabled = false;
          iconId = 0;
-         sToolTip = "Not logged in";
+         sToolTip = "Not logged in.";
       }
       else // unknown
       {
          return;
       }
-      // Actualize "hard coded" Start/Pause Button - TODO: refactoring required, remove start/stop button (use command toolbar functionality)
-      m_startPauseButton.setEnabled(enabled);
-      m_startPauseButton.setIcon(m_buttonStartPauseIcons.get(iconId));
-      m_startPauseButton.setToolTipText(sToolTip);
+
+      if (null != m_startPauseMenuItem)
+      {
+         // Actualize Start/Pause Menu Item 
+         m_startPauseMenuItem.setEnabled(enabled);
+         m_startPauseMenuItem.setToolTipText(sToolTip);
+         m_startPauseMenuItem.setText(((0 == iconId) ? "Start Timer" : "Stop Timer"));
+      }
 
       // update the commands toolBar command buttons
       Command cmd = Command.getObject(Command.VPN_CMD_TIMER_CONNECT);
