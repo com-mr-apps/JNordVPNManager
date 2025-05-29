@@ -13,8 +13,6 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
-import java.awt.Point;
-import java.awt.Rectangle;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -86,8 +84,12 @@ public class JCustomConsole extends JFrame
    private boolean             m_isVisible         = false;
    private JFrame              m_consoleMainFrame;
    private JScrollPane         m_consoleOutputScrollPane;
+   private JCheckBox           m_cbxTraceDebug;
+   private JCheckBox           m_cbxTraceInit;
+   private JCheckBox           m_cbxTraceCommand;
    private boolean             m_quitFlag;
    private String              m_pid               = null;
+   private static boolean      m_skipInteraction   = false;
 
    ExecutorService             m_streamHandlers    = null;
 
@@ -121,25 +123,26 @@ public class JCustomConsole extends JFrame
       tracesRow.add(lblTrace);
       tracesRow.add(Box.createRigidArea(new Dimension(5, 0)));
 
-      JCheckBox cbxTraceInit = new JCheckBox("Init");
-      cbxTraceInit.setToolTipText("Flag for Trace Init output.");
-      cbxTraceInit.setForeground(COLOR_darkGreen);
-      cbxTraceInit.setBackground(COLOR_wheat);
+      m_cbxTraceInit = new JCheckBox("Init");
+      m_cbxTraceInit.setToolTipText("Flag for Trace Init output.");
+      m_cbxTraceInit.setForeground(COLOR_darkGreen);
+      m_cbxTraceInit.setBackground(COLOR_wheat);
       int iTraceInit = UtilPrefs.getTraceInit();
       if (1 == iTraceInit || Starter._m_logError.isTraceFlagSet(UtilLogErr.TRACE_Init))
       {
-         cbxTraceInit.setSelected(true);
+         m_cbxTraceInit.setSelected(true);
          Starter._m_logError.enableTraceFlag(UtilLogErr.TRACE_Init);
       }
       else
       {
-         cbxTraceInit.setSelected(false);
+         m_cbxTraceInit.setSelected(false);
          Starter._m_logError.disableTraceFlag(UtilLogErr.TRACE_Init);
       }
-      cbxTraceInit.addActionListener(new ActionListener() {
+      m_cbxTraceInit.addActionListener(new ActionListener() {
          @Override
          public void actionPerformed(ActionEvent e)
          {
+            if (true == m_skipInteraction) return;
             JCheckBox cb = (JCheckBox) e.getSource();
             if (cb.isSelected())
             {
@@ -153,29 +156,30 @@ public class JCustomConsole extends JFrame
             }
          }
       });
-      tracesRow.add(cbxTraceInit);
+      tracesRow.add(m_cbxTraceInit);
       tracesRow.add(Box.createRigidArea(new Dimension(5, 0)));
 
-      JCheckBox cbxTraceCommand = new JCheckBox("Command");
-      cbxTraceCommand.setToolTipText("Flag for Trace Command output.");
-      cbxTraceCommand.setForeground(Color.blue);
-      cbxTraceCommand.setBackground(COLOR_wheat);
-      cbxTraceCommand.setFont(new Font(cbxTraceCommand.getFont().getName(), Font.BOLD, cbxTraceCommand.getFont().getSize()));
+      m_cbxTraceCommand = new JCheckBox("Command");
+      m_cbxTraceCommand.setToolTipText("Flag for Trace Command output.");
+      m_cbxTraceCommand.setForeground(Color.blue);
+      m_cbxTraceCommand.setBackground(COLOR_wheat);
+      m_cbxTraceCommand.setFont(new Font(m_cbxTraceCommand.getFont().getName(), Font.BOLD, m_cbxTraceCommand.getFont().getSize()));
       int iTraceCommand = UtilPrefs.getTraceCmd();
       if (1 == iTraceCommand || Starter._m_logError.isTraceFlagSet(UtilLogErr.TRACE_Cmd))
       {
-         cbxTraceCommand.setSelected(true);
+         m_cbxTraceCommand.setSelected(true);
          Starter._m_logError.enableTraceFlag(UtilLogErr.TRACE_Cmd);
       }
       else
       {
-         cbxTraceCommand.setSelected(false);
+         m_cbxTraceCommand.setSelected(false);
          Starter._m_logError.disableTraceFlag(UtilLogErr.TRACE_Cmd);
       }
-      cbxTraceCommand.addActionListener(new ActionListener() {
+      m_cbxTraceCommand.addActionListener(new ActionListener() {
          @Override
          public void actionPerformed(ActionEvent e)
          {
+            if (true == m_skipInteraction) return;
             JCheckBox cb = (JCheckBox) e.getSource();
             if (cb.isSelected())
             {
@@ -189,29 +193,30 @@ public class JCustomConsole extends JFrame
             }
          }
       });
-      tracesRow.add(cbxTraceCommand);
+      tracesRow.add(m_cbxTraceCommand);
       tracesRow.add(Box.createRigidArea(new Dimension(5, 0)));
 
-      JCheckBox cbxTraceDebug = new JCheckBox("Debug");
-      cbxTraceDebug.setToolTipText("Flag for Trace Debug output.");
-      cbxTraceDebug.setForeground(Color.gray);
-      cbxTraceDebug.setBackground(COLOR_wheat);
-      cbxTraceDebug.setFont(new Font(cbxTraceDebug.getFont().getName(), Font.ITALIC, cbxTraceDebug.getFont().getSize()));
+      m_cbxTraceDebug = new JCheckBox("Debug");
+      m_cbxTraceDebug.setToolTipText("Flag for Trace Debug output.");
+      m_cbxTraceDebug.setForeground(Color.gray);
+      m_cbxTraceDebug.setBackground(COLOR_wheat);
+      m_cbxTraceDebug.setFont(new Font(m_cbxTraceDebug.getFont().getName(), Font.ITALIC, m_cbxTraceDebug.getFont().getSize()));
       int iTraceDebug = UtilPrefs.getTraceDebug();
       if (1 == iTraceDebug || Starter._m_logError.isTraceFlagSet(UtilLogErr.TRACE_Debug))
       {
-         cbxTraceDebug.setSelected(true);
+         m_cbxTraceDebug.setSelected(true);
          Starter._m_logError.enableTraceFlag(UtilLogErr.TRACE_Debug);
       }
       else
       {
-         cbxTraceDebug.setSelected(false);
+         m_cbxTraceDebug.setSelected(false);
          Starter._m_logError.disableTraceFlag(UtilLogErr.TRACE_Debug);
       }
-      cbxTraceDebug.addActionListener(new ActionListener() {
+      m_cbxTraceDebug.addActionListener(new ActionListener() {
          @Override
          public void actionPerformed(ActionEvent e)
          {
+            if (true == m_skipInteraction) return;
             JCheckBox cb = (JCheckBox) e.getSource();
             if (cb.isSelected())
             {
@@ -225,7 +230,7 @@ public class JCustomConsole extends JFrame
             }
          }
       });
-      tracesRow.add(cbxTraceDebug);
+      tracesRow.add(m_cbxTraceDebug);
       tracesRow.add(Box.createHorizontalGlue());
 
       JCheckBox cbxOpenConsole = new JCheckBox("Open Console on Application Start");
@@ -578,11 +583,14 @@ public class JCustomConsole extends JFrame
       {
          JViewport viewport = m_consoleOutputScrollPane.getViewport(); 
          JEditorPane editorPane = (JEditorPane)viewport.getView(); 
+         HTMLDocument doc = (HTMLDocument) editorPane.getDocument();
+         editorPane.setCaretPosition(doc.getLength());
 
-         int max = m_consoleOutputScrollPane.getVerticalScrollBar().getMaximum();
-         Point keypoint = new Point(0, max);
-         Rectangle keyview = new Rectangle(keypoint);
-         editorPane.scrollRectToVisible(keyview);
+         m_skipInteraction = true;
+         m_cbxTraceDebug.setSelected(1 == UtilPrefs.getTraceDebug());
+         m_cbxTraceCommand.setSelected(1 == UtilPrefs.getTraceCmd());
+         m_cbxTraceInit.setSelected(1 == UtilPrefs.getTraceInit());
+         m_skipInteraction = false;
       }
    }
 

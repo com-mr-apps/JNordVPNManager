@@ -20,7 +20,6 @@ import java.awt.event.WindowEvent;
 import java.awt.event.WindowFocusListener;
 import java.io.File;
 import java.io.IOException;
-import java.net.URL;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -42,6 +41,8 @@ import com.mr.apps.JNordVpnManager.geotools.VpnServer;
 import com.mr.apps.JNordVpnManager.gui.GuiMapArea;
 import com.mr.apps.JNordVpnManager.gui.GuiMenuBar;
 import com.mr.apps.JNordVpnManager.gui.GuiStatusLine;
+import com.mr.apps.JNordVpnManager.gui.components.JResizedIcon;
+import com.mr.apps.JNordVpnManager.gui.components.JResizedIcon.IconSize;
 import com.mr.apps.JNordVpnManager.gui.connectLine.GuiConnectLine;
 import com.mr.apps.JNordVpnManager.gui.connectLine.JPanelConnectTimer;
 import com.mr.apps.JNordVpnManager.gui.dialog.JAboutScreen;
@@ -80,7 +81,6 @@ public class Starter extends JFrame
    public static UtilLogErr        _m_logError                = null;
 
    private static final String     APPLICATION_TITLE          = "JNordVPN Manager [" + COPYRIGHT_STRING + "]";
-   private static final String     APPLICATION_ICON_IMAGE     = "resources/icons/icon.png";
 
    private static JFrame           m_mainFrame                = null;
    private static JServerTreePanel m_serverListPanel          = null;
@@ -120,7 +120,10 @@ public class Starter extends JFrame
          _m_logError = new UtilLogErr(null, null, null);
          SwingUtilities.invokeLater(new Runnable() {
             public void run() {
-               /* JCustomConsole consoleWindow = */ new JCustomConsole(args[1]);
+               JCustomConsole consoleWindow = new JCustomConsole(args[1]);
+               ImageIcon imageIcon = JResizedIcon.getIcon(JResizedIcon.IconUrls.ICON_APPLICATION, IconSize.MEDIUM);
+               Image appImage = imageIcon.getImage();
+               consoleWindow.setIconImage(appImage);
             }
          });
       }
@@ -400,8 +403,11 @@ public class Starter extends JFrame
                      setWaitCursor();
                      setCursorCanChange(false);
 
+                     // TODO: Optimization -> do updates only, when settings changed
+
+                     // re-read NordVPN Settings data
                      m_nvpnSettingsData = new NvpnSettingsData();
-                     // update dependent GUI elements based on current account data and 
+                     // re-read NordVPN Account data and update dependent GUI elements based on current account data
                      updateAccountData(true);
                      // update the status line, commands menu and world map current server layer
                      updateCurrentServer();
@@ -426,8 +432,7 @@ public class Starter extends JFrame
       });
 
       // set application icon in Task bar
-      URL appIconUrl = Starter.class.getResource(APPLICATION_ICON_IMAGE);
-      ImageIcon imageIcon = new ImageIcon(appIconUrl);
+      ImageIcon imageIcon = JResizedIcon.getIcon(JResizedIcon.IconUrls.ICON_APPLICATION, IconSize.MEDIUM);
       Image appImage = imageIcon.getImage();
       try
       {
@@ -555,7 +560,7 @@ public class Starter extends JFrame
             CurrentLocation loc = getCurrentServer(true);
             if (null != loc)
             {
-               m_splashScreen.setStatus("GUI Auto Connect to " + loc.getToolTip());
+               m_splashScreen.setStatus("GUI Auto Connect to " + loc.getToolTip() + "...");
                if (true == NvpnCallbacks.executeConnect(loc, null, "JNordVPN Manager Auto Connect"))
                {
                   // successfully connected
@@ -959,7 +964,7 @@ public class Starter extends JFrame
             // desktop file exists
             _m_logError.TraceIni("...'JNordVPNManager_Java.desktop' file found in '~/Desktop directory'.");
             if (JModalDialog.showConfirm("JNordVPNManager (install).\n" +
-                  "Please restart the application by the 'JNordVPNManager_Java.desktop' file found in your '~/Desktop directory'.\n\n" +
+                  "Please restart the application by using the 'JNordVPNManager_Java.desktop' file found in your '~/Desktop directory'.\n\n" +
                   "If you continue direct from Snap, the application has no permission to execute any 'nordvpn' command, but you have access to the console and Info menus to check messages and errors.\n\n" +
                   "Please confirm to exit the program.") == JOptionPane.YES_OPTION)
             {

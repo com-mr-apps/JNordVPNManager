@@ -306,7 +306,7 @@ public class Location
                break;
             case 1 :
             default:
-               serverName = getCityName();
+               serverName = getCityName() + " [" + getCountryName() + "]";
          }
       }
       else

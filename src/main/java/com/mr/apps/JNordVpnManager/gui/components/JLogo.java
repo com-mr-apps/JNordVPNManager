@@ -32,6 +32,9 @@ public class JLogo extends JLabel
       LOGO_MR("mrLogo",
             "<html><font face=\"sansserif\" color=\"black\">Press the Mouse Button to go to GitHub Repository:<br>https://github.com/com-mr-apps</font></html>",
             "https://github.com/com-mr-apps"), 
+      LOGO_GITHUB_SPONSORS("mrLogo",
+            "<html><font face=\"sansserif\" color=\"black\">Press the Mouse Button to go to GitHub Sponsorship:<br>https://github.com/sponsors/com-mr-apps</font></html>",
+            "https://github.com/sponsors/com-mr-apps"), 
       LOGO_BUYMEACOFFEE("bmc_qr",
             "<html><font face=\"sansserif\" color=\"black\">If you like to support my work,<br>you can press the Mouse Button and buy me a coffee here:<br>https://buymeacoffee.com/3dprototyping</font></html>",
             "https://buymeacoffee.com/3dprototyping");

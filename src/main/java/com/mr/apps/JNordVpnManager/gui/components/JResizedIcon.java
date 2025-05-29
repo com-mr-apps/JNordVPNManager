@@ -21,6 +21,7 @@ public class JResizedIcon extends ImageIcon
    // definitions for resource icons
    public static enum IconUrls
    {
+      ICON_APPLICATION                 ("icon.png"),
       ICON_MOUSE_POINTER_MAP_LOCATION  ("mp_MapSelectLocation.png"),
       ICON_ADD                         ("i_Add.png"),
       ICON_MINUS                       ("i_Minus.png"),
@@ -86,6 +87,7 @@ public class JResizedIcon extends ImageIcon
       SMALL             (12),
       MEDIUM            (24),
       LARGE             (36),
+      HUGE             (256),
       LOGO              (80);
     
        private int size;
