@@ -284,7 +284,10 @@ public class JSettingsPanel extends JPanel
          if (null == entryValue)
          {
             // set internal data set value with current value (e.g. from import)
-            m_hmSettingsValues.put(key, hm.get(key));
+            if (null != hm)
+            {
+               m_hmSettingsValues.put(key, hm.get(key));
+            }
          }
          else
          {
