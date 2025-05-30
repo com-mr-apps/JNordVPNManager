@@ -155,6 +155,16 @@ public class UtilLogErr
          // Step 1: Create named pipes
          String stdout_pipe = JCustomConsole.CONSOLE_STDOUT_PIPE;
          String stderr_pipe = JCustomConsole.CONSOLE_STDERR_PIPE;
+
+         // check if path exists - if not, create
+         String sPipesPath = new File(stdout_pipe).getParent();
+         File fpPipesPath = new File(sPipesPath);
+         if (!fpPipesPath.exists())
+         {
+            // generate the directory
+            fpPipesPath.mkdirs();
+         }
+
          Process process;
          try
          {
