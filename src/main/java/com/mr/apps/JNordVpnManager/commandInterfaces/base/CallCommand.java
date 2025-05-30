@@ -6,7 +6,7 @@
  * You should have received a copy of the “Commons Clause” license with
  * this file. If not, please visit: https://github.com/com-mr-apps/JNordVpnManager
  */
-package com.mr.apps.JNordVpnManager.commandInterfaces;
+package com.mr.apps.JNordVpnManager.commandInterfaces.base;
 
 import java.awt.event.ActionEvent;
 import java.io.File;
@@ -109,7 +109,7 @@ public class CallCommand
 
    public static Object invokeCommandMethod(Command cmd, String methodName)
    {
-      return invokeMethod(cmd, "com.mr.apps.JNordVpnManager.commandInterfaces." + cmd.getCommand(), methodName, new Object[]{cmd}, new Class<?>[]{com.mr.apps.JNordVpnManager.commandInterfaces.Command.class});
+      return invokeMethod(cmd, "com.mr.apps.JNordVpnManager.commandInterfaces." + cmd.getCommand(), methodName, new Object[]{cmd}, new Class<?>[]{com.mr.apps.JNordVpnManager.commandInterfaces.base.Command.class});
    }
 
    public static Object invokeEventMethod(Command cmd, String methodName, ActionEvent e)

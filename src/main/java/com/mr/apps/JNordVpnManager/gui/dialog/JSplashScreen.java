@@ -30,6 +30,7 @@ public class JSplashScreen extends JDialog
    protected JLabel       m_splashStatus;
    protected JProgressBar m_progressBar;
    protected JLabel       m_version;
+   protected int          m_panelWidth = 0;
 
    /**
     * Initiates a new Welcome Screen
@@ -108,7 +109,7 @@ public class JSplashScreen extends JDialog
       else
       {
          // Splash Screen
-         this.m_splashStatus = new JLabel(status);
+         this.m_splashStatus = new JLabel();
          this.add(this.m_splashStatus);
          
          m_progressBar = new JProgressBar(0, 100);
@@ -119,10 +120,12 @@ public class JSplashScreen extends JDialog
 
       this.setUndecorated(true);
       this.pack();
-
+      if (null != status) this.setStatus(status);
+      
       // Centers the Splash Screen
       Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
       Dimension panelSize = this.getSize();
+      m_panelWidth = panelSize.width;
       this.setLocation((screenSize.width / 2) - (panelSize.width / 2), (screenSize.height / 2) - (panelSize.height / 2));
    }
 
@@ -164,9 +167,13 @@ public class JSplashScreen extends JDialog
     */
    public void setStatus(String status)
    {
-      m_splashStatus.setText(status);
-      m_splashStatus.getGraphics().clearRect(0, 0, 200, 50); // hack - delete background
-      m_splashStatus.update(m_splashStatus.getGraphics());
+      m_splashStatus.setText(String.format("%-100s", status));
+      if (m_panelWidth > 0)
+      {
+         // hack - delete background
+         m_splashStatus.getGraphics().clearRect(0, 0, m_panelWidth, 50);
+         m_splashStatus.update(m_splashStatus.getGraphics());
+      }
       Starter._m_logError.TraceIni(status);
    }
 

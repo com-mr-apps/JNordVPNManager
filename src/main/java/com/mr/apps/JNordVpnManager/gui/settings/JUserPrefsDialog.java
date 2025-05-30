@@ -31,12 +31,12 @@ import com.mr.apps.JNordVpnManager.utils.UtilPrefs;
 @SuppressWarnings("serial")
 public class JUserPrefsDialog extends JDialog implements ActionListener
 {
-   private final static String BUTTON_LIST = "Save,Cancel";
-   private final static int SAVE_BUTTON = 0;
-   private final static int CANCEL_BUTTON = 1;
+   private final static String BUTTON_LIST      = "Save,Cancel";
+   private final static int    SAVE_BUTTON      = 0;
+   private final static int    CANCEL_BUTTON    = 1;
 
-   private String m_result;
-   private JSettingsPanel m_userPrefsPanel = null;
+   private String              m_result;
+   private JSettingsPanel      m_userPrefsPanel = null;
 
    /**
     * User Preferences Panel Layout definition.

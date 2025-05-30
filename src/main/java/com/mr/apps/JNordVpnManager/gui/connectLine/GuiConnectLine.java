@@ -12,7 +12,6 @@ import java.awt.BorderLayout;
 import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JPanel;
@@ -24,8 +23,8 @@ import com.mr.apps.JNordVpnManager.nordvpn.NvpnCallbacks;
 
 public class GuiConnectLine
 {
-   private static JButton m_jbMail = null;
-   private static GuiCommandsToolBar m_commandsToolBar = null;
+   private static JButton            m_jbMail             = null;
+   private static GuiCommandsToolBar m_commandsToolBar    = null;
 
    public GuiConnectLine()
    {
@@ -46,9 +45,6 @@ public class GuiConnectLine
 
       m_commandsToolBar = new GuiCommandsToolBar();
       connectPanel.add(m_commandsToolBar, BorderLayout.LINE_START);
-
-      JPanelConnectTimer ps = new JPanelConnectTimer();
-      connectPanel.add(ps, BorderLayout.CENTER);
 
       JPanel mailPanel = new JPanel(new FlowLayout());
       m_jbMail = new JButton();
@@ -101,5 +97,4 @@ public class GuiConnectLine
    {
       m_commandsToolBar.rebuildCommandsToolbar();
    }
-
 }

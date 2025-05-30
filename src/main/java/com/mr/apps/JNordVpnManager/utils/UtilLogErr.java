@@ -12,6 +12,7 @@ import java.io.*;
 import java.nio.charset.Charset;
 
 import com.mr.apps.JNordVpnManager.Starter;
+import com.mr.apps.JNordVpnManager.gui.dialog.JCustomConsole;
 import com.mr.apps.JNordVpnManager.gui.dialog.JModalDialog;
 import com.mr.apps.JNordVpnManager.utils.String.StringFormat;
 
@@ -51,34 +52,37 @@ import com.mr.apps.JNordVpnManager.utils.String.StringFormat;
 
 public class UtilLogErr
 {
-   public static final String  TRACE_Off              = "off";
-   public static final String  TRACE_Debug            = "dbg";
-   public static final String  TRACE_Cmd              = "cmd";
-   public static final String  TRACE_Init             = "ini";
-   private static final String FULL_TRACE_SETTINGS    = "ini;dbg;cmd";         // full list of possible tracing settings
-   private static final String DEFAULT_TRACE_SETTINGS = TRACE_Off;             // default for trace settings
-   private static final String DEFAULT_FILE_ENCODING  = "UTF-8";
+   public static final String      TRACE_Off              = "off";
+   public static final String      TRACE_Debug            = "dbg";
+   public static final String      TRACE_Cmd              = "cmd";
+   public static final String      TRACE_Init             = "ini";
+   private static final String     FULL_TRACE_SETTINGS    = "ini;dbg;cmd";         // full list of possible tracing settings
+   private static final String     DEFAULT_TRACE_SETTINGS = TRACE_Off;             // default for trace settings
+   private static final String     DEFAULT_FILE_ENCODING  = "UTF-8";
 
-   private boolean             m_bwLogfileIsActive    = false;
-   private BufferedWriter      m_bwLogfile            = null;
-   private String              m_sErrorLogFileName    = null;
-   private String              m_sFileEncoding        = null;
-   private String              m_traceSettings        = DEFAULT_TRACE_SETTINGS;
-   private int                 m_lastErrorCode        = 0;
-   private String              m_lastErrorMsg         = "";
-   private int                 m_nbErrors             = 0;
-   private int                 m_nbWarnings           = 0;
-   private boolean             m_bConsoleOutput       = false;
-   private boolean             m_fatalError           = false;
-   private long                m_appStartTime         = System.currentTimeMillis();
-   private long                m_curStartTime         = System.currentTimeMillis();
+   private static boolean          m_bConsoleOutput       = false;
+   private static FileOutputStream m_stdoutPipe           = null;
+   private static FileOutputStream m_stderrPipe           = null;
+
+   private boolean                 m_bwLogfileIsActive    = false;
+   private BufferedWriter          m_bwLogfile            = null;
+   private String                  m_sErrorLogFileName    = null;
+   private String                  m_sFileEncoding        = null;
+   private String                  m_traceSettings        = DEFAULT_TRACE_SETTINGS;
+   private int                     m_lastErrorCode        = 0;
+   private String                  m_lastErrorMsg         = "";
+   private int                     m_nbErrors             = 0;
+   private int                     m_nbWarnings           = 0;
+   private boolean                 m_fatalError           = false;
+   private long                    m_appStartTime         = System.currentTimeMillis();
+   private long                    m_curStartTime         = System.currentTimeMillis();
 
    /**
     * Constructor for the Common Logging+Error Class
     * 
     * @param sErrorLogFileName
-    *           is the name of the error log file name. If <CODE>null</CODE>, the environment variable
-    *           <CODE>COM_MR_APPS_LOGGING</CODE> is checked to set the logging target(s).
+    *           is the name of the error log file name. The environment variable (if set)
+    *           <CODE>COM_MR_APPS_LOGGING</CODE> overwrites this parameter to set the logging target(s).
     * @param sFileEncoding
     *           is the file encoding. If <CODE>null</CODE>, the default is taken.
     * @param sTraceSettings
@@ -115,30 +119,71 @@ public class UtilLogErr
 
       if (traceValue == null)
       {
-         m_traceSettings = DEFAULT_TRACE_SETTINGS;
+//         m_traceSettings = DEFAULT_TRACE_SETTINGS;
+         syncTraceFlags();
       }
       else
       {
          m_traceSettings = (traceValue.equalsIgnoreCase("full") == true) ? FULL_TRACE_SETTINGS : traceValue;
       }
-      m_traceSettings += ";";
+      m_traceSettings += (false == m_traceSettings.endsWith(";")) ? ";" : "";
 
       String envVar = System.getenv("COM_MR_APPS_LOGFILE");
       if (envVar != null)
       {
-         if ((envVar.equalsIgnoreCase("console")) ||
-             (envVar.equalsIgnoreCase("stdout")) ||
-             (envVar.equalsIgnoreCase("stderr")))
+         if (envVar.equalsIgnoreCase("console"))
          {
             // additional output to console
             m_bConsoleOutput = true;
          }
+         else if ((envVar.equalsIgnoreCase("stdout")) ||
+                  (envVar.equalsIgnoreCase("stderr")))
+           {
+              // additional output to stdout
+              m_bConsoleOutput = false;
+              sErrorLogFileName = null;
+           }
          else
          {
             // use COM_MR_APPS_LOGFILE as output filename
             sErrorLogFileName = envVar;
          }
       }
+
+      if (true == m_bConsoleOutput)
+      {
+         // Step 1: Create named pipes
+         String stdout_pipe = JCustomConsole.CONSOLE_STDOUT_PIPE;
+         String stderr_pipe = JCustomConsole.CONSOLE_STDERR_PIPE;
+         Process process;
+         try
+         {
+            process = Runtime.getRuntime().exec("mkfifo " + stdout_pipe + " " + stderr_pipe);
+            process.waitFor();
+
+            // Step 2: Redirect stdout and stderr to the pipes
+            try
+            {
+               m_stdoutPipe = new FileOutputStream(stdout_pipe);
+               m_stderrPipe = new FileOutputStream(stderr_pipe);
+
+               System.setOut(new PrintStream(m_stdoutPipe));
+               System.setErr(new PrintStream(m_stderrPipe));
+            }
+            catch (FileNotFoundException e)
+            {
+               e.printStackTrace();
+            }
+         }
+         catch (IOException e)
+         {
+            e.printStackTrace();
+         }
+         catch (InterruptedException e)
+         {
+         }
+      }
+
       if ((sErrorLogFileName != null) && (sErrorLogFileName.length() > 0))
       {
          sErrorLogFileName = sErrorLogFileName.replaceFirst("^~", System.getProperty("user.home"));
@@ -203,6 +248,48 @@ public class UtilLogErr
       }
    }
 
+   public void shutdownErrorHandling()
+   {
+      try
+      {
+         if (null != m_stderrPipe)
+         {
+            m_stderrPipe.write(JCustomConsole.CONSOLE_CMD_EXIT.getBytes());
+            m_stderrPipe.flush();
+         }
+         if (null != m_stdoutPipe) m_stdoutPipe.close();
+         if (null != m_stderrPipe) m_stderrPipe.close();
+      }
+      catch (IOException e)
+      {
+      }
+   }
+
+   public void sendConsoleCommand(String cmd)
+   {
+      if (null != m_stderrPipe)
+      {
+         cmd += "\n";
+         try
+         {
+            m_stderrPipe.write(cmd.getBytes());
+            m_stderrPipe.flush();
+         }
+         catch (IOException e)
+         {
+         }
+      }
+   }
+
+   public boolean syncTraceFlags()
+   {
+      boolean rc;
+      rc = (1 == UtilPrefs.getTraceDebug()) ? enableTraceFlag(UtilLogErr.TRACE_Debug) : disableTraceFlag(UtilLogErr.TRACE_Debug);
+      rc = (1 == UtilPrefs.getTraceCmd()) ? enableTraceFlag(UtilLogErr.TRACE_Cmd) : disableTraceFlag(UtilLogErr.TRACE_Cmd);
+      rc = (1 == UtilPrefs.getTraceInit()) ? enableTraceFlag(UtilLogErr.TRACE_Init) : disableTraceFlag(UtilLogErr.TRACE_Init);
+      return rc; // not used - just to suppress compiler warnings
+   }
+
    /** 
     * Set the trace flags.
     * @param sTraceSettings the current set trace flags.
@@ -221,22 +308,30 @@ public class UtilLogErr
 
    /**
     * Enable one specific trace flag.
-    * @param flag is the trace flag to activate
+    * 
+    * @param flag
+    *           is the trace flag to activate
     */
-   public void enableTraceFlag(String flag)
+   public boolean enableTraceFlag(String flag)
    {
-      if (isTraceFlagSet(flag)) return;
+      if (isTraceFlagSet(flag)) return true;
+      if (m_traceSettings.equals(TRACE_Off)) m_traceSettings = "";
       m_traceSettings += flag + ";";
+      return true;
    }
 
    /**
     * Disable one specific trace flag.
-    * @param flag is the trace flag to deactivate
+    * 
+    * @param flag
+    *           is the trace flag to deactivate
     */
-   public void disableTraceFlag(String flag)
+   public boolean disableTraceFlag(String flag)
    {
-      if (!isTraceFlagSet(flag)) return;
+      if (!isTraceFlagSet(flag)) return true;
       m_traceSettings = m_traceSettings.replace(flag + ";", "");
+      if (m_traceSettings.isBlank()) m_traceSettings = TRACE_Off;
+      return true;
    }
 
    /** 
@@ -261,7 +356,7 @@ public class UtilLogErr
     */
    public boolean isTraceActive ()
    {
-      if ((m_traceSettings == null) || (m_traceSettings.length() <= 0) || (m_traceSettings.equalsIgnoreCase(TRACE_Off) == true))
+      if ((m_traceSettings == null) || (m_traceSettings.length() <= 0) || (m_traceSettings.equals(TRACE_Off) == true))
       {
          return false;
       }
@@ -852,21 +947,32 @@ public class UtilLogErr
       {
          try
          {
-            if (m_bConsoleOutput == true)
-            {
-               // additional output to the console
-               System.out.print(formatToHtml(sText));
-            }
             if (m_bwLogfileIsActive && m_bwLogfile != null)
             {
                // output to log file
                m_bwLogfile.write(sText + "\n");
                m_bwLogfile.flush();
+
+               if (m_bConsoleOutput == true)
+               {
+                  // additional output to the console
+                  System.out.println(formatToHtml(sText));
+                  System.out.flush();
+               }
             }
-            else if (m_bConsoleOutput == false)
+            else
             {
-               // output to stdout
-               System.out.println(sText);
+               if (m_bConsoleOutput == true)
+               {
+                  // output to the console
+                  System.out.println(formatToHtml(sText));
+               }
+               else
+               {
+                  // output to stdout
+                  System.out.println(sText);
+               }
+               System.out.flush();
             }
          } // try
          catch (IOException e)
@@ -885,9 +991,6 @@ public class UtilLogErr
     */
    private String formatToHtml(String sText)
    {
-      // format stdout text to HTML only if console is activated!
-      if (!m_bConsoleOutput) return sText;
-
       String sPrefix = "";
       String sPostfix = "";
       int iStartMsg = 0;
@@ -907,7 +1010,7 @@ public class UtilLogErr
       {
          iStartMsg = 8;
          sPrefix = "<p class=\"er4\">";
-        sPostfix = "</p>";         
+         sPostfix = "</p>";         
       }
       else if (sText.startsWith("[Fatal Error]"))
       {
@@ -945,6 +1048,11 @@ public class UtilLogErr
          sPrefix = "<p class=\"dbg\">";
          sPostfix = "</p>";
       }
+      else  // direct stdout/stderr output
+      {
+         sPrefix = "<p class=\"ext\">";
+         sPostfix = "</p>";
+      }
 
       // the used JEditorPane to display the output seems to support only 'normal' ASCII signs and transforms 'higher' - like '<' - ASCII codes in &xx; :( 
 //      sText = sText.replace("<", "&lt;");
@@ -958,12 +1066,13 @@ public class UtilLogErr
    }
 
    /**
-    * Activate/Deactivate Console output
+    * Activate/Deactivate Console output<p>
+    * The Console is a separate GUI process that interprocess communicate through named piles (redirected stdout/stderr).
     * 
     * @param mode
     *           if <code>true</code>, output to console will be activated - else, output to console will be deactivated.
     */
-   public void setConsoleOutput(boolean mode)
+   public static void setConsoleOutput(boolean mode)
    {
       m_bConsoleOutput = mode;
    }

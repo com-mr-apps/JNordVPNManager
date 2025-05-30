@@ -12,12 +12,14 @@ import java.awt.event.ActionEvent;
 
 import javax.swing.JCheckBox;
 
+import com.mr.apps.JNordVpnManager.commandInterfaces.base.Command;
+import com.mr.apps.JNordVpnManager.commandInterfaces.base.CommandInterface;
 import com.mr.apps.JNordVpnManager.utils.UtilPrefs;
 
 /**
  * Command User Preferences - Auto Disconnect on Program Exit
  */
-public class AppPrefAutoDisconnect extends CoreCommandClass
+public class AppPrefAutoDisconnect implements CommandInterface
 {
    public static Object get()
    {
@@ -43,7 +45,8 @@ public class AppPrefAutoDisconnect extends CoreCommandClass
       JCheckBox cb = (JCheckBox)cmd.getComponent();
       if (null != cb)
       {
-         cb.setSelected((boolean)get());
+         cmd.setStatusUI(((true == (boolean)get()) ? "TRUE" : "FALSE"));
+         cmd.updateCommandGadgetUI();
       }
       return true;
    }

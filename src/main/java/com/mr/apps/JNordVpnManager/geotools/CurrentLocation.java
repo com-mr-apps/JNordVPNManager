@@ -126,7 +126,7 @@ public class CurrentLocation extends Location
     */
    public int getLegacyGroup()
    {
-      return (null == m_legacyGroup) ? NvpnGroups.getCurrentFilterGroup().getId() : m_legacyGroup;
+      return ((null == m_legacyGroup) || (m_legacyGroup == NordVPNEnumGroups.legacy_group_unknown.getId())) ? NvpnGroups.getCurrentFilterGroup().getId() : m_legacyGroup;
    }
 
    /**
@@ -187,6 +187,47 @@ public class CurrentLocation extends Location
    public boolean isStatic()
    {
       return !(null == m_legacyGroup && null == m_vpnTechnology && null == m_vpnProtocol);
+   }
+
+   /**
+    * Make the current Location Static
+    * 
+    * @param loc
+    *           is the current location to get the data from (can be 'this')
+    */
+   public void makeStatic(CurrentLocation loc)
+   {
+      if (null == loc) loc = this;
+      setLegacyGroup(loc.getLegacyGroup());
+      setVpnTechnology(loc.getVpnTechnology());
+      setVpnProtocol(loc.getVpnProtocol());
+   }
+
+   /**
+    * Make the current Location Static
+    * 
+    * @param legacyGroup
+    *           is the legacy group
+    * @param sVpnTechnology
+    *           is the VPN Technology
+    * @param sVpnProtocol
+    *           is the VPN Protocol
+    */
+   public void makeStatic(int legacyGroup, String sVpnTechnology, String sVpnProtocol)
+   {
+      setLegacyGroup(legacyGroup);
+      setVpnTechnology(sVpnTechnology);
+      setVpnProtocol(sVpnProtocol);
+   }
+
+   /**
+    * Make the current Location Dynamic
+    */
+   public void makeDynamic()
+   {
+      setLegacyGroup(null);
+      setVpnTechnology(null);
+      setVpnProtocol(null);
    }
 
    /**

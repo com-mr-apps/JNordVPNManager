@@ -9,6 +9,7 @@
 package com.mr.apps.JNordVpnManager.gui.connectLine;
 
 import java.awt.BorderLayout;
+import java.awt.Component;
 import java.awt.FlowLayout;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
@@ -18,9 +19,13 @@ import java.awt.event.HierarchyListener;
 import java.util.Vector;
 
 import javax.swing.BorderFactory;
+import javax.swing.DefaultListCellRenderer;
+import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
 import javax.swing.JLabel;
+import javax.swing.JList;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
@@ -30,9 +35,37 @@ import javax.swing.border.BevelBorder;
 import javax.swing.plaf.basic.BasicToolBarUI;
 
 import com.mr.apps.JNordVpnManager.Starter;
-import com.mr.apps.JNordVpnManager.commandInterfaces.Command;
+import com.mr.apps.JNordVpnManager.commandInterfaces.base.Command;
 import com.mr.apps.JNordVpnManager.gui.components.JResizedIcon;
 import com.mr.apps.JNordVpnManager.utils.String.StringFormat;
+
+@SuppressWarnings("serial")
+class ComboBoxIconListRenderer extends DefaultListCellRenderer
+{
+   Command cmd = null;
+
+   public ComboBoxIconListRenderer(Command cmd)
+   {
+      this.cmd = cmd;
+   }
+
+   @Override
+   public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus)
+   {
+      JLabel label = (JLabel) super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+
+      // Get icon to use for the list item value
+      Icon icon = cmd.getImageIcon((String) value);
+
+      // Get toolTip to use for the list item value
+      String toolTip = cmd.getToolTip((String) value);
+
+      // Set properties
+      label.setIcon(icon);
+      label.setToolTipText(toolTip);
+      return label;
+   }
+}
 
 @SuppressWarnings("serial")
 public class GuiCommandsToolBar extends JPanel implements ActionListener
@@ -106,6 +139,7 @@ public class GuiCommandsToolBar extends JPanel implements ActionListener
          JPanel customizeButton = makeToolBarCustomizeButton(tbCustomize, 0, customizePopUpMenuAdd);
          m_toolBar.add(customizeButton);
          
+         boolean bAddTimeSlider = false;
          for (int i = 0; i < commandsToolbarList.size(); i++)
          {
             Command cmd = commandsToolbarList.get(i);
@@ -121,6 +155,11 @@ public class GuiCommandsToolBar extends JPanel implements ActionListener
                   JPanel checkBox = makeCommandCheckBox(cmd, customizePopUpMenu);
                   m_toolBar.add(checkBox);
                }
+               else if (cmd.getType() == Command.TYPE_COMBOBOX)
+               {
+                  JPanel comboBox = makeCommandComboBox(cmd, customizePopUpMenu);
+                  m_toolBar.add(comboBox);
+               }
                else
                {
                   Starter._m_logError.LoggingError(10997,
@@ -130,11 +169,27 @@ public class GuiCommandsToolBar extends JPanel implements ActionListener
                }
                cmd.updateUI();
 
+               if (cmd.getId().equals(Command.VPN_CMD_TIMER_CONNECT))
+               {
+                  bAddTimeSlider = true;
+               }
+               else if (cmd.getId().equals(Command.VPN_CMD_TIMER_RECONNECT))
+               {
+                  bAddTimeSlider = true;
+               }
+
                // Add the Customize Command
                tbCustomize = new Command();
                customizeButton = makeToolBarCustomizeButton(tbCustomize, i+1, customizePopUpMenuAdd);
                m_toolBar.add(customizeButton);
             }
+         }
+
+         if (true == bAddTimeSlider)
+         {
+            // For Timer commands add the timer slider
+            JPanelConnectTimer timeSlider = new JPanelConnectTimer();
+            m_toolBar.add(timeSlider);
          }
 
          // Update User Preferences
@@ -165,6 +220,11 @@ public class GuiCommandsToolBar extends JPanel implements ActionListener
             {
                // CheckBox (label)
                cmdId = ((JLabel)cmdObject).getName();
+            }
+            else if (cmdObject instanceof JComboBox)
+            {
+               // ComboBox (label)
+               cmdId = ((JComboBox<?>)cmdObject).getName();
             }
             else
             {
@@ -300,6 +360,8 @@ public class GuiCommandsToolBar extends JPanel implements ActionListener
     * 
     * @param cmd
     *           is the command
+    * @param customizePopUpMenu
+    *           is the pop up menu with the list of available commands
     * @return the created button
     */
    private JPanel makeCommandButton(Command cmd, JPopupMenu customizePopUpMenu)
@@ -311,7 +373,7 @@ public class GuiCommandsToolBar extends JPanel implements ActionListener
       button.setToolTipText(cmd.getToolTip());
       button.setActionCommand(cmd.getId());
       button.setName(cmd.getId());
-      button.setIcon(JResizedIcon.getIcon(cmd.getIconUrl(), JResizedIcon.IconSize.MEDIUM));
+      button.setIcon(cmd.getImageIcon());
       button.setBorder(BorderFactory.createRaisedSoftBevelBorder());
       button.addActionListener(this);
       cmd.setComponent(button);
@@ -324,10 +386,50 @@ public class GuiCommandsToolBar extends JPanel implements ActionListener
    }
    
    /**
+    * Create a Command Button.
+    * 
+    * @param cmd
+    *           is the command
+    * @param customizePopUpMenu
+    *           is the pop up menu with the list of available commands
+    * @return the created button
+    */
+   private JPanel makeCommandComboBox(Command cmd, JPopupMenu customizePopUpMenu)
+   {
+      JPanel jPanel = createPanel(cmd);
+
+      // Create the Button
+      JComboBox<Object> comboBox = new JComboBox<Object>();
+      comboBox.setRenderer(new ComboBoxIconListRenderer(cmd));
+      for (String statusId : cmd.getStatusIds())
+      {
+         String sLabel = cmd.getLabel(statusId);
+         if (null != sLabel)
+         {
+            comboBox.addItem(sLabel);
+         }
+      }
+      comboBox.setToolTipText(cmd.getToolTip());
+      comboBox.setActionCommand(cmd.getId());
+      comboBox.setName(cmd.getId());
+      comboBox.setBorder(BorderFactory.createRaisedSoftBevelBorder());
+      comboBox.addActionListener(this);
+      cmd.setComponent(comboBox);
+
+      // add the pop up menu with the list of available commands
+      comboBox.setComponentPopupMenu(customizePopUpMenu);
+
+      jPanel.add(comboBox);
+      return jPanel;
+   }
+   
+   /**
     * Create a CheckBox.
     * 
     * @param cmd
     *           is the command
+    * @param customizePopUpMenu
+    *           is the pop up menu with the list of available commands
     * @return the created checkBox
     */
    private JPanel makeCommandCheckBox(Command cmd, JPopupMenu customizePopUpMenu)
@@ -342,7 +444,7 @@ public class GuiCommandsToolBar extends JPanel implements ActionListener
       cmd.setComponent(checkBox);
 
       JLabel jLabel = new JLabel();
-      jLabel.setIcon(JResizedIcon.getIcon(cmd.getIconUrl(), JResizedIcon.IconSize.MEDIUM));
+      jLabel.setIcon(cmd.getImageIcon());
       jLabel.setToolTipText(cmd.getToolTip());
 
       // add the pop up menu with the list of available commands
@@ -405,15 +507,16 @@ public class GuiCommandsToolBar extends JPanel implements ActionListener
       }
    }
 
-   @Override
-   public void actionPerformed(ActionEvent e) {
-      String cmdId = e.getActionCommand();
+   public static Object execute(String cmdId, ActionEvent e)
+   {
+      Object rc = null;
 
+      // get the command
       Command cmd = Command.getObject(cmdId);
       if (null != cmd)
       {
          Starter._m_logError.TraceDebug("Execute selected Command: " + cmd.getCommand());
-         cmd.execute(e);
+         rc = cmd.execute(e);
       }
       else
       {
@@ -421,5 +524,12 @@ public class GuiCommandsToolBar extends JPanel implements ActionListener
                "Command not defined",
                "The command with Id '" + cmdId + "' is not defined!");
       }
+      return rc;
+   }
+
+   @Override
+   public void actionPerformed(ActionEvent e) {
+      String cmdId = e.getActionCommand();
+      execute(cmdId, e);
    }
 }

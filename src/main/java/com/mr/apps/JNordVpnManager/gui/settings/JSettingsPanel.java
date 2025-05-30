@@ -23,6 +23,7 @@ import java.util.regex.Pattern;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
@@ -133,6 +134,24 @@ public class JSettingsPanel extends JPanel
                settingsField.setJPanelComponent(listField);
             }
          }
+         else if (settingsField.getElementType().startsWith("C"))
+         {
+            String[] saList = getList(settingsField.getElementType());
+            if (null == saList)
+            {
+               Starter._m_logError.LoggingError(10500, "Error in ComboBox definition", "List values cannot be parsed. Check definition: " + settingsField.getElementType());
+            }
+            else
+            {
+               JComboBox<String> comboBox = new JComboBox<String>(saList);
+               int idx = getListIndex(saList, valueField);
+               comboBox.setSelectedIndex(idx);
+               if (settingsField.getMnemonic() > 0) label.setDisplayedMnemonic(settingsField.getMnemonic());
+               label.setLabelFor(comboBox);
+               add(comboBox, gbc);
+               settingsField.setJPanelComponent(comboBox);
+            }
+         }
          else
          {
             Starter._m_logError.LoggingAbend(10997,
@@ -233,6 +252,11 @@ public class JSettingsPanel extends JPanel
          int idx = getListIndex(getList(fieldClass.getElementType()), value);
          ((JList<?>) field).setSelectedIndex(idx);
       }
+      else if (fieldClass.getElementType().startsWith("C"))
+      {
+         int idx = getListIndex(getList(fieldClass.getElementType()), value);
+         ((JComboBox<?>) field).setSelectedIndex(idx);
+      }
       else
       {
          // should not happen
@@ -303,6 +327,10 @@ public class JSettingsPanel extends JPanel
       {
          return ((JList<?>) field).getSelectedValue().toString();
       }
+      else if (fieldClass.getElementType().startsWith("C"))
+      {
+         return ((JComboBox<?>) field).getSelectedItem().toString();
+      }
       else
       {
          // should not happen
@@ -322,7 +350,7 @@ public class JSettingsPanel extends JPanel
     */
    private String[] getList(String def)
    {
-      Pattern pattern = Pattern.compile("L\\[([^]]*)\\]", Pattern.CASE_INSENSITIVE);
+      Pattern pattern = Pattern.compile("[LC]\\[([^]]*)\\]", Pattern.CASE_INSENSITIVE);
       Matcher matcher = pattern.matcher(def);
       boolean matchFound = matcher.find();
       if (matchFound)

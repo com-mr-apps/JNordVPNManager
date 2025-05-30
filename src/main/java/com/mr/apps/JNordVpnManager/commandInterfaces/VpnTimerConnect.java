@@ -10,10 +10,13 @@ package com.mr.apps.JNordVpnManager.commandInterfaces;
 
 import java.awt.event.ActionEvent;
 import javax.swing.JButton;
+
+import com.mr.apps.JNordVpnManager.commandInterfaces.base.Command;
+import com.mr.apps.JNordVpnManager.commandInterfaces.base.CommandInterface;
 import com.mr.apps.JNordVpnManager.gui.GuiStatusLine;
 import com.mr.apps.JNordVpnManager.gui.connectLine.JPanelConnectTimer;
 
-public class VpnTimerConnect extends CoreCommandClass
+public class VpnTimerConnect implements CommandInterface
 {
    public static boolean execute(ActionEvent e)
    {
@@ -49,9 +52,7 @@ public class VpnTimerConnect extends CoreCommandClass
       JButton button = (JButton)cmd.getComponent();
       if (null != button)
       {
-         button.setEnabled(cmd.isEnabled());
-         button.setIcon(cmd.getIconImage());
-         cmd.updateToolTipUI(cmd.getToolTip());
+         cmd.updateCommandGadgetUI();
       }
       return true;
    }

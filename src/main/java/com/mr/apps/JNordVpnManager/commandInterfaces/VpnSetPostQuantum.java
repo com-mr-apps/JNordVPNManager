@@ -12,12 +12,14 @@ import java.awt.event.ActionEvent;
 
 import javax.swing.JCheckBox;
 import com.mr.apps.JNordVpnManager.Starter;
+import com.mr.apps.JNordVpnManager.commandInterfaces.base.Command;
+import com.mr.apps.JNordVpnManager.commandInterfaces.base.CommandInterface;
 import com.mr.apps.JNordVpnManager.utils.String.StringFormat;
 
 /**
  * Command VPN Settings - Post-Quantum
  */
-public class VpnSetPostQuantum extends CoreCommandClass
+public class VpnSetPostQuantum implements CommandInterface
 {
    public static Object get()
    {
@@ -49,22 +51,18 @@ public class VpnSetPostQuantum extends CoreCommandClass
       {
          if (null != cb)
          {
-            String sToolTip = cmd.getToolTip();
             // The feature is not compatible with a dedicated IP, Meshnet, and OpenVPN/NORDWHISPER.
             if ((true == Starter.getCurrentAccountData(false).isVpnDedicatedIdIsActive()) ||
                 (false == Starter.getCurrentSettingsData().getTechnology(false).equals("NORDLYNX")) ||
                 (true == StringFormat.string2boolean(Starter.getCurrentSettingsData().getMeshnet(false))))
             {
-               cb.setSelected(false);
-               cb.setEnabled(false);
-               sToolTip = "Post-Quantum is not compatible with a dedicated IP, Meshnet, and OpenVPN/NORDWHISPER.";
+               cmd.setStatusUI(Command.DISABLED_STATUS_KEY);
             }
             else
             {
-               cb.setSelected((boolean)get());
-               cb.setEnabled(true);
+               cmd.setStatusUI(((true == (boolean)get()) ? "TRUE" : "FALSE"));
             }
-            cmd.updateToolTipUI(sToolTip);
+            cmd.updateCommandGadgetUI();
          }
       }
       return true;

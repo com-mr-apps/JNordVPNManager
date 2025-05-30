@@ -17,6 +17,7 @@ import java.awt.Frame;
 import java.awt.MouseInfo;
 import java.awt.Point;
 import java.awt.PointerInfo;
+import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
@@ -27,7 +28,9 @@ import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
+import javax.swing.ScrollPaneConstants;
 import javax.swing.Timer;
 import javax.swing.border.BevelBorder;
 import javax.swing.border.LineBorder;
@@ -133,7 +136,11 @@ public class JModalDialog extends JDialog implements ActionListener
       messageText.setFont(messageText.getFont().deriveFont(Font.ITALIC));
       messageText.setText(Wrap.wrap(msg.replaceAll("\t", "   "), 200, null, true, null, "   "));
       messageText.setEditable(false);
-      m_messagePanel.add(messageText, BorderLayout.CENTER);
+      JScrollPane jsp = new JScrollPane(messageText);
+      m_messagePanel.add(jsp, BorderLayout.CENTER);
+      jsp.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+      jsp.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED);
+      messageText.setCaretPosition(0);
 
       // optional copy (drag&drop) file region
       if (null != currentDirectory)
@@ -167,20 +174,34 @@ public class JModalDialog extends JDialog implements ActionListener
          messageText.setCaretColor(Color.white);
       }
 
-      setMinimumSize(new Dimension(120, 20));
       pack();
-
-      // place the dialog [buttons] in the near of the mouse pointer
-      Point parloc = new Point(0, 0);
-      PointerInfo pointerInfo = MouseInfo.getPointerInfo();
-      Point mousePos = pointerInfo.getLocation();
-      if (mousePos != null)
+      
+      // limit dialog size to max 1/2 of screen size
+      Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+      Dimension frameSize = this.getSize();
+      if ((frameSize.height * 2) > screenSize.height || ((frameSize.width * 2) > screenSize.width))
       {
-         setLocation(Math.max(0, parloc.x + mousePos.x - this.getWidth() / 2), parloc.y + mousePos.y - this.getHeight() + 20);
+         frameSize = new Dimension((int) (Math.min((screenSize.width / 2), (frameSize.height * 2))), Math.min((int) (screenSize.height / 2), (frameSize.width * 2)));
+         int x = (int) (frameSize.width / 3);
+         int y = (int) (frameSize.height / 3);
+         this.setBounds(x, y, frameSize.width, frameSize.height);
       }
       else
       {
-         setLocation(parloc.x + 30, parloc.y + 30);
+         setMinimumSize(new Dimension(120, 20));
+
+         // place the dialog [buttons] in the near of the mouse pointer
+         Point parloc = new Point(0, 0);
+         PointerInfo pointerInfo = MouseInfo.getPointerInfo();
+         Point mousePos = pointerInfo.getLocation();
+         if (mousePos != null)
+         {
+            setLocation(Math.max(0, parloc.x + mousePos.x - this.getWidth() / 2), parloc.y + mousePos.y - this.getHeight() + 20);
+         }
+         else
+         {
+            setLocation(parloc.x + 30, parloc.y + 30);
+         }
       }
    }
 

@@ -82,15 +82,20 @@ public class Location
          // invalid location
          Starter._m_logError.TraceDebug("Temp. No Location: " + this.toString());         
       }
-      if (cityId == 1)
-      {
-         // internal generated temporary city location
-         Starter._m_logError.TraceDebug("Temp. City Location: " + this.toString());         
-      }
       else if (cityId == 0)
       {
          // internal generated temporary country location
          Starter._m_logError.TraceDebug("Temp. Country Location: " + this.toString());         
+      }
+      else if (cityId == 1)
+      {
+         // internal generated temporary city location
+         Starter._m_logError.TraceDebug("Temp. City Location: " + this.toString());         
+      }
+      else if (cityId == 2)
+      {
+         // internal generated temporary region location
+         Starter._m_logError.TraceDebug("Temp. Region Location: " + this.toString());         
       }
       else
       {
@@ -154,9 +159,9 @@ public class Location
          city = sa[0].trim();
          country = sa[1].trim();
       }
-      else
+      else if (1 == sa.length)
       {
-         country = serverKey.trim();
+         country = sa[0].trim();
       }
       return new String[] {city, country};
    }
@@ -301,7 +306,7 @@ public class Location
                break;
             case 1 :
             default:
-               serverName = getCityName();
+               serverName = getCityName() + " [" + getCountryName() + "]";
          }
       }
       else
@@ -394,7 +399,7 @@ public class Location
          switch (m_cityId)
          {
             case 0 :
-               labelName = m_countryName;
+               labelName = m_countryName + " [" + m_countryName + "]";
                break;
             case 1 :
             default:

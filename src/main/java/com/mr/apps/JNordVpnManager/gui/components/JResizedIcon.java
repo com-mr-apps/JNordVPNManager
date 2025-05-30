@@ -21,9 +21,12 @@ public class JResizedIcon extends ImageIcon
    // definitions for resource icons
    public static enum IconUrls
    {
+      ICON_APPLICATION                 ("icon.png"),
       ICON_MOUSE_POINTER_MAP_LOCATION  ("mp_MapSelectLocation.png"),
       ICON_ADD                         ("i_Add.png"),
       ICON_MINUS                       ("i_Minus.png"),
+      ICON_SHOW                        ("i_Show.png"),
+      ICON_HIDE                        ("i_Hide.png"),
       ICON_BUTTON_START                ("i_ButtonStart.png"),
       ICON_BUTTON_STOP                 ("i_ButtonStop.png"),
       ICON_COLOR                       ("i_Color.png"),
@@ -56,6 +59,7 @@ public class JResizedIcon extends ImageIcon
       ICON_VPN_SET_POSTQUANTUM         ("i_VpnSetPostQuantum.png"),
       ICON_VPN_SET_THREATPROTECTION    ("i_VpnSetThreatprotection.png"),
       ICON_VPN_SET_VIRTUALLOCATION     ("i_VpnSetVirtualLocation.png"),
+      ICON_VPN_TECHNOLOGY              ("i_VpnTechnology.png"),
       ICON_WINDOW_COLLAPSE             ("i_WindowCollapse.png"),
       ICON_WINDOW_EXPAND               ("i_WindowExpand.png"),
       ICON_APP_PREF_AUTOCONNECT        ("i_AppPrefAutoConnect.png"),
@@ -83,6 +87,7 @@ public class JResizedIcon extends ImageIcon
       SMALL             (12),
       MEDIUM            (24),
       LARGE             (36),
+      HUGE             (256),
       LOGO              (80);
     
        private int size;

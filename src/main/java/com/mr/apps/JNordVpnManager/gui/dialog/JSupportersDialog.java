@@ -19,6 +19,7 @@ import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JEditorPane;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.ScrollPaneConstants;
@@ -57,7 +58,8 @@ public class JSupportersDialog extends JFrame
          + "<h3>What Is The JNordVPN Manager Supporters Edition</h3>"
          + "<h4>Features that are available exclusive for <em>my supporters</em>:</h4>"
          + "<ul>"
-         + "<li><strong>Allow-, Whitelist</strong>: Manage allowlist for ports and subnets.</li>"
+         + "<li><strong>Connect to Hosts</strong>: Select a specific host out of a list of over 7000 VPN hosts.</li>"
+         + "<li><strong>Allow-, Whitelist</strong>: Manage allowlist for ports and subnets (<a href=\"https://github.com/com-mr-apps/JNordVPNManager/wiki/Allow-List--%E2%80%90-Whitelist\">Documentation on GitHub Wiki</a>).</li>"
          + "<li><strong>Timer Reconnect</strong>: Time-based automatic [re]connect to VPN location.</li>"
          + "</ul>"
          + "<h4>...planned features are:</h4>"
@@ -65,7 +67,7 @@ public class JSupportersDialog extends JFrame
          + "<li><strong>NordVPN Recommended Servers</strong>: Filter Servers by load index (speed) from NordVPN recommended servers list. <a href=\"https://github.com/com-mr-apps/JNordVPNManager/issues/16\">[GitHub Issue #16]</a>.</li>"
          + "<li><strong>Meshnet</strong>: NordVPN Meshnet Settings/Management. <a href=\"https://github.com/com-mr-apps/JNordVPNManager/issues/18\">[GitHub Issue #18]</a>.</li>"
          + "<li><strong>Cycle Connections</strong>: Time-based automatic [re]connect to a list of defined VPN servers.</li>"
-         + "<li><strong>Speedtest</strong>: check/show connection speeds.</li>"
+         + "<li><strong>Speedtest</strong>: Search fastest server by own speed test in a city/country/region.</li>"
          + "<li><em>...further suggestions are welcome...</em>"
          + "</ul>"
 
@@ -77,6 +79,8 @@ public class JSupportersDialog extends JFrame
          + "<li><a href=\"https://buymeacoffee.com/3dprototyping\">Donations and Supporters Membership at Buy Me A Coffee</a></li>"
          + "<li><a href=\"https://github.com/sponsors/com-mr-apps\">GitHub Sponsorship</a></li>"
          + "</ul>";
+
+   private static JSupportersDialog m_supportersDialog = null;
 
    /**
     * Initiates a new Supporters Dialog
@@ -122,14 +126,22 @@ public class JSupportersDialog extends JFrame
       jpTitle.setLayout(new BoxLayout(jpTitle, BoxLayout.X_AXIS));
       jpTitle.setBackground(new Color(247, 217, 146));
       JLogo coffeeLogo = new JLogo(JLogo.Logos.LOGO_BUYMEACOFFEE);
-      JLogo mrLogo = new JLogo(JLogo.Logos.LOGO_MR);
+      JLogo mrLogo = new JLogo(JLogo.Logos.LOGO_GITHUB_SPONSORS);
 
       JEditorPane editorTitlePane = new JEditorPane();
       editorTitlePane.setEditable(false);
       editorTitlePane.setCaretColor(new Color(247, 217, 146)); // hide caret
       editorTitlePane.setBackground(new Color(247, 217, 146));
       editorTitlePane.setContentType("text/html");
-      editorTitlePane.setText("<html><body style=\"background-color: #f7d992 \">" + m_htmlTitleText + "</body></html>");
+      if (null == sFeature)
+      {
+         editorTitlePane.setText("<html><body style=\"background-color: #f7d992 \">" + m_htmlTitleText + "</body></html>");
+      }
+      else
+      {
+         editorTitlePane.setText("<html><body style=\"background-color: #f7d992; color: blue \"><p>The selected functionality is part of the Supporter Edition as Feature: <strong>" + sFeature + "</strong>.<br>"
+         + "<em>To become a supporter and get a copy of the add-on library together with supporters specific content, I invite you to visit me at Buy Me A Coffee</em>.</p></body></html>");
+      }
       editorTitlePane.setCaretPosition(0);
       editorTitlePane.addHyperlinkListener(new HyperlinkListener() {
          @Override
@@ -142,6 +154,8 @@ public class JSupportersDialog extends JFrame
          }
       });
 
+      JPanel jpButton = new JPanel();
+      jpButton.setLayout(new BoxLayout(jpButton, BoxLayout.Y_AXIS));
       JButton jbManageSupporterEdition = new JButton("Manage Supporter Edition");
       jbManageSupporterEdition.addActionListener(new ActionListener()
       {
@@ -150,17 +164,20 @@ public class JSupportersDialog extends JFrame
             UtilCallbacks.cbManageSupporterEdition();
          }
       });
+      jpButton.add(jbManageSupporterEdition);
+      JLabel jlVersion = new JLabel("Add-On Version: " + Starter.getAddOnLibVersion());
+      jpButton.add(jlVersion);
       
       // Layout title
       jpTitle.add(mrLogo);
       jpTitle.add(Box.createRigidArea(new Dimension(20, 0)));
       jpTitle.add(Box.createHorizontalGlue());
-      if (Starter.isSupporterEdition())
+      if (Starter.isSupporterEdition() || null != sFeature)
       {
          jpTitle.add(editorTitlePane);
          jpTitle.add(Box.createHorizontalGlue());
       }
-      jpTitle.add(jbManageSupporterEdition);
+      jpTitle.add(jpButton);
       jpTitle.add(Box.createRigidArea(new Dimension(20, 0)));
       jpTitle.add(coffeeLogo);
 
@@ -197,6 +214,17 @@ public class JSupportersDialog extends JFrame
       this.setPreferredSize(new Dimension(800,400));
       this.setLocationRelativeTo(null);
       this.pack();
+
+      // keep only one dialog open
+      if (null != m_supportersDialog)
+      {
+         m_supportersDialog.close();
+      }
+      m_supportersDialog = this;
+
+      /*
+       *  Show Dialog
+       */
       this.setVisible(true);
    }
 
@@ -206,6 +234,7 @@ public class JSupportersDialog extends JFrame
     */
    private void close()
    {
+      m_supportersDialog = null;
       Starter.setSkipWindowGainedFocus();
       this.setVisible(false);
       this.dispose();

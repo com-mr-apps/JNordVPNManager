@@ -14,7 +14,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 import com.mr.apps.JNordVpnManager.Starter;
-import com.mr.apps.JNordVpnManager.commandInterfaces.Command;
+import com.mr.apps.JNordVpnManager.commandInterfaces.base.Command;
 import com.mr.apps.JNordVpnManager.geotools.CurrentLocation;
 import com.mr.apps.JNordVpnManager.gui.connectLine.GuiCommandsToolBar;
 import com.mr.apps.JNordVpnManager.gui.dialog.JModalDialog;
@@ -67,6 +67,18 @@ Commands:
  */
 public class NvpnSettingsData
 {
+   // Settings Constant Options
+   public static final String                      SETTINGS_OPT_EMPTY                      = "";
+   public static final String                      SETTINGS_OPT_DISABLED                   = "disabled";
+   public static final String                      SETTINGS_OPT_ENABLED                    = "enabled";
+   public static final String                      SETTINGS_OPT_TCP                        = "TCP";
+   public static final String                      SETTINGS_OPT_UDP                        = "UDP";
+   public static final String                      SETTINGS_OPT_WEBTUNNEL                  = "Webtunnel";
+   public static final String                      SETTINGS_OPT_NORDWHISPER                = "NORDWHISPER";
+   public static final String                      SETTINGS_OPT_NORDLYNX                   = "NORDLYNX";
+   public static final String                      SETTINGS_OPT_OPENVPN                    = "OPENVPN";
+
+   // Settings Id's
    private static final String                     POST_QUANTUM                            = "POST_QUANTUM";
    private static final String                     VIRTUAL_LOCATION                        = "VIRTUAL_LOCATION";
    private static final String                     LAN_DISCOVERY                           = "LAN_DISCOVERY";
@@ -88,26 +100,26 @@ public class NvpnSettingsData
    private static final String                     ALLOWLIST_SUBNETS                       = "ALLOWLIST_SUBNETS";
    private static final String                     ALLOWLIST_PORTS                         = "ALLOWLIST_PORTS";
 
-   private static String                           DEFAULT_NVPN_SETTINGS_AUTOCONNECT       = "";
-   private static String                           DEFAULT_NVPN_SETTINGS_TPLITE            = "disabled";
-   private static String                           DEFAULT_NVPN_SETTINGS_DNS               = "";
-   private static String                           DEFAULT_NVPN_SETTINGS_FIREWALL          = "enabled";
-   private static String                           DEFAULT_NVPN_SETTINGS_FWMARK            = "";
-   private static String                           DEFAULT_NVPN_SETTINGS_IPV6              = "disabled";
-   private static String                           DEFAULT_NVPN_SETTINGS_OBFUSCATE         = "disabled";
-   private static String                           DEFAULT_NVPN_SETTINGS_ROUTING           = "enabled";
-   private static String                           DEFAULT_NVPN_SETTINGS_ANALYTICS         = "disabled";
-   private static String                           DEFAULT_NVPN_SETTINGS_KILLSWITCH        = "disabled";
-   private static String                           DEFAULT_NVPN_SETTINGS_NOTIFY            = "enabled";
-   private static String                           DEFAULT_NVPN_SETTINGS_TRAY              = "enabled";
-   private static String                           DEFAULT_NVPN_SETTINGS_TECHNOLOGY        = "NORDLYNX";
-   private static String                           DEFAULT_NVPN_SETTINGS_MESHNET           = "disabled";
-   private static String                           DEFAULT_NVPN_SETTINGS_LAN_DISCOVERY     = "disabled";
-   private static String                           DEFAULT_NVPN_SETTINGS_VIRTUAL_LOCATION  = "enabled";
-   private static String                           DEFAULT_NVPN_SETTINGS_POST_QUANTUM      = "disabled";
-   private static String                           DEFAULT_NVPN_SETTINGS_PROTOCOL          = "UDP";
-   private static String                           DEFAULT_NVPN_SETTINGS_ALLOWLIST_SUBNETS = "";
-   private static String                           DEFAULT_NVPN_SETTINGS_ALLOWLIST_PORTS   = "";
+   private static String                           DEFAULT_NVPN_SETTINGS_AUTOCONNECT       = SETTINGS_OPT_EMPTY;
+   private static String                           DEFAULT_NVPN_SETTINGS_TPLITE            = SETTINGS_OPT_DISABLED;
+   private static String                           DEFAULT_NVPN_SETTINGS_DNS               = SETTINGS_OPT_EMPTY;
+   private static String                           DEFAULT_NVPN_SETTINGS_FIREWALL          = SETTINGS_OPT_ENABLED;
+   private static String                           DEFAULT_NVPN_SETTINGS_FWMARK            = SETTINGS_OPT_EMPTY;
+   private static String                           DEFAULT_NVPN_SETTINGS_IPV6              = SETTINGS_OPT_DISABLED;
+   private static String                           DEFAULT_NVPN_SETTINGS_OBFUSCATE         = SETTINGS_OPT_DISABLED;
+   private static String                           DEFAULT_NVPN_SETTINGS_ROUTING           = SETTINGS_OPT_ENABLED;
+   private static String                           DEFAULT_NVPN_SETTINGS_ANALYTICS         = SETTINGS_OPT_DISABLED;
+   private static String                           DEFAULT_NVPN_SETTINGS_KILLSWITCH        = SETTINGS_OPT_DISABLED;
+   private static String                           DEFAULT_NVPN_SETTINGS_NOTIFY            = SETTINGS_OPT_ENABLED;
+   private static String                           DEFAULT_NVPN_SETTINGS_TRAY              = SETTINGS_OPT_ENABLED;
+   private static String                           DEFAULT_NVPN_SETTINGS_TECHNOLOGY        = SETTINGS_OPT_NORDLYNX;
+   private static String                           DEFAULT_NVPN_SETTINGS_MESHNET           = SETTINGS_OPT_DISABLED;
+   private static String                           DEFAULT_NVPN_SETTINGS_LAN_DISCOVERY     = SETTINGS_OPT_DISABLED;
+   private static String                           DEFAULT_NVPN_SETTINGS_VIRTUAL_LOCATION  = SETTINGS_OPT_ENABLED;
+   private static String                           DEFAULT_NVPN_SETTINGS_POST_QUANTUM      = SETTINGS_OPT_DISABLED;
+   private static String                           DEFAULT_NVPN_SETTINGS_PROTOCOL          = SETTINGS_OPT_UDP;
+   private static String                           DEFAULT_NVPN_SETTINGS_ALLOWLIST_SUBNETS = SETTINGS_OPT_EMPTY;
+   private static String                           DEFAULT_NVPN_SETTINGS_ALLOWLIST_PORTS   = SETTINGS_OPT_EMPTY;
 
    private String                                  m_autoConnect                           = DEFAULT_NVPN_SETTINGS_AUTOCONNECT;
    private String                                  m_tplite                                = DEFAULT_NVPN_SETTINGS_TPLITE;
@@ -165,9 +177,9 @@ public class NvpnSettingsData
       m_settingsPanelFieldsMap.put(NOTIFY, new JSettingsPanelField("Enable Notifications", "B", KeyEvent.VK_N, 1, this.getNotify(true)));
       m_settingsPanelFieldsMap.put(OBFUSCATE, new JSettingsPanelField("Enable Obfuscation (OPENVPN)", "B", KeyEvent.VK_O, 1, this.getObfuscate(true)));
       m_settingsPanelFieldsMap.put(POST_QUANTUM, new JSettingsPanelField("Enable Post-Quantum Encryption", "B", KeyEvent.VK_Q, 1, this.getPostQuantum(true)));
-      m_settingsPanelFieldsMap.put(PROTOCOL, new JSettingsPanelField("Protocol (OPENVPN)", "L[TCP,UDP]", KeyEvent.VK_P, 1, this.getProtocol(true)));
+      m_settingsPanelFieldsMap.put(PROTOCOL, new JSettingsPanelField("Protocol (OPENVPN)", "L["+SETTINGS_OPT_TCP+","+SETTINGS_OPT_UDP+"]", KeyEvent.VK_P, 1, this.getProtocol(true)));
       m_settingsPanelFieldsMap.put(ROUTING, new JSettingsPanelField("Enable traffic routing", "B", KeyEvent.VK_R, 1, this.getRouting(true)));
-      m_settingsPanelFieldsMap.put(TECHNOLOGY, new JSettingsPanelField("Technology", "L[NORDLYNX,OPENVPN,NORDWHISPER]", KeyEvent.VK_T, 1, this.getTechnology(true)));
+      m_settingsPanelFieldsMap.put(TECHNOLOGY, new JSettingsPanelField("Technology", "C["+SETTINGS_OPT_NORDLYNX+","+SETTINGS_OPT_OPENVPN+","+SETTINGS_OPT_NORDWHISPER+"]", KeyEvent.VK_T, 1, this.getTechnology(true)));
       m_settingsPanelFieldsMap.put(TPLITE, new JSettingsPanelField("Threat Protection Lite", "B", -1, 1, this.getTplite(true)));
       m_settingsPanelFieldsMap.put(TRAY, new JSettingsPanelField("Enable Tray Icon", "B", -1, 1, this.getTray(true)));
       m_settingsPanelFieldsMap.put(VIRTUAL_LOCATION, new JSettingsPanelField("Enable Virtual Locations", "B", KeyEvent.VK_V, 1, this.getVirtualLocation(true)));
@@ -310,28 +322,28 @@ public class NvpnSettingsData
       this.m_protocol = values.get("Protocol");
 
       // initialize settings - dependent of technology they may not be set
-      if (null == this.m_obfuscate) this.m_obfuscate = "disabled";
-      if (true == m_technology.equals("NORDLYNX"))
+      if (null == this.m_obfuscate) this.m_obfuscate = SETTINGS_OPT_DISABLED;
+      if (true == m_technology.equals(SETTINGS_OPT_NORDLYNX))
       {
          // NORDLYNX protocol is fix UDP
-         this.m_protocol = "UDP";
+         this.m_protocol = SETTINGS_OPT_UDP;
       }
-      else if (true == m_technology.equals("NORDWHISPER"))
+      else if (true == m_technology.equals(SETTINGS_OPT_NORDWHISPER))
       {
          // NORDWHISPER protocol is fix Webtunnel
-         this.m_protocol = "Webtunnel";
+         this.m_protocol = SETTINGS_OPT_WEBTUNNEL;
       }
-      if (null == this.m_protocol) this.m_protocol = "UDP";
-      if (null == this.m_postQuantum) this.m_postQuantum = "disabled";
+      if (null == this.m_protocol) this.m_protocol = SETTINGS_OPT_UDP;
+      if (null == this.m_postQuantum) this.m_postQuantum = SETTINGS_OPT_DISABLED;
 
-      // the following values contain the text "disabled" it they are not set -> reset them
-      if (this.m_autoConnect.equals("disabled")) this.m_autoConnect = "";
-      if (this.m_dns.equals("disabled")) this.m_dns = "";
-      if (this.m_fwmark.equals("disabled")) this.m_fwmark = "";
+      // the following values contain the text SETTINGS_OPT_DISABLED it they are not set -> reset them
+      if (this.m_autoConnect.equals(SETTINGS_OPT_DISABLED)) this.m_autoConnect = SETTINGS_OPT_EMPTY;
+      if (this.m_dns.equals(SETTINGS_OPT_DISABLED)) this.m_dns = SETTINGS_OPT_EMPTY;
+      if (this.m_fwmark.equals(SETTINGS_OPT_DISABLED)) this.m_fwmark = SETTINGS_OPT_EMPTY;
 
       // TODO: Workaround! 'nordvpn settings' does not return the server that was set - it returns only enabled or
       // disabled :(
-      if (this.m_autoConnect.equals("enabled"))
+      if (this.m_autoConnect.equals(SETTINGS_OPT_ENABLED))
       {
          // Workaround: get the server from User Prefs
          this.m_autoConnect = getAutoConnect(true);
@@ -377,7 +389,7 @@ public class NvpnSettingsData
                if (field.getElementType().startsWith("B"))
                {
                   // we get "0" and "1" back from settings panel - I work here with disabled/enabled
-                  value = (StringFormat.string2boolean(value)) ? "enabled" : "disabled";
+                  value = (StringFormat.string2boolean(value)) ? SETTINGS_OPT_ENABLED : SETTINGS_OPT_DISABLED;
                }
                String line = key + " " + value;
                writer.write(line);
@@ -454,9 +466,9 @@ public class NvpnSettingsData
    {
       if (null == data) return false;
 
-      if (data.equals("disabled")) data = "";
+      if (data.equals(SETTINGS_OPT_DISABLED)) data = SETTINGS_OPT_EMPTY;
       // TODO: Workaround! 'nordvpn settings' does not return the server that was set - it returns only enabled or disabled :(
-      if (data.equals("enabled"))
+      if (data.equals(SETTINGS_OPT_ENABLED))
       {
          // Workaround: get the server from User Prefs
          this.m_autoConnect = getAutoConnect(true);
@@ -546,7 +558,7 @@ public class NvpnSettingsData
    {
       if (null == data) return false;
 
-      if (data.equals("disabled")) data = "";
+      if (data.equals(SETTINGS_OPT_DISABLED)) data = SETTINGS_OPT_EMPTY;
       if (true == def)
       {
          Preferences prefs = Preferences.userRoot().node("com/mr/apps/JNordVpnManager/nordvpn");
@@ -625,7 +637,7 @@ public class NvpnSettingsData
    {
       if (null == data) return false;
 
-      if (data.equals("disabled")) data = "";
+      if (data.equals(SETTINGS_OPT_DISABLED)) data = SETTINGS_OPT_EMPTY;
       if (true == def)
       {
          Preferences prefs = Preferences.userRoot().node("com/mr/apps/JNordVpnManager/nordvpn");
@@ -872,12 +884,12 @@ public class NvpnSettingsData
          if (!StringFormat.equalBoolean(m_obfuscate, data))
          {
             // call set command
-            if (false == m_technology.equals("OPENVPN"))
+            if (false == m_technology.equals(SETTINGS_OPT_OPENVPN))
             {
                Starter._m_logError.LoggingWarning(10500,
                      "Setting can not be changed",
                      "The Setting 'Obfuscated' is only supported for VPN Technology 'OPENVPN'.");
-               m_obfuscate = "disabled";
+               m_obfuscate = SETTINGS_OPT_DISABLED;
                GuiCommandsToolBar.updateCommand(Command.VPN_SET_OBFUSCATE);
             }
             else
@@ -971,6 +983,7 @@ public class NvpnSettingsData
                // ok -> we need to re-read the settings
                getNordVPNSettings();
                setRequiresReconnect();
+               GuiCommandsToolBar.updateCommand(Command.VPN_SET_TECHNOLOGY);
                GuiCommandsToolBar.updateCommand(Command.VPN_SET_OBFUSCATE);
                GuiCommandsToolBar.updateCommand(Command.VPN_SET_POSTQUANTUM);
                return true;
@@ -1118,7 +1131,7 @@ public class NvpnSettingsData
    {
       if (null == data) return false;
       if ((true == Starter.getCurrentAccountData(false).isVpnDedicatedIdIsActive()) ||
-          (false == m_technology.equals("NORDLYNX")) ||
+          (false == m_technology.equals(SETTINGS_OPT_NORDLYNX)) ||
           (true == StringFormat.string2boolean(Starter.getCurrentSettingsData().getMeshnet(false))))
       {
          // post-quantum is not compatible with a dedicated IP, Meshnet, and OpenVPN/NORDWHISPER.
@@ -1152,15 +1165,15 @@ public class NvpnSettingsData
 
    public String getProtocol(boolean def)
    {
-      if (true == m_technology.equals("NORDLYNX"))
+      if (true == m_technology.equals(SETTINGS_OPT_NORDLYNX))
       {
          // NORDLYNX protocol is fix UDP - only OPENVPN supports TCP and UDP
-         return "UDP";
+         return SETTINGS_OPT_UDP;
       }
-      else if (true == m_technology.equals("NORDWHISPER"))
+      else if (true == m_technology.equals(SETTINGS_OPT_NORDWHISPER))
       {
          // NORDWHISPER protocol is fix Webtunnel - only OPENVPN supports TCP and UDP
-         return "Webtunnel";
+         return SETTINGS_OPT_WEBTUNNEL;
       }
 
       if (true == def)
@@ -1178,18 +1191,18 @@ public class NvpnSettingsData
    {
       if (null == data) return false;
 
-      if ((true == m_technology.equals("NORDVPN")) && (!data.equals("UDP")))
+      if ((true == m_technology.equals(SETTINGS_OPT_NORDLYNX)) && (!data.equals(SETTINGS_OPT_UDP)))
       {
          // NORDLYNX protocol is fix UDP - only OPENVPN supports TCP
-         data = "UDP";
+         data = SETTINGS_OPT_UDP;
          Starter._m_logError.LoggingWarning(10500,
                "Setting can not be changed",
                "The Setting 'Protocol' for VPN Technology NORDVPN is fix 'UDP'.");
       }
-      else if ((true == m_technology.equals("NORDWHISPER")) && (!data.equals("Webtunnel")))
+      else if ((true == m_technology.equals(SETTINGS_OPT_NORDWHISPER)) && (!data.equals(SETTINGS_OPT_WEBTUNNEL)))
       {
          // NORDWHISPER protocol is fix UDP - only OPENVPN supports TCP
-         data = "Webtunnel";
+         data = SETTINGS_OPT_WEBTUNNEL;
          Starter._m_logError.LoggingWarning(10500,
                "Setting can not be changed",
                "The Setting 'Protocol' for VPN Technology MORDWHISPER is fix 'Webtunnel'.");
@@ -1210,6 +1223,7 @@ public class NvpnSettingsData
             {
                m_protocol = data;
                setRequiresReconnect();
+               GuiCommandsToolBar.updateCommand(Command.VPN_SET_TECHNOLOGY);
                return true;
             }
          }
@@ -1244,7 +1258,7 @@ public class NvpnSettingsData
       {
          if (!m_allowlistSubnets.equalsIgnoreCase(data))
          {
-            // call set command
+            // TODO: call set Allowlist Subnets command
 //            NvpnCommands.???Settings(data);
 //            if (UtilSystem.getLastExitCode() == 0)
 //            {
@@ -1284,7 +1298,7 @@ public class NvpnSettingsData
       {
          if (!m_allowlistPorts.equalsIgnoreCase(data))
          {
-            // call set command
+            // TODO: call Allowlist Ports set command
 //            NvpnCommands.???Settings(data);
 //            if (UtilSystem.getLastExitCode() == 0)
 //            {
@@ -1462,7 +1476,7 @@ public class NvpnSettingsData
          if (false == locationTechnology.equals(m_technology))
          {
             changedSettings |= this.setTechnology(locationTechnology, false);
-            if (true == locationTechnology.equals("OPENVPN"))
+            if (true == locationTechnology.equals(SETTINGS_OPT_OPENVPN))
             {
                if (false == locationProtocol.equals(m_protocol))
                {
@@ -1473,11 +1487,11 @@ public class NvpnSettingsData
 
          if ((true == locationLegacyGroup.equals(NordVPNEnumGroups.legacy_obfuscated_servers)) && (!bObfuscate))
          {
-            changedSettings |= this.setObfuscate("Enable", false);            
+            changedSettings |= this.setObfuscate(SETTINGS_OPT_ENABLED, false);            
          }
          else if ((false == locationLegacyGroup.equals(NordVPNEnumGroups.legacy_obfuscated_servers)) && (bObfuscate))
          {
-            changedSettings |= this.setObfuscate("Disable", false);            
+            changedSettings |= this.setObfuscate(SETTINGS_OPT_DISABLED, false);            
          }
       }
       else
@@ -1494,16 +1508,16 @@ public class NvpnSettingsData
             if (rc == 0)
             {
                // change settings, keep filter legacy group
-               changedSettings |= this.setTechnology("OPENVPN", false);
-               changedSettings |= this.setProtocol("TCP", false);
-               changedSettings |= this.setObfuscate("Enable", false);
+               changedSettings |= this.setTechnology(SETTINGS_OPT_OPENVPN, false);
+               changedSettings |= this.setProtocol(SETTINGS_OPT_TCP, false);
+               changedSettings |= this.setObfuscate(SETTINGS_OPT_ENABLED, false);
             }
             else if (rc == 1)
             {
                // change settings, keep filter legacy group
-               changedSettings |= this.setTechnology("OPENVPN", false);
-               changedSettings |= this.setProtocol("UDP", false);
-               changedSettings |= this.setObfuscate("Enable", false);
+               changedSettings |= this.setTechnology(SETTINGS_OPT_OPENVPN, false);
+               changedSettings |= this.setProtocol(SETTINGS_OPT_UDP, false);
+               changedSettings |= this.setObfuscate(SETTINGS_OPT_ENABLED, false);
             }
             else if (rc == 2)
             {
@@ -1537,17 +1551,17 @@ public class NvpnSettingsData
             else if (rc == 1)
             {
                // change settings, keep Filter Legacy Group
-               changedSettings |= this.setObfuscate("Disabled", false);
+               changedSettings |= this.setObfuscate(SETTINGS_OPT_DISABLED, false);
             }
             else if (rc == 2)
             {
                // change settings, keep Filter Legacy Group
-               changedSettings |= this.setTechnology("NORDLYNX", false); // disables Obfuscate
+               changedSettings |= this.setTechnology(SETTINGS_OPT_NORDLYNX, false); // disables Obfuscate
             }
             else if (rc == 3)
             {
                // change settings, keep Filter Legacy Group
-               changedSettings |= this.setTechnology("NORDWHISPER", false); // disables Obfuscate
+               changedSettings |= this.setTechnology(SETTINGS_OPT_NORDWHISPER, false); // disables Obfuscate
             }
             else // rc = 4
             {

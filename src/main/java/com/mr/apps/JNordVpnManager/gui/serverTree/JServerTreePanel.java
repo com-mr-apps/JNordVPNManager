@@ -39,7 +39,7 @@ import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 
 import com.mr.apps.JNordVpnManager.Starter;
-import com.mr.apps.JNordVpnManager.commandInterfaces.CallCommand;
+import com.mr.apps.JNordVpnManager.commandInterfaces.base.CallCommand;
 import com.mr.apps.JNordVpnManager.geotools.CurrentLocation;
 import com.mr.apps.JNordVpnManager.geotools.Location;
 import com.mr.apps.JNordVpnManager.geotools.UtilLocations;
@@ -50,12 +50,15 @@ import com.mr.apps.JNordVpnManager.gui.components.JResizedIcon;
 import com.mr.apps.JNordVpnManager.gui.components.JResizedIcon.IconSize;
 import com.mr.apps.JNordVpnManager.gui.components.JResizedIcon.IconUrls;
 import com.mr.apps.JNordVpnManager.gui.dialog.JModalDialog;
+import com.mr.apps.JNordVpnManager.gui.dialog.JSupportersDialog;
 import com.mr.apps.JNordVpnManager.nordvpn.NvpnCallbacks;
 import com.mr.apps.JNordVpnManager.nordvpn.NvpnGroups;
 import com.mr.apps.JNordVpnManager.nordvpn.NvpnGroups.NordVPNEnumGroups;
 import com.mr.apps.JNordVpnManager.nordvpn.NvpnServers;
 import com.mr.apps.JNordVpnManager.nordvpn.NvpnSettingsData;
+import com.mr.apps.JNordVpnManager.nordvpn.NvpnStatusData;
 import com.mr.apps.JNordVpnManager.nordvpn.NvpnTechnologies;
+import com.mr.apps.JNordVpnManager.utils.UtilCallbacks;
 import com.mr.apps.JNordVpnManager.utils.UtilPrefs;
 import com.mr.apps.JNordVpnManager.utils.UtilSystem;
 import com.mr.apps.JNordVpnManager.utils.String.StringFormat;
@@ -75,6 +78,7 @@ public class JServerTreePanel extends JPanel implements TreeSelectionListener
    private Color                      m_buttonDefaultFgColor  = null;
    private static boolean             m_statusInitServerList  = true;
    private static boolean             m_skipValueChangedEvent = false;
+   private static Object              m_currentSelectedTreeNode = null;
 
    NordVPNEnumGroups[]                m_iaRegions             = {
          NordVPNEnumGroups.all_regions,
@@ -250,6 +254,7 @@ public class JServerTreePanel extends JPanel implements TreeSelectionListener
             updateFilterTreeCB(false);
             UtilMapGeneration.zoomServerLayer();
             GuiMenuBar.updateQuickConnectMenuButton();
+            GuiMenuBar.updateRegionConnectMenuButton();
          }
       });
 
@@ -354,6 +359,8 @@ public class JServerTreePanel extends JPanel implements TreeSelectionListener
          update = (days >= autoUpdateIntervall) ? true : false;
       }
       Starter._m_logError.TraceIni("Auto Update Server List [from Application Preferences]: " + update);
+
+      m_currentSelectedTreeNode = null;
 
       DefaultMutableTreeNode root = createServerTree(update);
       DefaultTreeModel model = new MyModel(root);
@@ -781,8 +788,9 @@ public class JServerTreePanel extends JPanel implements TreeSelectionListener
       if (m_skipValueChangedEvent) return; // avoid recursive calls
 
       Object selectedPathElement = m_tree.getLastSelectedPathComponent();
-      if (selectedPathElement == m_tree.getModel().getRoot() || selectedPathElement == null) return;
-      
+      if (selectedPathElement == m_tree.getModel().getRoot() || selectedPathElement == null || selectedPathElement == m_currentSelectedTreeNode) return;
+      m_currentSelectedTreeNode = selectedPathElement;
+
       if (selectedPathElement instanceof JCityNode)
       {
          JCityNode node = (JCityNode) selectedPathElement;
@@ -802,9 +810,41 @@ public class JServerTreePanel extends JPanel implements TreeSelectionListener
       }
       else if (selectedPathElement instanceof JServerNode)
       {
-         if (Starter.isSupporterEdition())
+         JServerNode node = (JServerNode) selectedPathElement;
+         VpnServer vpnServer = node.getVpnServer();
+         NvpnStatusData csd = Starter.getCurrentStatusData();
+         
+         CurrentLocation cLoc = Starter.getCurrentServer(true);
+         cLoc.getVpnServer().setServerHostName(csd.getHostname());
+         if ((null == cLoc) || (false == cLoc.isConnected()) || 
+             (false == vpnServer.getServer().equals(cLoc.getServerNordVPN())))
          {
-            CallCommand.invokeAddonMethod("AddonManager", "connectVPNServer", new Object[]{selectedPathElement}, new Class<?>[]{Object.class});
+            // ping only, if selected node is not the current connected VPN server
+            String msg = UtilCallbacks.cbPingServer(node.getVpnServer().getServerHostName());
+            if (null != msg)
+            {
+               // OK - show ping result
+               String sMsgText = "Average Round-Trip Time (RTT) " + 
+                  (((null == cLoc) || (false == cLoc.isConnected())) ?
+                     "w/o VPN " :
+                     "through connected VPN Server '" + cLoc.getServerName() + "' ") + "to host '" + vpnServer.getServerName() + "': " + msg + "ms.";
+               int rc = JModalDialog.showYesNoDialog("Connect to Server?", sMsgText);
+               if (rc == JOptionPane.YES_OPTION)
+               {
+                  if (Starter.isSupporterEdition())
+                  {
+                     // (re)connect to VPN Host Server
+                     CallCommand.invokeAddonMethod("AddonManager",
+                           "connectVPNServer",
+                           new Object[] {selectedPathElement},
+                           new Class<?>[] {Object.class});
+                  }
+                  else
+                  {
+                     new JSupportersDialog("Connect to hosts");
+                  }
+               }
+            }
          }
       }
       else if (selectedPathElement instanceof JCountryNode)

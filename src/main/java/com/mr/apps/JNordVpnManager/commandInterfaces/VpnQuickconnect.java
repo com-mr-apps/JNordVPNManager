@@ -10,11 +10,15 @@ package com.mr.apps.JNordVpnManager.commandInterfaces;
 
 import java.awt.event.ActionEvent;
 
+import javax.swing.JButton;
+
+import com.mr.apps.JNordVpnManager.commandInterfaces.base.Command;
+import com.mr.apps.JNordVpnManager.commandInterfaces.base.CommandInterface;
 import com.mr.apps.JNordVpnManager.gui.dialog.JModalDialog;
 import com.mr.apps.JNordVpnManager.nordvpn.NvpnCommands;
 import com.mr.apps.JNordVpnManager.utils.UtilSystem;
 
-public class VpnQuickconnect extends CoreCommandClass
+public class VpnQuickconnect implements CommandInterface
 {
    public static boolean execute(ActionEvent e)
    {
@@ -35,7 +39,11 @@ public class VpnQuickconnect extends CoreCommandClass
 
    public static boolean updateUI(Command cmd)
    {
-      cmd.updateToolTipUI(cmd.getToolTip());
+      JButton button = (JButton)cmd.getComponent();
+      if (null != button)
+      {
+         cmd.updateCommandGadgetUI();
+      }
       return true;
    }
 }

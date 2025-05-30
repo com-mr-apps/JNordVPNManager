@@ -22,8 +22,8 @@ import javax.swing.event.MenuEvent;
 import javax.swing.event.MenuListener;
 
 import com.mr.apps.JNordVpnManager.Starter;
-import com.mr.apps.JNordVpnManager.commandInterfaces.CallCommand;
-import com.mr.apps.JNordVpnManager.commandInterfaces.Command;
+import com.mr.apps.JNordVpnManager.commandInterfaces.base.CallCommand;
+import com.mr.apps.JNordVpnManager.commandInterfaces.base.Command;
 import com.mr.apps.JNordVpnManager.geotools.CurrentLocation;
 import com.mr.apps.JNordVpnManager.geotools.Location;
 import com.mr.apps.JNordVpnManager.geotools.UtilLocations;
@@ -47,6 +47,7 @@ import com.mr.apps.JNordVpnManager.nordvpn.NvpnSettingsData;
 import com.mr.apps.JNordVpnManager.utils.UtilCallbacks;
 import com.mr.apps.JNordVpnManager.utils.UtilPrefs;
 import com.mr.apps.JNordVpnManager.utils.UtilSystem;
+import com.mr.apps.JNordVpnManager.utils.String.StringFormat;
 
 public class GuiMenuBar
 {
@@ -55,6 +56,7 @@ public class GuiMenuBar
    private static JMenuItem               m_menuItemReConnect            = null;
    private static JMenuItem               m_menuItemDisConnect           = null;
    private static JMenuItem               m_menuItemQuickConnect         = null;
+   private static JMenuItem               m_menuItemRegionConnect        = null;
    private static JMenuItem               m_menuItemLogInOut             = null;
    private static JMenuItem               m_menuItemConsole              = null;
 
@@ -95,7 +97,7 @@ public class GuiMenuBar
       {
          public void actionPerformed(ActionEvent e)
          {
-            /* boolean isVisible = */ Starter.switchConsoleWindow();
+            Starter.switchConsoleWindow();
          }
       });
       fileMenu.add(m_menuItemConsole);
@@ -267,22 +269,25 @@ public class GuiMenuBar
       {
          public void actionPerformed(ActionEvent e)
          {
-            String msg = NvpnCommands.connect(null);
-            if (UtilSystem.isLastError())
-            {
-               // KO
-               msg = UtilSystem.getLastError();
-               JModalDialog.showError("NordVPN Connect", msg);
-            }
-            else
-            {
-               // OK
-               JModalDialog.showMessage("NordVPN Connect", msg);
-            }
+            GuiCommandsToolBar.execute(Command.VPN_CMD_QUICKCONNECT, e);
          }
       });
       updateQuickConnectMenuButton();
       connectMenu.add(m_menuItemQuickConnect);
+      
+      m_menuItemRegionConnect = new JMenuItem("VPN Region Connect");
+      m_menuItemRegionConnect.addActionListener(new ActionListener()
+      {
+         public void actionPerformed(ActionEvent e)
+         {
+//            if (NvpnGroups.getCurrentFilterRegion().equals(NvpnGroups.NordVPNEnumGroups.all_regions)) return; // should not happen, because RegionConnect is not enabled 
+            // Create a temp. Region Location (cityId==2)
+            CurrentLocation loc = new CurrentLocation (new Location (NvpnGroups.getCurrentFilterRegion().toString(), NvpnGroups.getCurrentFilterRegion().toString(), 0.0, 0.0, 2), null);
+            NvpnCallbacks.executeConnect(loc, "NordVPN Region Connect", "NordVPN Region Connect");
+         }
+      });
+      updateRegionConnectMenuButton();
+      connectMenu.add(m_menuItemRegionConnect);
       
       m_menuItemDisConnect = new JMenuItem("VPN Disconnect");
       m_menuItemDisConnect.addActionListener(new ActionListener()
@@ -359,11 +364,11 @@ public class GuiMenuBar
       infoMenu.add(infoMenuItem);
 
       // -------------------------------------------------------------------------------------
-      // Menu --- Experimental ---
-      JMenu experimentalMenu = new JMenu("Experimental");
-      menuBar.add(experimentalMenu);
+      // Menu --- Diagnostics ---
+      JMenu diagnosticsMenu = new JMenu("Diagnostics");
+      menuBar.add(diagnosticsMenu);
 
-      JMenuItem speedTest = new JMenuItem("speedTest");
+      JMenuItem speedTest = new JMenuItem("Download Speed Test");
       speedTest.addActionListener(new ActionListener()
       {
          public void actionPerformed(ActionEvent e)
@@ -371,7 +376,27 @@ public class GuiMenuBar
             UtilSpeedtest.speedTest(Starter.getCurrentServer(true));
          }
       });
-      experimentalMenu.add(speedTest);
+      diagnosticsMenu.add(speedTest);
+
+      JMenuItem checkLogFiles = new JMenuItem("Check log files");
+      checkLogFiles.addActionListener(new ActionListener()
+      {
+         public void actionPerformed(ActionEvent e)
+         {
+            StringBuffer sb =new StringBuffer();
+            sb.append("### journalctl -u nordvpnd" + "\n");
+            sb.append(UtilSystem.runWithPrivileges("journalctl -u nordvpnd"));
+            if (Starter.isSnapInstallation())
+            {
+               sb.append("\n###\n### tail ~/snap/nordvpn/common/.config/nordvpn/cli.log" + "\n");
+               sb.append(UtilSystem.runCommand("/bin/bash", "-c", "tail -n30 ~/snap/nordvpn/common/.config/nordvpn/cli.log"));
+               sb.append("\n###\n### tail ~/snap/nordvpn/common/.cache/nordvpn/norduserd.log" + "\n");
+               sb.append(UtilSystem.runCommand("/bin/bash", "-c", "tail -n30 ~/snap/nordvpn/common/.cache/nordvpn/norduserd.log"));
+            }
+            JModalDialog.showMessage("Diagnostic: Log Files", sb.toString());
+         }
+      });
+      diagnosticsMenu.add(checkLogFiles);
 
       // -------------------------------------------------------------------------------------
       menuBar.add(Box.createHorizontalGlue());
@@ -431,22 +456,38 @@ public class GuiMenuBar
       {
          // enable Disconnect command
          m_menuItemDisConnect.setEnabled(true);
+         m_menuItemDisConnect.setToolTipText("Disconnect from VPN Server.");
       }
       else // not connected
       {
          // disable Disconnect command
          m_menuItemDisConnect.setEnabled(false);
+         m_menuItemDisConnect.setToolTipText("Not connected.");
+      }
+   }
+
+   public static void updateRegionConnectMenuButton()
+   {
+      if (NvpnGroups.getCurrentFilterRegion().equals(NvpnGroups.NordVPNEnumGroups.all_regions))
+      {
+         m_menuItemRegionConnect.setEnabled(false);
+         m_menuItemRegionConnect.setToolTipText("Select a Region Filter to connect to.");
+      }
+      else
+      {
+         m_menuItemRegionConnect.setEnabled(true);
+         m_menuItemRegionConnect.setToolTipText("Execute: nordvpn connect " + NvpnGroups.getCurrentFilterRegion());
       }
    }
 
    public static void updateQuickConnectMenuButton()
    {
-      // update Quick connect command Tool tip - display actual command dependent on Region and Group
-      String optGroup = (NvpnGroups.getCurrentFilterRegion().equals(NvpnGroups.NordVPNEnumGroups.all_regions)) ? "--group " + NvpnGroups.getCurrentFilterGroup().name() : NvpnGroups.getCurrentFilterRegion().name();
-      String sToolTip = "Click here for: nordvpn connect " + optGroup;
+      // update Quick connect command Tool tip - display actual command dependent on Group (obfuscated settings)
+      String optGroup = (StringFormat.string2boolean(Starter.getCurrentSettingsData().getObfuscate(false)) || NvpnGroups.getCurrentFilterGroup().equals(NordVPNEnumGroups.legacy_obfuscated_servers)) ? "" : "--group " + NvpnGroups.getCurrentFilterGroup().name();
+      String sToolTip = "Execute: nordvpn connect " + optGroup;
       m_menuItemQuickConnect.setToolTipText(sToolTip);
       Command cmd = Command.getObject(Command.VPN_CMD_QUICKCONNECT);
-      cmd.setToolTip(sToolTip);
+      cmd.setCurrentToolTip(sToolTip);
       GuiCommandsToolBar.updateCommand(Command.VPN_CMD_QUICKCONNECT);
    }
 

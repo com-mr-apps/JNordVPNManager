@@ -20,9 +20,6 @@ import java.awt.event.WindowEvent;
 import java.awt.event.WindowFocusListener;
 import java.io.File;
 import java.io.IOException;
-import java.net.URL;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -35,7 +32,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.WindowConstants;
 import org.geotools.swing.JMapFrame;
 
-import com.mr.apps.JNordVpnManager.commandInterfaces.CallCommand;
+import com.mr.apps.JNordVpnManager.commandInterfaces.base.CallCommand;
 import com.mr.apps.JNordVpnManager.geotools.CurrentLocation;
 import com.mr.apps.JNordVpnManager.geotools.Location;
 import com.mr.apps.JNordVpnManager.geotools.UtilLocations;
@@ -44,6 +41,8 @@ import com.mr.apps.JNordVpnManager.geotools.VpnServer;
 import com.mr.apps.JNordVpnManager.gui.GuiMapArea;
 import com.mr.apps.JNordVpnManager.gui.GuiMenuBar;
 import com.mr.apps.JNordVpnManager.gui.GuiStatusLine;
+import com.mr.apps.JNordVpnManager.gui.components.JResizedIcon;
+import com.mr.apps.JNordVpnManager.gui.components.JResizedIcon.IconSize;
 import com.mr.apps.JNordVpnManager.gui.connectLine.GuiConnectLine;
 import com.mr.apps.JNordVpnManager.gui.connectLine.JPanelConnectTimer;
 import com.mr.apps.JNordVpnManager.gui.dialog.JAboutScreen;
@@ -82,7 +81,6 @@ public class Starter extends JFrame
    public static UtilLogErr        _m_logError                = null;
 
    private static final String     APPLICATION_TITLE          = "JNordVPN Manager [" + COPYRIGHT_STRING + "]";
-   private static final String     APPLICATION_ICON_IMAGE     = "resources/icons/icon.png";
 
    private static JFrame           m_mainFrame                = null;
    private static JServerTreePanel m_serverListPanel          = null;
@@ -91,8 +89,7 @@ public class Starter extends JFrame
    private static JSplashScreen    m_splashScreen             = null;
    private static GuiStatusLine    m_statusLine               = null;
    private static GuiConnectLine   m_connectLine              = null;
-   private static JCustomConsole   m_consoleWindow            = null;
-
+   private static boolean          m_isSnapInstallation       = false;
    private static String           m_nordvpnVersion           = "n/a";
    private static Cursor           m_applicationDefaultCursor = null;
    private static int              m_cursorChangeAllowed      = 0;  // counter for nested calls - 0 is allow
@@ -115,38 +112,67 @@ public class Starter extends JFrame
     */
    public static void main(String[] args) throws Exception
    {
-      _m_logError = new UtilLogErr(UtilPrefs.getLogfileName(), null, null);
-      if (System.getenv("COM_MR_APPS_DEBUG") != null)
+      if (args != null && args.length != 0 && args[0].equalsIgnoreCase("Console"))
       {
-         // ..for debug
-         m_skipFocusGainedForDebug = true;
+         /*
+          * Console... (started by main application as separate process)
+          */
+         _m_logError = new UtilLogErr(null, null, null);
+         SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+               JCustomConsole consoleWindow = new JCustomConsole(args[1]);
+               ImageIcon imageIcon = JResizedIcon.getIcon(JResizedIcon.IconUrls.ICON_APPLICATION, IconSize.MEDIUM);
+               Image appImage = imageIcon.getImage();
+               consoleWindow.setIconImage(appImage);
+            }
+         });
       }
-
-      // initialize and open console window  
-      // TODO: may cause memory corruption.. should be opened in the Swing Event thread - but synchronization then is not ok! Requires redesign in separate application!!!
-      ExecutorService threads = Executors.newFixedThreadPool(2);
-      threads.execute(() -> consoleWindowInit());
-      _m_logError.LoggingInfo("JNordVPN Manager launched...");
-
-      // -------------------------------------------------------------------------------
-      // Check, if Nordvpn is installed
-      // -------------------------------------------------------------------------------
-      if (!NvpnCommands.isInstalled())
+      else
       {
-         // TranslatorAbend() calls cleanupAndExit()
-         _m_logError.LoggingAbend(10998,
-               "Backend NordVPN not installed.",
-               "'nordvpn' command not found.\nCheck installation of NordVPN!\n\nExit program.");
-      }
+         /*
+          * Main application...
+          */
+         UtilLogErr.setConsoleOutput(true);
+         _m_logError = new UtilLogErr(UtilPrefs.getLogfileName(), null, null);
 
-      // -------------------------------------------------------------------------------
-      // Start the Application
-      // -------------------------------------------------------------------------------
-      SwingUtilities.invokeLater(new Runnable() {
-         public void run() {
-            new Starter();
+         long pid = ProcessHandle.current().pid();
+
+         // Start the Console process...
+         String javaprog = new File(System.getProperty("java.home"), "bin/java").toString();
+         String classpath = System.getProperty("java.class.path");
+         ProcessBuilder consoleBuilder = new ProcessBuilder(javaprog, "-cp", classpath, "com.mr.apps.JNordVpnManager.Starter", "Console", StringFormat.long2String(pid, "0"));
+         consoleBuilder.start();
+
+         _m_logError.LoggingInfo("JNordVPN Manager launched...");
+
+         if (System.getenv("COM_MR_APPS_DEBUG") != null)
+         {
+            // ..for debug
+            m_skipFocusGainedForDebug = true;
          }
-       });
+
+         // -------------------------------------------------------------------------------
+         // Check, if Nordvpn is installed
+         // -------------------------------------------------------------------------------
+         String nvpncmd = NvpnCommands.isInstalled();
+         if (null == nvpncmd)
+         {
+            // TranslatorAbend() calls cleanupAndExit()
+            _m_logError.LoggingAbend(10998,
+                  "Backend NordVPN not installed.",
+                  "'nordvpn' command not found.\nCheck installation of NordVPN!\n\nExit program.");
+         }
+         m_isSnapInstallation = nvpncmd.startsWith("/snap/bin");
+
+         // -------------------------------------------------------------------------------
+         // Start the Application
+         // -------------------------------------------------------------------------------
+         SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+               new Starter();
+            }
+         });
+      }
    }
 
    /**
@@ -157,7 +183,15 @@ public class Starter extends JFrame
       super();
 
       // add add-ons classpath
-      m_isSupporterEdition = CallCommand.initClassLoader(UtilPrefs.getAddonsPath());
+      try
+      {
+         m_isSupporterEdition = CallCommand.initClassLoader(UtilPrefs.getAddonsPath());
+      }
+      catch (Exception e)
+      {
+         _m_logError.LoggingExceptionMessage(4, 10998, e);
+         m_isSupporterEdition = false;
+      }
 
       // initialize and open Splash screen
       splashScreenInit();
@@ -187,14 +221,6 @@ public class Starter extends JFrame
    {
       m_splashScreen = new JSplashScreen(this, "JNordVPN Manager loading...");
       m_splashScreen.setVisible(true);
-   }
-
-   /**
-    * Create the Console output Window
-    */
-   private static void consoleWindowInit()
-   {
-      m_consoleWindow = new JCustomConsole();
    }
 
    /**
@@ -260,6 +286,12 @@ public class Starter extends JFrame
       return;
    }
 
+   private static void programExit(int rc)
+   {
+      Starter._m_logError.shutdownErrorHandling();
+      System.exit(rc);
+   }
+
    /**
     * Cleanup and exit.
     * @param quiet if true, suppress confirm dialog
@@ -268,7 +300,7 @@ public class Starter extends JFrame
    {
       if (null == m_mainFrame)
       {
-         System.exit(0);
+         programExit(0);
       }
 
       // check for automatic disconnect at program end
@@ -283,7 +315,7 @@ public class Starter extends JFrame
             // exit confirmed
             cleanUp();
             _m_logError.LoggingInfo("... exit JNordVPN Manager.");
-            System.exit(0);
+            programExit(0);
          }
       }
       else
@@ -304,7 +336,7 @@ public class Starter extends JFrame
             _m_logError.LoggingInfo("... exit JNordVPN Manager.");
 
             // exit program with last error code (or 0)
-            System.exit(_m_logError.getLastErrCode());
+            programExit(_m_logError.getLastErrCode());
          }
       }
    }
@@ -371,8 +403,11 @@ public class Starter extends JFrame
                      setWaitCursor();
                      setCursorCanChange(false);
 
+                     // TODO: Optimization -> do updates only, when settings changed
+
+                     // re-read NordVPN Settings data
                      m_nvpnSettingsData = new NvpnSettingsData();
-                     // update dependent GUI elements based on current account data and 
+                     // re-read NordVPN Account data and update dependent GUI elements based on current account data
                      updateAccountData(true);
                      // update the status line, commands menu and world map current server layer
                      updateCurrentServer();
@@ -397,8 +432,7 @@ public class Starter extends JFrame
       });
 
       // set application icon in Task bar
-      URL appIconUrl = Starter.class.getResource(APPLICATION_ICON_IMAGE);
-      ImageIcon imageIcon = new ImageIcon(appIconUrl);
+      ImageIcon imageIcon = JResizedIcon.getIcon(JResizedIcon.IconUrls.ICON_APPLICATION, IconSize.MEDIUM);
       Image appImage = imageIcon.getImage();
       try
       {
@@ -526,7 +560,7 @@ public class Starter extends JFrame
             CurrentLocation loc = getCurrentServer(true);
             if (null != loc)
             {
-               m_splashScreen.setStatus("GUI Auto Connect to " + loc.getToolTip());
+               m_splashScreen.setStatus("GUI Auto Connect to " + loc.getToolTip() + "...");
                if (true == NvpnCallbacks.executeConnect(loc, null, "JNordVPN Manager Auto Connect"))
                {
                   // successfully connected
@@ -608,7 +642,7 @@ public class Starter extends JFrame
     * For Dynamic connection (Tree/Map selection) - Filter Group, Technology, Protocol from current GUI and NordVPN settings.
     * 
     * @param bStatic
-    *           is <code>true</code> for FilterGroup (Obfuscate handling) and Technology/Protocol set fix (static) in
+    *           is <code>true</code> for Static connections, where FilterGroup (Obfuscate handling) and Technology/Protocol are set fix (static) in
     *           the location object
     * @return the current or recent location
     */
@@ -617,9 +651,9 @@ public class Starter extends JFrame
       // first check, if we are logged in
       if (null == m_nvpnAccountData || false == m_nvpnAccountData.isLoggedIn()) return null;
 
-      CurrentLocation loc = null;
+      CurrentLocation ret_loc = null;
 
-      int legacyGroup = NordVPNEnumGroups.legacy_group_unknown.getId();
+      int iLegacyGroup = NordVPNEnumGroups.legacy_group_unknown.getId();
       String sVpnTechnology = null;
       String sVpnProtocol = null;
       if (null == m_currentServer)
@@ -647,13 +681,13 @@ public class Starter extends JFrame
          }
          Location l = UtilLocations.getLocation(serverId);
          if (null == l) l = new Location (serverId, 0, 0, -1);
-         loc = new CurrentLocation(l, vs);
-         loc.setConnected(false);
+         ret_loc = new CurrentLocation(l, vs);
+         ret_loc.setConnected(false);
+
          if (saParts.length == 4)
          {
-            // get (optional) connection data from preferences 'server@country,group,technology,protocol' and add them to loc
-            int iLegacyGroup = Integer.valueOf(saParts[1]);
-            legacyGroup = (iLegacyGroup == NordVPNEnumGroups.legacy_group_unknown.getId()) ? NvpnGroups.getCurrentFilterGroup().getId() : iLegacyGroup;
+            // get (optional) connection data from preferences 'server@country,group,technology,protocol' for static locations
+            iLegacyGroup = Integer.valueOf(saParts[1]);
             sVpnTechnology = saParts[2];
             sVpnProtocol = saParts[3];
          }
@@ -666,39 +700,35 @@ public class Starter extends JFrame
          if (null != current_loc)
          {
             // create current Location with CSV server location/host data for connect command
-            loc = new CurrentLocation(current_loc, m_currentServer.getVpnServer());
+            ret_loc = new CurrentLocation(current_loc, m_currentServer.getVpnServer());
             // !! Supported Technologies and Groups lists stored in VpnServer are not updated for temp. locations - but we don't need this information on CurrentLocation
          }
          else
          {
             // CSV Location not available yet - create a temporary current location object for connect command
-            loc = new CurrentLocation(m_currentServer);
+            ret_loc = new CurrentLocation(m_currentServer);
          }
-         loc.setConnected(bIsConnected);
-         legacyGroup = m_currentServer.getLegacyGroup();
+         ret_loc.setConnected(bIsConnected);
+
+         // get connection data from current Location for static locations
+         iLegacyGroup = m_currentServer.getLegacyGroup();
          sVpnTechnology = m_currentServer.getVpnTechnology();
          sVpnProtocol = m_currentServer.getVpnProtocol();
       }
 
       if (bStatic)
       {
-         // static (use Data for connection from current location)
-         loc.setLegacyGroup((legacyGroup == NordVPNEnumGroups.legacy_group_unknown.getId()) ? NvpnGroups.getCurrentFilterGroup().getId() : legacyGroup);
-         loc.setVpnTechnology(sVpnTechnology);
-         loc.setVpnProtocol(sVpnProtocol);
+         // static Location (use connection data from current location)
+         ret_loc.makeStatic(iLegacyGroup, sVpnTechnology, sVpnProtocol);
       }
       else
       {
-         // dynamic (use Data for connection from current GUI Filter - and - settings)
-         loc.setLegacyGroup(null);
-         loc.setVpnTechnology(null);
-         loc.setVpnProtocol(null);
+         // dynamic Location (use connection data from current GUI Filter - and - settings)
+         ret_loc.makeDynamic();
       }
       
-      Starter._m_logError.TraceDebug("(getCurrentServer) loc=" + loc);
-      return loc;
-
-      // return only a "real" location
+      Starter._m_logError.TraceDebug("(getCurrentServer) loc=" + ret_loc);
+      return ret_loc;
    }
 
    public static void updateStatusLine()
@@ -824,14 +854,9 @@ public class Starter extends JFrame
       m_aboutScreen.show();
    }
 
-   public static boolean switchConsoleWindow()
+   public static void switchConsoleWindow()
    {
-      return m_consoleWindow.switchConsoleVisible();
-   }
-   
-   public static boolean getConsoleVisible()
-   {
-      return m_consoleWindow.getConsoleVisible();
+      _m_logError.sendConsoleCommand(JCustomConsole.CONSOLE_CMD_SWITCH);
    }
 
    public static JFrame getMainFrame()
@@ -884,6 +909,11 @@ public class Starter extends JFrame
       return m_isSupporterEdition;
    }
 
+   public static boolean isSnapInstallation()
+   {
+      return m_isSnapInstallation;
+   }
+
    public static boolean isInstallMode()
    {
       return m_installMode;
@@ -901,8 +931,8 @@ public class Starter extends JFrame
          _m_logError.enableTraceFlag(UtilLogErr.TRACE_Init);
          _m_logError.enableTraceFlag(UtilLogErr.TRACE_Cmd);
 
-         // open the console window (if not already open)
-         if (false == getConsoleVisible()) switchConsoleWindow();
+         // ensure the console window is open
+         _m_logError.sendConsoleCommand("#SHOW#");
 
          // check if the local desktop file already exists (in the real home directory!)
          String targetFile = myHome + "/Desktop/JNordVpnManager_Java.desktop";
@@ -934,7 +964,7 @@ public class Starter extends JFrame
             // desktop file exists
             _m_logError.TraceIni("...'JNordVPNManager_Java.desktop' file found in '~/Desktop directory'.");
             if (JModalDialog.showConfirm("JNordVPNManager (install).\n" +
-                  "Please restart the application by the 'JNordVPNManager_Java.desktop' file found in your '~/Desktop directory'.\n\n" +
+                  "Please restart the application by using the 'JNordVPNManager_Java.desktop' file found in your '~/Desktop directory'.\n\n" +
                   "If you continue direct from Snap, the application has no permission to execute any 'nordvpn' command, but you have access to the console and Info menus to check messages and errors.\n\n" +
                   "Please confirm to exit the program.") == JOptionPane.YES_OPTION)
             {
