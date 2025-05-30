@@ -237,14 +237,6 @@ public class UtilSystem
       m_lastErrorMessage = null;
       m_lastExitCode = -1;
 
-      if (Starter.isInstallMode() && command[0].equalsIgnoreCase("nordvpn"))
-      {
-         // in install mode (snap 'strict') we cannot execute the nordvpn command
-         m_lastErrorMessage = "JNordVPN Manager runs in installer mode, command cannot be executed!";
-         m_lastExitCode = -1;
-         return m_lastErrorMessage;
-      }
-
       Starter.setWaitCursor();
       ProcessBuilder processBuilder = new ProcessBuilder();
       processBuilder.command(command);

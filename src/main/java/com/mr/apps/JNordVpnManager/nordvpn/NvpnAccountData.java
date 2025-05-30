@@ -44,14 +44,7 @@ public class NvpnAccountData
          {
             setFailed(true);
             msg = UtilSystem.getLastError() + "\n" + StringFormat.printString (msg, "<empty message>", "<null mwssage>");
-            if (Starter.isInstallMode())
-            {
-               Starter._m_logError.TraceCmd(msg);
-            }
-            else
-            {
-               JModalDialog.showError("NordVPN Account", msg);
-            }
+            JModalDialog.showError("NordVPN Account", msg);
          }
        }
       else

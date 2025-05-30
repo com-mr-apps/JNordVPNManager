@@ -95,7 +95,6 @@ public class Starter extends JFrame
    private static int              m_cursorChangeAllowed      = 0;  // counter for nested calls - 0 is allow
    private static boolean          m_skipWindowGainedFocus    = false;
    private static boolean          m_forceWindowGainedFocus   = false;
-   private static boolean          m_installMode              = false;
 
    private static CurrentLocation  m_currentServer            = null;
    private static NvpnStatusData   m_nvpnStatusData           = null;
@@ -112,7 +111,22 @@ public class Starter extends JFrame
     */
    public static void main(String[] args) throws Exception
    {
-      if (args != null && args.length != 0 && args[0].equalsIgnoreCase("Console"))
+      // -------------------------------------------------------------------------------
+      // Check, if we are called from snap...: 'strict' doesn't let us execute the 'nordvpn' command outside the snap
+      // if yes, ask to install a local desktop file that runs the jar directly (outside of the snap container)
+      // -> returns 'Installer mode' 
+      // -------------------------------------------------------------------------------
+      String myHome = checkSnapRunMode();
+      if (null != myHome)
+      {
+         SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+               install(myHome);
+            }
+         });
+      }
+
+      else if (args != null && args.length != 0 && args[0].equalsIgnoreCase("Console"))
       {
          /*
           * Console... (started by main application as separate process)
@@ -397,26 +411,23 @@ public class Starter extends JFrame
                {
                   m_forceWindowGainedFocus = false;
                   m_skipWindowGainedFocus = false;
-                  if (false == m_installMode)
-                  {
-                     _m_logError.TraceDebug("windowGainedFocus launched");
-                     setWaitCursor();
-                     setCursorCanChange(false);
+                  _m_logError.TraceDebug("windowGainedFocus launched");
+                  setWaitCursor();
+                  setCursorCanChange(false);
 
-                     // TODO: Optimization -> do updates only, when settings changed
+                  // TODO: Optimization -> do updates only, when settings changed
 
-                     // re-read NordVPN Settings data
-                     m_nvpnSettingsData = new NvpnSettingsData();
-                     // re-read NordVPN Account data and update dependent GUI elements based on current account data
-                     updateAccountData(true);
-                     // update the status line, commands menu and world map current server layer
-                     updateCurrentServer();
-                     // update the server tree (and world map all servers layer)
-                     updateFilterTreeCB(false);
+                  // re-read NordVPN Settings data
+                  m_nvpnSettingsData = new NvpnSettingsData();
+                  // re-read NordVPN Account data and update dependent GUI elements based on current account data
+                  updateAccountData(true);
+                  // update the status line, commands menu and world map current server layer
+                  updateCurrentServer();
+                  // update the server tree (and world map all servers layer)
+                  updateFilterTreeCB(false);
 
-                     Starter.setCursorCanChange(true);
-                     Starter.resetWaitCursor();
-                  }
+                  Starter.setCursorCanChange(true);
+                  Starter.resetWaitCursor();
                }
             }
          }
@@ -454,13 +465,6 @@ public class Starter extends JFrame
       m_splashScreen.setProgress(10);
 
       // -------------------------------------------------------------------------------
-      // Check, if we are called from snap...: 'strict' doesn't let us execute the 'nordvpn' command outside the snap
-      // if yes, ask to install a local desktop file that runs the jar directly (outside of the snap container)
-      // -> returns 'Installer mode' 
-      // -------------------------------------------------------------------------------
-      m_installMode = checkSnapRunMode();
-
-      // -------------------------------------------------------------------------------
       // Get the NordVPN version for handle supported features
       // -------------------------------------------------------------------------------
       m_nordvpnVersion = "n/a";
@@ -481,7 +485,7 @@ public class Starter extends JFrame
             m_nordvpnVersion = matcher.group(1);
          }
       }
-      if ((null != errorGetVersion) && (false == m_installMode))
+      if (null != errorGetVersion)
       {
          JModalDialog.showError("NordVPN Version error",
                errorGetVersion + "\n" + StringFormat.printString(saVersions[0], "") + "\n" + StringFormat.printString(saVersions[1], ""));
@@ -497,7 +501,7 @@ public class Starter extends JFrame
       // -------------------------------------------------------------------------------
       // Get NordVPN account and settings data 
       // -------------------------------------------------------------------------------
-      if ((null == errorGetVersion) && (false == m_installMode))
+      if (null == errorGetVersion)
       {
          m_splashScreen.setProgress(20);
          m_splashScreen.setStatus("Get NordVPN Information...");
@@ -617,7 +621,7 @@ public class Starter extends JFrame
       //-------------------------------------------------------------------------------
       // display main frame
       //-------------------------------------------------------------------------------
-      int compactMode = (m_installMode) ? 1 : UtilPrefs.getCompactMode();
+      int compactMode = UtilPrefs.getCompactMode();
       switchCompactMode(compactMode); // calls pack() and sets minimum size
 
       // Center the Frame
@@ -757,7 +761,7 @@ public class Starter extends JFrame
     */
    public static boolean updateCurrentServer()
    {
-      if ((true == m_installMode) || (m_splashScreen.getProgress() < 100)) return false;
+      if (m_splashScreen.getProgress() < 100) return false;
 
       // get the current connected server from the "nordvpn status" command
       m_nvpnStatusData = new NvpnStatusData();
@@ -914,78 +918,61 @@ public class Starter extends JFrame
       return m_isSnapInstallation;
    }
 
-   public static boolean isInstallMode()
-   {
-      return m_installMode;
-   }
-   
-   private static boolean checkSnapRunMode()
+   private static String checkSnapRunMode()
    {
       String usrHome = System.getProperty("user.home");
       String myHome = System.getenv("SNAP_REAL_HOME");
       if ((null != myHome) && (false == myHome.equals(usrHome))) // requires additional check for debug.. because eclipse is a snap and sets the SNAP_* variables..
       {
-         // we run the jar from the snap installation
-         m_splashScreen.setStatus("Installation...");
-         _m_logError.TraceDebug("JNordVPN Manager called in installation mode (in the snap environment)");
-         _m_logError.enableTraceFlag(UtilLogErr.TRACE_Init);
-         _m_logError.enableTraceFlag(UtilLogErr.TRACE_Cmd);
-
-         // ensure the console window is open
-         _m_logError.sendConsoleCommand("#SHOW#");
-
-         // check if the local desktop file already exists (in the real home directory!)
-         String targetFile = myHome + "/Desktop/JNordVpnManager_Java.desktop";
-
-         // ask, if we should copy the desktop file to the local desktop...
-         if (JModalDialog.showConfirm("JNordVPN Manager (install) called.\n" +
-               "To run the application you need an actual 'JNordVPNManager_Java.desktop' file in your local '~/Desktop directory', or execute the command:\n" +
-               "/snap/j-nordvpn-manager/current/bin/java -jar /snap/j-nordvpn-manager/current/JNordVpnManager-current.jar.\n\n" +
-               "Do you want to install the JNordVPNManager_Java.desktop file in your ~/Desktop directory to launch the application?") == JOptionPane.YES_OPTION)
-         {
-            // yes - copy the desktop file
-            try
-            {
-               UtilSystem.CopyTextFile("/snap/j-nordvpn-manager/current/Desktop/JNordVpnManager_Java.desktop",
-                     targetFile,
-                     "UTF-8",
-                     true);
-            }
-            catch (IOException e1)
-            {
-               // we don't exit to give the user the chance to access the console
-               _m_logError.LoggingExceptionMessage(4, 10901, e1);
-            }
-         }
-
-         File fTargetFile = new File(targetFile);
-         if (fTargetFile.canRead())
-         {
-            // desktop file exists
-            _m_logError.TraceIni("...'JNordVPNManager_Java.desktop' file found in '~/Desktop directory'.");
-            if (JModalDialog.showConfirm("JNordVPNManager (install).\n" +
-                  "Please restart the application by using the 'JNordVPNManager_Java.desktop' file found in your '~/Desktop directory'.\n\n" +
-                  "If you continue direct from Snap, the application has no permission to execute any 'nordvpn' command, but you have access to the console and Info menus to check messages and errors.\n\n" +
-                  "Please confirm to exit the program.") == JOptionPane.YES_OPTION)
-            {
-               // yes - exit
-               cleanupAndExit(true);
-            }
-         }
-         else
-         {
-            _m_logError.TraceIni("...'JNordVPNManager_Java.desktop' file not found in '~/Desktop directory'.");
-            if (JModalDialog.showConfirm("JNordVPNManager (install).\n" +
-                  "If you continue direct from Snap, the application has no permission to execute any 'nordvpn' command, but you have access to the console and Info menus to check messages and errors.\n\n" +
-                  "Please confirm to exit the program.") == JOptionPane.YES_OPTION)
-            {
-               // yes - exit
-               cleanupAndExit(true);
-            }
-         }
-         _m_logError.TraceDebug("...continue execution in 'installer mode'...");
-         return true;
+         return myHome;
       }
-      return false;
+      return null;
+   }
+
+   private static void install(String myHome)
+   {
+      // we run the jar from the snap installation
+      _m_logError = new UtilLogErr(null, null, null);
+
+      // check if the local desktop file already exists (in the real home directory!)
+      String targetFile = myHome + "/Desktop/JNordVpnManager_Java.desktop";
+
+      // ask, if we should copy the desktop file to the local desktop...
+      if (JModalDialog.showConfirm("JNordVPN Manager (install) called.\n" +
+            "JNordVPNManager can not be called directly from the Snap installation.\n" +
+            "To run the application you need an actual 'JNordVPNManager_Java.desktop' file in your local '~/Desktop directory', or execute the command:\n" +
+            "/snap/j-nordvpn-manager/current/bin/java -jar /snap/j-nordvpn-manager/current/JNordVpnManager-current.jar.\n\n" +
+            "Do you want to install the 'JNordVPNManager_Java.desktop' file in your '~/Desktop' directory to launch the application?") == JOptionPane.YES_OPTION)
+      {
+         // yes - copy the desktop file
+         try
+         {
+            UtilSystem.CopyTextFile("/snap/j-nordvpn-manager/current/Desktop/JNordVpnManager_Java.desktop",
+                  targetFile,
+                  "UTF-8",
+                  true);
+         }
+         catch (IOException e1)
+         {
+            // we don't exit to give the user the chance to access the console
+            JModalDialog.showError("Runtime Exception", e1.getMessage());
+         }
+      }
+
+      File fTargetFile = new File(targetFile);
+      if (fTargetFile.canRead())
+      {
+         // desktop file exists
+         JModalDialog.OKDialog("JNordVPNManager (install)",
+               "You can run 'JNordVPNManager' with 'JNordVPNManager' file on your Desktop.\n" +
+               "Please confirm to exit the program.");
+      }
+      else
+      {
+         JModalDialog.OKDialog("JNordVPNManager (install).",
+               "No Desktop file found. You can run the program by executing the line:\n" +
+               "/snap/j-nordvpn-manager/current/bin/java -jar /snap/j-nordvpn-manager/current/JNordVpnManager-current.jar\n" +
+               "Please confirm to exit the program.");
+      }
    }
 }

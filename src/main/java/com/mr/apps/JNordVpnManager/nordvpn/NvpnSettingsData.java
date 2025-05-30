@@ -200,14 +200,7 @@ public class NvpnSettingsData
          else
          {
             msg = UtilSystem.getLastError();
-            if (Starter.isInstallMode())
-            {
-               Starter._m_logError.TraceCmd(msg);
-            }
-            else
-            {
-               JModalDialog.showError("NordVPN Settings", msg);
-            }
+            JModalDialog.showError("NordVPN Settings", msg);
          }
       }
       else
