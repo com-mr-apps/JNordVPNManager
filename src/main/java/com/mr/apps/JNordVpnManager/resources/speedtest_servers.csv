@@ -1,33 +1,43 @@
 LAT,LON,CITY,URL
-22.3000,114.2000, Hong Kong,https://lg-hkg.fdcservers.net/100MBtest.zip
-48.4833,135.0833,Khabarovsk,https://lg-khv.fdcservers.net/100MBtest.zip
-1.3000,103.8000,Singapore,https://lg-sin.fdcservers.net/100MBtest.zip
-35.6897,139.6922,Tokyo,https://lg-tok.fdcservers.net/100MBtest.zip
--33.8678,151.2100,Sydney,https://lg-syd.fdcservers.net/100MBtest.zip
-33.7628,-84.4220,Atlanta,https://lg-atl.fdcservers.net/100MBtest.zip
-39.0277,-77.4714,Ashburn,https://lg-iad.fdcservers.net/100MBtest.zip
-41.8375,-87.6866,Chicago,https://lg-chie.fdcservers.net/100MBtest.zip
-32.7935,-96.7667,Dallas,https://lg-dfw.fdcservers.net/100MBtest.zip
-39.7620,-104.8758,Denver,https://lg-dene.fdcservers.net/100MBtest.zip
-34.1141,-118.4068,Los Angeles,https://lg-lax.fdcservers.net/100MBtest.zip
-25.7840,-80.2101,Miami,https://lg-mia.fdcservers.net/100MBtest.zip
-43.7417,-79.3733,Toronto,https://lg-tor.fdcservers.net/100MBtest.zip
-47.6211,-122.3244,Seattle,https://lg-sea.fdcservers.net/100MBtest.zip
-52.3728,4.8936,Amsterdam,https://lg-ams.fdcservers.net/100MBtest.zip
-53.3500,-6.2603,Dublin,https://lg-dub.fdcservers.net/100MBtest.zip
-50.1106,8.6822,Frankfurt,https://lg-fra.fdcservers.net/100MBtest.zip
-50.4500,30.5233,Kyiv,https://lg-kie.fdcservers.net/100MBtest.zip
-38.7253,-9.1500,Lisbon,https://lg-lis.fdcservers.net/100MBtest.zip
-51.5072,-0.1275,London,https://lg-lon.fdcservers.net/100MBtest.zip
-40.4169,-3.7033,Madrid,https://lg-mad.fdcservers.net/100MBtest.zip
-55.7558,37.6172,Moscow,https://lg-dme.fdcservers.net/100MBtest.zip
-48.8567,2.3522,Paris,https://lg-par2.fdcservers.net/100MBtest.zip
-50.0875,14.4214,Prague,https://lg-pra.fdcservers.net/100MBtest.zip
-48.2083,16.3725,Vienna,https://lg-vie.fdcservers.net/100MBtest.zip
-52.2300,21.0111,Warsaw,https://lg-waw.fdcservers.net/100MBtest.zip
-4.7111,-74.0722,Bogota,https://lg-bg.fdcservers.net/100MBtest.zip
--34.6033,-58.3817,Buenos Aires,https://lg-bai.fdcservers.net/100MBtest.zip
--3.7275,-38.5275,Fortaleza,https://lg-fort.fdcservers.net/100MBtest.zip
--12.0600,-77.0375,Lima,https://lg-lim.fdcservers.net/100MBtest.zip
--33.4372,-70.6506,Santiago de Chile,https://lg-san.fdcservers.net/100MBtest.zip
--23.5500,-46.6333,Sao Paulo,https://lg-spb.fdcservers.net/100MBtest.zip
+60.1708,24.9375,Helsinki,http://hel.icmp.hetzner.com/100MB.bin
+49.4539,11.0775,Nuremberg,https://speed.hetzner.de/100MB.bin
+49.097778, 12.486389,Falkenstein,http://fsn.icmp.hetzner.com/100MB.bin
+39.0277,-77.4714,Ashburn,http://ash.icmp.hetzner.com/100MB.bin
+45.5089,-73.5617,Montreal,https://mtl1.servers.guru/100MB.bin
+52.3728,4.8936,Amsterdam,https://nl1.servers.guru/100MB.bin
+52.3728,4.8936,Amsterdam,http://speedtest.c1.ams1.dediserve.com/100MB.test
+47.6671,-117.4330,Spokane,https://spo1.servers.guru/100MB.bin
+1.3000,103.8000,Singapore,https://sg1.servers.guru/100MB.bin
+1.3000,103.8000,Singapore,http://speedtest.c1.sin1.dediserve.com/100MB.test
+45.5273,-122.9360,Hillsboro,http://hil.icmp.hetzner.com/100MB.bin
+48.2083,16.3725,Vienna,http://speedtest.c1.vie1.dediserve.com/100MB.test
+25.2631,55.2972,Dubai,http://speedtest.c1.dx1.dediserve.com/100MB.test
+35.6897,139.6922,Tokyo,http://speedtest.c1.jap1.dediserve.com/100MB.test
+35.6897,139.6922,Tokyo,http://lg-jp.friendhosting.net/100MB.test
+-33.8678,151.2100,Sydney,http://speedtest.c1.syd1.dediserve.com/100MB.test
+-37.8142,144.9631,Melbourne,http://speedtest.c1.mel1.dediserve.com/100MB.test
+-6.1750,106.8275,Jakarta,http://speedtest.c1.jkt1.dediserve.com/100MB.test
+22.3000,114.2000, Hong Kong,http://speedtest.c1.hkg1.dediserve.com/100MB.test
+52.2300,21.0111,Warsaw,http://speedtest.c1.pol1.dediserve.com/100MB.test
+50.1106,8.6822,Frankfurt,http://speedtest.c1.fra1.dediserve.com/100MB.test
+50.1106,8.6822,Frankfurt,http://lg-de.friendhosting.net/100MB.test
+51.5072,-0.1275,London,http://speedtest.c1.lon3.dediserve.com/100MB.test
+51.5072,-0.1275,London,http://speedtest.c1.lon2.dediserve.com/100MB.test
+53.3500,-6.2603,Dublin,http://speedtest.c1.dub3.dediserve.com/100MB.test
+43.7417,-79.3733,Toronto,http://speedtest.c1.tor1.dediserve.com/100MB.test
+41.8375,-87.6866,Chicago,http://speedtest.c1.chg1.dediserve.com/100MB.test
+32.7935,-96.7667,Dallas,http://speedtest.c1.dal2.dediserve.com/100MB.test
+34.1141,-118.4068,Los Angeles,http://speedtest.c1.lax1.dediserve.com/100MB.test
+34.1141,-118.4068,Los Angeles,http://lg-us-la.friendhosting.net/100MB.test
+44.4325,26.1039,Bucharest,http://lg-ro.friendhosting.net/100MB.test
+50.4500,30.5233,Kyiv,http://lg-ua-kyiv.friendhosting.net/100MB.test
+46.2017,6.1469,Geneva,https://lg-ch.friendhosting.net/100MB.test
+50.0875,14.4214,Prague,https://lg-cz.friendhosting.net/100MB.test
+54.2667,18.6333,Gdansk,https://lg-pl.friendhosting.net/100MB.test
+56.9489,24.1064,Riga,https://lg-lv.friendhosting.net/100MB.test
+45.4669,9.1900,Milan,http://lg-it.friendhosting.net/
+42.7000,23.3300,Sofia,http://lg-bg.friendhosting.net/100MB.test
+52.7000,6.1833,Meppel,http://lg-nl.friendhosting.net/100MB.test
+25.7840,-80.2101,Miami,http://lg-us-mia.friendhosting.net/100MB.test
+40.6943,-73.9249,New York,http://lg-us-nyc.friendhosting.net/100MB.test
+-23.5500,-46.6333,Sao Paulo,http://lg-br.friendhosting.net/100MB.test
