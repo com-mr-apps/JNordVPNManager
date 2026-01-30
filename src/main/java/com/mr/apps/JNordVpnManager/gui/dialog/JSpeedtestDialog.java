@@ -52,7 +52,7 @@ public class JSpeedtestDialog extends JDialog
          "Click here to Stop the Speed Test",
          "Click here to [Re]Start the Speed Test"
    };
-   private static int          m_statusStartStop   = 0; // 0-running / 1-stopped
+   private static int          m_statusStartStop  = 0; // 0-running / 1-stopped
 
    /**
     * Initiates a new Speed test frame
@@ -67,7 +67,7 @@ public class JSpeedtestDialog extends JDialog
       {
          @Override public void windowClosing(java.awt.event.WindowEvent event)
          {
-            if ((false == m_forceStopTask) && (m_progressBar.getValue() < 100))
+            if ((0 == m_statusStartStop) && (false == m_forceStopTask) && (m_progressBar.getValue() < 100))
             {
                // running...
                int ret = JModalDialog.YesNoDialog("Do you want to cancel the Speed Test?");
