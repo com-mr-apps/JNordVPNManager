@@ -300,17 +300,23 @@ public class NvpnSettingsData
       this.m_fwmark = values.get("Firewall Mark");
       this.m_routing = values.get("Routing");
       this.m_analytics = values.get("Analytics");
+      if (null == this.m_analytics)
+      {
+         // MR20260206: Changed in v4.4.0 from 'Analytics' to 'User Consent'
+         this.m_analytics = values.get("User Consent");
+      }
       this.m_killswitch = values.get("Kill Switch");
       this.m_tplite = values.get("Threat Protection Lite");
       this.m_notify = values.get("Notify");
       this.m_obfuscate = values.get("Obfuscate");
       this.m_tray = values.get("Tray");
       this.m_autoConnect = values.get("Auto-connect");
-      this.m_ipv6 = values.get("IPv6");
+      this.m_ipv6 = values.get("IPv6"); // MR20260206: Removed in v4.4.0
       this.m_meshnet = values.get("Meshnet");
       this.m_dns = values.get("DNS");
       this.m_lanDiscovery = values.get("LAN Discovery");
       this.m_virtualLocation = values.get("Virtual Location");
+      // MR20260206: TODO Added in v4.4.0 'ARP Ignore'
       this.m_postQuantum = values.get("Post-quantum VPN");
       this.m_protocol = values.get("Protocol");
 

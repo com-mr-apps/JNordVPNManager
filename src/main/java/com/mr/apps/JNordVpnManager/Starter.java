@@ -71,7 +71,7 @@ import com.mr.apps.JNordVpnManager.utils.String.StringFormat;
 @SuppressWarnings("serial")
 public class Starter extends JFrame 
 {
-   public static final String      COPYRIGHT_STRING           = "Copyright Ⓒ 2025 - written by com.mr.apps";
+   public static final String      COPYRIGHT_STRING           = "Copyright Ⓒ 2026 - written by com.mr.apps";
    public static final String      APPLICATION_DATA_DIR       = "/.local/share/JNordVpnManager"; // ..added to $HOME directory
    public static final File        APPLICATION_DATA_ABS_PATH  = new File(System.getProperty("user.home"), APPLICATION_DATA_DIR);
    public static final String      SEP_DATARECORD             = ":";
