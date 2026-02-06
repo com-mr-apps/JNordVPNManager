@@ -88,20 +88,31 @@ public class NvpnAccountData
          return false;
       }
 
-      // data line 'VPN Service' contains two information
-      String value = values.get("VPN Service");
-      Pattern pattern = Pattern.compile("\\s*([^( ]+)[ (]+([^)]+)\\)\\s*",
-            Pattern.CASE_INSENSITIVE);
-      Matcher matcher = pattern.matcher(value);
-      boolean matchFound = matcher.find();
-      if (matchFound)
+      // MR20260206: Changed output in v4.4.0 from 'VPN Service' to 'VPN Service'
+      try
       {
-         // Parsing OK
-         this.setVpnServiceIsActive(matcher.group(1));
-         this.setVpnServiceExpDate(matcher.group(2));
-         try
+         Pattern pattern = null;
+         // data line 'VPN Service' contains two information
+         String value = values.get("VPN Service");
+         if (null != value)
          {
-            pattern = Pattern.compile("Expires on\\s+([A-Z]+)+\\s+(\\d\\d)+th,\\s+(\\d\\d\\d\\d)+",
+            pattern = Pattern.compile("\\s*([^( ]+)[ (]+([^)]+)\\)\\s*",
+                  Pattern.CASE_INSENSITIVE);
+         }
+         else
+         {
+            value = values.get("Subscription");
+            pattern = Pattern.compile("(Active)+\\s+until\\s+([^$]+)+$",
+                  Pattern.CASE_INSENSITIVE);
+         }
+         Matcher matcher = pattern.matcher(value);
+         boolean matchFound = matcher.find();
+         if (matchFound)
+         {
+            // Parsing OK
+            this.setVpnServiceIsActive(matcher.group(1));
+            this.setVpnServiceExpDate(matcher.group(2));
+            pattern = Pattern.compile("(?:Expires on\\s+)?([A-Za-z]+)+\\s+(\\d+)+[snrt]?[tdh]?,\\s+(\\d+)+",
                   Pattern.CASE_INSENSITIVE);
             matcher = pattern.matcher(matcher.group(2));
             matchFound = matcher.find();
@@ -112,22 +123,24 @@ public class NvpnAccountData
                long lTime = date.getTime();
                long daysUntilNow = UtilSystem.getDaysUntilNow(lTime) * (-1);
                Starter._m_logError.TraceIni("NordVPN License expires in " + daysUntilNow + " days.");
-               m_nordAccountRemainingDays = (int)daysUntilNow;
-               if (m_nordAccountRemainingDays > 180) UtilPrefs.resetAccountReminder(); // reset the settings to keep the reminder at the default days (after a subscription renew)
+               m_nordAccountRemainingDays = (int) daysUntilNow;
+               if (m_nordAccountRemainingDays > 180) UtilPrefs.resetAccountReminder(); // reset the settings to keep the
+                                                                                       // reminder at the default days
+                                                                                       // (after a subscription renew)
             }
          }
-         catch (Exception e)
+         else
          {
-            Starter._m_logError.TraceDebug("### (NvpnAccountData) NordVPN License expiration date could not be parsed.");
-         }    
+            // Parsing Error
+            Starter._m_logError.LoggingError(10100, "Parsing NordVPN Account Information 'VPN Service'", data);
+            // Fallback
+            if (value.toUpperCase().contains("ACTIVE")) this.setVpnServiceIsActive("Active");
+         }
       }
-      else
+      catch (Exception e)
       {
-         // Parsing Error
-         Starter._m_logError.LoggingError(10100, "Parsing NordVPN Account Information 'VPN Service'", data);
-         // Fallback
-         if (value.toUpperCase().contains("ACTIVE")) this.setVpnServiceIsActive("Active");
-      }
+         Starter._m_logError.TraceDebug("### (NvpnAccountData) NordVPN License expiration date could not be parsed.");
+      }    
 
       this.setLoggedIn(true);            
       this.setEmail(values.get("Email Address"));
