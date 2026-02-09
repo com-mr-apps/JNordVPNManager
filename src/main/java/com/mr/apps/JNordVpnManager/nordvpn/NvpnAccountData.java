@@ -142,10 +142,31 @@ public class NvpnAccountData
          Starter._m_logError.TraceDebug("### (NvpnAccountData) NordVPN License expiration date could not be parsed.");
       }    
 
-      this.setLoggedIn(true);            
-      this.setEmail(values.get("Email Address"));
+      this.setLoggedIn(true);
+
+      // MR20260206: Changed output in v4.4.0 from 'Email Address' to 'Email address'
+      String value = values.get("Email Address");
+      if (value != null)
+      {
+         this.setEmail(value);
+      }
+      else
+      {
+         this.setEmail(values.get("Email address"));
+      }
+      
       this.setVpnDedicatedIdIsActive(values.get("Dedicated IP"));
-      this.setMfaIsEnabled(values.get("Multi-factor Authentication"));
+
+      // MR20260206: Changed output in v4.4.0 from 'Multi-factor Authentication' to 'Multi-factor authentication'
+      value = values.get("Multi-factor Authentication");
+      if (null == value)
+      {
+         this.setMfaIsEnabled(value);
+      }
+      else
+      {
+         this.setMfaIsEnabled(values.get("Multi-factor authentication"));
+      }
 
       return true;
    }
@@ -230,6 +251,7 @@ public class NvpnAccountData
       if (null != mfaIsEnabled)
       {
          this.m_mfaIsEnabled = mfaIsEnabled.equalsIgnoreCase("Enabled");
+         if (false == this.m_mfaIsEnabled) mfaIsEnabled.equalsIgnoreCase("Turned on"); // Changed in v4.4.0
       }
    }
 
