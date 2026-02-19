@@ -3,7 +3,7 @@
 # 1 - build snap
 cd /media/martin/writable/projekte/GitHub/com-mr-apps/JNordVPNManager
 snapcraft clean j-nordvpn-manager
-snapcraft
+snapcraft pack
 
 # 2 - install/test snap
 sudo snap remove j-nordvpn-manager
