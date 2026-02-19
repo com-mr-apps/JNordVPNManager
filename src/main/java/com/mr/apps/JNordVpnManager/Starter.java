@@ -12,9 +12,14 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.Dimension;
+import java.awt.GraphicsDevice;
+import java.awt.GraphicsEnvironment;
 import java.awt.Image;
+import java.awt.Point;
+import java.awt.Rectangle;
 import java.awt.Taskbar;
-import java.awt.Toolkit;
+import java.awt.event.ComponentEvent;
+import java.awt.event.ComponentListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowFocusListener;
@@ -104,6 +109,27 @@ public class Starter extends JFrame
    private static boolean          m_skipFocusGainedForDebug  = false;
    private static String           m_AddOnLibVersion          = null;
    private static boolean          m_isSupporterEdition       = false;
+
+   class MainFrameComponentListener implements ComponentListener
+   {
+      public void componentShown(ComponentEvent evt)
+      {
+      }
+
+      public void componentHidden(ComponentEvent evt)
+      {
+      }
+
+      public void componentMoved(ComponentEvent evt)
+      {
+         Point pt = getLocation();
+         UtilPrefs.setMainframePosition(pt.x + ";" + pt.y);
+      }
+
+      public void componentResized(ComponentEvent evt)
+      {
+      }
+   }
 
    /**
     * NordVPN GUI application.
@@ -613,7 +639,7 @@ public class Starter extends JFrame
       m_mainFrame.add(m_serverListPanel, BorderLayout.LINE_START);
       if (null != m_mapFrame) m_mainFrame.add(m_mapFrame.getContentPane(), BorderLayout.CENTER);
       m_mainFrame.add(statusPanel, BorderLayout.PAGE_END);
-      m_aboutScreen = new JAboutScreen(version);
+      m_aboutScreen = new JAboutScreen(m_mainFrame, version);
 
       m_splashScreen.setProgress(90);
       m_splashScreen.setStatus("Finalize...");
@@ -624,13 +650,17 @@ public class Starter extends JFrame
       int compactMode = UtilPrefs.getCompactMode();
       switchCompactMode(compactMode); // calls pack() and sets minimum size
 
-      // Center the Frame
-      Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-      Dimension panelSize = m_mainFrame.getSize();
-      m_mainFrame.setLocation((screenSize.width / 2) - (panelSize.width / 2), (screenSize.height / 2) - (panelSize.height / 2));
+      // Main Frame Position
+      Point xyFramePos = getMainFramePosition();
+
+      Starter._m_logError.TraceDebug("(init) Frame Location=" + xyFramePos.x + ";" + xyFramePos.y);
+      m_mainFrame.setLocation(xyFramePos.x, xyFramePos.y);
 
 //      m_mainFrame.setExtendedState(Frame.ICONIFIED);
       m_mainFrame.setVisible(true);
+
+      ComponentListener componentListener = new MainFrameComponentListener();
+      m_mainFrame.addComponentListener(componentListener);
 
       m_splashScreen.setProgress(100); // ..and close the splash screen
       updateCurrentServer();
@@ -638,6 +668,23 @@ public class Starter extends JFrame
       _m_logError.TraceIni("**********************************************************************************\n"
                          + "Finished Initialization.\n"
                          + "**********************************************************************************\n");
+   }
+
+   public static Point getMainFramePosition()
+   {
+      // get last Main Frame Position
+      Point xyFramePos = UtilPrefs.getMainframePosition();
+      Rectangle screenSize = allScreensRectangle();
+      Dimension panelSize = (null != m_mainFrame) ? m_mainFrame.getSize() : new Dimension (800,600);
+      if (null == xyFramePos)
+      {
+         // Center the Frame
+         xyFramePos = new Point((screenSize.width / 2) - (panelSize.width / 2), (screenSize.height / 2) - (panelSize.height / 2));
+      }
+      if (xyFramePos.x > screenSize.width-panelSize.width) xyFramePos.x = screenSize.width-panelSize.width;
+      if (xyFramePos.y > screenSize.height-panelSize.height) xyFramePos.y = screenSize.height-panelSize.height;
+
+      return xyFramePos;
    }
 
    /**
@@ -974,5 +1021,22 @@ public class Starter extends JFrame
                "/snap/j-nordvpn-manager/current/bin/java -jar /snap/j-nordvpn-manager/current/JNordVpnManager-current.jar\n" +
                "Please confirm to exit the program.");
       }
+   }
+
+   private static Rectangle allScreensRectangle()
+   {
+      // make array of all screens
+      GraphicsDevice[] screens = GraphicsEnvironment.getLocalGraphicsEnvironment().getScreenDevices();
+
+      // start out with the rectangle of the primary monitor
+      Rectangle allScreens = new Rectangle();
+      for (int i = 0; i < screens.length; i++)
+      {
+         Rectangle screenRect = screens[i].getDefaultConfiguration().getBounds();
+
+         allScreens.width = Math.max(allScreens.width, (screenRect.width + screenRect.x));
+         allScreens.height = Math.max (allScreens.height, (screenRect.height + screenRect.y));
+      }
+      return allScreens;
    }
 }

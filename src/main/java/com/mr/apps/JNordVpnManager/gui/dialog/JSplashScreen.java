@@ -12,8 +12,9 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Frame;
-import java.awt.Toolkit;
+import java.awt.Point;
 import javax.swing.*;
+import javax.swing.border.BevelBorder;
 
 import com.mr.apps.JNordVpnManager.Starter;
 import com.mr.apps.JNordVpnManager.gui.components.JLogo;
@@ -52,6 +53,7 @@ public class JSplashScreen extends JDialog
    {
       super(owner, false);
       this.setLayout(new BoxLayout(this.getContentPane(), BoxLayout.Y_AXIS));
+      ((JComponent) this.getContentPane()).setBorder(BorderFactory.createBevelBorder(BevelBorder.RAISED));
 
       ImageIcon imageIcon = new ImageIcon(Starter.class.getResource(SPLASH_IMAGE));
       this.m_splashImageIcon = new JLabel(imageIcon);
@@ -123,10 +125,12 @@ public class JSplashScreen extends JDialog
       if (null != status) this.setStatus(status);
       
       // Centers the Splash Screen
-      Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
       Dimension panelSize = this.getSize();
       m_panelWidth = panelSize.width;
-      this.setLocation((screenSize.width / 2) - (panelSize.width / 2), (screenSize.height / 2) - (panelSize.height / 2));
+//      Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+//      this.setLocation((screenSize.width / 2) - (panelSize.width / 2), (screenSize.height / 2) - (panelSize.height / 2));
+      Point xyFramePos = Starter.getMainFramePosition();
+      this.setLocation(xyFramePos.x + 20, xyFramePos.y + 20);
    }
 
    /**

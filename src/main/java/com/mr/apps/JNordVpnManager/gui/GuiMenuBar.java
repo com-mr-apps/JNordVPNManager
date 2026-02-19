@@ -345,7 +345,7 @@ public class GuiMenuBar
       {
          public void actionPerformed(ActionEvent e)
          {
-            JWhatsNewDialog whatsNew = new JWhatsNewDialog();
+            JWhatsNewDialog whatsNew = new JWhatsNewDialog(Starter.getMainFrame());
             whatsNew.show();
          }
       });

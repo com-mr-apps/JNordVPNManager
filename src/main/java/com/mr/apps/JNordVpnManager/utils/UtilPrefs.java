@@ -8,6 +8,7 @@
  */
 package com.mr.apps.JNordVpnManager.utils;
 
+import java.awt.Point;
 import java.awt.event.KeyEvent;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
@@ -73,6 +74,7 @@ public class UtilPrefs
    // private static final String COMPACTMODE = "COMPACTMODE";
    // private static final String RECENTSERVER_REGION = "RECENTSERVER_REGION";
    // private static final String RECENTSERVER_GROUP = "RECENTSERVER_GROUP";
+   // private static final String MAINFRAME_POSITION = "MAINFRAME_POSITION";
 
    // Internal Defaults
    private static String       DEFAULT_PREF_RECENTSERVER_CITY           = "";
@@ -106,6 +108,7 @@ public class UtilPrefs
    private static int          DEFAULT_PREF_RECENTSERVER_REGION         = NordVPNEnumGroups.all_regions.getId();
    private static int          DEFAULT_PREF_RECENTSERVER_GROUP          = NordVPNEnumGroups.Standard_VPN_Servers.getId();
    private static int          DEFAULT_PREF_SETTINGS_COMPACTMODE        = 0;
+   private static String       DEFAULT_PREF_SETTINGS_MAINFRAME_POSITION = "";
 
    /**
     * Show the User Preferences Panel.
@@ -232,160 +235,191 @@ public class UtilPrefs
     */
    public static String getServerListData()
    {
-      Preferences nordVpnServerList = Preferences.userRoot().node("com/mr/apps/JNordVpnManager");
-      String city = nordVpnServerList.get("ServerList.Data", DEFAULT_PREF_SERVERLIST_DATA);
+      Preferences prefsMainNode = Preferences.userRoot().node("com/mr/apps/JNordVpnManager");
+      String serverList = prefsMainNode.get("ServerList.Data", DEFAULT_PREF_SERVERLIST_DATA);
 
-      return city;
+      return serverList;
    }
 
    public static void setServerListData(String serverList)
    {
-      Preferences nordVpnServerList = Preferences.userRoot().node("com/mr/apps/JNordVpnManager");
-      nordVpnServerList.put("ServerList.Data", serverList);
+      Preferences prefsMainNode = Preferences.userRoot().node("com/mr/apps/JNordVpnManager");
+      prefsMainNode.put("ServerList.Data", serverList);
 
       return;
    }
 
    public static int getServerListAutoUpdate()
    {
-      Preferences settingsServerListAutoUpdate = Preferences.userRoot().node("com/mr/apps/JNordVpnManager/Settings");
-      int serverListAutoUpdate = settingsServerListAutoUpdate.getInt("ServerList.AutoUpdate", DEFAULT_PREF_SERVERLIST_AUTOUPDATE);
+      Preferences prefsSettingsNode = Preferences.userRoot().node("com/mr/apps/JNordVpnManager/Settings");
+      int serverListAutoUpdate = prefsSettingsNode.getInt("ServerList.AutoUpdate", DEFAULT_PREF_SERVERLIST_AUTOUPDATE);
 
       return serverListAutoUpdate;
    }
 
    public static void setServerListAutoUpdate(int serverListAutoUpdate)
    {
-      Preferences settingsServerListAutoUpdate = Preferences.userRoot().node("com/mr/apps/JNordVpnManager/Settings");
-      settingsServerListAutoUpdate.putInt("ServerList.AutoUpdate", serverListAutoUpdate);
+      Preferences prefsSettingsNode = Preferences.userRoot().node("com/mr/apps/JNordVpnManager/Settings");
+      prefsSettingsNode.putInt("ServerList.AutoUpdate", serverListAutoUpdate);
 
       return;
    }
 
    public static String getServerListTimestamp()
    {
-      Preferences nordVpnServerList = Preferences.userRoot().node("com/mr/apps/JNordVpnManager");
-      String city = nordVpnServerList.get("ServerList.Timestamp", DEFAULT_PREF_SERVERLIST_TIMESTAMP);
+      Preferences prefsMainNode = Preferences.userRoot().node("com/mr/apps/JNordVpnManager");
+      String city = prefsMainNode.get("ServerList.Timestamp", DEFAULT_PREF_SERVERLIST_TIMESTAMP);
 
       return city;
    }
 
    public static void setServerListTimestamp(String timestamp)
    {
-      Preferences nordVpnServerList = Preferences.userRoot().node("com/mr/apps/JNordVpnManager");
-      nordVpnServerList.put("ServerList.Timestamp", timestamp);
+      Preferences prefsMainNode = Preferences.userRoot().node("com/mr/apps/JNordVpnManager");
+      prefsMainNode.put("ServerList.Timestamp", timestamp);
 
       return;
    }
 
    public static String getRecentServerCity()
    {
-      Preferences nordVpnRecentServer = Preferences.userRoot().node("com/mr/apps/JNordVpnManager");
-      String city = nordVpnRecentServer.get("RecentServer.City", DEFAULT_PREF_RECENTSERVER_CITY);
+      Preferences prefsMainNode = Preferences.userRoot().node("com/mr/apps/JNordVpnManager");
+      String city = prefsMainNode.get("RecentServer.City", DEFAULT_PREF_RECENTSERVER_CITY);
 
       return city;
    }
 
    public static void setRecentServerCity(String city)
    {
-      Preferences nordVpnRecentServer = Preferences.userRoot().node("com/mr/apps/JNordVpnManager");
-      nordVpnRecentServer.put("RecentServer.City", city);
+      Preferences prefsMainNode = Preferences.userRoot().node("com/mr/apps/JNordVpnManager");
+      prefsMainNode.put("RecentServer.City", city);
 
       return;
    }
 
    public static String getRecentServerCountry()
    {
-      Preferences nordVpnRecentServer = Preferences.userRoot().node("com/mr/apps/JNordVpnManager");
-      String country = nordVpnRecentServer.get("RecentServer.Country", DEFAULT_PREF_RECENTSERVER_COUNTRY);
+      Preferences prefsMainNode = Preferences.userRoot().node("com/mr/apps/JNordVpnManager");
+      String country = prefsMainNode.get("RecentServer.Country", DEFAULT_PREF_RECENTSERVER_COUNTRY);
 
       return country;
    }
 
    public static void setRecentServerCountry(String country)
    {
-      Preferences nordVpnRecentServer = Preferences.userRoot().node("com/mr/apps/JNordVpnManager");
-      nordVpnRecentServer.put("RecentServer.Country", country);
+      Preferences prefsMainNode = Preferences.userRoot().node("com/mr/apps/JNordVpnManager");
+      prefsMainNode.put("RecentServer.Country", country);
 
       return;
    }
 
    public static int getRecentServerRegion()
    {
-      Preferences settingsRecentServerRegion = Preferences.userRoot().node("com/mr/apps/JNordVpnManager");
-      int recentServerRegion = settingsRecentServerRegion.getInt("RecentServer.Region", DEFAULT_PREF_RECENTSERVER_REGION);
+      Preferences prefsMainNode = Preferences.userRoot().node("com/mr/apps/JNordVpnManager");
+      int recentServerRegion = prefsMainNode.getInt("RecentServer.Region", DEFAULT_PREF_RECENTSERVER_REGION);
 
       return recentServerRegion;
    }
 
    public static void setRecentServerRegion(int recentServerRegion)
    {
-      Preferences settingsRecentServerRegion = Preferences.userRoot().node("com/mr/apps/JNordVpnManager");
-      settingsRecentServerRegion.putInt("RecentServer.Region", recentServerRegion);
+      Preferences prefsMainNode = Preferences.userRoot().node("com/mr/apps/JNordVpnManager");
+      prefsMainNode.putInt("RecentServer.Region", recentServerRegion);
 
       return;
    }
 
    public static int getRecentServerGroup()
    {
-      Preferences settingsRecentServerGroup = Preferences.userRoot().node("com/mr/apps/JNordVpnManager");
-      int recentServerGroup = settingsRecentServerGroup.getInt("RecentServer.Group", DEFAULT_PREF_RECENTSERVER_GROUP);
+      Preferences prefsMainNode = Preferences.userRoot().node("com/mr/apps/JNordVpnManager");
+      int recentServerGroup = prefsMainNode.getInt("RecentServer.Group", DEFAULT_PREF_RECENTSERVER_GROUP);
 
       return recentServerGroup;
    }
 
    public static void setRecentServerGroup(int recentServerGroup)
    {
-      Preferences settingsRecentServerGroup = Preferences.userRoot().node("com/mr/apps/JNordVpnManager");
-      settingsRecentServerGroup.putInt("RecentServer.Group", recentServerGroup);
+      Preferences prefsMainNode = Preferences.userRoot().node("com/mr/apps/JNordVpnManager");
+      prefsMainNode.putInt("RecentServer.Group", recentServerGroup);
 
       return;
    }
 
    public static int getCompactMode()
    {
-      Preferences settingsCompactMode = Preferences.userRoot().node("com/mr/apps/JNordVpnManager/Settings");
-      int compactMode = settingsCompactMode.getInt("CompactMode", DEFAULT_PREF_SETTINGS_COMPACTMODE);
+      Preferences prefsSettingsNode = Preferences.userRoot().node("com/mr/apps/JNordVpnManager/Settings");
+      int compactMode = prefsSettingsNode.getInt("CompactMode", DEFAULT_PREF_SETTINGS_COMPACTMODE);
 
       return compactMode;
    }
 
    public static void setCompactMode(int compactMode)
    {
-      Preferences settingsCompactMode = Preferences.userRoot().node("com/mr/apps/JNordVpnManager/Settings");
-      settingsCompactMode.putInt("CompactMode", compactMode);
+      Preferences prefsSettingsNode = Preferences.userRoot().node("com/mr/apps/JNordVpnManager/Settings");
+      prefsSettingsNode.putInt("CompactMode", compactMode);
+
+      return;
+   }
+
+   public static Point getMainframePosition()
+   {
+      Preferences prefsSettingsNode = Preferences.userRoot().node("com/mr/apps/JNordVpnManager/Settings");
+      String sMainframePosition = prefsSettingsNode.get("MainframePosition", DEFAULT_PREF_SETTINGS_MAINFRAME_POSITION);
+      if (null == sMainframePosition) return null;
+      String[] saVal = sMainframePosition.split(";");
+      try
+      {
+         return new Point(Integer.parseInt(saVal[0]), Integer.parseInt(saVal[1]));
+      }
+      catch (Exception e)
+      {
+         return null;
+      }
+   }
+
+   public static void setMainframePosition(Point mainframePosition)
+   {
+      Preferences prefsSettingsNode = Preferences.userRoot().node("com/mr/apps/JNordVpnManager/Settings");
+      prefsSettingsNode.put("MainframePosition", StringFormat.int2String(mainframePosition.x, "0") + ";" + StringFormat.int2String(mainframePosition.y, "0"));
+
+      return;
+   }
+   public static void setMainframePosition(String mainframePosition)
+   {
+      Preferences prefsSettingsNode = Preferences.userRoot().node("com/mr/apps/JNordVpnManager/Settings");
+      prefsSettingsNode.put("MainframePosition", mainframePosition);
 
       return;
    }
 
    public static int getMessageAutoclose()
    {
-      Preferences settingsMessageAutoclose = Preferences.userRoot().node("com/mr/apps/JNordVpnManager/Settings");
-      int messageAutoclose = settingsMessageAutoclose.getInt("MessageAutoclose", DEFAULT_PREF_SETTINGS_MESSAGE_AUTOCLOSE);
+      Preferences prefsSettingsNode = Preferences.userRoot().node("com/mr/apps/JNordVpnManager/Settings");
+      int messageAutoclose = prefsSettingsNode.getInt("MessageAutoclose", DEFAULT_PREF_SETTINGS_MESSAGE_AUTOCLOSE);
 
       return messageAutoclose;
    }
 
    public static void setMessageAutoclose(int messageAutoclose)
    {
-      Preferences settingsMessageAutoclose = Preferences.userRoot().node("com/mr/apps/JNordVpnManager/Settings");
-      settingsMessageAutoclose.putInt("MessageAutoclose", messageAutoclose);
+      Preferences prefsSettingsNode = Preferences.userRoot().node("com/mr/apps/JNordVpnManager/Settings");
+      prefsSettingsNode.putInt("MessageAutoclose", messageAutoclose);
 
       return;
    }
 
    public static int getAutoConnectMode()
    {
-      Preferences settingsAutoConnectMode = Preferences.userRoot().node("com/mr/apps/JNordVpnManager/Settings");
-      int autoConnectMode = settingsAutoConnectMode.getInt("AutoConnectMode", DEFAULT_PREF_SETTINGS_AUTOCONNECTMODE);
+      Preferences prefsSettingsNode = Preferences.userRoot().node("com/mr/apps/JNordVpnManager/Settings");
+      int autoConnectMode = prefsSettingsNode.getInt("AutoConnectMode", DEFAULT_PREF_SETTINGS_AUTOCONNECTMODE);
 
       return autoConnectMode;
    }
 
    public static void setAutoConnectMode(int autoConnectMode)
    {
-      Preferences settingsAutoConnectMode = Preferences.userRoot().node("com/mr/apps/JNordVpnManager/Settings");
-      settingsAutoConnectMode.putInt("AutoConnectMode", autoConnectMode);
+      Preferences prefsSettingsNode = Preferences.userRoot().node("com/mr/apps/JNordVpnManager/Settings");
+      prefsSettingsNode.putInt("AutoConnectMode", autoConnectMode);
       GuiCommandsToolBar.updateCommand(Command.APP_PREF_AUTOCONNECT);
 
       return;
@@ -393,16 +427,16 @@ public class UtilPrefs
 
    public static int getAutoDisConnectMode()
    {
-      Preferences settingsAutoDisConnectMode = Preferences.userRoot().node("com/mr/apps/JNordVpnManager/Settings");
-      int autoConnectMode = settingsAutoDisConnectMode.getInt("AutoDisConnectMode", DEFAULT_PREF_SETTINGS_AUTODISCONNECTMODE);
+      Preferences prefsSettingsNode = Preferences.userRoot().node("com/mr/apps/JNordVpnManager/Settings");
+      int autoConnectMode = prefsSettingsNode.getInt("AutoDisConnectMode", DEFAULT_PREF_SETTINGS_AUTODISCONNECTMODE);
 
       return autoConnectMode;
    }
 
    public static void setAutoDisConnectMode(int autoDisConnectMode)
    {
-      Preferences settingsAutoDisConnectMode = Preferences.userRoot().node("com/mr/apps/JNordVpnManager/Settings");
-      settingsAutoDisConnectMode.putInt("AutoDisConnectMode", autoDisConnectMode);
+      Preferences prefsSettingsNode = Preferences.userRoot().node("com/mr/apps/JNordVpnManager/Settings");
+      prefsSettingsNode.putInt("AutoDisConnectMode", autoDisConnectMode);
       GuiCommandsToolBar.updateCommand(Command.APP_PREF_AUTODISCONNECT);
 
       return;
@@ -410,160 +444,160 @@ public class UtilPrefs
 
    public static String getRecentServerList()
    {
-      Preferences nordVpnRecentServerList = Preferences.userRoot().node("com/mr/apps/JNordVpnManager");
-      String recentServerList = nordVpnRecentServerList.get("RecentServer.List", DEFAULT_PREF_RECENTSERVER_LIST);
+      Preferences prefsMainNode = Preferences.userRoot().node("com/mr/apps/JNordVpnManager");
+      String recentServerList = prefsMainNode.get("RecentServer.List", DEFAULT_PREF_RECENTSERVER_LIST);
 
       return recentServerList;
    }
 
    public static void setRecentServerList(String list)
    {
-      Preferences nordVpnRecentServerList = Preferences.userRoot().node("com/mr/apps/JNordVpnManager");
-      nordVpnRecentServerList.put("RecentServer.List", list);
+      Preferences prefsMainNode = Preferences.userRoot().node("com/mr/apps/JNordVpnManager");
+      prefsMainNode.put("RecentServer.List", list);
 
       return;
    }
 
    public static int getRecentServerListLength()
    {
-      Preferences nordVpnRecentServerListLength = Preferences.userRoot().node("com/mr/apps/JNordVpnManager");
-      int recentServerListLength = nordVpnRecentServerListLength.getInt("RecentServer.List.Length", DEFAULT_PREF_RECENTSERVER_LIST_LENGTH);
+      Preferences prefsMainNode = Preferences.userRoot().node("com/mr/apps/JNordVpnManager");
+      int recentServerListLength = prefsMainNode.getInt("RecentServer.List.Length", DEFAULT_PREF_RECENTSERVER_LIST_LENGTH);
 
       return recentServerListLength;
    }
 
    public static void setRecentServerListLength(int listLength)
    {
-      Preferences nordVpnRecentServerListLength = Preferences.userRoot().node("com/mr/apps/JNordVpnManager");
-      nordVpnRecentServerListLength.putInt("RecentServer.List.Length", listLength);
+      Preferences prefsMainNode = Preferences.userRoot().node("com/mr/apps/JNordVpnManager");
+      prefsMainNode.putInt("RecentServer.List.Length", listLength);
 
       return;
    }
 
    public static int getTraceInit()
    {
-      Preferences settingsTraceInit = Preferences.userRoot().node("com/mr/apps/JNordVpnManager/Settings");
-      int traceInit = settingsTraceInit.getInt("Trace.Init", DEFAULT_PREF_SETTINGS_TRACEINIT);
+      Preferences prefsSettingsNode = Preferences.userRoot().node("com/mr/apps/JNordVpnManager/Settings");
+      int traceInit = prefsSettingsNode.getInt("Trace.Init", DEFAULT_PREF_SETTINGS_TRACEINIT);
 
       return traceInit;
    }
 
    public static void setTraceInit(int traceInit)
    {
-      Preferences settingsTraceInit = Preferences.userRoot().node("com/mr/apps/JNordVpnManager/Settings");
-      settingsTraceInit.putInt("Trace.Init", traceInit);
+      Preferences prefsSettingsNode = Preferences.userRoot().node("com/mr/apps/JNordVpnManager/Settings");
+      prefsSettingsNode.putInt("Trace.Init", traceInit);
 
       return;
    }
 
    public static int getTraceCmd()
    {
-      Preferences settingsTraceCmd = Preferences.userRoot().node("com/mr/apps/JNordVpnManager/Settings");
-      int traceCmd = settingsTraceCmd.getInt("Trace.Cmd", DEFAULT_PREF_SETTINGS_TRACECMD);
+      Preferences prefsSettingsNode = Preferences.userRoot().node("com/mr/apps/JNordVpnManager/Settings");
+      int traceCmd = prefsSettingsNode.getInt("Trace.Cmd", DEFAULT_PREF_SETTINGS_TRACECMD);
 
       return traceCmd;
    }
 
    public static void setTraceCmd(int traceCmd)
    {
-      Preferences settingsTraceCmd = Preferences.userRoot().node("com/mr/apps/JNordVpnManager/Settings");
-      settingsTraceCmd.putInt("Trace.Cmd", traceCmd);
+      Preferences prefsSettingsNode = Preferences.userRoot().node("com/mr/apps/JNordVpnManager/Settings");
+      prefsSettingsNode.putInt("Trace.Cmd", traceCmd);
 
       return;
    }
 
    public static int getTraceDebug()
    {
-      Preferences settingsTraceDebug = Preferences.userRoot().node("com/mr/apps/JNordVpnManager/Settings");
-      int traceDebug = settingsTraceDebug.getInt("Trace.Debug", DEFAULT_PREF_SETTINGS_TRACEDEBUG);
+      Preferences prefsSettingsNode = Preferences.userRoot().node("com/mr/apps/JNordVpnManager/Settings");
+      int traceDebug = prefsSettingsNode.getInt("Trace.Debug", DEFAULT_PREF_SETTINGS_TRACEDEBUG);
 
       return traceDebug;
    }
 
    public static void setTraceDebug(int traceDebug)
    {
-      Preferences settingsTraceDebug = Preferences.userRoot().node("com/mr/apps/JNordVpnManager/Settings");
-      settingsTraceDebug.putInt("Trace.Debug", traceDebug);
+      Preferences prefsSettingsNode = Preferences.userRoot().node("com/mr/apps/JNordVpnManager/Settings");
+      prefsSettingsNode.putInt("Trace.Debug", traceDebug);
 
       return;
    }
 
    public static String getLogfileName()
    {
-      Preferences settingsLogfileName = Preferences.userRoot().node("com/mr/apps/JNordVpnManager/Settings");
-      String logfileName = settingsLogfileName.get("Logfile.Name", DEFAULT_PREF_SETTINGS_LOGFILE_NAME);
+      Preferences prefsSettingsNode = Preferences.userRoot().node("com/mr/apps/JNordVpnManager/Settings");
+      String logfileName = prefsSettingsNode.get("Logfile.Name", DEFAULT_PREF_SETTINGS_LOGFILE_NAME);
 
       return logfileName.replaceFirst("^~", System.getProperty("user.home"));
    }
 
    public static void setLogfileName(String logfileName)
    {
-      Preferences settingsLogfileName = Preferences.userRoot().node("com/mr/apps/JNordVpnManager/Settings");
-      settingsLogfileName.put("Logfile.Name", logfileName.replaceFirst("^~", System.getProperty("user.home")));
+      Preferences prefsSettingsNode = Preferences.userRoot().node("com/mr/apps/JNordVpnManager/Settings");
+      prefsSettingsNode.put("Logfile.Name", logfileName.replaceFirst("^~", System.getProperty("user.home")));
 
       return;
    }
 
    public static int isLogfileActive()
    {
-      Preferences settingsWriteLogfile = Preferences.userRoot().node("com/mr/apps/JNordVpnManager/Settings");
-      int writeLogfile = settingsWriteLogfile.getInt("Logfile.Active", DEFAULT_PREF_SETTINGS_LOGFILE_ACTIVE);
+      Preferences prefsSettingsNode = Preferences.userRoot().node("com/mr/apps/JNordVpnManager/Settings");
+      int writeLogfile = prefsSettingsNode.getInt("Logfile.Active", DEFAULT_PREF_SETTINGS_LOGFILE_ACTIVE);
 
       return writeLogfile;
    }
 
    public static void setLogfileActive(int logfileActive)
    {
-      Preferences settingsLogfileActive = Preferences.userRoot().node("com/mr/apps/JNordVpnManager/Settings");
-      settingsLogfileActive.putInt("Logfile.Active", logfileActive);
+      Preferences prefsSettingsNode = Preferences.userRoot().node("com/mr/apps/JNordVpnManager/Settings");
+      prefsSettingsNode.putInt("Logfile.Active", logfileActive);
 
       return;
    }
 
    public static int isConsoleActive()
    {
-      Preferences settingsConsoleActive = Preferences.userRoot().node("com/mr/apps/JNordVpnManager/Settings");
-      int consoleActive = settingsConsoleActive.getInt("Console.ActiveOnProgramStart", DEFAULT_PREF_SETTINGS_CONSOLE_ACTIVE);
+      Preferences prefsSettingsNode = Preferences.userRoot().node("com/mr/apps/JNordVpnManager/Settings");
+      int consoleActive = prefsSettingsNode.getInt("Console.ActiveOnProgramStart", DEFAULT_PREF_SETTINGS_CONSOLE_ACTIVE);
 
       return consoleActive;
    }
 
    public static void setConsoleActive(int consoleActive)
    {
-      Preferences settingsConsoleActive = Preferences.userRoot().node("com/mr/apps/JNordVpnManager/Settings");
-      settingsConsoleActive.putInt("Console.ActiveOnProgramStart", consoleActive);
+      Preferences prefsSettingsNode = Preferences.userRoot().node("com/mr/apps/JNordVpnManager/Settings");
+      prefsSettingsNode.putInt("Console.ActiveOnProgramStart", consoleActive);
 
       return;
    }
 
    public static int getCommandTimeout()
    {
-      Preferences settingsCommandTimeout = Preferences.userRoot().node("com/mr/apps/JNordVpnManager/Settings");
-      int commandTimeout = settingsCommandTimeout.getInt("Command.Timeout", DEFAULT_PREF_SETTINGS_COMMAMD_TIMEOUT);
+      Preferences prefsSettingsNode = Preferences.userRoot().node("com/mr/apps/JNordVpnManager/Settings");
+      int commandTimeout = prefsSettingsNode.getInt("Command.Timeout", DEFAULT_PREF_SETTINGS_COMMAMD_TIMEOUT);
 
       return commandTimeout;
    }
 
    public static void setCommandTimeout(int commandTimeout)
    {
-      Preferences settingsCommandTimeout = Preferences.userRoot().node("com/mr/apps/JNordVpnManager/Settings");
-      settingsCommandTimeout.putInt("Command.Timeout", commandTimeout);
+      Preferences prefsSettingsNode = Preferences.userRoot().node("com/mr/apps/JNordVpnManager/Settings");
+      prefsSettingsNode.putInt("Command.Timeout", commandTimeout);
 
       return;
    }
 
    public static int getAccountReminder()
    {
-      Preferences settingsAccountReminder = Preferences.userRoot().node("com/mr/apps/JNordVpnManager/Settings");
-      int accountReminder = settingsAccountReminder.getInt("Account.Reminder", DEFAULT_PREF_SETTINGS_ACCOUNTREMINDER);
+      Preferences prefsSettingsNode = Preferences.userRoot().node("com/mr/apps/JNordVpnManager/Settings");
+      int accountReminder = prefsSettingsNode.getInt("Account.Reminder", DEFAULT_PREF_SETTINGS_ACCOUNTREMINDER);
 
       return accountReminder;
    }
 
    public static void setAccountReminder(int accountReminder)
    {
-      Preferences settingsAccountReminder = Preferences.userRoot().node("com/mr/apps/JNordVpnManager/Settings");
-      settingsAccountReminder.putInt("Account.Reminder", accountReminder);
+      Preferences prefsSettingsNode = Preferences.userRoot().node("com/mr/apps/JNordVpnManager/Settings");
+      prefsSettingsNode.putInt("Account.Reminder", accountReminder);
 
       return;
    }
@@ -574,96 +608,96 @@ public class UtilPrefs
 
    public static String getAddonsPath()
    {
-      Preferences settingsAddonsPath = Preferences.userRoot().node("com/mr/apps/JNordVpnManager/Settings");
-      String addonsPath = settingsAddonsPath.get("Addons.Path", DEFAULT_PREF_SETTINGS_ADDONS_PATH);
+      Preferences prefsSettingsNode = Preferences.userRoot().node("com/mr/apps/JNordVpnManager/Settings");
+      String addonsPath = prefsSettingsNode.get("Addons.Path", DEFAULT_PREF_SETTINGS_ADDONS_PATH);
 
       return addonsPath.replaceFirst("^~", System.getProperty("user.home"));
    }
 
    public static void setAddonsPath(String addonsPath)
    {
-      Preferences settingsAddonsPath = Preferences.userRoot().node("com/mr/apps/JNordVpnManager/Settings");
-      settingsAddonsPath.put("Addons.Path", addonsPath.replaceFirst("^~", System.getProperty("user.home")));
+      Preferences prefsSettingsNode = Preferences.userRoot().node("com/mr/apps/JNordVpnManager/Settings");
+      prefsSettingsNode.put("Addons.Path", addonsPath.replaceFirst("^~", System.getProperty("user.home")));
 
       return;
    }
 
    public static String getCommandsToolbarIds()
    {
-      Preferences settingsCommandsToolbar = Preferences.userRoot().node("com/mr/apps/JNordVpnManager/Settings");
-      String commandsToolbar = settingsCommandsToolbar.get("CommandsToolbar", DEFAULT_PREF_SETTINGS_COMMANDS_TOOLBAR);
+      Preferences prefsSettingsNode = Preferences.userRoot().node("com/mr/apps/JNordVpnManager/Settings");
+      String commandsToolbar = prefsSettingsNode.get("CommandsToolbar", DEFAULT_PREF_SETTINGS_COMMANDS_TOOLBAR);
 
       return commandsToolbar;
    }
 
    public static void setCommandsToolbarIds(String commandsToolbar)
    {
-      Preferences settingsCommandsToolbar = Preferences.userRoot().node("com/mr/apps/JNordVpnManager/Settings");
-      settingsCommandsToolbar.put("CommandsToolbar", commandsToolbar);
+      Preferences prefsSettingsNode = Preferences.userRoot().node("com/mr/apps/JNordVpnManager/Settings");
+      prefsSettingsNode.put("CommandsToolbar", commandsToolbar);
 
       return;
    }
 
    public static int getTimerDefaultValue()
    {
-      Preferences settingsTimerDefaultValue = Preferences.userRoot().node("com/mr/apps/JNordVpnManager/Settings");
-      int timerDefaultValue = settingsTimerDefaultValue.getInt("Timer.Defaultvalue", DEFAULT_PREF_SETTINGS_TIMERDEFAULTVALUE);
+      Preferences prefsSettingsNode = Preferences.userRoot().node("com/mr/apps/JNordVpnManager/Settings");
+      int timerDefaultValue = prefsSettingsNode.getInt("Timer.Defaultvalue", DEFAULT_PREF_SETTINGS_TIMERDEFAULTVALUE);
 
       return timerDefaultValue;
    }
 
    public static void setTimerDefaultValue(int timerDefaultValue)
    {
-      Preferences settingsTimerDefaultValue = Preferences.userRoot().node("com/mr/apps/JNordVpnManager/Settings");
-      settingsTimerDefaultValue.putInt("Timer.Defaultvalue", timerDefaultValue);
+      Preferences prefsSettingsNode = Preferences.userRoot().node("com/mr/apps/JNordVpnManager/Settings");
+      prefsSettingsNode.putInt("Timer.Defaultvalue", timerDefaultValue);
 
       return;
    }
 
    public static String getAllowListDeactivated()
    {
-      Preferences settingsAllowListDeactivated = Preferences.userRoot().node("com/mr/apps/JNordVpnManager");
-      String allowListDeactivated = settingsAllowListDeactivated.get("AllowList.Deactivated", DEFAULT_PREF_ALLOWLIST_DEACTIVATED);
+      Preferences prefsMainNode = Preferences.userRoot().node("com/mr/apps/JNordVpnManager");
+      String allowListDeactivated = prefsMainNode.get("AllowList.Deactivated", DEFAULT_PREF_ALLOWLIST_DEACTIVATED);
 
       return allowListDeactivated;
    }
 
    public static void setAllowListDeactivated(String allowListDeactivated)
    {
-      Preferences settingsAllowListDeactivated = Preferences.userRoot().node("com/mr/apps/JNordVpnManager");
-      settingsAllowListDeactivated.put("AllowList.Deactivated", allowListDeactivated);
+      Preferences prefsMainNode = Preferences.userRoot().node("com/mr/apps/JNordVpnManager");
+      prefsMainNode.put("AllowList.Deactivated", allowListDeactivated);
 
       return;
    }
 
    public static String getWorldmapImage()
    {
-      Preferences worldmapImage = Preferences.userRoot().node("com/mr/apps/JNordVpnManager");
-      String image = worldmapImage.get("Worldmap.Image", DEFAULT_PREF_WORLDMAP_IMAGE);
+      Preferences prefsMainNode = Preferences.userRoot().node("com/mr/apps/JNordVpnManager");
+      String image = prefsMainNode.get("Worldmap.Image", DEFAULT_PREF_WORLDMAP_IMAGE);
 
       return image;
    }
 
    public static void setWorldmapImage(String image)
    {
-      Preferences worldmapImage = Preferences.userRoot().node("com/mr/apps/JNordVpnManager");
-      worldmapImage.put("Worldmap.Image", image);
+      Preferences prefsMainNode = Preferences.userRoot().node("com/mr/apps/JNordVpnManager");
+      prefsMainNode.put("Worldmap.Image", image);
 
       return;
    }
 
    public static String getWorldmapImageDisplayMode()
    {
-      Preferences worldmapImageDisplayMode = Preferences.userRoot().node("com/mr/apps/JNordVpnManager");
-      String mode = worldmapImageDisplayMode.get("Worldmap.ImageMode", DEFAULT_PREF_WORLDMAP_IMAGE_DISPLAY_MODE);
+      Preferences prefsMainNode = Preferences.userRoot().node("com/mr/apps/JNordVpnManager");
+      String mode = prefsMainNode.get("Worldmap.ImageMode", DEFAULT_PREF_WORLDMAP_IMAGE_DISPLAY_MODE);
 
       return mode;
    }
 
    public static void setWorldmapImageDisplayMode(String mode)
    {
-      Preferences worldmapImageDisplayMode = Preferences.userRoot().node("com/mr/apps/JNordVpnManager");
-      worldmapImageDisplayMode.put("Worldmap.ImageMode", mode);
+      Preferences prefsMainNode = Preferences.userRoot().node("com/mr/apps/JNordVpnManager");
+      prefsMainNode.put("Worldmap.ImageMode", mode);
 
       return;
    }
@@ -706,6 +740,7 @@ public class UtilPrefs
 //    hm.put(RECENTSERVER_REGION, StringFormat.int2String(getRecentServerRegion(), "#"));
 //    hm.put(RECENTSERVER_GROUP, StringFormat.int2String(getRecentServerGroup(), "#"));
 //    hm.put(COMPACTMODE, StringFormat.int2String(getCompactMode(), "#"));
+//    hm.put(MAINFRAME_POSITION, getMainframePosition());
 
       return hm;
    }
@@ -751,6 +786,7 @@ public class UtilPrefs
 //      setRecentServerRegion(Integer.valueOf(hm.get(RECENTSERVER_REGION)));
 //      setRecentServerGroup(Integer.valueOf(hm.get(RECENTSERVER_GROUP)));
 //      setCompactMode(Integer.valueOf(hm.get(COMPACTMODE)));
+//      setMainframePosition(hm.get(MAINFRAME_POSITION));
 
       // Value changes that requires GUI Updates
       String sCurrentList = getRecentServerList();
@@ -823,6 +859,7 @@ public class UtilPrefs
       setRecentServerRegion(DEFAULT_PREF_RECENTSERVER_REGION);
       setRecentServerGroup(DEFAULT_PREF_RECENTSERVER_GROUP);
       setCompactMode(DEFAULT_PREF_SETTINGS_COMPACTMODE);
+      setMainframePosition(DEFAULT_PREF_SETTINGS_MAINFRAME_POSITION);
       setAutoConnectMode(DEFAULT_PREF_SETTINGS_AUTOCONNECTMODE);
       setAutoDisConnectMode(DEFAULT_PREF_SETTINGS_AUTODISCONNECTMODE);
       setRecentServerList(DEFAULT_PREF_RECENTSERVER_LIST);

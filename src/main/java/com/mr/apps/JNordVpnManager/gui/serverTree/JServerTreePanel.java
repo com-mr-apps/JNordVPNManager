@@ -15,7 +15,9 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Enumeration;
+import java.util.List;
 
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
@@ -34,6 +36,7 @@ import javax.swing.event.TreeWillExpandListener;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.ExpandVetoException;
+import javax.swing.tree.MutableTreeNode;
 import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
@@ -319,13 +322,27 @@ public class JServerTreePanel extends JPanel implements TreeSelectionListener
 
       // create the server list tree based on the current content
       DefaultMutableTreeNode root = createServerTree(update);
+
+      // sort tree 
+      List<TreeNode> sortedChildren = new ArrayList<>();
+      Enumeration<TreeNode> children = root.children();
+      while (children.hasMoreElements())
+      {
+         sortedChildren.add(children.nextElement());
+      }
+      sortedChildren.sort(Comparator.comparing(TreeNode::toString));
+      for (TreeNode child : sortedChildren)
+      {
+         root.add((MutableTreeNode) child);
+      }
+
       m_tree.setModel(new MyModel(root));
       if (!m_filterText.isBlank())
       {
          // filter
          for (int r = 0; r < m_tree.getRowCount(); r++)
          {
-            // in case of active filter we expand all tree nodes
+            // in case of active filter we expand all matching tree nodes
             m_tree.expandRow(r);
          }
       }
@@ -363,6 +380,20 @@ public class JServerTreePanel extends JPanel implements TreeSelectionListener
       m_currentSelectedTreeNode = null;
 
       DefaultMutableTreeNode root = createServerTree(update);
+
+      // sort tree
+      List<TreeNode> sortedChildren = new ArrayList<>();
+      Enumeration<TreeNode> children = root.children();
+      while (children.hasMoreElements())
+      {
+         sortedChildren.add(children.nextElement());
+      }
+      sortedChildren.sort(Comparator.comparing(TreeNode::toString));
+      for (TreeNode child : sortedChildren)
+      {
+         root.add((MutableTreeNode) child);
+      }
+      
       DefaultTreeModel model = new MyModel(root);
       m_tree = new JTree(model);
       m_tree.addTreeSelectionListener(this);
