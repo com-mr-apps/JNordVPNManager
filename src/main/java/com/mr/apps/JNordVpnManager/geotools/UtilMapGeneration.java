@@ -109,12 +109,12 @@ public class UtilMapGeneration
 
    public static void removeLayer(Layer layer)
    {
-      if (null != layer) m_map.removeLayer(layer);
+      if ((null != m_map) && (null != layer)) m_map.removeLayer(layer);
    }
 
    public static void addLayer(Layer layer)
    {
-      if (null != layer) m_map.addLayer(layer);
+      if ((null != m_map) && (null != layer)) m_map.addLayer(layer);
    }
 
    /**
@@ -170,6 +170,8 @@ public class UtilMapGeneration
 
    private static void zoomOut(ReferencedEnvelope envelope)
    {
+      if (null == m_mapPane) return;
+
       if (null != envelope)
       {
          Starter._m_logError.TraceDebug("Map zoom Out...");
@@ -184,6 +186,8 @@ public class UtilMapGeneration
 
    public static void zoomIn(Location loc)
    {
+      if (null == m_mapPane) return;
+
       if (null != loc)
       {
          Starter._m_logError.TraceDebug("Map zoom In...");
@@ -215,6 +219,8 @@ public class UtilMapGeneration
 
    public static void changeCurrentServerMapLayer(Location loc)
    {
+      if (null == m_map) return;
+
       if (null != m_currentServerMapLayer)
       {
          if (null != loc && m_currentServerMapLayer.getTitle().equals(loc.getServerKey())) return; // already current

@@ -69,28 +69,29 @@ import com.mr.apps.JNordVpnManager.utils.String.StringFormat;
 @SuppressWarnings("serial")
 public class JServerTreePanel extends JPanel implements TreeSelectionListener
 {
-   private static final int           MIN_CHARS_FOR_FILTER    = 3;
-   private static JTree               m_tree                  = null;
-   private JTextField                 m_filterTextField       = null;
-   private static String              m_filterText            = "";
-   private static JLabel              m_filterLabel           = null;
-   private boolean                    m_lockUpdate            = false;
-   private JButton                    m_buttonRefresh         = null;
-   private JComboBox<?>               m_filterRegions         = null;
-   private JComboBox<?>               m_filterGroups          = null;
-   private Color                      m_buttonDefaultFgColor  = null;
-   private static boolean             m_statusInitServerList  = true;
-   private static boolean             m_skipValueChangedEvent = false;
+   private static final int           MIN_CHARS_FOR_FILTER      = 3;
+   private static JTree               m_tree                    = null;
+   private static String              m_filterText              = "";
+   private static JLabel              m_filterLabel             = null;
+   private static boolean             m_statusInitServerList    = true;
+   private static boolean             m_skipValueChangedEvent   = false;
    private static Object              m_currentSelectedTreeNode = null;
+   private static boolean             m_isCreated               = false;
+   private JTextField                 m_filterTextField         = null;
+   private boolean                    m_lockUpdate              = false;
+   private JButton                    m_buttonRefresh           = null;
+   private JComboBox<?>               m_filterRegions           = null;
+   private JComboBox<?>               m_filterGroups            = null;
+   private Color                      m_buttonDefaultFgColor    = null;
 
-   NordVPNEnumGroups[]                m_iaRegions             = {
+   NordVPNEnumGroups[]                m_iaRegions               = {
          NordVPNEnumGroups.all_regions,
          NordVPNEnumGroups.The_Americas,
          NordVPNEnumGroups.Africa_The_Middle_East_And_India,
          NordVPNEnumGroups.Asia_Pacific,
          NordVPNEnumGroups.Europe
    };
-   String                             m_saRegions[]           = {
+   String                             m_saRegions[]             = {
          "All Regions",
          "America",
          "Africa/Middle East/India",
@@ -98,7 +99,7 @@ public class JServerTreePanel extends JPanel implements TreeSelectionListener
          "Europe"
    };
 
-   private static NordVPNEnumGroups[] m_iaGroups              = {
+   private static NordVPNEnumGroups[] m_iaGroups                = {
          NordVPNEnumGroups.Standard_VPN_Servers,
          NordVPNEnumGroups.P2P,
          NordVPNEnumGroups.Double_VPN,
@@ -106,7 +107,7 @@ public class JServerTreePanel extends JPanel implements TreeSelectionListener
          NordVPNEnumGroups.Dedicated_IP,
          NordVPNEnumGroups.legacy_obfuscated_servers
    };
-   private static String              m_saGroupsText[]        = {
+   private static String              m_saGroupsText[]          = {
          "Standard VPN Servers",
          "P2P",
          "Double VPN",
@@ -117,12 +118,37 @@ public class JServerTreePanel extends JPanel implements TreeSelectionListener
 
    /**
     * Server List Panel Layout definition.
+    * <p>
+    * This class creates and manages the Server Tree Panel.<br>
+    * The Server Tree is created once and displayed only for GUI expanded mode.
     */
    public JServerTreePanel()
    {
       super();
       this.setLayout(new BorderLayout());
       this.setBorder(BorderFactory.createEmptyBorder(0,5,0,5));
+   }
+
+   /**
+    * Check if the JServer Tree Panel is created.
+    * 
+    * @return true, if the JServer Tree is already created.
+    */
+   public static boolean isCreated()
+   {
+      return m_isCreated;
+   }
+
+   /**
+    * Create the JServer Tree Panel.
+    * 
+    * @see com.mr.apps.JNordVpnManager.Starter.updateFilterTreeCB(boolean)
+    */
+   public void initPanel()
+   {
+      // Create only once (on first launch of expanded GUI mode)
+      if (m_isCreated) return;
+      Starter._m_logError.getCurElapsedTime("Initialize Server Tree Panel start...");
 
       // ---------------------------------------------------------------------------------------------
       // Filter row
@@ -293,6 +319,8 @@ public class JServerTreePanel extends JPanel implements TreeSelectionListener
          }
       });
 
+      Starter._m_logError.getCurElapsedTime("Initialize Server Tree Panel end.");
+      m_isCreated = true;
    }
 
    /**
@@ -363,23 +391,9 @@ public class JServerTreePanel extends JPanel implements TreeSelectionListener
     */
    private JScrollPane initTree()
    {
-      // create the server tree from NordVPN (update=true) or from [existing] local data (update=false) - dependent on auto update option(s)
-      boolean update = false;
-      int autoUpdateIntervall = UtilPrefs.getServerListAutoUpdate();
-      if (autoUpdateIntervall > 0)
-      {
-         // calculate the days between last update and now
-         String timestamp = UtilPrefs.getServerListTimestamp();
-         long lTimestamp = Long.parseLong(timestamp);
-         long days = UtilSystem.getDaysUntilNow(lTimestamp);
-         // check with defined auto update interval
-         update = (days >= autoUpdateIntervall) ? true : false;
-      }
-      Starter._m_logError.TraceIni("Auto Update Server List [from Application Preferences]: " + update);
-
       m_currentSelectedTreeNode = null;
 
-      DefaultMutableTreeNode root = createServerTree(update);
+      DefaultMutableTreeNode root = createServerTree(false);
 
       // sort tree
       List<TreeNode> sortedChildren = new ArrayList<>();
@@ -498,7 +512,7 @@ public class JServerTreePanel extends JPanel implements TreeSelectionListener
       // get the complete server list
       int nbCountries = 0;
       int nbServers = 0;
-      String serverListString = NvpnServers.getCountriesServerList(update);
+      String serverListString = NvpnServers.getCountriesServerList(update); // update 'true' if triggered from 'Refresh Server List' (m_buttonRefresh)
       if (NvpnGroups.isValid())
       {
          // Server list from NordVPN server with region/groups information
@@ -652,6 +666,8 @@ public class JServerTreePanel extends JPanel implements TreeSelectionListener
     */
    public static void activateTreeNode(CurrentLocation loc)
    {
+      if (false == isCreated()) return;
+
       if (null != loc)
       {
          TreePath tp = findNode(loc);
@@ -769,6 +785,8 @@ public class JServerTreePanel extends JPanel implements TreeSelectionListener
 
    public void setTreeFilterGroup()
    {
+      if (false == isCreated()) return;
+ 
       // check group filter consistency (Settings vs. Current)
       boolean bObfuscateSetting = StringFormat.string2boolean(Starter.getCurrentSettingsData().getObfuscate(false));
       boolean bObfuscateCurrent = NvpnGroups.getCurrentFilterGroup().equals(NordVPNEnumGroups.legacy_obfuscated_servers);
@@ -807,6 +825,8 @@ public class JServerTreePanel extends JPanel implements TreeSelectionListener
 
    private String setFilterToolTip(String sFilterRegion, String sFilterGroup, boolean bObfuscate, String sTechnologyAndProtocol, boolean isVirtual)
    {
+      if (false == isCreated()) return "";
+
       String sFilterText = sFilterRegion + " & " + sFilterGroup + " (Obfuscate: " + String.valueOf(bObfuscate) + ") & " + sTechnologyAndProtocol + " & Virtual Locations: " + String.valueOf(isVirtual);
       m_filterLabel.setToolTipText("click here to refresh the Server list. Current Filter: " + sFilterText);
 

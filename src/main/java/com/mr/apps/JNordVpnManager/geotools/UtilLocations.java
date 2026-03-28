@@ -51,6 +51,7 @@ public class UtilLocations
    {
       int rc = 0;
 
+      Starter._m_logError.getCurElapsedTime("Import Locations start...");
       if (update == false)
       {
          // first try to import data from previous exported data
