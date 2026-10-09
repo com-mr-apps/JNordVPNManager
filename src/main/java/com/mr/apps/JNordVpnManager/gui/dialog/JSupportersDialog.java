@@ -11,6 +11,7 @@ package com.mr.apps.JNordVpnManager.gui.dialog;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
@@ -212,7 +213,9 @@ public class JSupportersDialog extends JFrame
       this.add(whatsTextScrollPanel, BorderLayout.CENTER);
 
       this.setPreferredSize(new Dimension(800,400));
-      this.setLocationRelativeTo(null);
+//      this.setLocationRelativeTo(null);
+      Point xyFramePos = Starter.getMainFramePosition();
+      this.setLocation(xyFramePos.x + 20, xyFramePos.y + 20);
       this.pack();
 
       // keep only one dialog open

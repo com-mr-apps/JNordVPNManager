@@ -160,13 +160,13 @@ public class Command implements CommandInterface
 
       addCommand(new CommandButton(VPN_CMD_RECONNECT,
             JResizedIcon.IconUrls.ICON_RECONNECT,
-            "Command to to [Re]connect the VPN Server.",
+            "Command to [Re]connect the VPN Server.",
             null,
             "VpnReconnect"));
 
       addCommand(new CommandButton(VPN_CMD_QUICKCONNECT,
             JResizedIcon.IconUrls.ICON_QUICKCONNECT,
-            "Command to to quick connect to a VPN Server.",
+            "Command to quick connect to a VPN Server.",
             null,
             "VpnQuickconnect"));
 

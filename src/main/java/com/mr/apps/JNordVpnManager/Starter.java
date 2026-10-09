@@ -12,9 +12,14 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.Dimension;
+import java.awt.GraphicsDevice;
+import java.awt.GraphicsEnvironment;
 import java.awt.Image;
+import java.awt.Point;
+import java.awt.Rectangle;
 import java.awt.Taskbar;
-import java.awt.Toolkit;
+import java.awt.event.ComponentEvent;
+import java.awt.event.ComponentListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowFocusListener;
@@ -54,6 +59,7 @@ import com.mr.apps.JNordVpnManager.nordvpn.NvpnAccountData;
 import com.mr.apps.JNordVpnManager.nordvpn.NvpnCallbacks;
 import com.mr.apps.JNordVpnManager.nordvpn.NvpnCommands;
 import com.mr.apps.JNordVpnManager.nordvpn.NvpnGroups;
+import com.mr.apps.JNordVpnManager.nordvpn.NvpnServers;
 import com.mr.apps.JNordVpnManager.nordvpn.NvpnGroups.NordVPNEnumGroups;
 import com.mr.apps.JNordVpnManager.nordvpn.NvpnSettingsData;
 import com.mr.apps.JNordVpnManager.nordvpn.NvpnStatusData;
@@ -104,6 +110,27 @@ public class Starter extends JFrame
    private static boolean          m_skipFocusGainedForDebug  = false;
    private static String           m_AddOnLibVersion          = null;
    private static boolean          m_isSupporterEdition       = false;
+
+   class MainFrameComponentListener implements ComponentListener
+   {
+      public void componentShown(ComponentEvent evt)
+      {
+      }
+
+      public void componentHidden(ComponentEvent evt)
+      {
+      }
+
+      public void componentMoved(ComponentEvent evt)
+      {
+         Point pt = getLocation();
+         UtilPrefs.setMainframePosition(pt.x + ";" + pt.y);
+      }
+
+      public void componentResized(ComponentEvent evt)
+      {
+      }
+   }
 
    /**
     * NordVPN GUI application.
@@ -575,26 +602,38 @@ public class Starter extends JFrame
       }
 
       //-------------------------------------------------------------------------------
-      // Initialize Map Area
+      // Initialize Location Data
       // -------------------------------------------------------------------------------
-      GuiMapArea mapArea = new GuiMapArea();
       m_splashScreen.setProgress(40);
-      m_splashScreen.setStatus("Create World Map...");
-      // Create a map content and add our shape file (with locations) to it
-      m_mapFrame = mapArea.create();
+      m_splashScreen.setStatus("Initialize Server Location Data...");
+      
+      // get location data (servers) from NordVPN (update=true) or from [existing] local data (update=false) - dependent on auto update option(s)
+      boolean update = false;
+      int autoUpdateIntervall = UtilPrefs.getServerListAutoUpdate();
+      if (autoUpdateIntervall > 0)
+      {
+         // calculate the days between last update and now
+         String timestamp = UtilPrefs.getServerListTimestamp();
+         long lTimestamp = Long.parseLong(timestamp);
+         long days = UtilSystem.getDaysUntilNow(lTimestamp);
+         // check with defined auto update interval
+         update = (days >= autoUpdateIntervall) ? true : false;
+      }
+      Starter._m_logError.TraceIni("Auto Update Server List [from Application Preferences]: " + update);
+
+      // create the required internal locations data for the application
+      NvpnServers.getCountriesServerList(update);
 
       //-------------------------------------------------------------------------------
       // Server Location Selection Tree
       //-------------------------------------------------------------------------------
-      m_splashScreen.setProgress(50);
-      m_splashScreen.setStatus("Create Server list...");
-      m_serverListPanel = new JServerTreePanel();
-
-      //-------------------------------------------------------------------------------
-      // Menu bar (after JServerTreePanel!)
-      //-------------------------------------------------------------------------------
       m_splashScreen.setProgress(60);
       m_splashScreen.setStatus("Create Layout...");
+//      m_serverListPanel = new JServerTreePanel();
+
+      //-------------------------------------------------------------------------------
+      // Menu bar
+      //-------------------------------------------------------------------------------
       GuiMenuBar myMenuBar = new GuiMenuBar();
       JMenuBar menubar = myMenuBar.create(m_nvpnAccountData);
       m_mainFrame.setJMenuBar(menubar);
@@ -610,10 +649,11 @@ public class Starter extends JFrame
       //-------------------------------------------------------------------------------
       m_splashScreen.setProgress(80);
       m_mainFrame.add(connectPanel, BorderLayout.PAGE_START);
-      m_mainFrame.add(m_serverListPanel, BorderLayout.LINE_START);
-      if (null != m_mapFrame) m_mainFrame.add(m_mapFrame.getContentPane(), BorderLayout.CENTER);
+//      m_mainFrame.add(m_serverListPanel, BorderLayout.LINE_START);
+//      if (null != m_mapFrame) m_mainFrame.add(m_mapFrame.getContentPane(), BorderLayout.CENTER);
+
       m_mainFrame.add(statusPanel, BorderLayout.PAGE_END);
-      m_aboutScreen = new JAboutScreen(version);
+      m_aboutScreen = new JAboutScreen(m_mainFrame, version);
 
       m_splashScreen.setProgress(90);
       m_splashScreen.setStatus("Finalize...");
@@ -624,13 +664,17 @@ public class Starter extends JFrame
       int compactMode = UtilPrefs.getCompactMode();
       switchCompactMode(compactMode); // calls pack() and sets minimum size
 
-      // Center the Frame
-      Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-      Dimension panelSize = m_mainFrame.getSize();
-      m_mainFrame.setLocation((screenSize.width / 2) - (panelSize.width / 2), (screenSize.height / 2) - (panelSize.height / 2));
+      // Main Frame Position
+      Point xyFramePos = getMainFramePosition();
+
+      Starter._m_logError.TraceDebug("(init) Frame Location=" + xyFramePos.x + ";" + xyFramePos.y);
+      m_mainFrame.setLocation(xyFramePos.x, xyFramePos.y);
 
 //      m_mainFrame.setExtendedState(Frame.ICONIFIED);
       m_mainFrame.setVisible(true);
+
+      ComponentListener componentListener = new MainFrameComponentListener();
+      m_mainFrame.addComponentListener(componentListener);
 
       m_splashScreen.setProgress(100); // ..and close the splash screen
       updateCurrentServer();
@@ -638,6 +682,23 @@ public class Starter extends JFrame
       _m_logError.TraceIni("**********************************************************************************\n"
                          + "Finished Initialization.\n"
                          + "**********************************************************************************\n");
+   }
+
+   public static Point getMainFramePosition()
+   {
+      // get last Main Frame Position
+      Point xyFramePos = UtilPrefs.getMainframePosition();
+      Rectangle screenSize = allScreensRectangle();
+      Dimension panelSize = (null != m_mainFrame) ? m_mainFrame.getSize() : new Dimension (800,600);
+      if (null == xyFramePos)
+      {
+         // Center the Frame
+         xyFramePos = new Point((screenSize.width / 2) - (panelSize.width / 2), (screenSize.height / 2) - (panelSize.height / 2));
+      }
+      if (xyFramePos.x > screenSize.width-panelSize.width) xyFramePos.x = screenSize.width-panelSize.width;
+      if (xyFramePos.y > screenSize.height-panelSize.height) xyFramePos.y = screenSize.height-panelSize.height;
+
+      return xyFramePos;
    }
 
    /**
@@ -822,21 +883,68 @@ public class Starter extends JFrame
     */
    public static void switchCompactMode(int mode)
    {
-      if (0 == mode)
+      try
       {
-         // show map and tree panels
-         m_serverListPanel.setVisible(true);
-         if (null != m_mapFrame) m_mapFrame.getContentPane().setVisible(true);
-         m_mainFrame.setMinimumSize(new Dimension (800, 400));
+         if (0 == mode)
+         {
+            _m_logError.TraceDebug("Switch to JNordVPN Manager Expanded View mode.");
+            if ((null == m_mapFrame) || (null == m_mapFrame.getContentPane()))
+            {
+               // create m_mapFrame (Map)
+               Starter._m_logError.getCurElapsedTime("Create Map...");
+               GuiMapArea mapArea = new GuiMapArea();
+               m_mapFrame = mapArea.create();
+               m_mainFrame.add(m_mapFrame.getContentPane(), BorderLayout.CENTER);
+            }
+            if (null == m_serverListPanel)
+            {
+               // create m_serverListPanel (Server List Tree)
+               Starter._m_logError.getCurElapsedTime("Create Server List Tree...");
+               m_serverListPanel = new JServerTreePanel();
+               m_serverListPanel.initPanel();
+               m_mainFrame.add(m_serverListPanel, BorderLayout.LINE_START);
+            }
+
+            // .. go to current Server (Map)
+            m_currentServer = getCurrentServer(true);
+            if (null != m_currentServer && m_currentServer.isConnected())
+            {
+               UtilMapGeneration.changeCurrentServerMapLayer(m_currentServer);
+            }
+            else
+            {
+               // ...no active server
+               UtilMapGeneration.changeCurrentServerMapLayer(null);
+            }
+
+            // .. place the tree to the (last) current server
+            JServerTreePanel.activateTreeNode(m_currentServer);
+
+            // show map and tree panels
+            m_serverListPanel.setVisible(true);
+            m_mapFrame.getContentPane().setVisible(true);
+            m_mainFrame.setMinimumSize(new Dimension (800, 400));
+         }
+         else
+         {
+            _m_logError.TraceDebug("Switch to JNordVPN Manager Compact View mode.");
+            // hide map and tree panels
+            if (null != m_serverListPanel)
+            {
+               m_serverListPanel.setVisible(false);
+            }
+            if (null != m_mapFrame)
+            {
+               m_mapFrame.getContentPane().setVisible(false);
+            }
+            m_mainFrame.setMinimumSize(new Dimension (800, 80));
+         }
          m_mainFrame.pack();
       }
-      else
+      catch (Exception e)
       {
-         // hide map and tree panels
-         m_serverListPanel.setVisible(false);
-         if (null != m_mapFrame) m_mapFrame.getContentPane().setVisible(false);
-         m_mainFrame.setMinimumSize(new Dimension (800, 80));
-         m_mainFrame.pack();
+         // unexpected error
+         Starter._m_logError.LoggingExceptionMessage(4, 10500, e);
       }
    }
 
@@ -850,7 +958,10 @@ public class Starter extends JFrame
 
    public static void updateFilterTreeCB(boolean update)
    {
-      m_serverListPanel.updateFilterTreeCB(update);
+      if (null != m_serverListPanel)
+      {
+         m_serverListPanel.updateFilterTreeCB(update);
+      }
    }
 
    public static void showAboutScreen()
@@ -974,5 +1085,22 @@ public class Starter extends JFrame
                "/snap/j-nordvpn-manager/current/bin/java -jar /snap/j-nordvpn-manager/current/JNordVpnManager-current.jar\n" +
                "Please confirm to exit the program.");
       }
+   }
+
+   private static Rectangle allScreensRectangle()
+   {
+      // make array of all screens
+      GraphicsDevice[] screens = GraphicsEnvironment.getLocalGraphicsEnvironment().getScreenDevices();
+
+      // start out with the rectangle of the primary monitor
+      Rectangle allScreens = new Rectangle();
+      for (int i = 0; i < screens.length; i++)
+      {
+         Rectangle screenRect = screens[i].getDefaultConfiguration().getBounds();
+
+         allScreens.width = Math.max(allScreens.width, (screenRect.width + screenRect.x));
+         allScreens.height = Math.max (allScreens.height, (screenRect.height + screenRect.y));
+      }
+      return allScreens;
    }
 }

@@ -125,12 +125,14 @@ public class JWhatsNewDialog
          + "<p>For further information see: <a href=\"https://github.com/com-mr-apps/JNordVPNManager\">JNordVPN on GitHub</a></p>";
 
    private JFrame       m_aboutFrame = null;
+   private JFrame       m_parent     = null;
 
    /**
     * Initiates a new About Screen
     */
-   public JWhatsNewDialog()
+   public JWhatsNewDialog(JFrame parent)
    {
+      m_parent = parent;
       m_aboutFrame = new JFrame();
       m_aboutFrame.setTitle("What's New in JNordVPN Manager");
       m_aboutFrame.setLayout(new BorderLayout());
@@ -186,7 +188,7 @@ public class JWhatsNewDialog
     */
    public void show()
    {
-      m_aboutFrame.setLocationRelativeTo(null);
+      m_aboutFrame.setLocationRelativeTo(m_parent);
       m_aboutFrame.setVisible(true);
       m_aboutFrame.pack();
    }

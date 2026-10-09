@@ -10,10 +10,8 @@ package com.mr.apps.JNordVpnManager.gui.dialog;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Frame;
-import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
@@ -57,9 +55,9 @@ public class JSpeedtestDialog extends JDialog
    /**
     * Initiates a new Speed test frame
     */
-   public JSpeedtestDialog(Frame owner, String uri)
+   public JSpeedtestDialog(Frame parent, String uri)
    {
-      super(owner, "SpeedTest: " + uri, false); // modal false
+      super(parent, "SpeedTest: " + uri, false); // modal false
       this.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
 
       // Close Window with "X"
@@ -159,9 +157,7 @@ public class JSpeedtestDialog extends JDialog
       this.pack();
 
       // Centers the Dialog
-      Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-      Dimension panelSize = this.getSize();
-      this.setLocation((screenSize.width / 2) - (panelSize.width / 2), (screenSize.height / 2) - (panelSize.height / 2));
+      this.setLocationRelativeTo(parent);
 
       this.init(null);
    }

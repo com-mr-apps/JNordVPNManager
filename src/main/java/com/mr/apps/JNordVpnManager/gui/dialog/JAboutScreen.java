@@ -99,12 +99,14 @@ public class JAboutScreen
    + "<p>Licensor: com.mr.apps</p>";
 
    private JFrame       m_aboutFrame = null;
+   private JFrame       m_parent     = null;
 
    /**
     * Initiates a new About Screen
     */
-   public JAboutScreen(String version)
+   public JAboutScreen(JFrame parent, String version)
    {
+      m_parent = parent;
       m_aboutFrame = new JFrame();
       m_aboutFrame.setTitle("About JNordVPN Manager");
       m_aboutFrame.setLayout(null);
@@ -275,7 +277,7 @@ public class JAboutScreen
     */
    public void show()
    {
-      m_aboutFrame.setLocationRelativeTo(null);
+      m_aboutFrame.setLocationRelativeTo(m_parent);
       m_aboutFrame.setVisible(true);
       m_aboutFrame.pack();
    }
