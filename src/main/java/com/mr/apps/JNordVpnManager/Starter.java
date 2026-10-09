@@ -632,7 +632,7 @@ public class Starter extends JFrame
 //      m_serverListPanel = new JServerTreePanel();
 
       //-------------------------------------------------------------------------------
-      // Menu bar (after JServerTreePanel!)
+      // Menu bar
       //-------------------------------------------------------------------------------
       GuiMenuBar myMenuBar = new GuiMenuBar();
       JMenuBar menubar = myMenuBar.create(m_nvpnAccountData);
@@ -906,6 +906,7 @@ public class Starter extends JFrame
             }
 
             // .. go to current Server (Map)
+            m_currentServer = getCurrentServer(true);
             if (null != m_currentServer && m_currentServer.isConnected())
             {
                UtilMapGeneration.changeCurrentServerMapLayer(m_currentServer);

@@ -77,22 +77,22 @@ public class Location
       setLongitude(longitude);
       setLatitude(latitude);
 
-      if (cityId == -1)
+      if (m_cityId == -1)
       {
          // invalid location
          Starter._m_logError.TraceDebug("Temp. No Location: " + this.toString());         
       }
-      else if (cityId == 0)
+      else if (m_cityId == 0)
       {
          // internal generated temporary country location
          Starter._m_logError.TraceDebug("Temp. Country Location: " + this.toString());         
       }
-      else if (cityId == 1)
+      else if (m_cityId == 1)
       {
          // internal generated temporary city location
          Starter._m_logError.TraceDebug("Temp. City Location: " + this.toString());         
       }
-      else if (cityId == 2)
+      else if (m_cityId == 2)
       {
          // internal generated temporary region location
          Starter._m_logError.TraceDebug("Temp. Region Location: " + this.toString());         

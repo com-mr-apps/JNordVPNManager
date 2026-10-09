@@ -53,7 +53,7 @@ public class JAutoCloseLoginDialog extends JDialog implements ActionListener
       message.setCaretColor(Color.WHITE);
       message.setContentType( "text/html" );    
       message.setText("<html><font face=\"serif\" color=\"black\">" + msg + "</font><p>" + 
-            "(If the Browser does not open automatically, the URL can be pasted from Clipboard [Ctrl+p])<p>" + 
+            "(If the Browser does not open automatically, the URL can be pasted from Clipboard [Ctrl+v])<p>" + 
             "<em>This dialog closes automatically after successful login in the external Browser!</em>" + 
             "</font></html>");
       getContentPane().add(message,BorderLayout.CENTER);

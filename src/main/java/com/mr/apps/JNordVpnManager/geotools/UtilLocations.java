@@ -226,14 +226,32 @@ public class UtilLocations
                   JSONObject jsonObjGroup = jsonArrGroups.getJSONObject(iGrp);
                   if ((sCountry.startsWith("United States") || 
                        sCountry.startsWith("Canada") || 
+                       sCountry.startsWith("Cameroon") || 
+                       sCountry.startsWith("Singapore") || 
                        sCountry.startsWith("South Korea")) &&
-                      (jsonObjGroup.getInt("id") == 19))
+                      (jsonObjGroup.getInt("id") == 19)) // Europe
                   {
                      // skip invalid group entry "Europe" for Kansas City - Record nb. 6390 (03.12.2024)
                      // ...and other cities in US ..and the world..
                      Starter._m_logError.TraceIni("Skip invalid Group Entry 'Europe' for '" + sCity + "' / '" + sCountry + "' Record Nb: " + i);
                      continue;
                   }
+                  if ((sCountry.startsWith("Austria")) &&
+                       (jsonObjGroup.getInt("id") == 21)) // The Americas
+                   {
+                      // skip invalid group entry "The Americas"...
+                      Starter._m_logError.TraceIni("Skip invalid Group Entry 'The Americas' for '" + sCity + "' / '" + sCountry + "' Record Nb: " + i);
+                      continue;
+                   }
+                  if ((sCountry.startsWith("Suriname") || 
+                        sCountry.startsWith("Barbados")) &&
+                        (jsonObjGroup.getInt("id") == 25)) // Africa The Middle East And India
+                    {
+                       // skip invalid group entry "Africa The Middle East And India"...
+                       Starter._m_logError.TraceIni("Skip invalid Group Entry 'Africa The Middle East And India' for '" + sCity + "' / '" + sCountry + "' Record Nb: " + i);
+                       continue;
+                    }
+
 
                   newLocation.addGroup(NordVPNEnumGroups.get(jsonObjGroup.getInt("id")));
                   if (null != vpnServer) vpnServer.addGroup(NordVPNEnumGroups.get(jsonObjGroup.getInt("id")));
