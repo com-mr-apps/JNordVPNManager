@@ -474,6 +474,38 @@ public class UtilPrefs
       return;
    }
 
+   public static String getFavoritesServerList()
+   {
+      Preferences prefsMainNode = Preferences.userRoot().node("com/mr/apps/JNordVpnManager");
+      String favoritesServerList = prefsMainNode.get("FavoritesServer.List", DEFAULT_PREF_RECENTSERVER_LIST);
+
+      return favoritesServerList;
+   }
+
+   public static void setFavoritesServerList(String list)
+   {
+      Preferences prefsMainNode = Preferences.userRoot().node("com/mr/apps/JNordVpnManager");
+      prefsMainNode.put("FavoritesServer.List", list);
+
+      return;
+   }
+
+   public static int getFavoritesServerListLength()
+   {
+      Preferences prefsMainNode = Preferences.userRoot().node("com/mr/apps/JNordVpnManager");
+      int favoritesServerListLength = prefsMainNode.getInt("FavoritesServer.List.Length", DEFAULT_PREF_RECENTSERVER_LIST_LENGTH);
+
+      return favoritesServerListLength;
+   }
+
+   public static void setFavoritesServerListLength(int listLength)
+   {
+      Preferences prefsMainNode = Preferences.userRoot().node("com/mr/apps/JNordVpnManager");
+      prefsMainNode.putInt("FavoritesServer.List.Length", listLength);
+
+      return;
+   }
+
    public static int getTraceInit()
    {
       Preferences prefsSettingsNode = Preferences.userRoot().node("com/mr/apps/JNordVpnManager/Settings");
