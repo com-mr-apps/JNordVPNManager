@@ -12,6 +12,7 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.GraphicsDevice;
 import java.awt.GraphicsEnvironment;
 import java.awt.Image;
@@ -83,6 +84,8 @@ public class Starter extends JFrame
    public static final String      SEP_DATARECORD             = ":";
    public static final String      SEP_DATAITEM               = ",";
    public static final Color       Color_Addon                = new Color(81,23,137);
+   public static final Color       Color_Copyright            = new Color(97, 206, 255);
+   public static final Font        Font_Copyright             = new Font("serif", Font.ITALIC, 12);
 
    public static UtilLogErr        _m_logError                = null;
 
@@ -1027,6 +1030,11 @@ public class Starter extends JFrame
    public static boolean isSnapInstallation()
    {
       return m_isSnapInstallation;
+   }
+
+   public static boolean isVersion5()
+   {
+      return m_nordvpnVersion.startsWith("5");
    }
 
    private static String checkSnapRunMode()

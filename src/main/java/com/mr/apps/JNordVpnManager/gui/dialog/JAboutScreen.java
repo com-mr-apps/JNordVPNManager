@@ -11,7 +11,6 @@ package com.mr.apps.JNordVpnManager.gui.dialog;
 import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.Dimension;
-import java.awt.Font;
 import java.awt.Image;
 import java.awt.event.WindowAdapter;
 import java.net.URI;
@@ -131,15 +130,15 @@ public class JAboutScreen
       JLabel lblVersion = new JLabel(version);
       lblVersion.setSize(lblVersion.getPreferredSize());
       lblVersion.setLocation(20, 15);
-      lblVersion.setFont(new Font("serif", Font.ITALIC, 12));
-      lblVersion.setForeground(new Color(97, 206, 255));
+      lblVersion.setFont(Starter.Font_Copyright);
+      lblVersion.setForeground(Starter.Color_Copyright);
       aboutBaseImageLabel.add(lblVersion);
 
       JLabel copyright =  new JLabel(Starter.COPYRIGHT_STRING);
       copyright.setSize(copyright.getPreferredSize());
       copyright.setLocation(20, 35);
-      copyright.setFont(new Font("serif", Font.ITALIC, 12));
-      copyright.setForeground(new Color(97, 206, 255));
+      copyright.setFont(Starter.Font_Copyright);
+      copyright.setForeground(Starter.Color_Copyright);
       aboutBaseImageLabel.add(copyright);
 
       if (Starter.isSupporterEdition())
@@ -231,7 +230,9 @@ public class JAboutScreen
 
       JEditorPane aboutText = new JEditorPane();
       aboutText.setEditable(false);
-      aboutText.setCaretColor(Color.WHITE); // hide caret
+      aboutText.setBackground(new Color(247, 217, 146));
+      aboutText.setForeground(new Color(255-247, 255-217, 255-146));
+      aboutText.setCaretColor(aboutText.getBackground()); // hide caret
       aboutText.setContentType("text/html");
       aboutText.setText("<html><body style=\"background-color:white\">" + m_htmlAboutText + "</body></html>");
       aboutText.addHyperlinkListener(new HyperlinkListener() {

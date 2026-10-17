@@ -8,9 +8,7 @@
  */
 package com.mr.apps.JNordVpnManager.gui.dialog;
 
-import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.Font;
 import java.awt.Frame;
 import java.awt.Point;
 import javax.swing.*;
@@ -62,15 +60,15 @@ public class JSplashScreen extends JDialog
       m_version = new JLabel("Version"); // will be updated from the application
       m_version.setSize(m_version.getPreferredSize());
       m_version.setLocation(25, 290);
-      m_version.setFont(new Font("serif", Font.ITALIC, 12));
-      m_version.setForeground(new Color(97, 206, 255));
+      m_version.setFont(Starter.Font_Copyright);
+      m_version.setForeground(Starter.Color_Copyright);
       this.m_splashImageIcon.add(m_version);
 
       JLabel copyright =  new JLabel(Starter.COPYRIGHT_STRING);
       copyright.setSize(copyright.getPreferredSize());
       copyright.setLocation(25, 310);
-      copyright.setFont(new Font("serif", Font.ITALIC, 12));
-      copyright.setForeground(new Color(97, 206, 255));
+      copyright.setFont(Starter.Font_Copyright);
+      copyright.setForeground(Starter.Color_Copyright);
       this.m_splashImageIcon.add(copyright);
 
       JLogo mrLogo = new JLogo(JLogo.Logos.LOGO_MR);

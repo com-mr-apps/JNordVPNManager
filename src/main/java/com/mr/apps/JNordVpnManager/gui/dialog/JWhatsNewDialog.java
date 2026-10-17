@@ -149,8 +149,9 @@ public class JWhatsNewDialog
 
       JEditorPane whatsNewText = new JEditorPane();
       whatsNewText.setEditable(false);
-      whatsNewText.setCaretColor(new Color(247, 217, 146)); // hide caret
       whatsNewText.setBackground(new Color(247, 217, 146));
+      whatsNewText.setForeground(new Color(255-247, 255-217, 255-146));
+      whatsNewText.setCaretColor(whatsNewText.getBackground()); // hide caret
       whatsNewText.setContentType("text/html");
       whatsNewText.setText("<html><body style=\"background-color: #f7d992 \">" + m_htmlAboutText + "</body></html>");
       whatsNewText.setCaretPosition(0);
