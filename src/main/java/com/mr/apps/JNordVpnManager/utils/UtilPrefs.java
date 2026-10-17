@@ -61,6 +61,7 @@ public class UtilPrefs
    private static final String SERVERLIST_TIMESTAMP                     = "SERVERLIST_TIMESTAMP";
    private static final String SERVERLIST_DATA                          = "SERVERLIST_DATA";
    private static final String SERVERLIST_AUTOUPDATE                    = "SERVERLIST_AUTOUPDATE";
+   private static final String URLCONNECTION_TIMEOUT                    = "URLCONNECTION_TIMEOUT";
    private static final String ADDON_PATH                               = "ADDON_PATH";
    private static final String WORLDMAP_IMAGE                           = "WORLDMAP_IMAGE";
    private static final String WORLDMAP_IMAGE_DISPLAY_MODE              = "WORLDMAP_IMAGE_DISPLAY_MODE";
@@ -77,38 +78,39 @@ public class UtilPrefs
    // private static final String MAINFRAME_POSITION = "MAINFRAME_POSITION";
 
    // Internal Defaults
-   private static String       DEFAULT_PREF_RECENTSERVER_CITY           = "";
-   private static String       DEFAULT_PREF_RECENTSERVER_COUNTRY        = "";
-   private static String       DEFAULT_PREF_RECENTSERVER_LIST           = "";
-   private static int          DEFAULT_PREF_RECENTSERVER_LIST_LENGTH    = 5;
-   private static String       DEFAULT_PREF_SERVERLIST_DATA             = "";
-   private static String       DEFAULT_PREF_SERVERLIST_TIMESTAMP        = "0";
-   private static int          DEFAULT_PREF_SERVERLIST_AUTOUPDATE       = 0;
-   private static int          DEFAULT_PREF_SETTINGS_AUTOCONNECTMODE    = 0;
-   private static int          DEFAULT_PREF_SETTINGS_AUTODISCONNECTMODE = 0;
-   private static int          DEFAULT_PREF_SETTINGS_TRACEDEBUG         = 0;
-   private static int          DEFAULT_PREF_SETTINGS_TRACECMD           = 0;
-   private static int          DEFAULT_PREF_SETTINGS_TRACEINIT          = 0;
-   private static String       DEFAULT_PREF_SETTINGS_LOGFILE_NAME       = "~/.local/share/JNordVpnManager/JNordVpnManager.log";
-   private static String       DEFAULT_PREF_SETTINGS_ADDONS_PATH        = "~/.local/share/JNordVpnManager/addons";
-   private static int          DEFAULT_PREF_SETTINGS_LOGFILE_ACTIVE     = 0;
-   private static int          DEFAULT_PREF_SETTINGS_CONSOLE_ACTIVE     = 0;
-   private static int          DEFAULT_PREF_SETTINGS_COMMAMD_TIMEOUT    = 30;
-   private static int          DEFAULT_PREF_SETTINGS_MESSAGE_AUTOCLOSE  = 2;
-   private static int          DEFAULT_PREF_SETTINGS_ACCOUNTREMINDER    = 31;
-   private static String       DEFAULT_PREF_WORLDMAP_IMAGE              = "HYP";
-   private static String       DEFAULT_PREF_WORLDMAP_IMAGE_DISPLAY_MODE = "OFF";
+   private static String       DEFAULT_PREF_RECENTSERVER_CITY              = "";
+   private static String       DEFAULT_PREF_RECENTSERVER_COUNTRY           = "";
+   private static String       DEFAULT_PREF_RECENTSERVER_LIST              = "";
+   private static int          DEFAULT_PREF_RECENTSERVER_LIST_LENGTH       = 5;
+   private static String       DEFAULT_PREF_SERVERLIST_DATA                = "";
+   private static String       DEFAULT_PREF_SERVERLIST_TIMESTAMP           = "0";
+   private static int          DEFAULT_PREF_SERVERLIST_AUTOUPDATE          = 0;
+   private static int          DEFAULT_PREF_SETTINGS_AUTOCONNECTMODE       = 0;
+   private static int          DEFAULT_PREF_SETTINGS_AUTODISCONNECTMODE    = 0;
+   private static int          DEFAULT_PREF_SETTINGS_TRACEDEBUG            = 0;
+   private static int          DEFAULT_PREF_SETTINGS_TRACECMD              = 0;
+   private static int          DEFAULT_PREF_SETTINGS_TRACEINIT             = 0;
+   private static String       DEFAULT_PREF_SETTINGS_LOGFILE_NAME          = "~/.local/share/JNordVpnManager/JNordVpnManager.log";
+   private static String       DEFAULT_PREF_SETTINGS_ADDONS_PATH           = "~/.local/share/JNordVpnManager/addons";
+   private static int          DEFAULT_PREF_SETTINGS_LOGFILE_ACTIVE        = 0;
+   private static int          DEFAULT_PREF_SETTINGS_CONSOLE_ACTIVE        = 0;
+   private static int          DEFAULT_PREF_SETTINGS_COMMAMD_TIMEOUT       = 30;      // in seconds
+   private static int          DEFAULT_PREF_SETTINGS_URLCONNECTION_TIMEOUT = 3000;    // in milliseconds
+   private static int          DEFAULT_PREF_SETTINGS_MESSAGE_AUTOCLOSE     = 2;
+   private static int          DEFAULT_PREF_SETTINGS_ACCOUNTREMINDER       = 31;
+   private static String       DEFAULT_PREF_WORLDMAP_IMAGE                 = "HYP";
+   private static String       DEFAULT_PREF_WORLDMAP_IMAGE_DISPLAY_MODE    = "OFF";
 
    // internal used current states (exported/imported)
-   private static int          DEFAULT_PREF_SETTINGS_TIMERDEFAULTVALUE  = 5; // in minutes
-   private static String       DEFAULT_PREF_SETTINGS_COMMANDS_TOOLBAR   = Command.APP_PREF_AUTOCONNECT + ";" + Command.APP_PREF_AUTODISCONNECT + ";" + Command.VPN_CMD_RECONNECT + ";" + Command.VPN_SET_KILLSWITCH;
-   private static String       DEFAULT_PREF_ALLOWLIST_DEACTIVATED       = "";
+   private static int          DEFAULT_PREF_SETTINGS_TIMERDEFAULTVALUE     = 5;        // in minutes
+   private static String       DEFAULT_PREF_SETTINGS_COMMANDS_TOOLBAR      = Command.APP_PREF_AUTOCONNECT + ";" + Command.APP_PREF_AUTODISCONNECT + ";" + Command.VPN_CMD_RECONNECT + ";" + Command.VPN_SET_KILLSWITCH;
+   private static String       DEFAULT_PREF_ALLOWLIST_DEACTIVATED          = "";
 
    // internal used current states (not exported/imported)
-   private static int          DEFAULT_PREF_RECENTSERVER_REGION         = NordVPNEnumGroups.all_regions.getId();
-   private static int          DEFAULT_PREF_RECENTSERVER_GROUP          = NordVPNEnumGroups.Standard_VPN_Servers.getId();
-   private static int          DEFAULT_PREF_SETTINGS_COMPACTMODE        = 0;
-   private static String       DEFAULT_PREF_SETTINGS_MAINFRAME_POSITION = "";
+   private static int          DEFAULT_PREF_RECENTSERVER_REGION            = NordVPNEnumGroups.all_regions.getId();
+   private static int          DEFAULT_PREF_RECENTSERVER_GROUP             = NordVPNEnumGroups.Standard_VPN_Servers.getId();
+   private static int          DEFAULT_PREF_SETTINGS_COMPACTMODE           = 0;
+   private static String       DEFAULT_PREF_SETTINGS_MAINFRAME_POSITION    = "";
 
    /**
     * Show the User Preferences Panel.
@@ -147,6 +149,7 @@ public class UtilPrefs
       settingsPanelFieldsMap.put(RECENTSERVER_COUNTRY, new JSettingsPanelField("Recent Country", "T", KeyEvent.VK_C, 20, DEFAULT_PREF_RECENTSERVER_COUNTRY));
       settingsPanelFieldsMap.put(RECENTSERVER_LIST, new JSettingsPanelField("Recent Servers List", "T", -1, 20, DEFAULT_PREF_RECENTSERVER_LIST));
       settingsPanelFieldsMap.put(RECENTSERVER_LIST_LENGTH, new JSettingsPanelField("Recent Servers List Size", "N[1,10,1]", -1, 2, StringFormat.int2String(DEFAULT_PREF_RECENTSERVER_LIST_LENGTH, "#")));
+      settingsPanelFieldsMap.put(URLCONNECTION_TIMEOUT, new JSettingsPanelField("URL Connection Timeout (in miliseconds)", "N[1000,99999,1000]", -1, 2, StringFormat.int2String(DEFAULT_PREF_SETTINGS_URLCONNECTION_TIMEOUT, "#")));
       settingsPanelFieldsMap.put(SERVERLIST_AUTOUPDATE, new JSettingsPanelField("Auto Update Server Data on Program Start", "N[0,99,1]", KeyEvent.VK_U, 2, StringFormat.int2String(DEFAULT_PREF_SERVERLIST_AUTOUPDATE, "#")));
       settingsPanelFieldsMap.put(SERVERLIST_DATA, new JSettingsPanelField("Server Data", "T", KeyEvent.VK_D, 20, DEFAULT_PREF_SERVERLIST_DATA));
       settingsPanelFieldsMap.put(SERVERLIST_TIMESTAMP, new JSettingsPanelField("Sync. Data Timestamp", "T", KeyEvent.VK_T, 10, DEFAULT_PREF_SERVERLIST_TIMESTAMP));
@@ -618,6 +621,22 @@ public class UtilPrefs
       return;
    }
 
+   public static int getURLConnectionTimeout()
+   {
+      Preferences prefsSettingsNode = Preferences.userRoot().node("com/mr/apps/JNordVpnManager/Settings");
+      int urlConnectionTimeout = prefsSettingsNode.getInt("URLConnection.Timeout", DEFAULT_PREF_SETTINGS_URLCONNECTION_TIMEOUT);
+
+      return urlConnectionTimeout;
+   }
+
+   public static void setURLConnectionTimeout(int urlConnectionTimeout)
+   {
+      Preferences prefsSettingsNode = Preferences.userRoot().node("com/mr/apps/JNordVpnManager/Settings");
+      prefsSettingsNode.putInt("URLConnection.Timeout", urlConnectionTimeout);
+
+      return;
+   }
+
    public static int getAccountReminder()
    {
       Preferences prefsSettingsNode = Preferences.userRoot().node("com/mr/apps/JNordVpnManager/Settings");
@@ -757,6 +776,7 @@ public class UtilPrefs
       hm.put(LOGFILE_NAME, getLogfileName());
       hm.put(LOGFILE_ACTIVE, StringFormat.int2String(isLogfileActive(), "#"));
       hm.put(COMMAND_TIMEOUT, StringFormat.int2String(getCommandTimeout(), "#"));
+      hm.put(URLCONNECTION_TIMEOUT, StringFormat.int2String(getURLConnectionTimeout(), "#"));
       hm.put(CONSOLE_ACTIVE, StringFormat.int2String(isConsoleActive(), "#"));
       hm.put(MESSAGE_AUTOCLOSE, StringFormat.int2String(getMessageAutoclose(), "#"));
       hm.put(ACCOUNTREMINDER, StringFormat.int2String(getAccountReminder(), "#"));
@@ -810,6 +830,7 @@ public class UtilPrefs
       setLogfileActive(Integer.valueOf(hm.get(LOGFILE_ACTIVE)));
       setLogfileName(hm.get(LOGFILE_NAME));
       setCommandTimeout(Integer.valueOf(hm.get(COMMAND_TIMEOUT)));
+      setURLConnectionTimeout(Integer.valueOf(hm.get(URLCONNECTION_TIMEOUT)));
       setConsoleActive(Integer.valueOf(hm.get(CONSOLE_ACTIVE)));
       setMessageAutoclose(Integer.valueOf(hm.get(MESSAGE_AUTOCLOSE)));
       setTimerDefaultValue(Integer.valueOf(hm.get(TIMER_DEFAULT_VALUE)));

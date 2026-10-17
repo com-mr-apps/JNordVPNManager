@@ -17,6 +17,8 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.net.HttpURLConnection;
+import java.net.SocketTimeoutException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -434,6 +436,34 @@ public class UtilSystem
       return false;
    }
 
+   private static final int    URLCONNECTION_TIMEOUT    = UtilPrefs.getURLConnectionTimeout();
+   public static boolean isServerOnline(String serverUrl)
+   {
+      if (serverUrl == null || serverUrl.isEmpty())
+      {
+         return false;
+      }
+
+      try
+      {
+         URL url = new URL(serverUrl);
+         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+         connection.setRequestMethod("GET");
+         connection.setConnectTimeout(URLCONNECTION_TIMEOUT);
+         connection.setReadTimeout(URLCONNECTION_TIMEOUT); //
+
+         int responseCode = connection.getResponseCode();
+         return responseCode >= 200 && responseCode < 300;
+      } catch (SocketTimeoutException e)
+      {
+         // Connection timed out, return false
+         return false;
+      }
+      catch (Exception e)
+      {
+         return false;
+      }
+   }
 
    public static void CopyTextFile(String fromFileName, String toFileName, String sFileEncoding, boolean force) throws IOException
    {

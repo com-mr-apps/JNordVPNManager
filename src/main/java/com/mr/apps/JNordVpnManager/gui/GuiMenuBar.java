@@ -18,7 +18,6 @@ import javax.swing.Box;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
-import javax.swing.JSeparator;
 import javax.swing.event.MenuEvent;
 import javax.swing.event.MenuListener;
 
@@ -28,7 +27,6 @@ import com.mr.apps.JNordVpnManager.commandInterfaces.base.Command;
 import com.mr.apps.JNordVpnManager.geotools.CurrentLocation;
 import com.mr.apps.JNordVpnManager.geotools.Location;
 import com.mr.apps.JNordVpnManager.geotools.UtilLocations;
-import com.mr.apps.JNordVpnManager.geotools.UtilSpeedtest;
 import com.mr.apps.JNordVpnManager.geotools.VpnServer;
 import com.mr.apps.JNordVpnManager.gui.components.JResizedIcon;
 import com.mr.apps.JNordVpnManager.gui.components.JResizedIcon.IconSize;
@@ -68,8 +66,6 @@ public class GuiMenuBar
 
    // "Favorite Server" menu
    private static JMenuItem               m_menuItemFavoritesServer         = null;
-   private static JMenuItem[]             m_menuItemFavoritesServerMenuList = null;
-   private static Vector<CurrentLocation> m_favoritesServerIdList           = null;
 
    /**
     * Menu Bar Layout definition.
@@ -258,11 +254,24 @@ public class GuiMenuBar
       addToMenuRecentServerListItems(null);
 
       m_menuItemFavoritesServer = new JMenu("Favorite Servers");
-      m_menuItemFavoritesServerMenuList = null;
-// TODO:      connectMenu.add(m_menuItemFavoritesServer);
-      // Initialize the favorite serverIds list
-      addToMenuFavoriteServerListItems(null);
-
+      m_menuItemFavoritesServer.setForeground(Starter.Color_Addon);
+      m_menuItemFavoritesServer.setToolTipText("List of Favorite Servers.");
+      if (Starter.isSupporterEdition())
+      {
+         CallCommand.invokeAddonMethod("AddonManager", "initFavoritesServerList");
+      }
+      else
+      {
+         JMenuItem jmiManage = new JMenuItem("Manage Favorites");
+         jmiManage.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e)
+            {
+               new JSupportersDialog("List of Favorite Servers");
+            }
+         });
+         m_menuItemFavoritesServer.add(jmiManage);
+      }
+      connectMenu.add(m_menuItemFavoritesServer);
       connectMenu.addSeparator();
 
       m_menuItemReConnect = new JMenuItem("VPN Reconnect");
@@ -381,11 +390,20 @@ public class GuiMenuBar
       menuBar.add(diagnosticsMenu);
 
       JMenuItem speedTest = new JMenuItem("Download Speed Test");
+      speedTest.setForeground(Starter.Color_Addon);
       speedTest.addActionListener(new ActionListener()
       {
          public void actionPerformed(ActionEvent e)
          {
-            UtilSpeedtest.speedTest(Starter.getCurrentServer(true));
+//            UtilSpeedtest.speedTest(Starter.getCurrentServer(true));
+            if (Starter.isSupporterEdition())
+            {
+               CallCommand.invokeAddonMethod("AddonManager", "openSpeedTestDownloadDialog");
+            }
+            else
+            {
+               new JSupportersDialog("Run Download Speed Test");
+            }
          }
       });
       diagnosticsMenu.add(speedTest);
@@ -666,10 +684,13 @@ public class GuiMenuBar
 
    /**
     * Recent + Favorites Server menu Item action.
-    * @param e is the action event
-    * @param loc is the selected menu item (== Location)
+    * 
+    * @param e
+    *           is the action event
+    * @param loc
+    *           is the selected menu item (== Location)
     */
-   private static void menuItemServerSelectedCB(ActionEvent e, CurrentLocation loc)
+   public static void menuItemServerSelectedCB(ActionEvent e, CurrentLocation loc)
    {
       Starter._m_logError.TraceDebug("Selected Recent Server: " + loc.getToolTip());
 
@@ -689,165 +710,11 @@ public class GuiMenuBar
       NvpnCallbacks.executeConnect(loc, "NordVPN Connect", "NordVPN Connect");
    }
    
-   /**
-    * Initialize the Recent ServerIds list.
-    */
-   private static void initFavoriteServerIdsList()
+   public static JMenuItem getMenuItemFavoritesServer()
    {
-      m_favoritesServerIdList = new Vector<CurrentLocation>();
-
-      // get the favorites Server list items from User Preferences
-      String savedFavoritesServers = UtilPrefs.getFavoritesServerList();
-      String[] saFavoritesServers = savedFavoritesServers.split(Location.SERVERID_LIST_SEPARATOR);
-      for (String favoritesServerId : saFavoritesServers)
-      {
-         String[] saParts = favoritesServerId.split(",");
-         String serverId = (saParts.length == 4) ? saParts[0] : favoritesServerId;
-         if (!serverId.isBlank())
-         {
-            CurrentLocation loc = null;
-            VpnServer vs = null;
-            String sa[] = serverId.split(Location.SERVERID_HOST_SEPARATOR); // check, if this is a host server (serverId = "city@country#host")
-            if (sa.length == 2)
-            {
-               vs = new VpnServer(sa[0], Location.SERVERID_HOST_SEPARATOR + sa[1], sa[1]);
-               serverId = sa[0];
-            }
-            Location l = UtilLocations.getLocation(serverId);
-            if (null == l) l = new Location (serverId, 0, 0, -1);
-            loc = new CurrentLocation(l, vs);
-            
-            if (saParts.length == 4)
-            {
-               // get (optional) connection data from preferences 'server@country[#host],group,technology,protocol' and add them to loc
-               loc.setLegacyGroup(Integer.valueOf(saParts[1]));
-               loc.setVpnTechnology(saParts[2]);
-               loc.setVpnProtocol(saParts[3]);
-            }
-            m_favoritesServerIdList.addElement((CurrentLocation)loc);
-         }
-      }
+      return m_menuItemFavoritesServer;
    }
 
-   /**
-    * Set the "Favorites Servers" menu list items.
-    * <p>
-    * Create a new menu list under the menu "Favorite Servers" with the content of the favorite serverId list</li>
-    */
-   private static void setMenuFavoriteServerListItems()
-   {
-      StringBuffer favoritesServerIds = new StringBuffer();
-
-      m_menuItemFavoritesServer.removeAll();
-
-      // add fix menu items
-      JMenuItem jmiAddCurrentServer = new JMenuItem("Add Current Server");
-      jmiAddCurrentServer.addActionListener(new java.awt.event.ActionListener()
-      {
-         public void actionPerformed(ActionEvent e)
-         {
-            CurrentLocation loc = Starter.getCurrentServer(true);
-            addToMenuFavoriteServerListItems(loc);
-         }
-      });
-      m_menuItemFavoritesServer.add(jmiAddCurrentServer);
-      JMenuItem jmiManage = new JMenuItem("Manage Favorites");
-      m_menuItemFavoritesServer.add(jmiManage);
-      JSeparator jSep = new JSeparator();
-      m_menuItemFavoritesServer.add(jSep);
-
-      // add list
-      m_menuItemFavoritesServerMenuList = new JMenuItem[m_favoritesServerIdList.size()];
-      for (int i = 0; i < m_favoritesServerIdList.size(); i++)
-      {
-         final int nn = i;
-         CurrentLocation loc = m_favoritesServerIdList.get(i);
-
-         if (null != loc)
-         {
-            m_menuItemFavoritesServerMenuList[i] = new JMenuItem(loc.getLabel());
-            m_menuItemFavoritesServerMenuList[i].setToolTipText(loc.getToolTip());
-            m_menuItemFavoritesServerMenuList[i].addActionListener(new java.awt.event.ActionListener()
-            {
-               public void actionPerformed(ActionEvent e)
-               {
-                  menuItemServerSelectedCB(e, m_favoritesServerIdList.get(nn));
-               }
-            });
-            m_menuItemFavoritesServer.add(m_menuItemFavoritesServerMenuList[i]);
-
-            // String for user preferences 'server@country[#host],group,technology,protocol'
-            if (favoritesServerIds.length() > 0) favoritesServerIds.append(Location.SERVERID_LIST_SEPARATOR);
-            String[] saLocationConnectionData = loc.getLocationConnectionData();
-            favoritesServerIds.append(Location.buildServerId(saLocationConnectionData[0], saLocationConnectionData[1]));
-         }
-      }
-      if (favoritesServerIds.length() > 0)
-      {
-         // Update the user preferences with the current serverId list
-         UtilPrefs.setFavoritesServerList(favoritesServerIds.toString());
-
-         // enable menu and set tool tip
-         m_menuItemFavoritesServer.setEnabled(true);
-         m_menuItemFavoritesServer.setToolTipText("List of Favorite Servers.");
-      }
-      else
-      {
-         // disable menu and set tool tip
-         m_menuItemFavoritesServer.setEnabled(true);
-         m_menuItemFavoritesServer.setToolTipText("No Favorite Servers available.");
-      }
-   }
-
-   /**
-    * Add a location on the top of the favorites Servers menu items list
-    * 
-    * @param loc
-    *           is the new location. If <code>null</code>, Initialization with User Preferences.
-    */
-   public static void addToMenuFavoriteServerListItems(CurrentLocation loc)
-   {
-      if (null == m_menuItemFavoritesServer) return;
-
-      boolean foundAtFirstPos = false;
-      if (null == loc)
-      {
-         // initialize favorite list from User Preferences
-         initFavoriteServerIdsList();
-      }
-      else
-      {
-         for (int n = 0; n < m_favoritesServerIdList.size(); n++)
-         {
-            if (m_favoritesServerIdList.get(n).isEqualConnection(loc) == true)
-            {
-               if (n == 0)
-               {
-                  // we don't need an update
-                  foundAtFirstPos = true;
-               }
-               else
-               {
-                  m_favoritesServerIdList.removeElementAt(n);
-                  Starter._m_logError.TraceDebug("Remove " + loc.getServerKey() + " at position " + n + " from Favoriteslist.");
-               }
-               break;
-            }
-         }
-         if (false == foundAtFirstPos)
-         {
-            m_favoritesServerIdList.insertElementAt(loc, 0);
-            Starter._m_logError.TraceDebug("Add " + loc.getToolTip() + " to Favoriteslist.");
-
-            while (m_favoritesServerIdList.size() > UtilPrefs.getFavoritesServerListLength())
-            {
-               m_favoritesServerIdList.removeElementAt(m_favoritesServerIdList.size() - 1);
-            }
-         }
-      }
-      if (false == foundAtFirstPos) setMenuFavoriteServerListItems();
-   }
-   
    public static void updateAccountReminder()
    {
       if (null == m_nordvpnMenu) return;

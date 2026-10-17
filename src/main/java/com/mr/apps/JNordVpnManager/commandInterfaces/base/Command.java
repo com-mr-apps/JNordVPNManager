@@ -56,9 +56,11 @@ public class Command implements CommandInterface
    public static final String                     VPN_SET_VIRTUALLOCATION  = "VPN_SET_VIRTUALSERVER";
    public static final String                     APP_PREF_AUTOCONNECT     = "APP_PREF_AUTOCONNECT";
    public static final String                     APP_PREF_AUTODISCONNECT  = "APP_PREF_AUTODISCONNECT";
+   public static final String                     VPN_SET_TECHNOLOGY       = "VPN_SET_TECHNOLOGY";
+
    // Addons
    public static final String                     VPN_CMD_TIMER_RECONNECT  = "VPN_CMD_TIMER_RECONNECT";
-   public static final String                     VPN_SET_TECHNOLOGY       = "VPN_SET_TECHNOLOGY";
+   public static final String                     APP_CMD_SPEEDTEST_DOWN   = "APP_CMD_SPEEDTEST_DOWN";
 
    // list of all available commands
    private static Map<String, Command>            m_allCommandsMap         = new HashMap<String, Command>();
@@ -217,6 +219,7 @@ public class Command implements CommandInterface
             JResizedIcon.IconUrls.ICON_APP_PREF_AUTODISCONNECT,
             "User Preferences for Auto Disconnect from VPN on Application Exit.", 
             "AppPrefAutoDisconnect"));
+
       addCommand(new CommandComboBox(VPN_SET_TECHNOLOGY,
             new String[] { BASE_STATUS_KEY, "NORDLYNX" , "NORDWHISPER", "OPENVPN/TCP", "OPENVPN/UDP", DISABLED_STATUS_KEY}, // keys
             new String[] { null, "NORDLYNX" , "NORDWHISPER", "OPENVPN/TCP", "OPENVPN/UDP", null }, // options (labels)
