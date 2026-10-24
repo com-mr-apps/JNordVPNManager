@@ -62,6 +62,7 @@ public class JSupportersDialog extends JFrame
          + "<li><strong>Connect to Hosts</strong>: Select a specific host out of a list of over 7000 VPN hosts.</li>"
          + "<li><strong>Allow-, Whitelist</strong>: Manage allowlist for ports and subnets (<a href=\"https://github.com/com-mr-apps/JNordVPNManager/wiki/Allow-List--%E2%80%90-Whitelist\">Documentation on GitHub Wiki</a>).</li>"
          + "<li><strong>Timer Reconnect</strong>: Time-based automatic [re]connect to VPN location.</li>"
+         + "<li><strong>Download Speed Test</strong>: Download Speed Test of connection to a nearby speed test server.</li>"
          + "</ul>"
          + "<h4>...planned features are:</h4>"
          + "<ul>"
