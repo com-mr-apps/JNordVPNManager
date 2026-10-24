@@ -29,6 +29,7 @@ public class NvpnTechnologies
    public static final int skylark = 48;
    public static final int mesh_relay = 50;
    public static final int nordwhisper = 51;
+   public static final int nordwhisper_udp = 56;
 
    // Storage for technologies per location
    private ArrayList<Integer> m_techIds = null;
@@ -70,7 +71,7 @@ public class NvpnTechnologies
 
    public String toString()
    {
-      if (null == m_techIds) return "[]";
+      if (null == m_techIds) return "[n/a]";
       return StringFormat.int2String(m_techIds, null);
    }
 

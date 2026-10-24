@@ -159,13 +159,22 @@ public class NvpnAccountData
 
       // MR20260206: Changed output in v4.4.0 from 'Multi-factor Authentication' to 'Multi-factor authentication'
       value = values.get("Multi-factor Authentication");
-      if (null == value)
+      if (null != value)
       {
          this.setMfaIsEnabled(value);
       }
       else
       {
-         this.setMfaIsEnabled(values.get("Multi-factor authentication"));
+         value = values.get("Multi-factor authentication");
+         if (null != value)
+         {
+            this.setMfaIsEnabled(value);
+         }
+         else
+         {
+            // MR20261021: Changed output in v6.0.1 from 'Multi-factor authentication' to 'Multi-factor authentication (MFA)'
+            this.setMfaIsEnabled(values.get("Multi-factor authentication (MFA)"));
+         }
       }
 
       return true;

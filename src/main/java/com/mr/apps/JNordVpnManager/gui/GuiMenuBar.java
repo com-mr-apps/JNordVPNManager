@@ -258,8 +258,24 @@ public class GuiMenuBar
       m_menuItemFavoritesServer.setToolTipText("List of Favorite Servers.");
       if (Starter.isSupporterEdition())
       {
-         CallCommand.invokeAddonMethod("AddonManager", "initFavoritesServerList");
-      }
+         if (Starter.isAddOnAvailable("2026.10.1"))
+         {
+            CallCommand.invokeAddonMethod("AddonManager", "initFavoritesServerList");
+         }
+         else
+         {
+            JMenuItem jmiManage = new JMenuItem("Manage Favorites");
+            jmiManage.addActionListener(new ActionListener() {
+               public void actionPerformed(ActionEvent e)
+               {
+                  JModalDialog.OKDialog("AddOn Manager",
+                        "This function is available in a newer version of the AddOn library.\n" +
+                        "Please update your AddOn library to the new version.");
+               }
+            });
+            m_menuItemFavoritesServer.add(jmiManage);
+         }
+     }
       else
       {
          JMenuItem jmiManage = new JMenuItem("Manage Favorites");
@@ -295,19 +311,17 @@ public class GuiMenuBar
       });
       updateQuickConnectMenuButton();
       connectMenu.add(m_menuItemQuickConnect);
-      
+
       m_menuItemRegionConnect = new JMenuItem("VPN Region Connect");
       m_menuItemRegionConnect.addActionListener(new ActionListener()
       {
          public void actionPerformed(ActionEvent e)
          {
-//            if (NvpnGroups.getCurrentFilterRegion().equals(NvpnGroups.NordVPNEnumGroups.all_regions)) return; // should not happen, because RegionConnect is not enabled 
-            // Create a temp. Region Location (cityId==2)
-            CurrentLocation loc = new CurrentLocation (new Location (NvpnGroups.getCurrentFilterRegion().toString(), NvpnGroups.getCurrentFilterRegion().toString(), 0.0, 0.0, 2), null);
+            // Create a temp. Country Location (cityId==0)
+            CurrentLocation loc = new CurrentLocation (new Location ("", Starter.getCurrentStatusData().getCountry(), 0.0, 0.0, 0), null);
             NvpnCallbacks.executeConnect(loc, "NordVPN Region Connect", "NordVPN Region Connect");
          }
       });
-      updateRegionConnectMenuButton();
       connectMenu.add(m_menuItemRegionConnect);
       
       m_menuItemDisConnect = new JMenuItem("VPN Disconnect");
@@ -398,7 +412,16 @@ public class GuiMenuBar
 //            UtilSpeedtest.speedTest(Starter.getCurrentServer(true));
             if (Starter.isSupporterEdition())
             {
-               CallCommand.invokeAddonMethod("AddonManager", "openSpeedTestDownloadDialog");
+               if (Starter.isAddOnAvailable("2026.10.1"))
+               {
+                  CallCommand.invokeAddonMethod("AddonManager", "openSpeedTestDownloadDialog");
+               }
+               else
+               {
+                  JModalDialog.OKDialog("AddOn Manager",
+                        "This function is available in a newer version of the AddOn library.\n" +
+                        "Please update your AddOn library to the new version.");
+               }
             }
             else
             {
@@ -496,24 +519,18 @@ public class GuiMenuBar
       }
    }
 
-   public static void updateRegionConnectMenuButton()
-   {
-      if (NvpnGroups.getCurrentFilterRegion().equals(NvpnGroups.NordVPNEnumGroups.all_regions))
-      {
-         m_menuItemRegionConnect.setEnabled(false);
-         m_menuItemRegionConnect.setToolTipText("Select a Region Filter to connect to.");
-      }
-      else
-      {
-         m_menuItemRegionConnect.setEnabled(true);
-         m_menuItemRegionConnect.setToolTipText("Execute: nordvpn connect " + NvpnGroups.getCurrentFilterRegion());
-      }
-   }
-
    public static void updateQuickConnectMenuButton()
    {
       // update Quick connect command Tool tip - display actual command dependent on Group (obfuscated settings)
-      String optGroup = (StringFormat.string2boolean(Starter.getCurrentSettingsData().getObfuscate(false)) || NvpnGroups.getCurrentFilterGroup().equals(NordVPNEnumGroups.legacy_obfuscated_servers)) ? "" : "--group " + NvpnGroups.getCurrentFilterGroup().name();
+      String optGroup;
+      if (Starter.isVersion5())
+      {
+         optGroup = (StringFormat.string2boolean(Starter.getCurrentSettingsData().getObfuscate(false)) || NvpnGroups.getCurrentFilterGroup().equals(NordVPNEnumGroups.Obfuscated)) ? "" : "--group " + NvpnGroups.getCurrentFilterGroup().name();
+      }
+      else
+      {
+         optGroup = "--group " + NvpnGroups.getCurrentFilterGroup().name();
+      }
       String sToolTip = "Execute: nordvpn connect " + optGroup;
       m_menuItemQuickConnect.setToolTipText(sToolTip);
       Command cmd = Command.getObject(Command.VPN_CMD_QUICKCONNECT);
@@ -697,7 +714,7 @@ public class GuiMenuBar
       // get and set additional (optional) connection data from location and set Group/Tech/Protocol
       Starter.getCurrentSettingsData().setTechnology(loc.getVpnTechnology(), false);
       Starter.getCurrentSettingsData().setProtocol(loc.getVpnProtocol(), false);
-      if (NordVPNEnumGroups.get(loc.getLegacyGroup()).equals(NordVPNEnumGroups.legacy_obfuscated_servers))
+      if (Starter.isVersion5() && NordVPNEnumGroups.get(loc.getLegacyGroup()).equals(NordVPNEnumGroups.Obfuscated))
       {
          Starter.getCurrentSettingsData().setObfuscate("enabled", false);
       }

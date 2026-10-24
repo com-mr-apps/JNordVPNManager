@@ -226,7 +226,7 @@ public class GuiStatusLine
             iconId = 4;
             sShortMsg = "Server Connection Settings Mismatch";
             sLongMsg = "The current server connection uses '" + statusData.getTechnology() + "' but NordVPN settings are set to '" + settingsData.getTechnology(false) + "'.\n" +
-                       "Please manually reconnect to verify/activate the current NordVPN settings for the current connection or connect to a server that supports the settings.";
+                       "Please verify the settings for the current connection, on mismatch try a reconnect or connect to a server that supports the settings.";
             sPrefix = "[Technology mismatch] ";
          }
 
@@ -239,10 +239,10 @@ public class GuiStatusLine
                iconId = 4;
                sShortMsg = "Server Connection Settings Mismatch";
                sLongMsg = "The current server connection uses '" + statusData.getProtocol() + "' but NordVPN settings are set to '" + settingsData.getProtocol(false) + "'.\n" +
-                       "Please manually reconnect to verify/activate the current NordVPN settings for the current connection or connect to a server that supports the settings.";
+                          "Please verify the settings for the current connection, on mismatch try a reconnect or connect to a server that supports the settings.";
                sPrefix = "[Protocol mismatch] ";
             }
-            else if ((StringFormat.string2boolean(settingsData.getObfuscate(false)) == true) && (false == ret_loc.hasGroup(NordVPNEnumGroups.legacy_obfuscated_servers)))
+            else if ((StringFormat.string2boolean(settingsData.getObfuscate(false)) == true) && (false == ret_loc.hasGroup(NordVPNEnumGroups.Obfuscated)))
             {
                // reconnect required - current server does not support obfuscated
                iconId = 4;

@@ -44,7 +44,7 @@ public class NvpnGroups
       Standard_VPN_Servers             (11),
       legacy_netflix_usa               (13),
       P2P                              (15),
-      legacy_obfuscated_servers        (17),
+      Obfuscated                       (17),
       anycast_dns                     (233),
       geo_dns                         (236),
       grafana                         (239),
@@ -145,6 +145,12 @@ public class NvpnGroups
 
    public static void setCurrentFilterGroup(NordVPNEnumGroups currentGroup)
    {
+      if (false == Starter.isVersion5())
+      {
+         // MR20261021: Version 6 - P2P equals to Standard VPN Servers 
+         if (currentGroup.equals(NordVPNEnumGroups.P2P)) currentGroup = NordVPNEnumGroups.Standard_VPN_Servers;
+      }
+
       NvpnGroups.m_currentFilterGroup = currentGroup;
       Starter._m_logError.TraceDebug("Set current Group Filter to: " + currentGroup);
       UtilPrefs.setRecentServerGroup(currentGroup.getId());
@@ -175,7 +181,7 @@ public class NvpnGroups
 
    public String toString()
    {
-      if (null == m_groupsIds) return "[]";
+      if (null == m_groupsIds) return "[n/a]";
       StringBuffer sb = new StringBuffer(); 
       sb.append("[");
       for (NordVPNEnumGroups iGroup : m_groupsIds)
