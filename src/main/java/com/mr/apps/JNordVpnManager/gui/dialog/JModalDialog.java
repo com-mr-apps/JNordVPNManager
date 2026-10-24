@@ -165,14 +165,11 @@ public class JModalDialog extends JDialog implements ActionListener
       {
          dialogPanel.setBackground(color);
          messageText.setBackground(color);
-         messageText.setCaretColor(color);
+         messageText.setForeground(new Color(255-color.getRed(),255-color.getGreen(),255-color.getBlue()));
          m_messagePanel.setBackground(color);
          m_buttonsPanel.setBackground(color);
       }
-      else
-      {
-         messageText.setCaretColor(Color.white);
-      }
+      messageText.setCaretColor(messageText.getBackground());
 
       pack();
       
@@ -181,7 +178,7 @@ public class JModalDialog extends JDialog implements ActionListener
       Dimension frameSize = this.getSize();
       if ((frameSize.height * 2) > screenSize.height || ((frameSize.width * 2) > screenSize.width))
       {
-         frameSize = new Dimension((int) (Math.min((screenSize.width / 2), (frameSize.height * 2))), Math.min((int) (screenSize.height / 2), (frameSize.width * 2)));
+         frameSize = new Dimension((int) (Math.min((screenSize.width / 2), (frameSize.width * 2))), Math.min((int) (screenSize.height / 2), (frameSize.height * 2)));
          int x = (int) (frameSize.width / 3);
          int y = (int) (frameSize.height / 3);
          this.setBounds(x, y, frameSize.width, frameSize.height);

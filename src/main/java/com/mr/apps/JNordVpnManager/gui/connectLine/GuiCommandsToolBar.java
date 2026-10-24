@@ -216,14 +216,24 @@ public class GuiCommandsToolBar extends JPanel implements ActionListener
                // Button
                cmdId = ((JButton)cmdObject).getName();
             }
+            else if (cmdObject instanceof JCheckBox)
+            {
+               // CheckBox
+               cmdId = ((JCheckBox)cmdObject).getName();
+            }
             else if (cmdObject instanceof JLabel)
             {
-               // CheckBox (label)
+               // Label (CheckBox, ...)
                cmdId = ((JLabel)cmdObject).getName();
+            }
+            else if (cmdObject instanceof JPanel)
+            {
+               // Panel (CheckBox, ...)
+               cmdId = ((JPanel)cmdObject).getName();
             }
             else if (cmdObject instanceof JComboBox)
             {
-               // ComboBox (label)
+               // ComboBox
                cmdId = ((JComboBox<?>)cmdObject).getName();
             }
             else
@@ -345,13 +355,15 @@ public class GuiCommandsToolBar extends JPanel implements ActionListener
       customizeMenuSeparator.setName(StringFormat.int2String(insertPos, "0"));
       customizeMenuSeparator.setToolTipText(cmd.getToolTip());
 
-      // add the pop up menu with the list of available commands
-      customizeMenuSeparator.setComponentPopupMenu(customizePopUpMenu);
-
 //      customizeMenuSeparator.setBorder(BorderFactory.createLoweredSoftBevelBorder());
       cmd.setComponent(customizeMenuSeparator); // not really required
 
       jPanel.add(customizeMenuSeparator);
+
+      // add the pop up menu with the list of available commands
+      jPanel.setComponentPopupMenu(customizePopUpMenu);
+      jPanel.setToolTipText("Press RMB to customize Commands ToolBar");
+
       return jPanel;
    }
    
@@ -367,6 +379,8 @@ public class GuiCommandsToolBar extends JPanel implements ActionListener
    private JPanel makeCommandButton(Command cmd, JPopupMenu customizePopUpMenu)
    {
       JPanel jPanel = createPanel(cmd);
+      jPanel.setName(cmd.getId());
+      jPanel.setComponentPopupMenu(customizePopUpMenu);
 
       // Create the Button
       JButton button = new JButton();
@@ -397,6 +411,8 @@ public class GuiCommandsToolBar extends JPanel implements ActionListener
    private JPanel makeCommandComboBox(Command cmd, JPopupMenu customizePopUpMenu)
    {
       JPanel jPanel = createPanel(cmd);
+      jPanel.setName(cmd.getId());
+      jPanel.setComponentPopupMenu(customizePopUpMenu);
 
       // Create the Button
       JComboBox<Object> comboBox = new JComboBox<Object>();
@@ -435,22 +451,26 @@ public class GuiCommandsToolBar extends JPanel implements ActionListener
    private JPanel makeCommandCheckBox(Command cmd, JPopupMenu customizePopUpMenu)
    {
       JPanel jPanel = createPanel(cmd);
+      jPanel.setName(cmd.getId());
+      jPanel.setComponentPopupMenu(customizePopUpMenu);
 
       // Create the CheckBox (setSelected is done after in updateUI)
       JCheckBox checkBox = new JCheckBox();
       checkBox.setActionCommand(cmd.getId());
       checkBox.setToolTipText(cmd.getToolTip());
+      checkBox.setName(cmd.getId());
       checkBox.addActionListener(this);
       cmd.setComponent(checkBox);
 
       JLabel jLabel = new JLabel();
       jLabel.setIcon(cmd.getImageIcon());
       jLabel.setToolTipText(cmd.getToolTip());
-
-      // add the pop up menu with the list of available commands
       jLabel.setComponentPopupMenu(customizePopUpMenu);
       jLabel.setName(cmd.getId());
       cmd.setJLabel(jLabel);
+
+      // add the pop up menu with the list of available commands
+      checkBox.setComponentPopupMenu(customizePopUpMenu);
 
       jPanel.add(checkBox);
       jPanel.add(jLabel);
@@ -469,7 +489,7 @@ public class GuiCommandsToolBar extends JPanel implements ActionListener
       FlowLayout flowLayout = new FlowLayout();
       jPanel.setLayout(flowLayout);
       jPanel.setBorder(BorderFactory.createBevelBorder(BevelBorder.RAISED));
-      if (null != cmd) jPanel.setToolTipText("Press RMB on Icon to customize Commands ToolBar");
+      if (null != cmd) jPanel.setToolTipText("Press RMB to customize Commands ToolBar");
 //      flowLayout.setHgap(0);
 //      flowLayout.setVgap(0);
       return jPanel;

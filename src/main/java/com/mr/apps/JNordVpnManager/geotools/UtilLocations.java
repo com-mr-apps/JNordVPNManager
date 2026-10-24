@@ -227,6 +227,7 @@ public class UtilLocations
                   if ((sCountry.startsWith("United States") || 
                        sCountry.startsWith("Canada") || 
                        sCountry.startsWith("Cameroon") || 
+                       sCountry.startsWith("Seychelles") || 
                        sCountry.startsWith("Singapore") || 
                        sCountry.startsWith("South Korea")) &&
                       (jsonObjGroup.getInt("id") == 19)) // Europe
@@ -236,7 +237,8 @@ public class UtilLocations
                      Starter._m_logError.TraceIni("Skip invalid Group Entry 'Europe' for '" + sCity + "' / '" + sCountry + "' Record Nb: " + i);
                      continue;
                   }
-                  if ((sCountry.startsWith("Austria")) &&
+                  if ((sCountry.startsWith("Austria") || 
+                       sCountry.startsWith("South Korea")) &&
                        (jsonObjGroup.getInt("id") == 21)) // The Americas
                    {
                       // skip invalid group entry "The Americas"...
@@ -244,7 +246,8 @@ public class UtilLocations
                       continue;
                    }
                   if ((sCountry.startsWith("Suriname") || 
-                        sCountry.startsWith("Barbados")) &&
+                        sCountry.startsWith("Barbados") || 
+                        sCountry.startsWith("Turkey")) &&
                         (jsonObjGroup.getInt("id") == 25)) // Africa The Middle East And India
                     {
                        // skip invalid group entry "Africa The Middle East And India"...

@@ -42,8 +42,8 @@ import com.mr.apps.JNordVpnManager.gui.components.JResizedIcon;
 @SuppressWarnings("serial")
 public class JSettingsPanel extends JPanel
 {
-   private static final Insets              WEST_INSETS        = new Insets(2, 0, 2, 2);
-   private static final Insets              EAST_INSETS        = new Insets(2, 2, 2, 0);
+   private static final Insets              WEST_INSETS        = new Insets(1, 0, 1, 1);
+   private static final Insets              EAST_INSETS        = new Insets(1, 1, 1, 0);
    private Map<String, JSettingsPanelField> m_hmSettingsFields = null;
    private HashMap<String, String>          m_hmSettingsValues = null;
    private String                           m_title;

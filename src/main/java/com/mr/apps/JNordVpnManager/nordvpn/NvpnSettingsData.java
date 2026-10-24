@@ -182,7 +182,11 @@ public class NvpnSettingsData
       m_settingsPanelFieldsMap.put(TECHNOLOGY, new JSettingsPanelField("Technology", "C["+SETTINGS_OPT_NORDLYNX+","+SETTINGS_OPT_OPENVPN+","+SETTINGS_OPT_NORDWHISPER+"]", KeyEvent.VK_T, 1, this.getTechnology(true)));
       m_settingsPanelFieldsMap.put(TPLITE, new JSettingsPanelField("Threat Protection Lite", "B", -1, 1, this.getTplite(true)));
       m_settingsPanelFieldsMap.put(TRAY, new JSettingsPanelField("Enable Tray Icon", "B", -1, 1, this.getTray(true)));
-      m_settingsPanelFieldsMap.put(VIRTUAL_LOCATION, new JSettingsPanelField("Enable Virtual Locations", "B", KeyEvent.VK_V, 1, this.getVirtualLocation(true)));
+      if (true == Starter.isVersion5())
+      {
+         // MR20261021: Version 6 - Setting removed in Version 6.0
+         m_settingsPanelFieldsMap.put(VIRTUAL_LOCATION, new JSettingsPanelField("Enable Virtual Locations", "B", KeyEvent.VK_V, 1, this.getVirtualLocation(true)));
+      }
    }
 
    /**
@@ -295,7 +299,20 @@ public class NvpnSettingsData
       }
 
       // Parsing OK
-      this.m_technology = values.get("Technology");
+      String value = values.get("Technology");
+      if (null != value)
+      {
+         // MR20260206: Version 5
+         this.m_technology = values.get("Technology");
+         this.m_protocol = values.get("Protocol");
+      }
+      else
+      {
+         value = values.get("Protocol");
+         String[] saStrings = value.split(" ");
+         this.m_technology = saStrings[0];
+         this.m_protocol = (saStrings.length > 1 ) ? saStrings[1].substring(1, 4) : null;
+      }
       this.m_firewall = values.get("Firewall");
       this.m_fwmark = values.get("Firewall Mark");
       this.m_routing = values.get("Routing");
@@ -307,18 +324,22 @@ public class NvpnSettingsData
       }
       this.m_killswitch = values.get("Kill Switch");
       this.m_tplite = values.get("Threat Protection Lite");
+      if (null == this.m_tplite)
+      {
+         // MR20260206: Changed output in v6.0.1 from 'Threat Protection Lite' to 'Real-time protection'
+         this.m_tplite = values.get("Real-time protection");
+      }
       this.m_notify = values.get("Notify");
-      this.m_obfuscate = values.get("Obfuscate");
+      this.m_obfuscate = values.get("Obfuscate"); // MR20261021: Removed in v6.0.1
       this.m_tray = values.get("Tray");
       this.m_autoConnect = values.get("Auto-connect");
       this.m_ipv6 = values.get("IPv6"); // MR20260206: Removed in v4.4.0
       this.m_meshnet = values.get("Meshnet");
       this.m_dns = values.get("DNS");
       this.m_lanDiscovery = values.get("LAN Discovery");
-      this.m_virtualLocation = values.get("Virtual Location");
+      this.m_virtualLocation = values.get("Virtual Location"); // MR20261021: Removed in v6.0.1 -> not found [null] -> will be set to "enabled"
       // MR20260206: TODO Added in v4.4.0 'ARP Ignore'
-      this.m_postQuantum = values.get("Post-quantum VPN");
-      this.m_protocol = values.get("Protocol");
+      this.m_postQuantum = values.get("Post-quantum VPN"); // MR20260206: Removed in v4.4.0
 
       // initialize settings - dependent of technology they may not be set
       if (null == this.m_obfuscate) this.m_obfuscate = SETTINGS_OPT_DISABLED;
@@ -334,6 +355,7 @@ public class NvpnSettingsData
       }
       if (null == this.m_protocol) this.m_protocol = SETTINGS_OPT_UDP;
       if (null == this.m_postQuantum) this.m_postQuantum = SETTINGS_OPT_DISABLED;
+      if (null == this.m_virtualLocation) this.m_virtualLocation = SETTINGS_OPT_ENABLED;
 
       // the following values contain the text SETTINGS_OPT_DISABLED it they are not set -> reset them
       if (this.m_autoConnect.equals(SETTINGS_OPT_DISABLED)) this.m_autoConnect = SETTINGS_OPT_EMPTY;
@@ -858,6 +880,7 @@ public class NvpnSettingsData
 
    public String getObfuscate(boolean def)
    {
+      if (false == Starter.isVersion5()) return SETTINGS_OPT_DISABLED;
       if (true == def)
       {
          Preferences prefs = Preferences.userRoot().node("com/mr/apps/JNordVpnManager/nordvpn");
@@ -871,6 +894,7 @@ public class NvpnSettingsData
 
    public boolean setObfuscate(String data, boolean def)
    {
+      if (false == Starter.isVersion5()) return false;
       if (null == data) return false;
 
       if (true == def)
@@ -883,11 +907,19 @@ public class NvpnSettingsData
          if (!StringFormat.equalBoolean(m_obfuscate, data))
          {
             // call set command
-            if (false == m_technology.equals(SETTINGS_OPT_OPENVPN))
+            if (Starter.isVersion5() && (false == m_technology.equals(SETTINGS_OPT_OPENVPN)))
             {
                Starter._m_logError.LoggingWarning(10500,
                      "Setting can not be changed",
                      "The Setting 'Obfuscated' is only supported for VPN Technology 'OPENVPN'.");
+               m_obfuscate = SETTINGS_OPT_DISABLED;
+               GuiCommandsToolBar.updateCommand(Command.VPN_SET_OBFUSCATE);
+            }
+            else if ((false == Starter.isVersion5()) && (false == m_technology.equals(SETTINGS_OPT_NORDWHISPER)))
+            {
+               Starter._m_logError.LoggingWarning(10500,
+                     "Setting can not be changed",
+                     "The Setting 'Obfuscated' is only supported for VPN Technology 'NORDWHISPER'.");
                m_obfuscate = SETTINGS_OPT_DISABLED;
                GuiCommandsToolBar.updateCommand(Command.VPN_SET_OBFUSCATE);
             }
@@ -940,51 +972,6 @@ public class NvpnSettingsData
             if (UtilSystem.getLastExitCode() == 0)
             {
                m_tray = data;
-               return true;
-            }
-         }
-      }
-
-      return false;
-   }
-
-   public String getTechnology(boolean def)
-   {
-      if (true == def)
-      {
-         Preferences prefs = Preferences.userRoot().node("com/mr/apps/JNordVpnManager/nordvpn");
-         return prefs.get("Settings.technology", DEFAULT_NVPN_SETTINGS_TECHNOLOGY);
-      }
-      else
-      {
-         return m_technology;
-      }
-   }
-
-   public boolean setTechnology(String data, boolean def)
-   {
-      if (null == data) return false;
-
-      if (true == def)
-      {
-         Preferences prefs = Preferences.userRoot().node("com/mr/apps/JNordVpnManager/nordvpn");
-         prefs.put("Settings.technology", data);
-      }
-      else
-      {
-         if (!m_technology.equalsIgnoreCase(data))
-         {
-            // call set command
-            String msg = NvpnCommands.technologySettings(data);
-            if (0 == UtilSystem.showResultDialog("NordVPN Set Technology", msg, true))
-            {
-               m_technology = data;
-               // ok -> we need to re-read the settings
-               getNordVPNSettings();
-               setRequiresReconnect();
-               GuiCommandsToolBar.updateCommand(Command.VPN_SET_TECHNOLOGY);
-               GuiCommandsToolBar.updateCommand(Command.VPN_SET_OBFUSCATE);
-               GuiCommandsToolBar.updateCommand(Command.VPN_SET_POSTQUANTUM);
                return true;
             }
          }
@@ -1074,6 +1061,7 @@ public class NvpnSettingsData
 
    public String getVirtualLocation(boolean def)
    {
+      if (false == Starter.isVersion5()) return SETTINGS_OPT_ENABLED;
       if (true == def)
       {
          Preferences prefs = Preferences.userRoot().node("com/mr/apps/JNordVpnManager/nordvpn");
@@ -1087,6 +1075,7 @@ public class NvpnSettingsData
 
    public boolean setVirtualLocation(String data, boolean def)
    {
+      if (false == Starter.isVersion5()) return false;
       if (null == data) return false;
 
       if (true == def)
@@ -1162,6 +1151,71 @@ public class NvpnSettingsData
       return false;
    }
 
+   public String getTechnology(boolean def)
+   {
+      if (true == def)
+      {
+         Preferences prefs = Preferences.userRoot().node("com/mr/apps/JNordVpnManager/nordvpn");
+         return prefs.get("Settings.technology", DEFAULT_NVPN_SETTINGS_TECHNOLOGY);
+      }
+      else if (null != m_technology)
+      {
+         return m_technology.toUpperCase();
+      }
+      else
+      {
+         return null;
+      }
+   }
+
+   public boolean setTechnology(String data, boolean def)
+   {
+      if (null == data) return false;
+
+      if (true == def)
+      {
+         Preferences prefs = Preferences.userRoot().node("com/mr/apps/JNordVpnManager/nordvpn");
+         prefs.put("Settings.technology", data);
+      }
+      else
+      {
+         if (!m_technology.equalsIgnoreCase(data))
+         {
+            // call set command
+            String msg = null;
+            String shortMsg = null;
+            if (true == Starter.isVersion5())
+            {
+               msg = NvpnCommands.technologySettings(data);
+               shortMsg = "NordVPN Set Technology";
+            }
+            else
+            {
+               // MR20261021: Version 6 - set Protocol combines Technology + Protocol
+               if (false == data.equals(SETTINGS_OPT_OPENVPN))
+               {
+                  // for NORDLYNX and NORDWHISPER (OPENVPN is set in setProtocol()!)
+                  msg = NvpnCommands.protocolSettings(data);
+                  shortMsg = "NordVPN Set Protocol";
+               }
+            }
+            if ((null != msg) && (0 == UtilSystem.showResultDialog(shortMsg, msg, true)))
+            {
+               m_technology = data;
+               // ok -> we need to re-read the settings
+               getNordVPNSettings();
+               setRequiresReconnect();
+               GuiCommandsToolBar.updateCommand(Command.VPN_SET_TECHNOLOGY);
+               if (Starter.isVersion5()) GuiCommandsToolBar.updateCommand(Command.VPN_SET_OBFUSCATE);
+               GuiCommandsToolBar.updateCommand(Command.VPN_SET_POSTQUANTUM);
+               return true;
+            }
+         }
+      }
+
+      return false;
+   }
+
    public String getProtocol(boolean def)
    {
       if (true == m_technology.equals(SETTINGS_OPT_NORDLYNX))
@@ -1180,9 +1234,13 @@ public class NvpnSettingsData
          Preferences prefs = Preferences.userRoot().node("com/mr/apps/JNordVpnManager/nordvpn");
          return prefs.get("Settings.protocol", DEFAULT_NVPN_SETTINGS_PROTOCOL);
       }
+      else if (null != m_protocol)
+      {
+         return m_protocol.toUpperCase();
+      }
       else
       {
-         return m_protocol;
+         return null;
       }
    }
 
@@ -1217,13 +1275,36 @@ public class NvpnSettingsData
          if (!m_protocol.equalsIgnoreCase(data))
          {
             // call set command
-            String msg = NvpnCommands.protocolSettings(data);
-            if (0 == UtilSystem.showResultDialog("NordVPN Set Protocol", msg, true))
+            if (true == Starter.isVersion5())
             {
-               m_protocol = data;
-               setRequiresReconnect();
-               GuiCommandsToolBar.updateCommand(Command.VPN_SET_TECHNOLOGY);
-               return true;
+               String msg = NvpnCommands.protocolSettings(data);
+               if (0 == UtilSystem.showResultDialog("NordVPN Set Protocol", msg, true))
+               {
+                  m_protocol = data;
+                  setRequiresReconnect();
+                  GuiCommandsToolBar.updateCommand(Command.VPN_SET_TECHNOLOGY);
+                  return true;
+               }
+            }
+            else
+            {
+               // MR20261021: Version 6 - set Protocol combines Technology + Protocol
+               if (true == getTechnology(false).equals(SETTINGS_OPT_OPENVPN))
+               {
+                  String msg = NvpnCommands.protocolSettings(getTechnology(false) + "_" + data);
+                  String shortMsg = "NordVPN Set Protocol";
+                  if (0 == UtilSystem.showResultDialog(shortMsg, msg, true))
+                  {
+                     m_protocol = data;
+                     // ok -> we need to re-read the settings
+                     getNordVPNSettings();
+                     setRequiresReconnect();
+                     GuiCommandsToolBar.updateCommand(Command.VPN_SET_TECHNOLOGY);
+                     if (Starter.isVersion5()) GuiCommandsToolBar.updateCommand(Command.VPN_SET_OBFUSCATE);
+                     GuiCommandsToolBar.updateCommand(Command.VPN_SET_POSTQUANTUM);
+                     return true;
+                  }
+               }
             }
          }
       }
@@ -1454,6 +1535,7 @@ public class NvpnSettingsData
       // a) for static targets we use the data from the location and change the settings w/o request
       // b) for dynamic targets we use the data from the GUI- and VPN Settings - checks required and requester(s) for Settings changes
       //    - if legacy group is Obfuscated - Setting obfuscated must be enabled and Technology OPENVPN
+      //                                      Changed in V6 - Protocol is nordwhisper
       //    - if legacy group is not Obfuscated - Settings obfuscated must be disabled
 
       // Get the data
@@ -1464,75 +1546,108 @@ public class NvpnSettingsData
       String            locationTechnology = loc.getVpnTechnology();
       String            locationProtocol = loc.getVpnProtocol();
 
-      Starter._m_logError.TraceDebug("Check Settings GUI+VPN [loc]: Obfuscate=" + bObfuscate
-            + " / Legacy Group=" + currentLegacyGroup.name() + " [" + locationLegacyGroup.name()
-            + "] / Technology/Protocol=" + m_technology + "/" + m_protocol  + " [" + locationTechnology+ "/" + locationProtocol
-            + ".");
+      Starter._m_logError.TraceDebug("Check Settings GUI+VPN [loc]: " + (Starter.isVersion5() ? ("Obfuscate=" + bObfuscate + "/" ) : "")
+            + "Legacy Group=" + currentLegacyGroup.name() + " [" + locationLegacyGroup.name()
+            + "] / Technology_Protocol=" + m_technology + "_" + m_protocol  + " [" + locationTechnology+ "_" + locationProtocol
+            + "].");
 
       boolean changedSettings = false;
+
       if (true == loc.isStatic())
       {
-         if (false == locationTechnology.equals(m_technology))
+         if (false == locationTechnology.equalsIgnoreCase(m_technology))
          {
             changedSettings |= this.setTechnology(locationTechnology, false);
             if (true == locationTechnology.equals(SETTINGS_OPT_OPENVPN))
             {
-               if (false == locationProtocol.equals(m_protocol))
+               if (false == locationProtocol.equalsIgnoreCase(m_protocol))
                {
                   changedSettings |= this.setProtocol(locationProtocol, false);
                }
             }
          }
 
-         if ((true == locationLegacyGroup.equals(NordVPNEnumGroups.legacy_obfuscated_servers)) && (!bObfuscate))
+         if (true == Starter.isVersion5())
          {
-            changedSettings |= this.setObfuscate(SETTINGS_OPT_ENABLED, false);            
-         }
-         else if ((false == locationLegacyGroup.equals(NordVPNEnumGroups.legacy_obfuscated_servers)) && (bObfuscate))
-         {
-            changedSettings |= this.setObfuscate(SETTINGS_OPT_DISABLED, false);            
+            if ((true == locationLegacyGroup.equals(NordVPNEnumGroups.Obfuscated)) && (!bObfuscate))
+            {
+               changedSettings |= this.setObfuscate(SETTINGS_OPT_ENABLED, false);            
+            }
+            else if ((false == locationLegacyGroup.equals(NordVPNEnumGroups.Obfuscated)) && (bObfuscate))
+            {
+               changedSettings |= this.setObfuscate(SETTINGS_OPT_DISABLED, false);            
+            }
          }
       }
       else
       {
-         if ((true == currentLegacyGroup.equals(NordVPNEnumGroups.legacy_obfuscated_servers)) && (!bObfuscate))
+         if ((true == currentLegacyGroup.equals(NordVPNEnumGroups.Obfuscated)) && (!bObfuscate))
          {
-            // require to change setting 'obfuscate enabled' (only available for technology OPENVPN!)
-            JModalDialog dlg = JModalDialog.JOptionDialog("Obfuscated Servers",
-                  "Selected Filter Legacy Group is different from VPN Settings!\n"
-                        + "\nTo connect to VPN servers with obfuscation, the Setting 'Obfuscate' must be enabled in NordVPN settings and the technology must be OPENVPN.\n"
-                        + "\nPlease choose the OPENVPN protocol to enable obfuscation, No Obfuscation or choose Cancel.",
-                  "OPENVPN TCP,OPENVPN UDP,No Obfuscation, Cancel");
-            int rc = dlg.getResult();
-            if (rc == 0)
+            if (true == Starter.isVersion5())
             {
-               // change settings, keep filter legacy group
-               changedSettings |= this.setTechnology(SETTINGS_OPT_OPENVPN, false);
-               changedSettings |= this.setProtocol(SETTINGS_OPT_TCP, false);
-               changedSettings |= this.setObfuscate(SETTINGS_OPT_ENABLED, false);
+               // require to change setting 'obfuscate enabled' (only available for technology OPENVPN!)
+               JModalDialog dlg = JModalDialog.JOptionDialog("Obfuscated Servers",
+                     "Selected Filter Legacy Group is different from VPN Settings!\n"
+                           + "\nTo connect to VPN servers with obfuscation, the Setting 'Obfuscate' must be enabled in NordVPN settings and the technology must be OPENVPN.\n"
+                           + "\nPlease choose the OPENVPN protocol to enable obfuscation, No Obfuscation or choose Cancel.",
+                     "OPENVPN TCP,OPENVPN UDP,No Obfuscation, Cancel");
+               int rc = dlg.getResult();
+               if (rc == 0)
+               {
+                  // change settings, keep filter legacy group
+                  changedSettings |= this.setTechnology(SETTINGS_OPT_OPENVPN, false);
+                  changedSettings |= this.setProtocol(SETTINGS_OPT_TCP, false);
+                  changedSettings |= this.setObfuscate(SETTINGS_OPT_ENABLED, false);
+               }
+               else if (rc == 1)
+               {
+                  // change settings, keep filter legacy group
+                  changedSettings |= this.setTechnology(SETTINGS_OPT_OPENVPN, false);
+                  changedSettings |= this.setProtocol(SETTINGS_OPT_UDP, false);
+                  changedSettings |= this.setObfuscate(SETTINGS_OPT_ENABLED, false);
+               }
+               else if (rc == 2)
+               {
+                  // keep settings, change filter legacy group
+                  NvpnGroups.setCurrentFilterGroup(NordVPNEnumGroups.Standard_VPN_Servers);
+                  loc.setLegacyGroup(null);
+                  changedSettings = true;
+               }
+               else // rc == 3
+               {
+                  // cancel
+                  return false;
+               }
             }
-            else if (rc == 1)
+            else
             {
-               // change settings, keep filter legacy group
-               changedSettings |= this.setTechnology(SETTINGS_OPT_OPENVPN, false);
-               changedSettings |= this.setProtocol(SETTINGS_OPT_UDP, false);
-               changedSettings |= this.setObfuscate(SETTINGS_OPT_ENABLED, false);
-            }
-            else if (rc == 2)
-            {
-               // keep settings, change filter legacy group
-               NvpnGroups.setCurrentFilterGroup(NordVPNEnumGroups.Standard_VPN_Servers);
-               loc.setLegacyGroup(null);
-               changedSettings = true;
-            }
-            else // rc == 3
-            {
-               // cancel
-               return false;
+               // MR20261021: Version 6 - no obfuscate setting - Selection over group + fix Protocol nordwhisper
+               if ((true == locationLegacyGroup.equals(NordVPNEnumGroups.Obfuscated)) && (false == locationTechnology.equalsIgnoreCase(SETTINGS_OPT_NORDWHISPER)))
+               {
+                  JModalDialog dlg = JModalDialog.JOptionDialog("Obfuscated Servers",
+                        "Current Protocol does not support Obfuscation!\n"
+                              + "\nTo connect to VPN servers with obfuscation, the protocol must be NORDWHISPER.\n"
+                              + "\nPlease choose the NORDWHISPER protocol to enable obfuscation or choose Cancel.",
+                        "NORDWHISPER, Cancel");
+                  int rc = dlg.getResult();
+                  if (rc == 0)
+                  {
+                     // change protocol
+                     changedSettings |= this.setTechnology(SETTINGS_OPT_NORDWHISPER, false);
+                     locationTechnology = m_technology;
+                     locationProtocol = m_protocol;
+                  }
+                  else // rc == 1
+                  {
+                     // cancel
+                     return false;
+                  }
+               }
             }
          }
-         else if ((false == currentLegacyGroup.equals(NordVPNEnumGroups.legacy_obfuscated_servers)) && (bObfuscate))
+         else if ((false == currentLegacyGroup.equals(NordVPNEnumGroups.Obfuscated)) && (bObfuscate))
          {
+            // MR20261021: Until Version 5
             // require to change setting 'obfuscate disabled'
             JModalDialog dlg = JModalDialog.JOptionDialog("Change Legacy Group",
                   "Selected Filter Legacy Group is different from VPN Settings!\n"
@@ -1543,7 +1658,7 @@ public class NvpnSettingsData
             if (rc == 0)
             {
                // keep settings, change Filter Legacy Group
-               NvpnGroups.setCurrentFilterGroup(NordVPNEnumGroups.legacy_obfuscated_servers);
+               NvpnGroups.setCurrentFilterGroup(NordVPNEnumGroups.Obfuscated);
                loc.setLegacyGroup(null);
                changedSettings = true;
             }

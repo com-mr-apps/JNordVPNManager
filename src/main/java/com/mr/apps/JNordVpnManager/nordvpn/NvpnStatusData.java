@@ -22,6 +22,7 @@ public class NvpnStatusData
    private String  m_ip                = null;
    private String  m_country           = null;
    private String  m_city              = null;
+   private String  m_group             = null;
    private String  m_technology        = null;
    private String  m_protocol          = null;
    private String  m_postQuantum       = null;
@@ -46,10 +47,14 @@ public class NvpnStatusData
          // OK - extract data
          if (false == parseData(m_statusText))
          {
-            // failed
-            setStatus("Disconnected");
-            m_statusLineMessage = "'nordvpn status' information cannot be parsed.";
-            JModalDialog.showError("NordVPN Status", m_statusLineMessage);
+            // Status Disconnected or parsing failed
+            if (null == getStatus())
+            {
+               // failed
+               setStatus("Disconnected");
+               m_statusLineMessage = "'nordvpn status' information cannot be parsed.";
+               JModalDialog.showError("NordVPN Status", m_statusLineMessage);
+            }
          }
          else
          {
@@ -82,13 +87,28 @@ public class NvpnStatusData
 
       // Parsing OK
       setStatus(values.get("Status"));
+      // TODO: Currently not handled, if status = "Connecting"
+      if (false == isConnected()) return false;
       setServer(values.get("Server"));
       setHostname(values.get("Hostname"));
       setIp(values.get("IP"));
       setCountry(values.get("Country"));
       setCity(values.get("City"));
-      setTechnology(values.get("Current technology"));
-      setProtocol(values.get("Current protocol"));
+      if (true == Starter.isVersion5())
+      {
+         setTechnology(values.get("Current technology"));
+         setProtocol(values.get("Current protocol"));
+      }
+      else
+      {
+         setGroup(values.get("Group"));
+         String value = values.get("Protocol");
+         String[] saStrings = value.split(" ");
+         this.m_technology = saStrings[0];
+         this.m_protocol = (saStrings.length > 1 ) ? saStrings[1].substring(1, 4) : null;
+         if (this.m_technology.equalsIgnoreCase(NvpnSettingsData.SETTINGS_OPT_NORDWHISPER)) this.m_protocol = NvpnSettingsData.SETTINGS_OPT_WEBTUNNEL;
+         if (this.m_technology.equalsIgnoreCase(NvpnSettingsData.SETTINGS_OPT_NORDLYNX)) this.m_protocol = NvpnSettingsData.SETTINGS_OPT_UDP;
+      }
       setPostQuantum(values.get("Post-quantum VPN"));
       setTransfer(values.get("Transfer"));
       setUptime(values.get("Uptime"));
@@ -168,9 +188,21 @@ public class NvpnStatusData
    }
 
 
+   public String getGroup()
+   {
+      return m_group;
+   }
+
+
+   public void setGroup(String group)
+   {
+      this.m_group = group;
+   }
+
+
    public String getTechnology()
    {
-      return m_technology;
+      return (null != m_technology) ? m_technology.toUpperCase() : null;
    }
 
 
@@ -182,7 +214,7 @@ public class NvpnStatusData
 
    public String getProtocol()
    {
-      return m_protocol;
+      return (null != m_protocol) ? m_protocol.toUpperCase() : null;
    }
 
 
@@ -257,7 +289,7 @@ public class NvpnStatusData
             + ((isConnected()) 
             ? " to " + getCity() + " [" + getCountry() + "]"
                + ", IP: " + getIp() + " (" + getHostname() + "), "
-               + getTechnology() + "/" + getProtocol() 
+               + getTechnology() + ((null != getProtocol()) ? ("_" + getProtocol()) : "") 
                + " - Legacy Group: " + (((null != NvpnGroups.getCurrentLegacyGroup())) ? NvpnGroups.getCurrentLegacyGroup().name() : "??")
             : "");
    }

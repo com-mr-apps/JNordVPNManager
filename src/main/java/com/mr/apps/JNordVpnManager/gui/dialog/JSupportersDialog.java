@@ -62,6 +62,7 @@ public class JSupportersDialog extends JFrame
          + "<li><strong>Connect to Hosts</strong>: Select a specific host out of a list of over 7000 VPN hosts.</li>"
          + "<li><strong>Allow-, Whitelist</strong>: Manage allowlist for ports and subnets (<a href=\"https://github.com/com-mr-apps/JNordVPNManager/wiki/Allow-List--%E2%80%90-Whitelist\">Documentation on GitHub Wiki</a>).</li>"
          + "<li><strong>Timer Reconnect</strong>: Time-based automatic [re]connect to VPN location.</li>"
+         + "<li><strong>Download Speed Test</strong>: Download Speed Test of connection to a nearby speed test server.</li>"
          + "</ul>"
          + "<h4>...planned features are:</h4>"
          + "<ul>"
@@ -126,13 +127,15 @@ public class JSupportersDialog extends JFrame
       JPanel jpTitle = new JPanel();
       jpTitle.setLayout(new BoxLayout(jpTitle, BoxLayout.X_AXIS));
       jpTitle.setBackground(new Color(247, 217, 146));
+      jpTitle.setForeground(new Color(255-247, 255-217, 255-146));
       JLogo coffeeLogo = new JLogo(JLogo.Logos.LOGO_BUYMEACOFFEE);
       JLogo mrLogo = new JLogo(JLogo.Logos.LOGO_GITHUB_SPONSORS);
 
       JEditorPane editorTitlePane = new JEditorPane();
       editorTitlePane.setEditable(false);
-      editorTitlePane.setCaretColor(new Color(247, 217, 146)); // hide caret
       editorTitlePane.setBackground(new Color(247, 217, 146));
+      editorTitlePane.setForeground(new Color(255-247, 255-217, 255-146));
+      editorTitlePane.setCaretColor(editorTitlePane.getBackground()); // hide caret
       editorTitlePane.setContentType("text/html");
       if (null == sFeature)
       {
@@ -187,8 +190,9 @@ public class JSupportersDialog extends JFrame
        */
       JEditorPane editorTextPane = new JEditorPane();
       editorTextPane.setEditable(false);
-      editorTextPane.setCaretColor(new Color(247, 217, 146)); // hide caret
       editorTextPane.setBackground(new Color(247, 217, 146));
+      editorTextPane.setForeground(new Color(255-247, 255-217, 255-146));
+      editorTextPane.setCaretColor(editorTextPane.getBackground()); // hide caret
       editorTextPane.setContentType("text/html");
       editorTextPane.setText("<html><body style=\"background-color: #f7d992 \">" + m_htmlBodyText + "</body></html>");
       editorTextPane.setCaretPosition(0);

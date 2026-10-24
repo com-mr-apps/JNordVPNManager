@@ -12,6 +12,7 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.GraphicsDevice;
 import java.awt.GraphicsEnvironment;
 import java.awt.Image;
@@ -38,6 +39,7 @@ import javax.swing.WindowConstants;
 import org.geotools.swing.JMapFrame;
 
 import com.mr.apps.JNordVpnManager.commandInterfaces.base.CallCommand;
+import com.mr.apps.JNordVpnManager.commandInterfaces.base.Command;
 import com.mr.apps.JNordVpnManager.geotools.CurrentLocation;
 import com.mr.apps.JNordVpnManager.geotools.Location;
 import com.mr.apps.JNordVpnManager.geotools.UtilLocations;
@@ -48,6 +50,7 @@ import com.mr.apps.JNordVpnManager.gui.GuiMenuBar;
 import com.mr.apps.JNordVpnManager.gui.GuiStatusLine;
 import com.mr.apps.JNordVpnManager.gui.components.JResizedIcon;
 import com.mr.apps.JNordVpnManager.gui.components.JResizedIcon.IconSize;
+import com.mr.apps.JNordVpnManager.gui.connectLine.GuiCommandsToolBar;
 import com.mr.apps.JNordVpnManager.gui.connectLine.GuiConnectLine;
 import com.mr.apps.JNordVpnManager.gui.connectLine.JPanelConnectTimer;
 import com.mr.apps.JNordVpnManager.gui.dialog.JAboutScreen;
@@ -83,6 +86,8 @@ public class Starter extends JFrame
    public static final String      SEP_DATARECORD             = ":";
    public static final String      SEP_DATAITEM               = ",";
    public static final Color       Color_Addon                = new Color(81,23,137);
+   public static final Color       Color_Copyright            = new Color(97, 206, 255);
+   public static final Font        Font_Copyright             = new Font("serif", Font.ITALIC, 12);
 
    public static UtilLogErr        _m_logError                = null;
 
@@ -550,14 +555,17 @@ public class Starter extends JFrame
             // !!! The GUI can confuse, because the displayed legacy group (filter) may not be correct for the current connection!
             // !!! OK only, after [re]connection in the GUI -> check status line text message 
 
-            // check settings for obfuscated and correct the server tree legacy group filter
-            NordVPNEnumGroups currentGroup = NordVPNEnumGroups.get(UtilPrefs.getRecentServerGroup());
-            boolean bObfuscate = StringFormat.string2boolean(m_nvpnSettingsData.getObfuscate(false));
-            if (bObfuscate && (false == currentGroup.equals(NordVPNEnumGroups.legacy_obfuscated_servers)))
+            if (Starter.isVersion5())
             {
-               // we can switch to legacy group obfuscated
-               UtilPrefs.setRecentServerGroup(NordVPNEnumGroups.legacy_obfuscated_servers.getId());
-               // NvpnGroups.setCurrentGroup(NordVPNEnumGroups.legacy_obfuscated_servers); ! not sure, if settings were changed w/o reconnect before GUI start
+               // check settings for obfuscated and correct the server tree legacy group filter
+               NordVPNEnumGroups currentGroup = NordVPNEnumGroups.get(UtilPrefs.getRecentServerGroup());
+               boolean bObfuscate = StringFormat.string2boolean(m_nvpnSettingsData.getObfuscate(false));
+               if (bObfuscate && (false == currentGroup.equals(NordVPNEnumGroups.Obfuscated)))
+               {
+                  // we can switch to legacy group obfuscated
+                  UtilPrefs.setRecentServerGroup(NordVPNEnumGroups.Obfuscated.getId());
+                  // NvpnGroups.setCurrentGroup(NordVPNEnumGroups.Obfuscated); ! not sure, if settings were changed w/o reconnect before GUI start
+               }
             }
             _m_logError.TraceIni("Existing connection to server: " + m_nvpnStatusData.getServer());
             _m_logError.TraceDebug("GUI doesn't has information about the legacy_group until a [re]connection in the application!");
@@ -858,7 +866,10 @@ public class Starter extends JFrame
 
       // ... Update the commands Menu
       GuiMenuBar.updateMenuButtons(m_currentServer);
-      
+
+      // ... Update the commands Toolbar
+      GuiCommandsToolBar.updateCommand(Command.VPN_SET_TECHNOLOGY);
+
       return (null == m_currentServer) ? false : m_currentServer.isConnected();
    }
 
@@ -1019,6 +1030,19 @@ public class Starter extends JFrame
       return m_AddOnLibVersion;
    }
 
+   /**
+    * Check if a function is available in the current installed Supporter Edition addOn library.
+    * <p>
+    * This method checks, if the addOn library is equal or newer than the requested version.
+    * 
+    * @param version
+    *           is the addOn library version, where the functionality was first released
+    * @return true if the addOn library is newer or equal than the requested version.
+    */
+   public static boolean isAddOnAvailable(String version)
+   {
+      return (/* isSupporterEdition() && */ (version.compareTo(getAddOnLibVersion()) <= 0));
+   }
    public static boolean isSupporterEdition()
    {
       return m_isSupporterEdition;
@@ -1027,6 +1051,11 @@ public class Starter extends JFrame
    public static boolean isSnapInstallation()
    {
       return m_isSnapInstallation;
+   }
+
+   public static boolean isVersion5()
+   {
+      return m_nordvpnVersion.startsWith("5") || m_nordvpnVersion.startsWith("4");
    }
 
    private static String checkSnapRunMode()

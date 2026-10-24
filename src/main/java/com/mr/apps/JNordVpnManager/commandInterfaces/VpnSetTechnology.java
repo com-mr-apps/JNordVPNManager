@@ -27,9 +27,9 @@ public class VpnSetTechnology implements CommandInterface
       String sTech = Starter.getCurrentSettingsData().getTechnology(false);
       if (true == sTech.equalsIgnoreCase("OPENVPN"))
       {
-         sTech += "/" + Starter.getCurrentSettingsData().getProtocol(false);
+         sTech += "_" + Starter.getCurrentSettingsData().getProtocol(false);
       }
-      return sTech;
+      return sTech.toUpperCase();
    }
 
    public static boolean execute(ActionEvent e)

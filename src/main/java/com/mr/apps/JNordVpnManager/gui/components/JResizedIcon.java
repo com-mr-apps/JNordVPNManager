@@ -34,6 +34,7 @@ public class JResizedIcon extends ImageIcon
       ICON_NOMAP                       ("i_NoMap.png"),
       ICON_CUSTOMIZE_ADD_COMMAND_BAR   ("i_CustomizeAddCommandBar.png"),
       ICON_CUSTOMIZE_DEL_COMMAND_BAR   ("i_CustomizeDelCommandBar.png"),
+      ICON_SPEED_TEST                  ("i_SpeedTest.png"),
       ICON_STATUS_CONNECTED            ("i_StatusOk.png"),
       ICON_STATUS_WARNING              ("i_StatusWarning.png"),
       ICON_STATUS_DISCONNECTED         ("i_StatusKo.png"),

@@ -56,9 +56,11 @@ public class Command implements CommandInterface
    public static final String                     VPN_SET_VIRTUALLOCATION  = "VPN_SET_VIRTUALSERVER";
    public static final String                     APP_PREF_AUTOCONNECT     = "APP_PREF_AUTOCONNECT";
    public static final String                     APP_PREF_AUTODISCONNECT  = "APP_PREF_AUTODISCONNECT";
+   public static final String                     VPN_SET_TECHNOLOGY       = "VPN_SET_TECHNOLOGY";
+
    // Addons
    public static final String                     VPN_CMD_TIMER_RECONNECT  = "VPN_CMD_TIMER_RECONNECT";
-   public static final String                     VPN_SET_TECHNOLOGY       = "VPN_SET_TECHNOLOGY";
+   public static final String                     APP_CMD_SPEEDTEST_DOWN   = "APP_CMD_SPEEDTEST_DOWN";
 
    // list of all available commands
    private static Map<String, Command>            m_allCommandsMap         = new HashMap<String, Command>();
@@ -184,13 +186,6 @@ public class Command implements CommandInterface
             "VPN Setting for Killswitch.",
             "VpnSetKillswitch"));
 
-      cmd = new CommandCheckBox(VPN_SET_OBFUSCATE,
-            JResizedIcon.IconUrls.ICON_VPN_SET_OBFUSCATE,
-            "VPN Setting for Obfuscation.",
-            "VpnSetObfuscate");
-      cmd.setToolTip(DISABLED_STATUS_KEY, "Obfuscated only available for technology 'OPENVPN'.");
-      addCommand(cmd);
-
       cmd = new CommandCheckBox(VPN_SET_POSTQUANTUM,
             JResizedIcon.IconUrls.ICON_VPN_SET_POSTQUANTUM,
             "VPN Setting for Post-Quantum.",
@@ -203,10 +198,22 @@ public class Command implements CommandInterface
             "VPN Setting for Threat Protection.",
             "VpnSetThreatprotection"));
 
-      addCommand(new CommandCheckBox(VPN_SET_VIRTUALLOCATION,
-            JResizedIcon.IconUrls.ICON_VPN_SET_VIRTUALLOCATION,
-            "VPN Setting for Virtual Location.",
-            "VpnSetVirtualLocation"));
+      if (true == Starter.isVersion5())
+      {
+         // MR20261021: Version 6 - Obfuscate replaced in Version 6.0 by legacy group
+         cmd = new CommandCheckBox(VPN_SET_OBFUSCATE,
+               JResizedIcon.IconUrls.ICON_VPN_SET_OBFUSCATE,
+               "VPN Setting for Obfuscation.",
+               "VpnSetObfuscate");
+         cmd.setToolTip(DISABLED_STATUS_KEY, "Obfuscated only available for technology 'OPENVPN'.");
+         addCommand(cmd);
+
+         // MR20261021: Version 6 - Setting removed in Version 6.0
+         addCommand(new CommandCheckBox(VPN_SET_VIRTUALLOCATION,
+               JResizedIcon.IconUrls.ICON_VPN_SET_VIRTUALLOCATION,
+               "VPN Setting for Virtual Location.",
+               "VpnSetVirtualLocation"));
+      }
 
       addCommand(new CommandCheckBox(APP_PREF_AUTOCONNECT,
             JResizedIcon.IconUrls.ICON_APP_PREF_AUTOCONNECT,
@@ -217,10 +224,11 @@ public class Command implements CommandInterface
             JResizedIcon.IconUrls.ICON_APP_PREF_AUTODISCONNECT,
             "User Preferences for Auto Disconnect from VPN on Application Exit.", 
             "AppPrefAutoDisconnect"));
+
       addCommand(new CommandComboBox(VPN_SET_TECHNOLOGY,
-            new String[] { BASE_STATUS_KEY, "NORDLYNX" , "NORDWHISPER", "OPENVPN/TCP", "OPENVPN/UDP", DISABLED_STATUS_KEY}, // keys
-            new String[] { null, "NORDLYNX" , "NORDWHISPER", "OPENVPN/TCP", "OPENVPN/UDP", null }, // options (labels)
-            new String[] { "VPN Setting for Technology/Protocol.", "Set Technology to NORDLYNX" , "Set Technology to NORDWHISPER", "Set Technology to OPENVPN/TCP", "Set Technology to OPENVPN/UDP", "Disabled VPN Setting for Technology/Protocol." },
+            new String[] { BASE_STATUS_KEY, "NORDLYNX" , "NORDWHISPER", "OPENVPN_TCP", "OPENVPN_UDP", DISABLED_STATUS_KEY}, // keys
+            new String[] { null, "NORDLYNX" , "NORDWHISPER", "OPENVPN_TCP", "OPENVPN_UDP", null }, // options (labels)
+            new String[] { "VPN Setting for Protocol.", "Set Protocol to NORDLYNX" , "Set Protocol to NORDWHISPER", "Set Protocol to OPENVPN_TCP", "Set Protocol to OPENVPN_UDP", "Disabled VPN Setting for Protocol." },
             new Boolean[] {true, true, true, true, true, false }, // enabled
             new JResizedIcon.IconUrls[] {JResizedIcon.IconUrls.ICON_VPN_TECHNOLOGY, JResizedIcon.IconUrls.ICON_VPN_TECHNOLOGY, JResizedIcon.IconUrls.ICON_VPN_TECHNOLOGY, JResizedIcon.IconUrls.ICON_VPN_TECHNOLOGY, JResizedIcon.IconUrls.ICON_VPN_TECHNOLOGY, JResizedIcon.IconUrls.ICON_VPN_TECHNOLOGY},
             "VpnSetTechnology"));

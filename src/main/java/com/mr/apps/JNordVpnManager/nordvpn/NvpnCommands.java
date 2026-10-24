@@ -38,6 +38,7 @@ public class NvpnCommands {
    private static final String OPT_DEFAULTS         = "defaults";
    private static final String OPT_AUTOCONNECT      = "autoconnect";
    private static final String OPT_TPLITE           = "tplite";
+   private static final String OPT_PROTECTION       = "protection";
    private static final String OPT_DNS              = "dns";
    private static final String OPT_FIREWALL         = "firewall";
    private static final String OPT_FWMARK           = "fwmark";
@@ -161,8 +162,16 @@ public class NvpnCommands {
    public static String tpliteSettings(boolean value)
    {
       String status = null;
-      
-      status = UtilSystem.runCommand(CMD_NORDVPN, ARG_SET, OPT_TPLITE, ((value) ? VAL_ENABLED : VAL_DISABLED));
+      if (Starter.isVersion5())
+      {
+         // TODO: Cleanup old NordVPN Version
+         status = UtilSystem.runCommand(CMD_NORDVPN, ARG_SET, OPT_TPLITE, ((value) ? VAL_ENABLED : VAL_DISABLED));
+      }
+      else
+      {
+         // MR202610: New in NordVPN 6.0
+         status = UtilSystem.runCommand(CMD_NORDVPN, ARG_SET, OPT_PROTECTION, ((value) ? VAL_ENABLED : VAL_DISABLED));
+      }
       
       return status;
    }
@@ -306,19 +315,6 @@ public class NvpnCommands {
 
    /**
     * Set nordvpn settings
-    * @return the return of nordvpn set technology value
-    */
-   public static String technologySettings(String value)
-   {
-      String status = null;
-      
-      status = UtilSystem.runCommand(CMD_NORDVPN, ARG_SET, OPT_TECHNOLOGY, value);
-      
-      return status;
-   }
-
-   /**
-    * Set nordvpn settings
     * @return the return of nordvpn set meshnet value
     */
    public static String meshnetSettings(boolean value)
@@ -365,6 +361,19 @@ public class NvpnCommands {
       String status = null;
       
       status = UtilSystem.runCommand(CMD_NORDVPN, ARG_SET, OPT_POST_QUANTUM, ((value) ? VAL_ENABLED : VAL_DISABLED));
+      
+      return status;
+   }
+
+   /**
+    * Set nordvpn settings
+    * @return the return of nordvpn set technology value
+    */
+   public static String technologySettings(String value)
+   {
+      String status = null;
+      
+      status = UtilSystem.runCommand(CMD_NORDVPN, ARG_SET, OPT_TECHNOLOGY, value);
       
       return status;
    }
@@ -470,11 +479,17 @@ public class NvpnCommands {
       String serverHostName = "";
       int cityId = -1;
       NordVPNEnumGroups currentGroup = NvpnGroups.getCurrentFilterGroup();
-      boolean bObfuscate = currentGroup.equals(NordVPNEnumGroups.legacy_obfuscated_servers);
+      if (false == Starter.isVersion5() && currentGroup.equals(NordVPNEnumGroups.P2P))
+      {
+         // MR20261021: P2P replaced by Standard in v6.0.1
+         currentGroup = NordVPNEnumGroups.Standard_VPN_Servers;
+      }
+
+      boolean bObfuscate = Starter.isVersion5() ? currentGroup.equals(NordVPNEnumGroups.Obfuscated) : false;
 
       if (null != loc)
       {
-         Starter._m_logError.LoggingInfo("Connect to Server: " + loc.toString() + " / Obfuscate=" + bObfuscate);
+         Starter._m_logError.LoggingInfo("Connect to Server: " + loc.toString() + (Starter.isVersion5() ? (" / Obfuscate=" + bObfuscate) : (" / Legacy Group=" + currentGroup)));
          // validate group/VPN settings for the connection
          NvpnSettingsData csd = Starter.getCurrentSettingsData();
          boolean rc = csd.checkForConnection(loc);
@@ -493,7 +508,13 @@ public class NvpnCommands {
          cityId = loc.getCityId();
          serverHostName = loc.getServerNordVPN();
          currentGroup = NordVPNEnumGroups.get(loc.getLegacyGroup());
-         bObfuscate = (NordVPNEnumGroups.legacy_obfuscated_servers).equals(currentGroup);
+         bObfuscate = Starter.isVersion5() ? currentGroup.equals(NordVPNEnumGroups.Obfuscated) : false;
+         if (false == Starter.isVersion5() && currentGroup.equals(NordVPNEnumGroups.P2P))
+         {
+            // MR20261021: P2P replaced by Standard in v6.0.1
+            currentGroup = NordVPNEnumGroups.Standard_VPN_Servers;
+         }
+
       }
       else
       {

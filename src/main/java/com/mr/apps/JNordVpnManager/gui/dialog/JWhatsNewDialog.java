@@ -27,17 +27,18 @@ public class JWhatsNewDialog
 {
    private static final String m_htmlAboutText = "<h2>JNordVPN Manager Version History.</h2>"
          + "<h3>What's New:</h3>"
-         + "</ul>"
-         + "<h4>Version 2026.2.1 (Snap 2026.2.1):</h4>"
-         + "[Released February 2026]"
+         + "<h4>Version 2026.10.1 (Snap 2026.10.1):</h4>"
+         + "[Released October 2026]"
          + "<ul>"
-         + "<li><strong>Download Speed Test</strong>: Updated Server List.</li>"
-         + "<li><strong>NordVPN v4.4.0 Update</strong>: Fixed problems in Account and Settings data parsing.</li>"
+         + "<li><strong>NordVPN v6.0.1 Update</strong>: See NordVPN changes here: <a href=\"https://nordvpn.com/blog/nordvpn-linux-6-0/\">NordVPN 6.0 brings major changes to Linux</a>.</li>"
+         + "<li><strong>[Re]Connect command</strong>: Now uses the current application (legacy group, protocol, ...) settings to connect to the VPN server.</li>"
+         + "<li><strong>Download Speed Test</strong>: Moved to SE.</li>"
          + "<li>...and another minor bug fixes and enhancements to make the application more reliable and handsome.</li>"
          + "</ul>"
          + "<p>For further information see: <a href=\"https://github.com/com-mr-apps/JNordVPNManager\">JNordVPN on GitHub</a></p>"
          + "<h3>What's Next:</h3>"
          + "<ul>"
+         + "<li><strong>Support of previous NordVPN Versions</strong>: Next versions of JNordVPN Manager will no longer support NordVPN versions less than V6.0.</li>"
          + "<li><strong>Bug fixes and Enhancements</strong>: Maintenance.</li>"
          + "</ul>"
          + "<h3>Planned features for Supporter Edition <em>(suggestions are welcome)</em>:</h3>"
@@ -48,7 +49,12 @@ public class JWhatsNewDialog
          + "<li><strong>Speedtest</strong>: check/show connection speeds.</li>"
          + "</ul>"
          + "<p>For further information see: <a href=\"https://buymeacoffee.com/3dprototyping\">[donations]</a>.</p>"
-         + "</ul>"
+         + "<h4>Version 2026.2.1 (Snap 2026.2.1):</h4>"
+         + "[Released February 2026]"
+         + "<ul>"
+         + "<li><strong>Download Speed Test</strong>: Updated Server List.</li>"
+         + "<li><strong>NordVPN v4.4.0 Update</strong>: Fixed problems in Account and Settings data parsing.</li>"
+         + "<li>...and another minor bug fixes and enhancements to make the application more reliable and handsome.</li>"
          + "</ul>"
          + "<h4>Version 2025.5.1 (Snap 2025.5.1):</h4>"
          + "[Released Mai 2025]"
@@ -149,8 +155,9 @@ public class JWhatsNewDialog
 
       JEditorPane whatsNewText = new JEditorPane();
       whatsNewText.setEditable(false);
-      whatsNewText.setCaretColor(new Color(247, 217, 146)); // hide caret
       whatsNewText.setBackground(new Color(247, 217, 146));
+      whatsNewText.setForeground(new Color(255-247, 255-217, 255-146));
+      whatsNewText.setCaretColor(whatsNewText.getBackground()); // hide caret
       whatsNewText.setContentType("text/html");
       whatsNewText.setText("<html><body style=\"background-color: #f7d992 \">" + m_htmlAboutText + "</body></html>");
       whatsNewText.setCaretPosition(0);
