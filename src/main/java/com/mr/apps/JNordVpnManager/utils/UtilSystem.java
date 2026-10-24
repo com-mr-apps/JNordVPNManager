@@ -266,19 +266,21 @@ public class UtilSystem
 
          m_lastExitCode = m_process.exitValue();
 //         Starter._m_logError.TraceCmd("Returncode=" + m_lastExitCode);
+         if (null != m_stdOut && m_stdOut.length() > 0) Starter._m_logError.TraceOut(m_stdOut.toString());
+
          if (0 != m_lastExitCode)
          {
             // return error
             m_lastErrorMessage = "Command '" + joinCommand(command) + "' returned with error code: " + m_lastExitCode + ".";
+            // ..add stdout to error message
+            if (null != m_stdOut && m_stdOut.length() > 0) m_lastErrorMessage += "\n" + m_stdOut.toString();
          }
 
-         if (null != m_stdOut && m_stdOut.length() > 0) Starter._m_logError.TraceOut(m_stdOut.toString());
-         if (null != m_stdErr && m_stdErr.length() > 0) Starter._m_logError.TraceErr("(rc=" + m_lastExitCode + ") " + m_stdErr.toString());
-
-         if (m_stdErr.length() > 0)
+         if (null != m_stdErr && m_stdErr.length() > 0)
          {
-            // add stderr to error message
-            m_lastErrorMessage += m_stdErr.toString();
+            Starter._m_logError.TraceErr("(rc=" + m_lastExitCode + ") " + m_stdErr.toString());
+            // ..add stderr to error message
+            m_lastErrorMessage += "\n" + m_stdErr.toString();
          }
       }
       catch (IOException e)

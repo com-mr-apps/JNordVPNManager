@@ -22,8 +22,8 @@ public class VpnReconnect implements CommandInterface
 {
    public static boolean execute(ActionEvent e)
    {
-      CurrentLocation loc = Starter.getCurrentServer(true);
-      NvpnCallbacks.executeConnect(loc, "NordVPN Reconnect", "NordVPN Reconnect");
+      CurrentLocation loc = Starter.getCurrentServer(false);
+      NvpnCallbacks.executeConnect(loc, "NordVPN [Re]Connect", "NordVPN [Re]Connect");
       return true;
    }
 
