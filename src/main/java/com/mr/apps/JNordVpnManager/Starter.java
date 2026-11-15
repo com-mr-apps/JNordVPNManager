@@ -143,6 +143,12 @@ public class Starter extends JFrame
     */
    public static void main(String[] args) throws Exception
    {
+      if (GraphicsEnvironment.isHeadless())
+      {
+         System.out.println("[JNordVpnManager] Error: Application requires Java Graphic libraries - Headless Java versions are not supportet!!\nPlease run the application with a full Java installation.");
+         System.exit(1);
+      }
+
       // -------------------------------------------------------------------------------
       // Check, if we are called from snap...: 'strict' doesn't let us execute the 'nordvpn' command outside the snap
       // if yes, ask to install a local desktop file that runs the jar directly (outside of the snap container)
@@ -163,9 +169,9 @@ public class Starter extends JFrame
          /*
           * Console... (started by main application as separate process)
           */
-         _m_logError = new UtilLogErr(null, null, null);
          SwingUtilities.invokeLater(new Runnable() {
             public void run() {
+               _m_logError = new UtilLogErr(null, null, null);
                JCustomConsole consoleWindow = new JCustomConsole(args[1]);
                ImageIcon imageIcon = JResizedIcon.getIcon(JResizedIcon.IconUrls.ICON_APPLICATION, IconSize.MEDIUM);
                Image appImage = imageIcon.getImage();
@@ -178,9 +184,6 @@ public class Starter extends JFrame
          /*
           * Main application...
           */
-         UtilLogErr.setConsoleOutput(true);
-         _m_logError = new UtilLogErr(UtilPrefs.getLogfileName(), null, null);
-
          long pid = ProcessHandle.current().pid();
 
          // Start the Console process...
@@ -189,8 +192,10 @@ public class Starter extends JFrame
          ProcessBuilder consoleBuilder = new ProcessBuilder(javaprog, "-cp", classpath, "com.mr.apps.JNordVpnManager.Starter", "Console", StringFormat.long2String(pid, "0"));
          consoleBuilder.start();
 
+         UtilLogErr.setConsoleOutput(true);
+         _m_logError = new UtilLogErr(UtilPrefs.getLogfileName(), null, null);
          _m_logError.LoggingInfo("JNordVPN Manager launched...");
-
+         
          if (System.getenv("COM_MR_APPS_DEBUG") != null)
          {
             // ..for debug
@@ -519,7 +524,7 @@ public class Starter extends JFrame
       }
       if (null != errorGetVersion)
       {
-         JModalDialog.showError("NordVPN Version error",
+         _m_logError.LoggingAbend(10998, "NordVPN Version error",
                errorGetVersion + "\n" + StringFormat.printString(saVersions[0], "") + "\n" + StringFormat.printString(saVersions[1], ""));
       }
       _m_logError.TraceIni("NordVPN version=" + m_nordvpnVersion + ".");
