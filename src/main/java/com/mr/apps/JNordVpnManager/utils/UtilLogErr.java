@@ -152,45 +152,31 @@ public class UtilLogErr
 
       if (true == m_bConsoleOutput)
       {
-         // Step 1: Create named pipes
+         // Redirect stdout and stderr to the named pipes
          String stdout_pipe = JCustomConsole.CONSOLE_STDOUT_PIPE;
          String stderr_pipe = JCustomConsole.CONSOLE_STDERR_PIPE;
 
-         // check if path exists - if not, create
-         String sPipesPath = new File(stdout_pipe).getParent();
-         File fpPipesPath = new File(sPipesPath);
-         if (!fpPipesPath.exists())
-         {
-            // generate the directory
-            fpPipesPath.mkdirs();
-         }
-
-         Process process;
          try
          {
-            process = Runtime.getRuntime().exec("mkfifo " + stdout_pipe + " " + stderr_pipe);
-            process.waitFor();
+            m_stdoutPipe = new FileOutputStream(stdout_pipe);
+            m_stderrPipe = new FileOutputStream(stderr_pipe);
 
-            // Step 2: Redirect stdout and stderr to the pipes
-            try
-            {
-               m_stdoutPipe = new FileOutputStream(stdout_pipe);
-               m_stderrPipe = new FileOutputStream(stderr_pipe);
-
-               System.setOut(new PrintStream(m_stdoutPipe));
-               System.setErr(new PrintStream(m_stderrPipe));
-            }
-            catch (FileNotFoundException e)
-            {
-               e.printStackTrace();
-            }
+            System.setOut(new PrintStream(m_stdoutPipe));
+            System.setErr(new PrintStream(m_stderrPipe));
+            m_stdoutPipe.flush();
+            m_stderrPipe.flush();
+         }
+         catch (FileNotFoundException e)
+         {
+            e.printStackTrace();
+         }
+         catch (SecurityException e)
+         {
+            e.printStackTrace();
          }
          catch (IOException e)
          {
             e.printStackTrace();
-         }
-         catch (InterruptedException e)
-         {
          }
       }
 
@@ -264,11 +250,27 @@ public class UtilLogErr
       {
          if (null != m_stderrPipe)
          {
-            m_stderrPipe.write(JCustomConsole.CONSOLE_CMD_EXIT.getBytes());
-            m_stderrPipe.flush();
+            sendConsoleCommand(JCustomConsole.CONSOLE_CMD_EXIT);
          }
          if (null != m_stdoutPipe) m_stdoutPipe.close();
          if (null != m_stderrPipe) m_stderrPipe.close();
+
+         File fp = new File(JCustomConsole.CONSOLE_STDOUT_PIPE);
+         fp.deleteOnExit();
+         fp = new File(JCustomConsole.CONSOLE_STDERR_PIPE);
+         fp.deleteOnExit();
+      }
+      catch (IOException e)
+      {
+      }
+   }
+
+   public void flushErrorHandling()
+   {
+      try
+      {
+         if (null != m_stdoutPipe) m_stdoutPipe.flush();
+         if (null != m_stderrPipe) m_stderrPipe.flush();
       }
       catch (IOException e)
       {
@@ -652,7 +654,11 @@ public class UtilLogErr
          // Runtime exception thrown in case of iSev=5
          LoggingWriteMessage(iSev, -1, msgText, "");
          // additional output to console
-         if ((m_bwLogfileIsActive  && m_bwLogfile != null) && (m_bConsoleOutput == false)) System.out.println(msgText + "\n");
+         if ((m_bwLogfileIsActive  && m_bwLogfile != null) && (m_bConsoleOutput == false))
+         {
+            System.out.println(msgText + "\n");
+            System.out.flush();
+         }
       }
       else
       {
@@ -976,18 +982,20 @@ public class UtilLogErr
                {
                   // output to the console
                   System.out.println(formatToHtml(sText));
+                  System.out.flush();
                }
                else
                {
                   // output to stdout
                   System.out.println(sText);
+                  System.out.flush();
                }
-               System.out.flush();
             }
          } // try
          catch (IOException e)
          {
             System.out.println(sText);
+            System.out.flush();
          }
       }
    }

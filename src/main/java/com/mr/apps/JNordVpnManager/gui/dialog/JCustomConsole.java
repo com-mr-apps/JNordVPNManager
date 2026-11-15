@@ -81,17 +81,17 @@ public class JCustomConsole extends JFrame
          + "</style></head>"
          + "<body style=\"background-color:#FFEBCD\" id='body'>Console output start...</body></html>";
 
+   private boolean             m_quitFlag          = false;
+   private boolean             m_skipInteraction   = false;
+
+   private ExecutorService     m_streamHandlers    = null;
+   private String              m_pid               = null;
    private boolean             m_isVisible         = false;
    private JFrame              m_consoleMainFrame;
    private JScrollPane         m_consoleOutputScrollPane;
    private JCheckBox           m_cbxTraceDebug;
    private JCheckBox           m_cbxTraceInit;
    private JCheckBox           m_cbxTraceCommand;
-   private boolean             m_quitFlag;
-   private String              m_pid               = null;
-   private static boolean      m_skipInteraction   = false;
-
-   ExecutorService             m_streamHandlers    = null;
 
    public JCustomConsole(String sPid)
    {
@@ -353,6 +353,42 @@ public class JCustomConsole extends JFrame
          }
       });
 
+      startConsoleLogging();
+
+      if (1 == UtilPrefs.isConsoleActive())
+      {
+         // open the console at program start
+         setConsoleVisible(true);
+      }
+   }
+
+   public void startConsoleLogging()
+   {
+      // check if path for named pipes exists - if not, create
+      String sPipesPath = new File(CONSOLE_STDOUT_PIPE).getParent();
+      File fpPipesPath = new File(sPipesPath);
+      if (!fpPipesPath.exists())
+      {
+         // generate the directory
+         fpPipesPath.mkdirs();
+      }
+
+      // Create named pipes
+      Process process;
+      try
+      {
+         process = Runtime.getRuntime().exec("mkfifo " + CONSOLE_STDOUT_PIPE + " " + CONSOLE_STDERR_PIPE);
+         process.waitFor();
+      }
+      catch (IOException e)
+      {
+         e.printStackTrace();
+      }
+      catch (InterruptedException e)
+      {
+      }
+
+      // Open named pipes for read
       FileInputStream stdoutPipe;
       FileInputStream stderrPipe;
       try
@@ -374,12 +410,6 @@ public class JCustomConsole extends JFrame
       m_quitFlag = false; // signals the Threads that they should exit
       m_streamHandlers.execute(() -> handleStream(1, stdoutReader));
       m_streamHandlers.execute(() -> handleStream(2, stderrReader));
-
-      if (1 == UtilPrefs.isConsoleActive())
-      {
-         // open the console at program start
-         setConsoleVisible(true);
-      }
    }
 
    /**
