@@ -27,6 +27,11 @@ public class JWhatsNewDialog
 {
    private static final String m_htmlAboutText = "<h2>JNordVPN Manager Version History.</h2>"
          + "<h3>What's New:</h3>"
+         + "<h4>Version 2026.11.1 (Snap 2026.11.1):</h4>"
+         + "[Released November 2026]"
+         + "<ul>"
+         + "<li><strong>Bugfix Issue #53</strong>: See Issue here: <a href=\"https://github.com/com-mr-apps/JNordVPNManager/issues/53/\">App fails to launch on Ubuntu 26.04</a>.</li>"
+         + "</ul>"
          + "<h4>Version 2026.10.1 (Snap 2026.10.1):</h4>"
          + "[Released October 2026]"
          + "<ul>"
